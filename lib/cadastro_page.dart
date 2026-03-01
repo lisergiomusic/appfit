@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
-import 'cadastro_page.dart';
 
-class LoginPage extends StatefulWidget {
+class CadastroPage extends StatefulWidget {
   final String userType;
 
-  const LoginPage({super.key, required this.userType});
+  const CadastroPage({super.key, required this.userType});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<CadastroPage> createState() => _CadastroPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _CadastroPageState extends State<CadastroPage> {
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   Widget build(BuildContext context) {
+    // Título dinâmico para o usuário saber onde está se cadastrando
     String titulo = widget.userType == 'personal'
-        ? 'Área do Personal'
-        : 'Área do Aluno';
+        ? 'Novo Personal'
+        : 'Novo Aluno';
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
@@ -32,30 +33,42 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
 
               Text(
-                titulo,
+                'Criar Conta\n$titulo',
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
+                  height: 1.2,
                 ),
               ),
               const SizedBox(height: 8),
               const Text(
-                'Faça login para continuar',
+                'Preencha os dados abaixo para começar.',
                 style: TextStyle(fontSize: 16, color: Color(0xFFAAAAAA)),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 32),
 
+              // Campo de Nome
+              _buildTextField(
+                label: 'Nome completo',
+                icon: Icons.person_outline,
+                keyboardType: TextInputType.name,
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 16),
+
+              // Campo de E-mail
               _buildTextField(
                 label: 'E-mail',
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
+              // Campo de Senha
               _buildTextField(
                 label: 'Senha',
                 icon: Icons.lock_outline,
@@ -67,30 +80,36 @@ class _LoginPageState extends State<LoginPage> {
                   });
                 },
               ),
+              const SizedBox(height: 16),
 
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {},
-                  child: const Text(
-                    'Esqueci minha senha',
-                    style: TextStyle(
-                      color: Color(0xFFFF5722),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+              // Campo Confirmar Senha
+              _buildTextField(
+                label: 'Confirmar Senha',
+                icon: Icons.lock_reset_outlined,
+                isPassword: true,
+                obscureText: _obscureConfirmPassword,
+                onTogglePassword: () {
+                  setState(() {
+                    _obscureConfirmPassword = !_obscureConfirmPassword;
+                  });
+                },
               ),
-              const SizedBox(height: 32),
 
+              const SizedBox(height: 40),
+
+              // Botão Cadastrar
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
                   onPressed: () {
-                    print("Tentando logar no Firebase como ${widget.userType}");
+                    print(
+                      "Tentando cadastrar no Firebase como ${widget.userType}",
+                    );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF5722),
+                    backgroundColor: const Color(
+                      0xFFFF5722,
+                    ), // Laranja Queimado
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -98,7 +117,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   child: const Text(
-                    'Entrar',
+                    'Cadastrar',
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
@@ -108,38 +127,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
 
-              // AQUI ESTÁ A CORREÇÃO (SizedBox no lugar do Spacer)
-              const SizedBox(height: 48),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Ainda não tem uma conta?',
-                    style: TextStyle(color: Color(0xFFAAAAAA)),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          // Repassamos o userType para o cadastro saber se é aluno ou personal
-                          builder: (context) =>
-                              CadastroPage(userType: widget.userType),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      'Cadastre-se',
-                      style: TextStyle(
-                        color: Color(0xFFFF5722),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -147,6 +135,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // Mesmo componente de input que usamos no login, mantendo o padrão visual
   Widget _buildTextField({
     required String label,
     required IconData icon,
@@ -154,10 +143,12 @@ class _LoginPageState extends State<LoginPage> {
     bool obscureText = false,
     VoidCallback? onTogglePassword,
     TextInputType? keyboardType,
+    TextCapitalization textCapitalization = TextCapitalization.none,
   }) {
     return TextField(
       obscureText: obscureText,
       keyboardType: keyboardType,
+      textCapitalization: textCapitalization,
       style: const TextStyle(color: Colors.white),
       cursorColor: const Color(0xFFFF5722),
       decoration: InputDecoration(
