@@ -1,25 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'theme/app_theme.dart';
+import 'main.dart'; // Precisamos disto para voltar à ChecagemPagina
 
 class DashboardPage extends StatelessWidget {
   final String userType;
 
   const DashboardPage({super.key, required this.userType});
 
+  // Função para terminar a sessão (Logout)
+  Future<void> _sair(BuildContext context) async {
+    // 1. Diz ao Firebase para terminar a sessão do utilizador atual
+    await FirebaseAuth.instance.signOut();
+
+    // 2. Remove todos os ecrãs anteriores da memória e volta ao Porteiro (ChecagemPagina)
+    if (context.mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const ChecagemPagina()),
+        (Route<dynamic> route) => false, // Remove todo o histórico
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    String saudacao = userType == 'personal' ? 'Olá, Treinador' : 'Olá, Atleta';
+    // Apanhamos o utilizador que está autenticado neste momento
+    final User? utilizadorAtual = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppTheme
-            .surfaceDark, // Deixei a AppBar levemente destacada do fundo
-        title: Text(
-          saudacao,
-          style: const TextStyle(
-            color: AppTheme.textPrimary,
-            fontWeight: FontWeight.bold,
-          ),
+        backgroundColor: AppTheme.surfaceDark,
+        title: FutureBuilder<DocumentSnapshot>(
+          // Vai ao Firestore buscar o documento exato deste utilizador
+          future: FirebaseFirestore.instance
+              .collection('usuarios')
+              .doc(utilizadorAtual?.uid)
+              .get(),
+          builder: (context, snapshot) {
+            // Enquanto espera pelos dados, mostra "A carregar..."
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Text(
+                'A carregar...',
+                style: TextStyle(color: AppTheme.textPrimary, fontSize: 18),
+              );
+            }
+
+            String nomeApresentacao = '';
+
+            // Se os dados chegaram com sucesso e o documento existe
+            if (snapshot.hasData && snapshot.data!.exists) {
+              String nomeCompleto = snapshot.data!.get('nome');
+              // Uma pequena magia: cortamos o nome nos espaços e apanhamos só o primeiro!
+              nomeApresentacao = nomeCompleto.split(' ')[0];
+            }
+
+            // Define a saudação dinâmica
+            String saudacao = userType == 'personal'
+                ? 'Olá, Treinador $nomeApresentacao'
+                : 'Olá, Atleta $nomeApresentacao';
+
+            return Text(
+              saudacao,
+              style: const TextStyle(
+                color: AppTheme.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
+            );
+          },
         ),
         actions: [
           IconButton(
@@ -30,8 +79,11 @@ class DashboardPage extends StatelessWidget {
             onPressed: () {},
           ),
           IconButton(
-            icon: const Icon(Icons.account_circle, color: AppTheme.primary),
-            onPressed: () {},
+            icon: const Icon(
+              Icons.logout,
+              color: AppTheme.primary,
+            ), // Ícone alterado para Sair
+            onPressed: () => _sair(context), // Ligamos a função de logout aqui!
           ),
         ],
         automaticallyImplyLeading: false,
@@ -114,7 +166,7 @@ class DashboardPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight, // Usando a cor do tema
+        color: AppTheme.surfaceLight,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -152,9 +204,9 @@ class DashboardPage extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceDark, // Usando a cor do tema
+          color: AppTheme.surfaceDark,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF333333)), // Borda sutil
+          border: Border.all(color: const Color(0xFF333333)),
         ),
         child: Row(
           children: [
