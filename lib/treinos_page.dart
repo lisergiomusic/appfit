@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'theme/app_theme.dart';
+import 'detalhe_treino_page.dart';
 
 class TreinosPage extends StatelessWidget {
   const TreinosPage({super.key});
@@ -254,7 +255,16 @@ class TreinosPage extends StatelessWidget {
                       color: AppTheme.textSecondary,
                     ),
                     onTap: () {
-                      // Em breve: Abrir os exercícios deste treino!
+                      // <-- AGORA NAVEGA PARA A TELA DE DETALHES
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetalheTreinoPage(
+                            treinoId: doc.id,
+                            treinoTitulo: treino['titulo'] ?? 'Treino',
+                          ),
+                        ),
+                      );
                     },
                   ),
                 ),
