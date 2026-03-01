@@ -5,12 +5,17 @@ import 'theme/app_theme.dart';
 class AlunosPage extends StatelessWidget {
   const AlunosPage({super.key});
 
-  // --- FUNÇÃO PARA SALVAR NO BANCO ---
+  // --- FUNÇÃO PARA DELETAR DO BANCO ---
+  Future<void> _deletarAluno(String id) async {
+    await FirebaseFirestore.instance.collection('usuarios').doc(id).delete();
+  }
+
   Future<void> _salvarAluno(
     BuildContext context,
     String nome,
     String email,
   ) async {
+    if (nome.isEmpty || email.isEmpty) return;
     try {
       await FirebaseFirestore.instance.collection('usuarios').add({
         'nome': nome,
@@ -18,37 +23,26 @@ class AlunosPage extends StatelessWidget {
         'tipoUsuario': 'aluno',
         'dataCriacao': FieldValue.serverTimestamp(),
       });
-
-      if (context.mounted) Navigator.pop(context); // Fecha o modal
+      if (context.mounted) Navigator.pop(context);
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao salvar: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      debugPrint("Erro ao salvar: $e");
     }
   }
 
-  // --- O MODAL QUE DESLIZA (BOTTOM SHEET) ---
   void _exibirModalCadastro(BuildContext context) {
     final nomeController = TextEditingController();
     final emailController = TextEditingController();
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // Permite que o modal suba com o teclado
+      isScrollControlled: true,
       backgroundColor: AppTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(
-            context,
-          ).viewInsets.bottom, // Ajuste para o teclado
+          bottom: MediaQuery.of(context).viewInsets.bottom,
           left: 24,
           right: 24,
           top: 24,
@@ -105,8 +99,7 @@ class AlunosPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton(
-        onPressed: () =>
-            _exibirModalCadastro(context), // Agora o botão funciona!
+        onPressed: () => _exibirModalCadastro(context),
         backgroundColor: AppTheme.primary,
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -117,15 +110,12 @@ class AlunosPage extends StatelessWidget {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppTheme.primary),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
-
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(
               child: Text(
-                'Nenhum aluno cadastrado.',
+                'Nenhum aluno.',
                 style: TextStyle(color: AppTheme.textSecondary),
               ),
             );
@@ -135,32 +125,47 @@ class AlunosPage extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
-              var aluno = snapshot.data!.docs[index];
-              return Card(
-                color: AppTheme.surfaceLight,
-                margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: AppTheme.primary.withOpacity(0.1),
-                    child: Text(
-                      aluno['nome'][0],
-                      style: const TextStyle(color: AppTheme.primary),
+              var doc = snapshot.data!.docs[index];
+              var aluno = doc.data() as Map<String, dynamic>;
+
+              // --- A MÁGICA DO ARRASTAR PARA DELETAR ---
+              return Dismissible(
+                key: Key(doc.id),
+                direction: DismissDirection
+                    .endToStart, // Arrastar da direita para a esquerda
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.delete, color: Colors.white),
+                ),
+                onDismissed: (direction) => _deletarAluno(doc.id),
+                child: Card(
+                  color: AppTheme.surfaceLight,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: AppTheme.primary.withValues(alpha: 0.1),
+                      child: Text(
+                        aluno['nome'][0],
+                        style: const TextStyle(color: AppTheme.primary),
+                      ),
                     ),
-                  ),
-                  title: Text(
-                    aluno['nome'],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                    title: Text(
+                      aluno['nome'],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  subtitle: Text(
-                    aluno['email'],
-                    style: const TextStyle(color: AppTheme.textSecondary),
-                  ),
-                  trailing: const Icon(
-                    Icons.chevron_right,
-                    color: AppTheme.textSecondary,
+                    subtitle: Text(
+                      aluno['email'],
+                      style: const TextStyle(color: AppTheme.textSecondary),
+                    ),
                   ),
                 ),
               );
