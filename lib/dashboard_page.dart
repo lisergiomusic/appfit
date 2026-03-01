@@ -1,3 +1,4 @@
+import 'package:appfit/treinos_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -21,9 +22,7 @@ class _DashboardPageState extends State<DashboardPage> {
   final List<Widget> _paginas = [
     const HomePage(),
     const AlunosPage(), // Agora exibe a tela real de alunos
-    const Center(
-      child: Text('Tela de Treinos', style: TextStyle(color: Colors.white)),
-    ),
+    const TreinosPage(),
     const Center(
       child: Text('Configurações', style: TextStyle(color: Colors.white)),
     ),
