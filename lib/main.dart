@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
-import 'login_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'theme/app_theme.dart';
+import 'login_page.dart'; // <-- AQUI ESTAVA O ERRO! Importação adicionada.
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(const AppFit());
 }
 
@@ -14,7 +20,7 @@ class AppFit extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'AppFit',
-      theme: AppTheme.darkTheme, // <-- MÁGICA ACONTECENDO AQUI
+      theme: AppTheme.darkTheme,
       home: const SelecaoPerfilScreen(),
     );
   }
@@ -35,14 +41,14 @@ class SelecaoPerfilScreen extends StatelessWidget {
             children: [
               const Spacer(flex: 3),
 
-              // Logomarca Premium
+              // Logomarca Premium usando as cores do AppTheme
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(
                     Icons.fitness_center,
                     size: 42,
-                    color: Color(0xFFFF5722), // Laranja Queimado / Deep Orange
+                    color: AppTheme.primary, // Substituído pelo Tema
                   ),
                   const SizedBox(width: 12),
                   const Text(
@@ -51,7 +57,7 @@ class SelecaoPerfilScreen extends StatelessWidget {
                       fontSize: 34,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.2,
-                      color: Colors.white, // Branco puro para contraste
+                      color: AppTheme.textPrimary, // Substituído pelo Tema
                     ),
                   ),
                 ],
@@ -64,9 +70,7 @@ class SelecaoPerfilScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
-                  color: Color(
-                    0xFFAAAAAA,
-                  ), // Cinza médio para leitura confortável
+                  color: AppTheme.textSecondary, // Substituído pelo Tema
                 ),
               ),
 
@@ -85,18 +89,7 @@ class SelecaoPerfilScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(
-                      0xFFFF5722,
-                    ), // Laranja Queimado
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        6,
-                      ), // Borda levemente suavizada
-                    ),
-                  ),
+                  // Não precisamos passar style aqui! O ElevatedButtonTheme do app_theme.dart já cuida de deixar ele Laranja!
                   child: const Text(
                     'Sou personal trainer',
                     style: TextStyle(
@@ -123,15 +116,9 @@ class SelecaoPerfilScreen extends StatelessWidget {
                       ),
                     );
                   },
+                  // Aqui nós passamos o style apenas para sobrescrever a cor, já que queremos ele Cinza e não Laranja
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(
-                      0xFF2A2A2A,
-                    ), // Cinza médio/escuro
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
+                    backgroundColor: AppTheme.surfaceLight,
                   ),
                   child: const Text(
                     'Sou aluno',
