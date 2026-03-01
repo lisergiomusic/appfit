@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // <-- NOVO: Importação para pegar o ID do Personal
 import '../../core/theme/app_theme.dart';
+import 'perfil_aluno_page.dart';
 
 class AlunosPage extends StatelessWidget {
   const AlunosPage({super.key});
@@ -183,6 +184,22 @@ class AlunosPage extends StatelessWidget {
                       aluno['email'],
                       style: const TextStyle(color: AppTheme.textSecondary),
                     ),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: AppTheme.textSecondary,
+                    ), // Adicionei a setinha para a direita
+                    // <-- ADICIONAMOS O CLIQUE AQUI:
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PerfilAlunoPage(
+                            alunoId: doc.id,
+                            alunoNome: aluno['nome'],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               );
