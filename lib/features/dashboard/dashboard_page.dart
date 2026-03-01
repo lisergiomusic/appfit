@@ -1,11 +1,11 @@
-import 'package:appfit/treinos_page.dart';
+import '../treinos/treinos_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'theme/app_theme.dart';
+import '../../core/theme/app_theme.dart';
 import 'home_page.dart'; // Importamos a nossa aba Home
-import 'alunos_page.dart'; // Importamos a tela de Alunos
-import 'main.dart';
+import '../alunos/alunos_page.dart'; // Importamos a tela de Alunos
+import '../../main.dart';
 
 class DashboardPage extends StatefulWidget {
   final String userType;

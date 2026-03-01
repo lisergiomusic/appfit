@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'theme/app_theme.dart';
+import '../../core/theme/app_theme.dart';
 
 class DetalheTreinoPage extends StatelessWidget {
   final String treinoId;

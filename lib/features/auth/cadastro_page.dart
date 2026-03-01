@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // <-- Nova importação do Firestore!
-import 'theme/app_theme.dart';
-import 'dashboard_page.dart';
+import '../../core/theme/app_theme.dart';
+import '../dashboard/dashboard_page.dart';
 
 class CadastroPage extends StatefulWidget {
   final String userType;

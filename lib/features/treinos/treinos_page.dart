@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'theme/app_theme.dart';
+import '../../core/theme/app_theme.dart';
 import 'detalhe_treino_page.dart';
 
 class TreinosPage extends StatelessWidget {

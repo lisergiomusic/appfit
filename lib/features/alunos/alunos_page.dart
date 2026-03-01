@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // <-- NOVO: Importação para pegar o ID do Personal
-import 'theme/app_theme.dart';
+import '../../core/theme/app_theme.dart';
 
 class AlunosPage extends StatelessWidget {
   const AlunosPage({super.key});

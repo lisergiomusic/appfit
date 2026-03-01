@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Importação da Autenticação
-import 'theme/app_theme.dart';
+import '../../core/theme/app_theme.dart';
 import 'cadastro_page.dart';
-import 'dashboard_page.dart';
+import '../dashboard/dashboard_page.dart';
 
 class LoginPage extends StatefulWidget {
   final String userType;
