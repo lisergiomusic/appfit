@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Importação da Auth
+import 'package:cloud_firestore/cloud_firestore.dart'; // Importação do Banco de Dados
 import 'firebase_options.dart';
 import 'theme/app_theme.dart';
-import 'login_page.dart'; // <-- AQUI ESTAVA O ERRO! Importação adicionada.
+import 'login_page.dart';
+import 'dashboard_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,10 +24,67 @@ class AppFit extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'AppFit',
       theme: AppTheme.darkTheme,
-      home: const SelecaoPerfilScreen(),
+      home: const ChecagemPagina(), // <-- O App agora começa no Porteiro!
     );
   }
 }
+
+// --- O NOSSO NOVO PORTEIRO ---
+class ChecagemPagina extends StatelessWidget {
+  const ChecagemPagina({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // StreamBuilder fica "ouvindo" o estado da autenticação em tempo real
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        // Se ainda está carregando a verificação, mostra uma bolinha girando
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(color: AppTheme.primary),
+            ),
+          );
+        }
+
+        // Se o Firebase confirmou que existe um usuário logado
+        if (snapshot.hasData && snapshot.data != null) {
+          // Precisamos descobrir se ele é aluno ou personal lá no banco de dados
+          return FutureBuilder<DocumentSnapshot>(
+            future: FirebaseFirestore.instance
+                .collection('usuarios')
+                .doc(snapshot.data!.uid)
+                .get(),
+            builder: (context, firestoreSnapshot) {
+              if (firestoreSnapshot.connectionState ==
+                  ConnectionState.waiting) {
+                return const Scaffold(
+                  body: Center(
+                    child: CircularProgressIndicator(color: AppTheme.primary),
+                  ),
+                );
+              }
+
+              // Se encontrou o cadastro no banco, lê o tipo e abre a Dashboard
+              if (firestoreSnapshot.hasData && firestoreSnapshot.data!.exists) {
+                String tipo = firestoreSnapshot.data!.get('tipoUsuario');
+                return DashboardPage(userType: tipo);
+              }
+
+              // Falha de segurança: se o usuário está logado mas não tem dados no banco, manda pro início
+              return const SelecaoPerfilScreen();
+            },
+          );
+        }
+
+        // Se NÃO tem ninguém logado, mostra a tela inicial normal
+        return const SelecaoPerfilScreen();
+      },
+    );
+  }
+}
+// -----------------------------
 
 class SelecaoPerfilScreen extends StatelessWidget {
   const SelecaoPerfilScreen({super.key});
@@ -41,14 +101,13 @@ class SelecaoPerfilScreen extends StatelessWidget {
             children: [
               const Spacer(flex: 3),
 
-              // Logomarca Premium usando as cores do AppTheme
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(
                     Icons.fitness_center,
                     size: 42,
-                    color: AppTheme.primary, // Substituído pelo Tema
+                    color: AppTheme.primary,
                   ),
                   const SizedBox(width: 12),
                   const Text(
@@ -57,7 +116,7 @@ class SelecaoPerfilScreen extends StatelessWidget {
                       fontSize: 34,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.2,
-                      color: AppTheme.textPrimary, // Substituído pelo Tema
+                      color: AppTheme.textPrimary,
                     ),
                   ),
                 ],
@@ -70,13 +129,12 @@ class SelecaoPerfilScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
-                  color: AppTheme.textSecondary, // Substituído pelo Tema
+                  color: AppTheme.textSecondary,
                 ),
               ),
 
               const Spacer(flex: 2),
 
-              // Botão: Sou Personal Trainer (Destaque Principal)
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
@@ -89,7 +147,6 @@ class SelecaoPerfilScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  // Não precisamos passar style aqui! O ElevatedButtonTheme do app_theme.dart já cuida de deixar ele Laranja!
                   child: const Text(
                     'Sou personal trainer',
                     style: TextStyle(
@@ -103,7 +160,6 @@ class SelecaoPerfilScreen extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // Botão: Sou Aluno (Secundário, mais discreto)
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
@@ -116,7 +172,6 @@ class SelecaoPerfilScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  // Aqui nós passamos o style apenas para sobrescrever a cor, já que queremos ele Cinza e não Laranja
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.surfaceLight,
                   ),
