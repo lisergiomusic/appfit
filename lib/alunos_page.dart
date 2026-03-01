@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // <-- NOVO: Importação para pegar o ID do Personal
 import 'theme/app_theme.dart';
 
 class AlunosPage extends StatelessWidget {
@@ -16,11 +17,22 @@ class AlunosPage extends StatelessWidget {
     String email,
   ) async {
     if (nome.isEmpty || email.isEmpty) return;
+
+    // <-- NOVO: Pegamos o ID único do Personal logado
+    final String? personalId = FirebaseAuth.instance.currentUser?.uid;
+
+    if (personalId == null) {
+      debugPrint("Erro: Nenhum personal logado.");
+      return;
+    }
+
     try {
       await FirebaseFirestore.instance.collection('usuarios').add({
         'nome': nome,
         'email': email,
         'tipoUsuario': 'aluno',
+        'personalId':
+            personalId, // <-- NOVO: Carimbamos o aluno com o ID do seu Personal!
         'dataCriacao': FieldValue.serverTimestamp(),
       });
       if (context.mounted) Navigator.pop(context);
@@ -96,6 +108,9 @@ class AlunosPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // <-- NOVO: Pegamos o ID do Personal para usar no filtro da consulta
+    final String? personalId = FirebaseAuth.instance.currentUser?.uid;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton(
@@ -107,6 +122,10 @@ class AlunosPage extends StatelessWidget {
         stream: FirebaseFirestore.instance
             .collection('usuarios')
             .where('tipoUsuario', isEqualTo: 'aluno')
+            .where(
+              'personalId',
+              isEqualTo: personalId,
+            ) // <-- NOVO: O Firestore agora só traz os SEUS alunos!
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -128,11 +147,9 @@ class AlunosPage extends StatelessWidget {
               var doc = snapshot.data!.docs[index];
               var aluno = doc.data() as Map<String, dynamic>;
 
-              // --- A MÁGICA DO ARRASTAR PARA DELETAR ---
               return Dismissible(
                 key: Key(doc.id),
-                direction: DismissDirection
-                    .endToStart, // Arrastar da direita para a esquerda
+                direction: DismissDirection.endToStart,
                 background: Container(
                   alignment: Alignment.centerRight,
                   padding: const EdgeInsets.only(right: 20),
