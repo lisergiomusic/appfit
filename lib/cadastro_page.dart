@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Importante: O pacote de autenticação!
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // <-- Nova importação do Firestore!
 import 'theme/app_theme.dart';
 import 'dashboard_page.dart';
 
@@ -13,7 +14,6 @@ class CadastroPage extends StatefulWidget {
 }
 
 class _CadastroPageState extends State<CadastroPage> {
-  // 1. Criando os "espiões" para ler o que o usuário digita
   final _nomeController = TextEditingController();
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
@@ -21,30 +21,49 @@ class _CadastroPageState extends State<CadastroPage> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  bool _isLoading = false; // 2. Variável para mostrar a bolinha de carregamento
+  bool _isLoading = false;
 
-  // 3. A nossa função mágica que conversa com o Firebase
   Future<void> _cadastrarUsuario() async {
-    // Verificação básica: as senhas batem?
     if (_senhaController.text != _confirmarSenhaController.text) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('As senhas não conferem!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('As palavras-passe não coincidem!')),
+      );
+      return;
+    }
+
+    // Validação extra para garantir que o nome foi preenchido
+    if (_nomeController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, introduza o seu nome.')),
+      );
       return;
     }
 
     setState(() {
-      _isLoading = true; // Liga o carregamento
+      _isLoading = true;
     });
 
     try {
-      // Tenta criar o usuário no Google
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _senhaController.text.trim(),
-      );
+      // 1. Cria a conta no Firebase Auth (E-mail e Palavra-passe)
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _senhaController.text.trim(),
+          );
 
-      // Se deu certo, vai para a Dashboard!
+      // 2. Apanha o ID único gerado pelo Google para este utilizador
+      String uid = userCredential.user!.uid;
+
+      // 3. Guarda os dados completos no Firestore na coleção 'usuarios'
+      await FirebaseFirestore.instance.collection('usuarios').doc(uid).set({
+        'nome': _nomeController.text.trim(),
+        'email': _emailController.text.trim(),
+        'tipoUsuario': widget.userType, // 'personal' ou 'aluno'
+        'dataCriacao':
+            FieldValue.serverTimestamp(), // Regista a data e hora exata
+      });
+
+      // Se tudo correu bem, navega para a Dashboard
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -54,10 +73,9 @@ class _CadastroPageState extends State<CadastroPage> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      // Se o Firebase reclamar (ex: e-mail já existe, senha fraca), mostramos o erro
-      String mensagemErro = 'Ocorreu um erro no cadastro.';
+      String mensagemErro = 'Ocorreu um erro no registo.';
       if (e.code == 'weak-password') {
-        mensagemErro = 'A senha fornecida é muito fraca.';
+        mensagemErro = 'A palavra-passe fornecida é muito fraca.';
       } else if (e.code == 'email-already-in-use') {
         mensagemErro = 'Já existe uma conta com este e-mail.';
       }
@@ -70,17 +88,25 @@ class _CadastroPageState extends State<CadastroPage> {
           ),
         );
       }
+    } catch (e) {
+      // Caso ocorra um erro ao guardar no Firestore
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao guardar os dados: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() {
-          _isLoading =
-              false; // Desliga o carregamento independente se deu erro ou sucesso
+          _isLoading = false;
         });
       }
     }
   }
 
-  // 4. Limpando a memória quando a tela for fechada (boa prática)
   @override
   void dispose() {
     _nomeController.dispose();
@@ -123,7 +149,7 @@ class _CadastroPageState extends State<CadastroPage> {
               const SizedBox(height: 32),
 
               _buildTextField(
-                controller: _nomeController, // Ligando o controlador
+                controller: _nomeController,
                 label: 'Nome completo',
                 icon: Icons.person_outline,
                 keyboardType: TextInputType.name,
@@ -132,7 +158,7 @@ class _CadastroPageState extends State<CadastroPage> {
               const SizedBox(height: 16),
 
               _buildTextField(
-                controller: _emailController, // Ligando o controlador
+                controller: _emailController,
                 label: 'E-mail',
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
@@ -140,8 +166,8 @@ class _CadastroPageState extends State<CadastroPage> {
               const SizedBox(height: 16),
 
               _buildTextField(
-                controller: _senhaController, // Ligando o controlador
-                label: 'Senha',
+                controller: _senhaController,
+                label: 'Palavra-passe',
                 icon: Icons.lock_outline,
                 isPassword: true,
                 obscureText: _obscurePassword,
@@ -154,8 +180,8 @@ class _CadastroPageState extends State<CadastroPage> {
               const SizedBox(height: 16),
 
               _buildTextField(
-                controller: _confirmarSenhaController, // Ligando o controlador
-                label: 'Confirmar Senha',
+                controller: _confirmarSenhaController,
+                label: 'Confirmar Palavra-passe',
                 icon: Icons.lock_reset_outlined,
                 isPassword: true,
                 obscureText: _obscureConfirmPassword,
@@ -171,14 +197,11 @@ class _CadastroPageState extends State<CadastroPage> {
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
-                  // Só permite clicar se não estiver carregando
                   onPressed: _isLoading ? null : _cadastrarUsuario,
                   child: _isLoading
-                      ? const CircularProgressIndicator(
-                          color: Colors.white,
-                        ) // Bolinha girando
+                      ? const CircularProgressIndicator(color: Colors.white)
                       : const Text(
-                          'Cadastrar',
+                          'Registar',
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
@@ -196,11 +219,10 @@ class _CadastroPageState extends State<CadastroPage> {
     );
   }
 
-  // 5. Atualizamos a função para aceitar o 'controller'
   Widget _buildTextField({
     required String label,
     required IconData icon,
-    TextEditingController? controller, // Adicionado aqui!
+    TextEditingController? controller,
     bool isPassword = false,
     bool obscureText = false,
     VoidCallback? onTogglePassword,
@@ -208,7 +230,7 @@ class _CadastroPageState extends State<CadastroPage> {
     TextCapitalization textCapitalization = TextCapitalization.none,
   }) {
     return TextField(
-      controller: controller, // E repassado para o TextField real
+      controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
