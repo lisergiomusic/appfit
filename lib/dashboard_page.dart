@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'theme/app_theme.dart';
 import 'home_page.dart'; // Importamos a nossa aba Home
+import 'alunos_page.dart'; // Importamos a tela de Alunos
 import 'main.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -19,9 +20,7 @@ class _DashboardPageState extends State<DashboardPage> {
   // Lista das telas que serão exibidas
   final List<Widget> _paginas = [
     const HomePage(),
-    const Center(
-      child: Text('Tela de Alunos', style: TextStyle(color: Colors.white)),
-    ),
+    const AlunosPage(), // Agora exibe a tela real de alunos
     const Center(
       child: Text('Tela de Treinos', style: TextStyle(color: Colors.white)),
     ),
