@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'theme/app_theme.dart';
+import 'dashboard_page.dart';
 
 class CadastroPage extends StatefulWidget {
   final String userType;
@@ -15,18 +17,12 @@ class _CadastroPageState extends State<CadastroPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Título dinâmico para o usuário saber onde está se cadastrando
     String titulo = widget.userType == 'personal'
         ? 'Novo Personal'
         : 'Novo Aluno';
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      appBar: AppBar(), // Completamente limpo!
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 32.0),
@@ -40,18 +36,17 @@ class _CadastroPageState extends State<CadastroPage> {
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppTheme.textPrimary,
                   height: 1.2,
                 ),
               ),
               const SizedBox(height: 8),
               const Text(
                 'Preencha os dados abaixo para começar.',
-                style: TextStyle(fontSize: 16, color: Color(0xFFAAAAAA)),
+                style: TextStyle(fontSize: 16, color: AppTheme.textSecondary),
               ),
               const SizedBox(height: 32),
 
-              // Campo de Nome
               _buildTextField(
                 label: 'Nome completo',
                 icon: Icons.person_outline,
@@ -60,7 +55,6 @@ class _CadastroPageState extends State<CadastroPage> {
               ),
               const SizedBox(height: 16),
 
-              // Campo de E-mail
               _buildTextField(
                 label: 'E-mail',
                 icon: Icons.email_outlined,
@@ -68,7 +62,6 @@ class _CadastroPageState extends State<CadastroPage> {
               ),
               const SizedBox(height: 16),
 
-              // Campo de Senha
               _buildTextField(
                 label: 'Senha',
                 icon: Icons.lock_outline,
@@ -82,7 +75,6 @@ class _CadastroPageState extends State<CadastroPage> {
               ),
               const SizedBox(height: 16),
 
-              // Campo Confirmar Senha
               _buildTextField(
                 label: 'Confirmar Senha',
                 icon: Icons.lock_reset_outlined,
@@ -97,25 +89,19 @@ class _CadastroPageState extends State<CadastroPage> {
 
               const SizedBox(height: 40),
 
-              // Botão Cadastrar
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
                   onPressed: () {
-                    print(
-                      "Tentando cadastrar no Firebase como ${widget.userType}",
+                    // Direciona para a Dashboard após "cadastrar"
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            DashboardPage(userType: widget.userType),
+                      ),
                     );
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(
-                      0xFFFF5722,
-                    ), // Laranja Queimado
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
                   child: const Text(
                     'Cadastrar',
                     style: TextStyle(
@@ -135,7 +121,7 @@ class _CadastroPageState extends State<CadastroPage> {
     );
   }
 
-  // Mesmo componente de input que usamos no login, mantendo o padrão visual
+  // Função super enxuta agora
   Widget _buildTextField({
     required String label,
     required IconData icon,
@@ -149,31 +135,19 @@ class _CadastroPageState extends State<CadastroPage> {
       obscureText: obscureText,
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
-      style: const TextStyle(color: Colors.white),
-      cursorColor: const Color(0xFFFF5722),
+      style: const TextStyle(color: AppTheme.textPrimary),
+      cursorColor: AppTheme.primary,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Color(0xFFAAAAAA)),
-        prefixIcon: Icon(icon, color: const Color(0xFFAAAAAA)),
+        prefixIcon: Icon(icon),
         suffixIcon: isPassword
             ? IconButton(
                 icon: Icon(
                   obscureText ? Icons.visibility_off : Icons.visibility,
-                  color: const Color(0xFFAAAAAA),
                 ),
                 onPressed: onTogglePassword,
               )
             : null,
-        filled: true,
-        fillColor: const Color(0xFF2A2A2A),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: const BorderSide(color: Color(0xFFFF5722), width: 1.5),
-        ),
       ),
     );
   }

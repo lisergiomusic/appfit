@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'login_page.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const AppFit());
@@ -13,12 +14,7 @@ class AppFit extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'AppFit',
-      theme: ThemeData(
-        scaffoldBackgroundColor: const Color(
-          0xFF121212,
-        ), // Cinza Chumbo super escuro
-        useMaterial3: true,
-      ),
+      theme: AppTheme.darkTheme, // <-- MÁGICA ACONTECENDO AQUI
       home: const SelecaoPerfilScreen(),
     );
   }

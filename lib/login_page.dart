@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'theme/app_theme.dart'; // Importando o nosso tema central
 import 'cadastro_page.dart';
+import 'dashboard_page.dart';
 
 class LoginPage extends StatefulWidget {
   final String userType;
@@ -20,12 +22,9 @@ class _LoginPageState extends State<LoginPage> {
         : 'Área do Aluno';
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      // 1. A cor de fundo do Scaffold sumiu! Ele puxa do tema.
+      appBar:
+          AppBar(), // 2. O AppBar ficou completamente vazio! O tema já tira a cor de fundo e deixa o ícone branco.
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 32.0),
@@ -39,13 +38,13 @@ class _LoginPageState extends State<LoginPage> {
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppTheme.textPrimary, // Usando a variável do tema
                 ),
               ),
               const SizedBox(height: 8),
               const Text(
                 'Faça login para continuar',
-                style: TextStyle(fontSize: 16, color: Color(0xFFAAAAAA)),
+                style: TextStyle(fontSize: 16, color: AppTheme.textSecondary),
               ),
               const SizedBox(height: 48),
 
@@ -75,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: const Text(
                     'Esqueci minha senha',
                     style: TextStyle(
-                      color: Color(0xFFFF5722),
+                      color: AppTheme.primary, // Laranja do tema
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -87,16 +86,15 @@ class _LoginPageState extends State<LoginPage> {
                 height: 56,
                 child: ElevatedButton(
                   onPressed: () {
-                    print("Tentando logar no Firebase como ${widget.userType}");
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            DashboardPage(userType: widget.userType),
+                      ),
+                    );
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF5722),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
+                  // 3. O 'style' gigante do botão sumiu! O ElevatedButtonTheme cuida disso.
                   child: const Text(
                     'Entrar',
                     style: TextStyle(
@@ -108,7 +106,6 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
 
-              // AQUI ESTÁ A CORREÇÃO (SizedBox no lugar do Spacer)
               const SizedBox(height: 48),
 
               Row(
@@ -116,14 +113,13 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   const Text(
                     'Ainda não tem uma conta?',
-                    style: TextStyle(color: Color(0xFFAAAAAA)),
+                    style: TextStyle(color: AppTheme.textSecondary),
                   ),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          // Repassamos o userType para o cadastro saber se é aluno ou personal
                           builder: (context) =>
                               CadastroPage(userType: widget.userType),
                         ),
@@ -132,7 +128,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: const Text(
                       'Cadastre-se',
                       style: TextStyle(
-                        color: Color(0xFFFF5722),
+                        color: AppTheme.primary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -147,6 +143,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // 4. Olha o tamanho que ficou a função do TextField agora!
   Widget _buildTextField({
     required String label,
     required IconData icon,
@@ -158,31 +155,20 @@ class _LoginPageState extends State<LoginPage> {
     return TextField(
       obscureText: obscureText,
       keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white),
-      cursorColor: const Color(0xFFFF5722),
+      style: const TextStyle(color: AppTheme.textPrimary),
+      cursorColor: AppTheme.primary,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Color(0xFFAAAAAA)),
-        prefixIcon: Icon(icon, color: const Color(0xFFAAAAAA)),
+        prefixIcon: Icon(icon),
+        // Toda a lógica de bordas, cor de fundo e comportamentos de foco sumiu daqui.
         suffixIcon: isPassword
             ? IconButton(
                 icon: Icon(
                   obscureText ? Icons.visibility_off : Icons.visibility,
-                  color: const Color(0xFFAAAAAA),
                 ),
                 onPressed: onTogglePassword,
               )
             : null,
-        filled: true,
-        fillColor: const Color(0xFF2A2A2A),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: const BorderSide(color: Color(0xFFFF5722), width: 1.5),
-        ),
       ),
     );
   }
