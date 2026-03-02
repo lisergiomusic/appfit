@@ -859,139 +859,188 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       key: const ValueKey('expanded_header'),
       padding: const EdgeInsets.all(16),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ReorderableDragStartListener(
-            index: exIndex,
-            child: const Icon(
-              Icons.drag_indicator,
-              color: AppTheme.textSecondary,
-              size: 24,
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: ReorderableDragStartListener(
+              index: exIndex,
+              child: const Icon(
+                Icons.drag_indicator,
+                color: AppTheme.textSecondary,
+                size: 24,
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: AppTheme.surfaceLight,
-              borderRadius: BorderRadius.circular(12),
-              image: ex.imagemUrl != null
-                  ? DecorationImage(
-                      image: NetworkImage(ex.imagemUrl!),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
-            ),
-            child: ex.imagemUrl == null
-                ? Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Icon(
-                        Icons.image_outlined,
-                        color: AppTheme.textSecondary.withAlpha(100),
-                        size: 28,
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withAlpha(100),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      const Icon(
-                        Icons.play_circle_fill,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                    ],
-                  )
-                : const SizedBox(),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  ex.nome,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17,
-                    height: 1.2,
-                  ),
+                // LINHA 1: Título e Ações (Mais espaço para o texto e botões)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        ex.nome,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          height: 1.2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    PopupMenuButton<String>(
+                      icon: const Icon(
+                        Icons.more_horiz,
+                        color: AppTheme.textSecondary,
+                        size: 22,
+                      ),
+                      color: AppTheme.surfaceLight,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      position: PopupMenuPosition.under,
+                      padding: EdgeInsets.zero,
+                      onSelected: (value) {
+                        if (value == 'substituir') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Em breve: Abrir biblioteca'),
+                            ),
+                          );
+                        } else if (value == 'remover') {
+                          _removerExercicio(exIndex);
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'substituir',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.swap_horiz,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                              SizedBox(width: 12),
+                              Text(
+                                'Substituir exercício',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'remover',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.delete_outline,
+                                color: Colors.redAccent,
+                                size: 20,
+                              ),
+                              SizedBox(width: 12),
+                              Text(
+                                'Remover',
+                                style: TextStyle(color: Colors.redAccent),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 4),
+                    AnimatedRotation(
+                      turns: 0.5,
+                      duration: const Duration(milliseconds: 300),
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        color: AppTheme.textSecondary.withAlpha(150),
+                        size: 24,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  ex.grupoMuscular,
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
+
+                const SizedBox(height: 16),
+
+                // LINHA 2: Thumbnail e Info Complementar (Organizado e Clean)
+                Row(
+                  children: [
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceLight,
+                        borderRadius: BorderRadius.circular(12),
+                        image: ex.imagemUrl != null
+                            ? DecorationImage(
+                                image: NetworkImage(ex.imagemUrl!),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                        border: Border.all(
+                          color: Colors.white.withAlpha(10),
+                          width: 1,
+                        ),
+                      ),
+                      child: ex.imagemUrl == null
+                          ? Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Icon(
+                                  Icons.image_outlined,
+                                  color: AppTheme.textSecondary.withAlpha(80),
+                                  size: 28,
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withAlpha(60),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.play_circle_fill,
+                                  color: AppTheme.primary,
+                                  size: 32,
+                                ),
+                              ],
+                            )
+                          : const SizedBox(),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'GRUPO MUSCULAR',
+                            style: TextStyle(
+                              color: AppTheme.textSecondary.withAlpha(150),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            ex.grupoMuscular,
+                            style: const TextStyle(
+                              color: AppTheme.textSecondary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ),
-          PopupMenuButton<String>(
-            icon: const Icon(
-              Icons.more_horiz,
-              color: AppTheme.textSecondary,
-              size: 22,
-            ),
-            color: AppTheme.surfaceLight,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            position: PopupMenuPosition.under,
-            padding: EdgeInsets.zero,
-            onSelected: (value) {
-              if (value == 'substituir') {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Em breve: Abrir biblioteca')),
-                );
-              } else if (value == 'remover') {
-                _removerExercicio(exIndex);
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'substituir',
-                child: Row(
-                  children: [
-                    Icon(Icons.swap_horiz, color: Colors.white, size: 20),
-                    SizedBox(width: 12),
-                    Text(
-                      'Substituir exercício',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'remover',
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.delete_outline,
-                      color: Colors.redAccent,
-                      size: 20,
-                    ),
-                    SizedBox(width: 12),
-                    Text('Remover', style: TextStyle(color: Colors.redAccent)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 8),
-          AnimatedRotation(
-            turns: 0.5,
-            duration: const Duration(milliseconds: 300),
-            child: Icon(
-              Icons.keyboard_arrow_down,
-              color: AppTheme.textSecondary.withAlpha(150),
-              size: 24,
             ),
           ),
         ],
