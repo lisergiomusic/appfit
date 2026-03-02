@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/theme/app_theme.dart';
 import '../treinos/criar_rotina_page.dart';
+import '../treinos/rotina_detalhe_page.dart';
 import 'gerenciar_aluno_page.dart';
 
 class PerfilAlunoPage extends StatelessWidget {
@@ -275,15 +276,6 @@ class PerfilAlunoPage extends StatelessWidget {
       const SnackBar(
         content: Text('Em breve: Abrir conversa no WhatsApp!'),
         backgroundColor: AppTheme.success,
-      ),
-    );
-  }
-
-  void _alternarBloqueioAluno(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Em breve: Bloquear/Liberar acesso do aluno!'),
-        backgroundColor: Colors.redAccent,
       ),
     );
   }
@@ -574,6 +566,7 @@ class PerfilAlunoPage extends StatelessWidget {
             );
           }
 
+          // ESTADO VAZIO: NENHUMA FICHA ATIVA (CORRIGIDO)
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return InkWell(
               onTap: () => _exibirOpcoesVincularTreino(context),
@@ -631,6 +624,7 @@ class PerfilAlunoPage extends StatelessWidget {
             );
           }
 
+          // ESTADO ATIVO: O ALUNO TEM FICHA
           var treinoDoc = snapshot.data!.docs.first;
           var treino = treinoDoc.data() as Map<String, dynamic>;
 
@@ -642,13 +636,14 @@ class PerfilAlunoPage extends StatelessWidget {
 
           return InkWell(
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'UI: Em breve abrirá a lista de treinos desta Rotina (Ex: A, B, C)',
+              // NAVEGAÇÃO PARA O DETALHE DA ROTINA (CORRIGIDO)
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RotinaDetalhePage(
+                    rotinaTitulo: treino['titulo'] ?? 'Projeto Hipertrofia',
+                    objetivo: treino['descricao'],
                   ),
-                  backgroundColor: AppTheme.primary,
-                  behavior: SnackBarBehavior.floating,
                 ),
               );
             },
@@ -730,7 +725,7 @@ class PerfilAlunoPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'Toque para ver os treinos', // Voltamos ao simples "Toque para ver os treinos"
+                    'Toque para ver os treinos',
                     style: TextStyle(
                       color: AppTheme.textSecondary,
                       fontSize: 12,
