@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/theme/app_theme.dart';
 import '../treinos/detalhe_treino_page.dart';
+import 'gerenciar_aluno_page.dart';
 
 class PerfilAlunoPage extends StatelessWidget {
   final String alunoId;
@@ -40,8 +41,7 @@ class PerfilAlunoPage extends StatelessWidget {
           SnackBar(
             content: Text('Treino "$titulo" vinculado!'),
             backgroundColor: AppTheme.success,
-            behavior:
-                SnackBarBehavior.floating, // Estilo de notificação moderna
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -94,12 +94,13 @@ class PerfilAlunoPage extends StatelessWidget {
                       .where('personalId', isEqualTo: personalId)
                       .snapshots(),
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData)
+                    if (!snapshot.hasData) {
                       return const Center(
                         child: CircularProgressIndicator(
                           color: AppTheme.primary,
                         ),
                       );
+                    }
                     if (snapshot.data!.docs.isEmpty) {
                       return const Center(
                         child: Text(
@@ -195,56 +196,98 @@ class PerfilAlunoPage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(
-              Icons.edit_outlined,
+              Icons
+                  .settings_outlined, // Mudei de edit para settings (engrenagem)
               color: AppTheme.textSecondary,
             ),
-            onPressed: () {},
-            tooltip: 'Editar Perfil',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GerenciarAlunoPage(
+                    alunoId: alunoId,
+                    alunoNome: alunoNome,
+                  ),
+                ),
+              );
+            },
+            tooltip: 'Gerenciar Aluno',
           ),
         ],
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // NOVO HEADER: Design Horizontal compactado (Estilo Contato/WhatsApp)
+            // HEADER HORIZONTAL - FINO, ALINHADO E PREMIUM
             const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // 1. Foto (ligeiramente menor para equilíbrio horizontal)
                   const CircleAvatar(
-                    radius: 35, // Reduzido de 45
+                    radius: 36, // Tamanho padrão perfeito (72x72)
                     backgroundColor: AppTheme.surfaceLight,
                     child: Icon(
                       Icons.person,
-                      size: 40, // Reduzido de 50
+                      size: 40,
                       color: AppTheme.textSecondary,
                     ),
                   ),
                   const SizedBox(width: 16),
-                  // 2. Coluna com Nome + Tags
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment
+                          .center, // Garante o alinhamento com a foto
                       children: [
                         Text(
                           alunoNome,
                           style: const TextStyle(
-                            fontSize: 22, // Ligeiramente menor para compactar
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: AppTheme.textPrimary,
                             letterSpacing: -0.5,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 8),
-                        // Tags movidas para dentro da coluna horizontal
+                        const SizedBox(height: 6), // Espaçamento suave
+                        // LINHA DE STATUS: Idade + Ponto Verde + Ativo
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            _buildTag('ONLINE', AppTheme.primary),
-                            const SizedBox(width: 8),
-                            _buildTag('ATIVO', AppTheme.success),
+                            const Text(
+                              '28 anos', // TODO: Fazer a idade vir do banco de dados
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppTheme.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Text(
+                                '•',
+                                style: TextStyle(color: AppTheme.textSecondary),
+                              ),
+                            ),
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: AppTheme.success, // Bolinha de status
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'Ativo',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppTheme.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -254,10 +297,9 @@ class PerfilAlunoPage extends StatelessWidget {
               ),
             ),
 
-            // Espaçamento ajustado após o novo header horizontal
             const SizedBox(height: 32),
 
-            // Botão de WhatsApp em Destaque (Suave)
+            // Botão de WhatsApp em Destaque
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: ElevatedButton.icon(
@@ -281,7 +323,6 @@ class PerfilAlunoPage extends StatelessWidget {
               ),
             ),
 
-            // Reduzido espaçamento duplo desnecessário
             const SizedBox(height: 32),
 
             // Ritmo da Semana
@@ -289,7 +330,7 @@ class PerfilAlunoPage extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            // O NOVO COMPONENTE: O Hero Card da Ficha Atual
+            // Hero Card da Ficha Atual
             _buildFichaAtivaHeroCard(context),
 
             const SizedBox(height: 24),
@@ -305,22 +346,6 @@ class PerfilAlunoPage extends StatelessWidget {
               title: 'Avaliação Física',
               onTap: () {},
             ),
-            _buildMenuOption(
-              icon: Icons.payments_outlined,
-              title: 'Situação Financeira',
-              onTap: () {},
-            ),
-
-            const SizedBox(height: 32),
-
-            // Botão de Bloquear
-            _buildMenuOption(
-              icon: Icons.block,
-              title: 'Bloquear Acesso',
-              iconColor: Colors.redAccent,
-              textColor: Colors.redAccent,
-              onTap: () => _alternarBloqueioAluno(context),
-            ),
 
             const SizedBox(height: 48),
           ],
@@ -330,26 +355,6 @@ class PerfilAlunoPage extends StatelessWidget {
   }
 
   // --- WIDGETS AUXILIARES ---
-
-  Widget _buildTag(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: color,
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
-  }
 
   Widget _buildRitmoDaSemana() {
     final dias = [
@@ -445,7 +450,6 @@ class PerfilAlunoPage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: StreamBuilder<QuerySnapshot>(
-        // Buscamos apenas a ÚLTIMA ficha atribuída ao aluno
         stream: FirebaseFirestore.instance
             .collection('usuarios')
             .doc(alunoId)
@@ -460,7 +464,6 @@ class PerfilAlunoPage extends StatelessWidget {
             );
           }
 
-          // ESTADO 1: O aluno não tem ficha. Mostramos um design de "Convite à Ação" elegante.
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return InkWell(
               onTap: () => _exibirBibliotecaDeTreinos(context),
@@ -515,11 +518,10 @@ class PerfilAlunoPage extends StatelessWidget {
             );
           }
 
-          // ESTADO 2: O aluno TEM ficha. Mostramos o design premium com progresso!
           var treinoDoc = snapshot.data!.docs.first;
           var treino = treinoDoc.data() as Map<String, dynamic>;
 
-          double progressoAtual = 0.85; // Mock de progresso (85%)
+          double progressoAtual = 0.85;
           bool alertaVencimento = progressoAtual >= 0.8;
           Color corProgresso = alertaVencimento
               ? Colors.orangeAccent
@@ -527,7 +529,6 @@ class PerfilAlunoPage extends StatelessWidget {
 
           return InkWell(
             onTap: () {
-              // Clicar no card inteiro já abre a ficha para ver os exercícios! (Menos cliques para o usuário)
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -556,7 +557,6 @@ class PerfilAlunoPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Linha superior: Tag + Botão de Alterar Ficha
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -576,9 +576,7 @@ class PerfilAlunoPage extends StatelessWidget {
                         ],
                       ),
                       GestureDetector(
-                        onTap: () => _exibirBibliotecaDeTreinos(
-                          context,
-                        ), // Substitui o antigo FAB e o menu
+                        onTap: () => _exibirBibliotecaDeTreinos(context),
                         child: const Text(
                           'Trocar',
                           style: TextStyle(
@@ -592,7 +590,6 @@ class PerfilAlunoPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // Nome da Ficha
                   Text(
                     treino['titulo'] ?? 'Treino Personalizado',
                     style: const TextStyle(
@@ -612,7 +609,6 @@ class PerfilAlunoPage extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // Barra de Progresso Ultra Fina (Apple Style)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -643,7 +639,7 @@ class PerfilAlunoPage extends StatelessWidget {
                       value: progressoAtual,
                       backgroundColor: Colors.black.withOpacity(0.3),
                       color: corProgresso,
-                      minHeight: 4, // Ultra fino e sofisticado
+                      minHeight: 4,
                     ),
                   ),
                 ],
@@ -659,8 +655,7 @@ class PerfilAlunoPage extends StatelessWidget {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
-    Color iconColor =
-        AppTheme.textSecondary, // Cores mais neutras para focar na Ficha Ativa
+    Color iconColor = AppTheme.textSecondary,
     Color textColor = Colors.white,
   }) {
     return Container(
