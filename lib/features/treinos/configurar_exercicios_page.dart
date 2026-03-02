@@ -429,6 +429,25 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     });
   }
 
+  Future<void> _openLibrary() async {
+    final String? nome = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => const ExerciciosLibraryPage()),
+    );
+
+    if (nome != null && nome.isNotEmpty) {
+      setState(() {
+        _exercicios.add(
+          ExercicioItem(
+            nome: nome,
+            series:
+                [], // nova lista vazia, o usuário pode adicionar séries depois
+          ),
+        );
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -442,17 +461,9 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.playlist_add_check, color: AppTheme.primary),
-            tooltip: 'Salvar Treino',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Treino salvo com sucesso!'),
-                  backgroundColor: AppTheme.success,
-                ),
-              );
-              Navigator.pop(context);
-            },
+            icon: const Icon(Icons.add, color: AppTheme.primary),
+            tooltip: 'Adicionar exercício',
+            onPressed: _openLibrary,
           ),
         ],
       ),
@@ -510,6 +521,20 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           const Text(
             'Nenhum exercício adicionado',
             style: TextStyle(color: AppTheme.textSecondary),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: _openLibrary,
+            icon: const Icon(Icons.add, size: 20),
+            label: const Text('Adicionar exercício'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -1208,9 +1233,15 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     );
   }
 
+  // Bottom bar now holds the finalize button; add action available via FAB
   Widget _buildBottomBar() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      padding: const EdgeInsets.fromLTRB(
+        24,
+        16,
+        24,
+        48,
+      ), // extra bottom padding for safe area
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -1218,16 +1249,18 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       ),
       child: ElevatedButton.icon(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const ExerciciosLibraryPage(),
+          // finalize workout
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Treino finalizado com sucesso!'),
+              backgroundColor: AppTheme.success,
             ),
           );
+          Navigator.pop(context);
         },
-        icon: const Icon(Icons.add),
+        icon: const Icon(Icons.check),
         label: const Text(
-          'Adicionar Exercício',
+          'Finalizar Treino',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(
