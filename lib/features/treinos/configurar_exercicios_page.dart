@@ -392,6 +392,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     if (nome != null && nome.isNotEmpty) {
       setState(() {
         widget.exercicios.add(ExercicioItem(nome: nome, series: []));
+        // Expand the newly added exercise and collapse others
+        _expandedExIndex = widget.exercicios.length - 1;
       });
     }
   }
@@ -456,23 +458,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           if (widget.exercicios.isNotEmpty) _buildBottomBar(),
         ],
       ),
-      floatingActionButton: _buildFloatingAddButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-    );
-  }
-
-  Widget _buildFloatingAddButton() {
-    return FloatingActionButton(
-      onPressed: _openLibrary,
-      backgroundColor: AppTheme.primary,
-      foregroundColor: Colors.white,
-      elevation: 8,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: AppTheme.primary.withAlpha(50), width: 1),
-      ),
-      heroTag: 'fab_add_exercicio',
-      child: const Icon(Icons.add, size: 28),
     );
   }
 
