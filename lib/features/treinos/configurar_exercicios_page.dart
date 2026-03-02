@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import 'exercicios_library_page.dart';
 
 class ConfigurarExerciciosPage extends StatefulWidget {
   final String nomeTreino;
@@ -144,6 +145,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     );
   }
 
+  // DENTRO DE configurar_exercicios_page.dart
   Widget _buildBottomBar() {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
@@ -153,9 +155,11 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       ),
       child: ElevatedButton.icon(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('UI: Abrir busca na biblioteca de exercícios'),
+          // NAVEGAÇÃO PARA A BIBLIOTECA
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ExerciciosLibraryPage(),
             ),
           );
         },
