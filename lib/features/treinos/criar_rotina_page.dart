@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // <-- NOVO IMPORT PARA O TIMESTAMP
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/rotina_service.dart';
 import 'configurar_exercicios_page.dart';
@@ -23,7 +23,6 @@ class CriarRotinaPage extends StatefulWidget {
   final String? alunoId;
   final String? alunoNome;
 
-  // --- NOVOS PARÂMETROS PARA EDIÇÃO ---
   final String? rotinaId;
   final Map<String, dynamic>? rotinaData;
 
@@ -47,19 +46,20 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
   final List<_TreinoData> _treinos = [];
   bool _isLoading = false;
 
+  // --- NOVO: FLAG DE SEGURANÇA PARA ACOMPANHAR O SALVAMENTO ---
+  bool _dadosSalvos = false;
+
   @override
   void initState() {
     super.initState();
     _preencherDadosDeEdicao();
   }
 
-  // --- MÁGICA: RECONSTRUÇÃO DA ÁRVORE DE DADOS ---
   void _preencherDadosDeEdicao() {
     if (widget.rotinaData != null) {
       _nomeController.text = widget.rotinaData!['nome'] ?? '';
       _objetivoController.text = widget.rotinaData!['objetivo'] ?? '';
 
-      // Tenta calcular as semanas baseando-se nas datas salvas
       if (widget.rotinaData!['dataCriacao'] != null &&
           widget.rotinaData!['dataVencimento'] != null) {
         DateTime criacao = (widget.rotinaData!['dataCriacao'] as Timestamp)
@@ -75,7 +75,6 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
         }
       }
 
-      // Reconstrói as sessões e exercícios
       List<dynamic> sessoesRaw = widget.rotinaData!['sessoes'] ?? [];
       for (var sessao in sessoesRaw) {
         List<ExercicioItem> exerciciosList = [];
@@ -410,7 +409,6 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
         };
       }).toList();
 
-      // --- MODO EDIÇÃO VS MODO CRIAÇÃO ---
       if (widget.rotinaId != null && widget.rotinaData != null) {
         await RotinaService().atualizarRotina(
           rotinaId: widget.rotinaId!,
@@ -444,6 +442,8 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
         );
       }
 
+      // --- LIBERTA O ESCUDO ANTI-VOLTAR E FECHA A PÁGINA ---
+      setState(() => _dadosSalvos = true);
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
@@ -462,411 +462,479 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
   Widget build(BuildContext context) {
     bool isEditing = widget.rotinaId != null;
 
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text(
-          isEditing ? 'Editar Rotina' : 'Nova Rotina',
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (widget.alunoNome != null) ...[
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.primary.withAlpha(26),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.primary.withAlpha(77)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.person, color: AppTheme.primary, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      isEditing
-                          ? 'Editando rotina de: ${widget.alunoNome}'
-                          : 'Criando para: ${widget.alunoNome}',
-                      style: const TextStyle(
-                        color: AppTheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
+    // --- O ESCUDO: WillPopScope INTERCETA A TENTATIVA DE SAÍDA ---
+    return WillPopScope(
+      onWillPop: () async {
+        // Se o utilizador já clicou em salvar, deixa-o sair
+        if (_dadosSalvos) return true;
 
-            const Text(
-              'INFORMAÇÕES BÁSICAS',
+        // Se ele acabou de abrir a tela de criação vazia e não escreveu nada, deixa-o sair sem incomodar
+        if (!isEditing && _nomeController.text.isEmpty && _treinos.isEmpty) {
+          return true;
+        }
+
+        // Se ele fez edições, barra a saída e mostra o alerta!
+        final confirmar = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: AppTheme.surfaceDark,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text(
+              'Sair sem salvar?',
               style: TextStyle(
-                color: AppTheme.textSecondary,
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 12,
-                letterSpacing: 1.0,
               ),
             ),
-            const SizedBox(height: 16),
-
-            _buildTextField(
-              controller: _nomeController,
-              label: 'Nome da Rotina',
-              hint: 'Ex: Projeto Hipertrofia Mês 1',
-              icon: Icons.title,
+            content: const Text(
+              'Se você voltar agora, todas as alterações feitas nesta rotina serão perdidas permanentemente.',
+              style: TextStyle(color: AppTheme.textSecondary),
             ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _objetivoController,
-              label: 'Objetivo Principal',
-              hint: 'Ex: Ganho de massa e força',
-              icon: Icons.track_changes,
-            ),
-            const SizedBox(height: 16),
-
-            DropdownButtonFormField<int>(
-              value: _duracaoSemanas,
-              dropdownColor: AppTheme.surfaceLight,
-              style: const TextStyle(color: Colors.white),
-              items: [4, 5, 6, 8, 10, 12]
-                  .map(
-                    (w) =>
-                        DropdownMenuItem(value: w, child: Text('$w semanas')),
-                  )
-                  .toList(),
-              onChanged: (v) => setState(() => _duracaoSemanas = v!),
-              decoration: InputDecoration(
-                labelText: 'Duração da Rotina',
-                prefixIcon: const Icon(
-                  Icons.date_range,
-                  color: AppTheme.textSecondary,
-                ),
-                filled: true,
-                fillColor: AppTheme.surfaceDark,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(
-                    color: AppTheme.primary,
-                    width: 1.5,
-                  ),
+            actions: [
+              TextButton(
+                onPressed: () =>
+                    Navigator.pop(context, false), // Continua na tela
+                child: const Text(
+                  'Cancelar',
+                  style: TextStyle(color: AppTheme.textSecondary),
                 ),
               ),
-            ),
-
-            const SizedBox(height: 32),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'DIVISÃO DE TREINOS',
+              TextButton(
+                onPressed: () => Navigator.pop(context, true), // Força a saída
+                child: const Text(
+                  'Descartar alterações',
                   style: TextStyle(
-                    color: AppTheme.textSecondary,
+                    color: Colors.redAccent,
                     fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                    letterSpacing: 1.0,
                   ),
-                ),
-                Text(
-                  '${_treinos.length} sessões',
-                  style: const TextStyle(
-                    color: AppTheme.primary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            if (_treinos.isEmpty) ...[
-              Container(
-                padding: const EdgeInsets.all(40),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceDark,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withAlpha(10)),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.fitness_center,
-                      size: 48,
-                      color: AppTheme.textSecondary.withAlpha(100),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Nenhuma sessão adicionada',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Clique em "Adicionar nova sessão" para começar.',
-                      style: TextStyle(
-                        color: AppTheme.textSecondary.withAlpha(150),
-                        fontSize: 14,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
                 ),
               ),
-            ] else ...[
-              ReorderableListView(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                buildDefaultDragHandles: false,
-                proxyDecorator: (child, index, animation) {
-                  return AnimatedBuilder(
-                    animation: animation,
-                    builder: (BuildContext context, Widget? child) {
-                      final double animValue = Curves.easeInOut.transform(
-                        animation.value,
-                      );
-                      final double elevation = lerpDouble(0, 6, animValue)!;
-                      return Material(
-                        elevation: elevation,
-                        color: Colors.transparent,
-                        shadowColor: Colors.black.withAlpha(100),
-                        borderRadius: BorderRadius.circular(16),
-                        child: Transform.scale(scale: 1.02, child: child),
-                      );
-                    },
-                    child: child,
-                  );
-                },
-                onReorder: (oldIndex, newIndex) {
-                  setState(() {
-                    if (newIndex > oldIndex) newIndex -= 1;
-                    final item = _treinos.removeAt(oldIndex);
-                    _treinos.insert(newIndex, item);
-                  });
-                },
-                children: List.generate(_treinos.length, (index) {
-                  final treino = _treinos[index];
-                  return Container(
-                    key: ValueKey(treino),
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: Material(
-                      color: AppTheme.surfaceDark,
-                      clipBehavior: Clip.antiAlias,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(color: Colors.white.withAlpha(15)),
+            ],
+          ),
+        );
+
+        // Retorna true se ele escolheu "Descartar", ou false para ficar na tela
+        return confirmar ?? false;
+      },
+      child: Scaffold(
+        backgroundColor: AppTheme.background,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: Text(
+            isEditing ? 'Editar Rotina' : 'Nova Rotina',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          centerTitle: true,
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (widget.alunoNome != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withAlpha(26),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.primary.withAlpha(77)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.person,
+                        color: AppTheme.primary,
+                        size: 20,
                       ),
-                      child: InkWell(
-                        onTap: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ConfigurarExerciciosPage(
-                                nomeTreino: treino.nomeController.text,
-                                exercicios: treino.exercicios,
+                      const SizedBox(width: 8),
+                      Text(
+                        isEditing
+                            ? 'Editando rotina de: ${widget.alunoNome}'
+                            : 'Criando para: ${widget.alunoNome}',
+                        style: const TextStyle(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+
+              const Text(
+                'INFORMAÇÕES BÁSICAS',
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              _buildTextField(
+                controller: _nomeController,
+                label: 'Nome da Rotina',
+                hint: 'Ex: Projeto Hipertrofia Mês 1',
+                icon: Icons.title,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: _objetivoController,
+                label: 'Objetivo Principal',
+                hint: 'Ex: Ganho de massa e força',
+                icon: Icons.track_changes,
+              ),
+              const SizedBox(height: 16),
+
+              DropdownButtonFormField<int>(
+                value: _duracaoSemanas,
+                dropdownColor: AppTheme.surfaceLight,
+                style: const TextStyle(color: Colors.white),
+                items: [4, 5, 6, 8, 10, 12]
+                    .map(
+                      (w) =>
+                          DropdownMenuItem(value: w, child: Text('$w semanas')),
+                    )
+                    .toList(),
+                onChanged: (v) => setState(() => _duracaoSemanas = v!),
+                decoration: InputDecoration(
+                  labelText: 'Duração da Rotina',
+                  prefixIcon: const Icon(
+                    Icons.date_range,
+                    color: AppTheme.textSecondary,
+                  ),
+                  filled: true,
+                  fillColor: AppTheme.surfaceDark,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                      color: AppTheme.primary,
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'DIVISÃO DE TREINOS',
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                  Text(
+                    '${_treinos.length} sessões',
+                    style: const TextStyle(
+                      color: AppTheme.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              if (_treinos.isEmpty) ...[
+                Container(
+                  padding: const EdgeInsets.all(40),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceDark,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white.withAlpha(10)),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.fitness_center,
+                        size: 48,
+                        color: AppTheme.textSecondary.withAlpha(100),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Nenhuma sessão adicionada',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Clique em "Adicionar nova sessão" para começar.',
+                        style: TextStyle(
+                          color: AppTheme.textSecondary.withAlpha(150),
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ] else ...[
+                ReorderableListView(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  buildDefaultDragHandles: false,
+                  proxyDecorator: (child, index, animation) {
+                    return AnimatedBuilder(
+                      animation: animation,
+                      builder: (BuildContext context, Widget? child) {
+                        final double animValue = Curves.easeInOut.transform(
+                          animation.value,
+                        );
+                        final double elevation = lerpDouble(0, 6, animValue)!;
+                        return Material(
+                          elevation: elevation,
+                          color: Colors.transparent,
+                          shadowColor: Colors.black.withAlpha(100),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Transform.scale(scale: 1.02, child: child),
+                        );
+                      },
+                      child: child,
+                    );
+                  },
+                  onReorder: (oldIndex, newIndex) {
+                    setState(() {
+                      if (newIndex > oldIndex) newIndex -= 1;
+                      final item = _treinos.removeAt(oldIndex);
+                      _treinos.insert(newIndex, item);
+                    });
+                  },
+                  children: List.generate(_treinos.length, (index) {
+                    final treino = _treinos[index];
+                    return Container(
+                      key: ValueKey(treino),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: Material(
+                        color: AppTheme.surfaceDark,
+                        clipBehavior: Clip.antiAlias,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(color: Colors.white.withAlpha(15)),
+                        ),
+                        child: InkWell(
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ConfigurarExerciciosPage(
+                                  nomeTreino: treino.nomeController.text,
+                                  exercicios: treino.exercicios,
+                                ),
                               ),
+                            );
+                            setState(() {});
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
                             ),
-                          );
-                          setState(() {});
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
-                          child: Row(
-                            children: [
-                              ReorderableDragStartListener(
-                                index: index,
-                                child: const Padding(
-                                  padding: EdgeInsets.only(right: 16),
-                                  child: Icon(
-                                    Icons.drag_indicator,
-                                    color: AppTheme.textSecondary,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  color: AppTheme.surfaceLight,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    String.fromCharCode(65 + index),
-                                    style: const TextStyle(
-                                      color: AppTheme.primary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
+                            child: Row(
+                              children: [
+                                ReorderableDragStartListener(
+                                  index: index,
+                                  child: const Padding(
+                                    padding: EdgeInsets.only(right: 16),
+                                    child: Icon(
+                                      Icons.drag_indicator,
+                                      color: AppTheme.textSecondary,
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      treino.nomeController.text,
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.surfaceLight,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      String.fromCharCode(65 + index),
                                       style: const TextStyle(
-                                        color: Colors.white,
+                                        color: AppTheme.primary,
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                        fontSize: 18,
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      treino.exercicios.isEmpty
-                                          ? 'Toque para configurar exercícios'
-                                          : '${treino.exercicios.length} ${treino.exercicios.length == 1 ? 'exercício configurado' : 'exercícios configurados'}',
-                                      style: TextStyle(
-                                        color: treino.exercicios.isEmpty
-                                            ? AppTheme.textSecondary
-                                            : AppTheme.primary,
-                                        fontSize: 13,
-                                        fontWeight: treino.exercicios.isEmpty
-                                            ? FontWeight.normal
-                                            : FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        treino.nomeController.text,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        treino.exercicios.isEmpty
+                                            ? 'Toque para configurar exercícios'
+                                            : '${treino.exercicios.length} ${treino.exercicios.length == 1 ? 'exercício configurado' : 'exercícios configurados'}',
+                                        style: TextStyle(
+                                          color: treino.exercicios.isEmpty
+                                              ? AppTheme.textSecondary
+                                              : AppTheme.primary,
+                                          fontSize: 13,
+                                          fontWeight: treino.exercicios.isEmpty
+                                              ? FontWeight.normal
+                                              : FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuButton<String>(
+                                  icon: const Icon(
+                                    Icons.more_vert,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                  color: AppTheme.surfaceLight,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  onSelected: (value) async {
+                                    if (value == 'edit') _editarTreino(index);
+                                    if (value == 'delete')
+                                      _excluirTreino(index);
+                                  },
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                      value: 'edit',
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.edit_outlined,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                          SizedBox(width: 12),
+                                          Text(
+                                            'Editar dados',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const PopupMenuItem(
+                                      value: 'delete',
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.delete_outline,
+                                            color: Colors.redAccent,
+                                            size: 20,
+                                          ),
+                                          SizedBox(width: 12),
+                                          Text(
+                                            'Excluir sessão',
+                                            style: TextStyle(
+                                              color: Colors.redAccent,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
                                 ),
-                              ),
-                              PopupMenuButton<String>(
-                                icon: const Icon(
-                                  Icons.more_vert,
-                                  color: AppTheme.textSecondary,
-                                ),
-                                color: AppTheme.surfaceLight,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                onSelected: (value) async {
-                                  if (value == 'edit') _editarTreino(index);
-                                  if (value == 'delete') _excluirTreino(index);
-                                },
-                                itemBuilder: (context) => [
-                                  const PopupMenuItem(
-                                    value: 'edit',
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.edit_outlined,
-                                          color: Colors.white,
-                                          size: 20,
-                                        ),
-                                        SizedBox(width: 12),
-                                        Text(
-                                          'Editar dados',
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: 'delete',
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.delete_outline,
-                                          color: Colors.redAccent,
-                                          size: 20,
-                                        ),
-                                        SizedBox(width: 12),
-                                        Text(
-                                          'Excluir sessão',
-                                          style: TextStyle(
-                                            color: Colors.redAccent,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                }).toList(),
+                    );
+                  }).toList(),
+                ),
+              ],
+
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: _adicionarTreino,
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: const Text(
+                  'Adicionar nova sessão',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  side: BorderSide(
+                    color: Colors.white.withAlpha(50),
+                    width: 1.5,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  minimumSize: const Size(double.infinity, 50),
+                ),
               ),
+
+              const SizedBox(height: 48),
+
+              ElevatedButton(
+                onPressed: _isLoading ? null : _salvarRotina,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  minimumSize: const Size(double.infinity, 56),
+                  elevation: _isLoading ? 0 : 8,
+                  shadowColor: AppTheme.primary.withAlpha(128),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 3,
+                        ),
+                      )
+                    : Text(
+                        isEditing
+                            ? 'Salvar Alterações'
+                            : 'Salvar Rotina Completa',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+              ),
+              const SizedBox(height: 32),
             ],
-
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: _adicionarTreino,
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text(
-                'Adicionar nova sessão',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                side: BorderSide(color: Colors.white.withAlpha(50), width: 1.5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                minimumSize: const Size(double.infinity, 50),
-              ),
-            ),
-
-            const SizedBox(height: 48),
-
-            ElevatedButton(
-              onPressed: _isLoading ? null : _salvarRotina,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                minimumSize: const Size(double.infinity, 56),
-                elevation: _isLoading ? 0 : 8,
-                shadowColor: AppTheme.primary.withAlpha(128),
-              ),
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 3,
-                      ),
-                    )
-                  : Text(
-                      isEditing
-                          ? 'Salvar Alterações'
-                          : 'Salvar Rotina Completa',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-            ),
-            const SizedBox(height: 32),
-          ],
+          ),
         ),
       ),
     );
