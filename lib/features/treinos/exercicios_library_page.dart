@@ -147,8 +147,8 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                       color: AppTheme.primary,
                     ),
                     onTap: () {
-                      // No modo Front-end First, apenas voltamos
-                      Navigator.pop(context);
+                      // Retorna o nome do exercício selecionado para a página anterior
+                      Navigator.pop(context, ex['nome']);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('${ex['nome']} adicionado ao treino!'),

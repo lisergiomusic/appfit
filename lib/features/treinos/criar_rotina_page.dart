@@ -7,8 +7,15 @@ class _TreinoData {
   final TextEditingController nomeController;
   String? diaSemana;
   String? orientacoes;
+  List<ExercicioItem>
+  exercicios; // <-- A LISTA DE EXERCÍCIOS FICA GUARDADA AQUI AGORA!
 
-  _TreinoData({required this.nomeController, this.diaSemana, this.orientacoes});
+  _TreinoData({
+    required this.nomeController,
+    this.diaSemana,
+    this.orientacoes,
+    List<ExercicioItem>? exercicios,
+  }) : exercicios = exercicios ?? [];
 }
 
 class CriarRotinaPage extends StatefulWidget {
@@ -50,35 +57,54 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
     return showModalBottomSheet<Map<String, String?>>(
       context: context,
       isScrollControlled: true,
+      backgroundColor: AppTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) {
         return Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            top: 16,
+            left: 24,
+            right: 24,
+            top: 24,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
                 initialNome == null ? 'Nova Sessão' : 'Editar Sessão',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: nomeCtr,
-                decoration: const InputDecoration(
-                  labelText: 'Nome',
-                  hintText: 'Ex: Treino A',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 20),
+              TextField(
+                controller: nomeCtr,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Nome',
+                  hintText: 'Ex: Treino A',
+                  labelStyle: const TextStyle(color: AppTheme.textSecondary),
+                  hintStyle: TextStyle(
+                    color: AppTheme.textSecondary.withAlpha(128),
+                  ),
+                  filled: true,
+                  fillColor: AppTheme.surfaceLight,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: diaSemana,
+                dropdownColor: AppTheme.surfaceLight,
+                style: const TextStyle(color: Colors.white),
                 items:
                     <String>[
                           'Segunda',
@@ -92,26 +118,45 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                         .map((d) => DropdownMenuItem(value: d, child: Text(d)))
                         .toList(),
                 onChanged: (v) => diaSemana = v,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Dia da semana (opcional)',
+                  labelStyle: const TextStyle(color: AppTheme.textSecondary),
+                  filled: true,
+                  fillColor: AppTheme.surfaceLight,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               TextField(
                 controller: orientacoesCtr,
-                decoration: const InputDecoration(
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
                   labelText: 'Orientações gerais',
+                  labelStyle: const TextStyle(color: AppTheme.textSecondary),
+                  filled: true,
+                  fillColor: AppTheme.surfaceLight,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
                 maxLines: 3,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancelar'),
+                    child: const Text(
+                      'Cancelar',
+                      style: TextStyle(color: AppTheme.textSecondary),
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context, {
@@ -120,10 +165,27 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                         'orientacoes': orientacoesCtr.text,
                       });
                     },
-                    child: Text(initialNome == null ? 'Adicionar' : 'Salvar'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: Text(
+                      initialNome == null ? 'Adicionar' : 'Salvar',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
+              const SizedBox(height: 24),
             ],
           ),
         );
@@ -152,12 +214,23 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Excluir sessão?'),
-        content: const Text('Tem certeza que deseja remover esta sessão?'),
+        backgroundColor: AppTheme.surfaceDark,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Excluir sessão?',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Tem certeza que deseja remover esta sessão?',
+          style: TextStyle(color: AppTheme.textSecondary),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: AppTheme.textSecondary),
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -166,7 +239,13 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
               });
               Navigator.pop(context);
             },
-            child: const Text('Excluir'),
+            child: const Text(
+              'Excluir',
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -177,7 +256,7 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
     final result = await _showTreinoForm();
     if (result != null) {
       final name = (result['nome']?.isEmpty ?? true)
-          ? 'Treino ${String.fromCharCode(65 + _treinos.length)}'
+          ? 'Treino ${String.fromCharCode(65 + _treinos.length)}' // Ex: Treino A, Treino B...
           : result['nome']!;
       setState(() {
         _treinos.add(
@@ -185,6 +264,8 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
             nomeController: TextEditingController(text: name),
             diaSemana: result['diaSemana'],
             orientacoes: result['orientacoes'],
+            exercicios:
+                [], // <-- A MÁGICA: Começa com uma lista vazia individual para este treino!
           ),
         );
       });
@@ -192,7 +273,6 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
   }
 
   void _salvarRotina() {
-    // Modo Front-end First: apenas exibe o feedback visual
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('UI: Rotina salva com sucesso!'),
@@ -304,27 +384,29 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                 decoration: BoxDecoration(
                   color: AppTheme.surfaceDark,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white.withAlpha(10)),
                 ),
                 child: Column(
                   children: [
                     Icon(
                       Icons.fitness_center,
                       size: 48,
-                      color: AppTheme.textSecondary,
+                      color: AppTheme.textSecondary.withAlpha(100),
                     ),
                     const SizedBox(height: 16),
-                    Text(
+                    const Text(
                       'Nenhuma sessão adicionada',
                       style: TextStyle(
-                        color: AppTheme.textSecondary,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Clique em "Adicionar nova sessão" para começar',
+                      'Clique em "Adicionar nova sessão" para começar a montar o treino.',
                       style: TextStyle(
-                        color: AppTheme.textSecondary.withAlpha(128),
+                        color: AppTheme.textSecondary.withAlpha(150),
                         fontSize: 14,
                       ),
                       textAlign: TextAlign.center,
@@ -374,15 +456,21 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                         side: BorderSide(color: Colors.white.withAlpha(13)),
                       ),
                       child: InkWell(
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          // AGUARDA a tela de exercícios fechar e depois atualiza o ecrã
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => ConfigurarExerciciosPage(
                                 nomeTreino: treino.nomeController.text,
+                                exercicios: treino
+                                    .exercicios, // <-- PASSA A LISTA ESPECÍFICA DESTE TREINO
                               ),
                             ),
                           );
+                          setState(
+                            () {},
+                          ); // <-- ATUALIZA O NÚMERO DE EXERCÍCIOS NO CARD
                         },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
@@ -402,20 +490,21 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                                 ),
                               ),
                               Container(
-                                padding: const EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
                                   color: AppTheme.surfaceLight,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
-                                  String.fromCharCode(65 + index),
+                                  String.fromCharCode(65 + index), // A, B, C...
                                   style: const TextStyle(
                                     color: AppTheme.primary,
                                     fontWeight: FontWeight.bold,
+                                    fontSize: 16,
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,12 +517,22 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                                         fontSize: 16,
                                       ),
                                     ),
-                                    const SizedBox(height: 2),
-                                    const Text(
-                                      'Toque para configurar exercícios',
+                                    const SizedBox(height: 4),
+                                    // <-- MOSTRA O NÚMERO EXATO DE EXERCÍCIOS SALVOS
+                                    Text(
+                                      _treinos[index].exercicios.isEmpty
+                                          ? 'Toque para adicionar exercícios'
+                                          : '${_treinos[index].exercicios.length} ${_treinos[index].exercicios.length == 1 ? 'exercício configurado' : 'exercícios configurados'}',
                                       style: TextStyle(
-                                        color: AppTheme.textSecondary,
-                                        fontSize: 12,
+                                        color:
+                                            _treinos[index].exercicios.isEmpty
+                                            ? AppTheme.textSecondary
+                                            : AppTheme.primary,
+                                        fontSize: 13,
+                                        fontWeight:
+                                            _treinos[index].exercicios.isEmpty
+                                            ? FontWeight.normal
+                                            : FontWeight.w600,
                                       ),
                                     ),
                                   ],
@@ -444,13 +543,17 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                                   Icons.more_vert,
                                   color: AppTheme.textSecondary,
                                 ),
-                                onSelected: (value) {
+                                color: AppTheme.surfaceLight,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                onSelected: (value) async {
                                   switch (value) {
                                     case 'edit':
                                       _editarTreino(index);
                                       break;
                                     case 'config':
-                                      Navigator.push(
+                                      await Navigator.push(
                                         context,
                                         MaterialPageRoute<void>(
                                           builder: (context) =>
@@ -458,9 +561,12 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                                                 nomeTreino: _treinos[index]
                                                     .nomeController
                                                     .text,
+                                                exercicios:
+                                                    _treinos[index].exercicios,
                                               ),
                                         ),
                                       );
+                                      setState(() {});
                                       break;
                                     case 'delete':
                                       _excluirTreino(index);
@@ -470,15 +576,24 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                                 itemBuilder: (context) => [
                                   const PopupMenuItem(
                                     value: 'edit',
-                                    child: Text('Editar informações'),
+                                    child: Text(
+                                      'Editar informações',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
                                   ),
                                   const PopupMenuItem(
                                     value: 'config',
-                                    child: Text('Configurar exercícios'),
+                                    child: Text(
+                                      'Configurar exercícios',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
                                   ),
                                   const PopupMenuItem(
                                     value: 'delete',
-                                    child: Text('Excluir'),
+                                    child: Text(
+                                      'Excluir',
+                                      style: TextStyle(color: Colors.redAccent),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -489,16 +604,19 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                     ),
                   );
                 }).toList(),
-              ), // ReorderableListView
+              ),
             ],
-            // BOTÃO DE ADICIONAR NOVA SESSÃO
+
             const SizedBox(height: 8),
             OutlinedButton.icon(
               onPressed: _adicionarTreino,
               icon: const Icon(Icons.add, color: Colors.white),
               label: const Text(
                 'Adicionar nova sessão',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -510,11 +628,10 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
               ),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 48),
 
-            // Botão principal fixo no final da página
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 0),
               child: ElevatedButton(
                 onPressed: _salvarRotina,
                 style: ElevatedButton.styleFrom(
@@ -534,14 +651,13 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
           ],
         ),
       ),
     );
   }
 
-  // Widget auxiliar para os inputs ficarem bonitos e padronizados
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -565,7 +681,7 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppTheme.primary),
+          borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
         ),
       ),
     );

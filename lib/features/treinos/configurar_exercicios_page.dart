@@ -40,8 +40,14 @@ class ExercicioItem {
 
 class ConfigurarExerciciosPage extends StatefulWidget {
   final String nomeTreino;
+  final List<ExercicioItem>
+  exercicios; // <-- AGORA RECEBE A LISTA DA SESSÃO PAI
 
-  const ConfigurarExerciciosPage({super.key, required this.nomeTreino});
+  const ConfigurarExerciciosPage({
+    super.key,
+    required this.nomeTreino,
+    required this.exercicios, // <-- PARÂMETRO OBRIGATÓRIO
+  });
 
   @override
   State<ConfigurarExerciciosPage> createState() =>
@@ -52,60 +58,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   // Controle do Accordion: Qual exercício está aberto no momento?
   int? _expandedExIndex; // null = todos colapsados
 
-  final List<ExercicioItem> _exercicios = [
-    ExercicioItem(
-      nome: 'Supino Reto com Barra',
-      grupoMuscular: 'Peito',
-      observacao: 'Focar na cadência 3010. Não esticar totalmente o cotovelo.',
-      tipoAlvo: 'Reps',
-      series: [
-        SerieItem(
-          tipo: TipoSerie.aquecimento,
-          alvo: '15',
-          carga: '10kg',
-          descanso: '45s',
-        ),
-        SerieItem(
-          tipo: TipoSerie.feeder,
-          alvo: '3',
-          carga: '26kg',
-          descanso: '60s',
-        ),
-        SerieItem(
-          tipo: TipoSerie.trabalho,
-          alvo: '12',
-          carga: '30kg',
-          descanso: '90s',
-        ),
-        SerieItem(
-          tipo: TipoSerie.trabalho,
-          alvo: '10',
-          carga: '35kg',
-          descanso: '90s',
-        ),
-      ],
-    ),
-    ExercicioItem(
-      nome: 'Prancha Isométrica',
-      grupoMuscular: 'Core',
-      observacao: '',
-      tipoAlvo: 'Tempo',
-      series: [
-        SerieItem(
-          tipo: TipoSerie.trabalho,
-          alvo: '60s',
-          carga: '-',
-          descanso: '30s',
-        ),
-        SerieItem(
-          tipo: TipoSerie.trabalho,
-          alvo: '60s',
-          carga: '-',
-          descanso: '30s',
-        ),
-      ],
-    ),
-  ];
+  // O MOCK FOI REMOVIDO DAQUI. AGORA USAMOS widget.exercicios EM TUDO!
 
   void _removerExercicio(int exIndex) {
     showDialog(
@@ -132,7 +85,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           TextButton(
             onPressed: () {
               setState(() {
-                _exercicios.removeAt(exIndex);
+                widget.exercicios.removeAt(exIndex); // Usa a lista do widget
                 if (_expandedExIndex == exIndex) {
                   _expandedExIndex = null;
                 } else if (_expandedExIndex != null &&
@@ -157,7 +110,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
   void _editarObservacao(BuildContext context, int exIndex) {
     final controller = TextEditingController(
-      text: _exercicios[exIndex].observacao,
+      text: widget.exercicios[exIndex].observacao,
     );
 
     showModalBottomSheet(
@@ -216,7 +169,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
               ElevatedButton(
                 onPressed: () {
                   setState(() {
-                    _exercicios[exIndex].observacao = controller.text.trim();
+                    widget.exercicios[exIndex].observacao = controller.text
+                        .trim();
                   });
                   Navigator.pop(context);
                 },
@@ -378,17 +332,17 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         String cargaToClone = '-';
         String descansoToClone = '60s';
 
-        if (_exercicios[exIndex].series.isNotEmpty) {
-          final ultimaSerie = _exercicios[exIndex].series.lastWhere(
+        if (widget.exercicios[exIndex].series.isNotEmpty) {
+          final ultimaSerie = widget.exercicios[exIndex].series.lastWhere(
             (s) => s.tipo == tipoEscolhido,
-            orElse: () => _exercicios[exIndex].series.last,
+            orElse: () => widget.exercicios[exIndex].series.last,
           );
           alvoToClone = ultimaSerie.alvo;
           cargaToClone = ultimaSerie.carga;
           descansoToClone = ultimaSerie.descanso;
         }
 
-        _exercicios[exIndex].series.add(
+        widget.exercicios[exIndex].series.add(
           SerieItem(
             tipo: tipoEscolhido,
             alvo: alvoToClone,
@@ -402,7 +356,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
   void _removerSerie(int exIndex, int realIndex) {
     setState(() {
-      _exercicios[exIndex].series.removeAt(realIndex);
+      widget.exercicios[exIndex].series.removeAt(realIndex);
     });
   }
 
@@ -411,8 +365,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       if (newIndex > oldIndex) {
         newIndex -= 1;
       }
-      final item = _exercicios.removeAt(oldIndex);
-      _exercicios.insert(newIndex, item);
+      final item = widget.exercicios.removeAt(oldIndex);
+      widget.exercicios.insert(newIndex, item);
 
       // Ajusta o índice expandido para acompanhar o item movido
       if (_expandedExIndex != null) {
@@ -437,13 +391,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
     if (nome != null && nome.isNotEmpty) {
       setState(() {
-        _exercicios.add(
-          ExercicioItem(
-            nome: nome,
-            series:
-                [], // nova lista vazia, o usuário pode adicionar séries depois
-          ),
-        );
+        widget.exercicios.add(ExercicioItem(nome: nome, series: []));
       });
     }
   }
@@ -464,13 +412,9 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             icon: const Icon(Icons.check, color: AppTheme.primary),
             tooltip: 'Finalizar treino',
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Treino finalizado com sucesso!'),
-                  backgroundColor: AppTheme.success,
-                ),
-              );
-              Navigator.pop(context);
+              Navigator.pop(
+                context,
+              ); // Os dados já estão salvos na lista do pai
             },
           ),
         ],
@@ -478,14 +422,14 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       body: Column(
         children: [
           Expanded(
-            child: _exercicios.isEmpty
+            child: widget.exercicios.isEmpty
                 ? _buildEmptyState()
                 : ReorderableListView.builder(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 16,
                     ),
-                    itemCount: _exercicios.length,
+                    itemCount: widget.exercicios.length,
                     onReorder: _onReorder,
                     proxyDecorator: (child, index, animation) {
                       return AnimatedBuilder(
@@ -509,7 +453,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     itemBuilder: (context, index) => _buildExercicioCard(index),
                   ),
           ),
-          _buildBottomBar(),
+          if (widget.exercicios.isNotEmpty) _buildBottomBar(),
         ],
       ),
     );
@@ -550,7 +494,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   }
 
   Widget _buildExercicioCard(int exIndex) {
-    final ex = _exercicios[exIndex];
+    final ex = widget.exercicios[exIndex];
     final bool isExpanded = _expandedExIndex == exIndex;
 
     final aquecimentoSeries = ex.series
@@ -571,7 +515,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
     return Container(
       key: ObjectKey(ex),
-      margin: const EdgeInsets.only(bottom: 12), // Compacto
+      margin: const EdgeInsets.only(bottom: 8), // Mais compacto
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
         borderRadius: BorderRadius.circular(16),
@@ -894,17 +838,15 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   Widget _buildExpandedHeader(ExercicioItem ex, int exIndex) {
     return Padding(
       key: const ValueKey('expanded_header'),
-      // match left padding with body rows (16) and reduce extra offset
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // no extra spacer needed when expanded; body content also has 16 horizontal padding
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // LINHA 1: Título e Ações (Mais espaço para o texto e botões)
+                // LINHA 1: Título e Ações
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -913,8 +855,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                         ex.nome,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
                           height: 1.2,
                         ),
                       ),
@@ -995,7 +937,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
                 const SizedBox(height: 8),
 
-                // LINHA 2: Thumbnail e Info Complementar (Organizado e Clean)
+                // LINHA 2: Thumbnail e Info Complementar
                 Row(
                   children: [
                     Container(
@@ -1075,11 +1017,12 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     );
   }
 
-  // --- WIDGET DO CABEÇALHO COLAPSADO (CORRIGIDO: MODERNO E INTUITIVO) ---
+  // --- WIDGET DO CABEÇALHO COLAPSADO ---
   Widget _buildCollapsedHeader(ExercicioItem ex, int index) {
     return Padding(
       key: const ValueKey('collapsed_header'),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+
       child: Row(
         children: [
           ReorderableDragStartListener(
@@ -1100,14 +1043,13 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   ex.nome,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontWeight: FontWeight.w600, // Tipografia moderna
+                    fontWeight: FontWeight.w600,
                     fontSize: 16,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
-                // INFO SECUNDÁRIA PREMIUM: SÉRIES + GRUPO (Cite: configurar_exercicios_page.dart)
+                const SizedBox(height: 2),
                 Text(
                   '${ex.series.length} ${ex.series.length == 1 ? 'série' : 'séries'} • ${ex.grupoMuscular.split('•').first.trim()}',
                   style: const TextStyle(
@@ -1120,7 +1062,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             ),
           ),
           const SizedBox(width: 16),
-          // A SETINHA UNIVERSAL (CITE: CONFIGURAR_EXERCICIOS_PAGE.DART)
           Icon(
             Icons.keyboard_arrow_down,
             color: AppTheme.textSecondary.withAlpha(150),
@@ -1191,7 +1132,9 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             child: _buildCleanInput(
               serie.alvo,
               (val) => serie.alvo = val,
-              autoSuffix: _exercicios[exIndex].tipoAlvo == 'Tempo' ? 's' : null,
+              autoSuffix: widget.exercicios[exIndex].tipoAlvo == 'Tempo'
+                  ? 's'
+                  : null,
             ),
           ),
           const SizedBox(width: 8),
@@ -1241,15 +1184,9 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     );
   }
 
-  // Bottom bar now holds the finalize button; add action available via FAB
   Widget _buildBottomBar() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(
-        24,
-        16,
-        24,
-        48,
-      ), // extra bottom padding for safe area
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 48),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
