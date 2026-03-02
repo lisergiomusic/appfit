@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import 'exercicios_library_page.dart';
@@ -48,6 +49,9 @@ class ConfigurarExerciciosPage extends StatefulWidget {
 }
 
 class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
+  // Controle do Accordion: Qual exercício está aberto no momento?
+  int? _expandedExIndex = 0;
+
   final List<ExercicioItem> _exercicios = [
     ExercicioItem(
       nome: 'Supino Reto com Barra',
@@ -129,6 +133,12 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             onPressed: () {
               setState(() {
                 _exercicios.removeAt(exIndex);
+                if (_expandedExIndex == exIndex) {
+                  _expandedExIndex = null;
+                } else if (_expandedExIndex != null &&
+                    _expandedExIndex! > exIndex) {
+                  _expandedExIndex = _expandedExIndex! - 1;
+                }
               });
               Navigator.pop(context);
             },
@@ -396,6 +406,29 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     });
   }
 
+  void _onReorder(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+      final item = _exercicios.removeAt(oldIndex);
+      _exercicios.insert(newIndex, item);
+
+      // Ajusta o índice expandido para acompanhar o item movido
+      if (_expandedExIndex != null) {
+        if (_expandedExIndex == oldIndex) {
+          _expandedExIndex = newIndex;
+        } else if (oldIndex < _expandedExIndex! &&
+            newIndex >= _expandedExIndex!) {
+          _expandedExIndex = _expandedExIndex! - 1;
+        } else if (oldIndex > _expandedExIndex! &&
+            newIndex <= _expandedExIndex!) {
+          _expandedExIndex = _expandedExIndex! + 1;
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -428,12 +461,32 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           Expanded(
             child: _exercicios.isEmpty
                 ? _buildEmptyState()
-                : ListView.builder(
+                : ReorderableListView.builder(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 16,
                     ),
                     itemCount: _exercicios.length,
+                    onReorder: _onReorder,
+                    proxyDecorator: (child, index, animation) {
+                      return AnimatedBuilder(
+                        animation: animation,
+                        builder: (BuildContext context, Widget? child) {
+                          final double animValue = Curves.easeInOut.transform(
+                            animation.value,
+                          );
+                          final double elevation = lerpDouble(0, 6, animValue)!;
+                          return Material(
+                            elevation: elevation,
+                            color: Colors.transparent,
+                            shadowColor: Colors.black.withAlpha(100),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Transform.scale(scale: 1.02, child: child),
+                          );
+                        },
+                        child: child,
+                      );
+                    },
                     itemBuilder: (context, index) => _buildExercicioCard(index),
                   ),
           ),
@@ -465,6 +518,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
   Widget _buildExercicioCard(int exIndex) {
     final ex = _exercicios[exIndex];
+    final bool isExpanded = _expandedExIndex == exIndex;
 
     final aquecimentoSeries = ex.series
         .asMap()
@@ -483,389 +537,518 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         .toList();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 24),
+      key: ObjectKey(ex),
+      margin: const EdgeInsets.only(bottom: 12), // Compacto
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withAlpha(10)),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(50),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
+          if (isExpanded)
+            BoxShadow(
+              color: Colors.black.withAlpha(80),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            )
+          else
+            BoxShadow(
+              color: Colors.black.withAlpha(30),
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            ),
         ],
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 1. CABEÇALHO DO EXERCÍCIO COM MENU LIMPO
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceLight,
-                    borderRadius: BorderRadius.circular(12),
-                    image: ex.imagemUrl != null
-                        ? DecorationImage(
-                            image: NetworkImage(ex.imagemUrl!),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
-                  ),
-                  child: ex.imagemUrl == null
-                      ? Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Icon(
-                              Icons.image_outlined,
-                              color: AppTheme.textSecondary.withAlpha(100),
-                              size: 28,
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.black.withAlpha(100),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            const Icon(
-                              Icons.play_circle_fill,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          ],
-                        )
-                      : const SizedBox(),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          // =====================================
+          // 1. CABEÇALHO ANIMADO (HEADER)
+          // =====================================
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                FocusScope.of(context).unfocus();
+                setState(() {
+                  _expandedExIndex = isExpanded ? null : exIndex;
+                });
+              },
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                child: isExpanded
+                    ? _buildExpandedHeader(ex, exIndex)
+                    : _buildCollapsedHeader(ex, exIndex), // Versão Intuitiva
+              ),
+            ),
+          ),
+
+          // =====================================
+          // 2. CORPO DO CARTÃO (ACORDEÃO)
+          // =====================================
+          AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.fastOutSlowIn,
+            alignment: Alignment.topCenter,
+            child: !isExpanded
+                ? const SizedBox(width: double.infinity)
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
-                        ex.nome,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17,
-                          height: 1.2,
+                      // CAMPO DE OBSERVAÇÃO
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        child: InkWell(
+                          onTap: () => _editarObservacao(context, exIndex),
+                          borderRadius: BorderRadius.circular(8),
+                          child: ex.observacao.isEmpty
+                              ? Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4.0,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.add_comment_outlined,
+                                        color: AppTheme.textSecondary.withAlpha(
+                                          150,
+                                        ),
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Adicionar nota...',
+                                        style: TextStyle(
+                                          color: AppTheme.textSecondary
+                                              .withAlpha(150),
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withAlpha(5),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border(
+                                      left: BorderSide(
+                                        color: AppTheme.primary.withAlpha(150),
+                                        width: 3,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          ex.observacao,
+                                          style: TextStyle(
+                                            color: AppTheme.textSecondary
+                                                .withAlpha(220),
+                                            fontSize: 13,
+                                            height: 1.4,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Icon(
+                                        Icons.edit_outlined,
+                                        color: AppTheme.textSecondary.withAlpha(
+                                          100,
+                                        ),
+                                        size: 16,
+                                      ),
+                                    ],
+                                  ),
+                                ),
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        ex.grupoMuscular,
-                        style: const TextStyle(
-                          color: AppTheme.textSecondary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
+
+                      // TABELA DE SÉRIES (CABEÇALHO)
+                      if (ex.series.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
+                          child: Row(
+                            children: [
+                              const SizedBox(
+                                width: 36,
+                                child: Text(
+                                  'Série',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: AppTheme.textSecondary,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Center(
+                                  child: InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        if (ex.tipoAlvo == 'Reps') {
+                                          ex.tipoAlvo = 'Tempo';
+                                          for (var serie in ex.series) {
+                                            String val = serie.alvo.trim();
+                                            if (RegExp(r'\d$').hasMatch(val)) {
+                                              serie.alvo = '${val}s';
+                                            }
+                                          }
+                                        } else {
+                                          ex.tipoAlvo = 'Reps';
+                                          for (var serie in ex.series) {
+                                            serie.alvo = serie.alvo
+                                                .trim()
+                                                .replaceAll(RegExp(r's$'), '');
+                                          }
+                                        }
+                                      });
+                                    },
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                        vertical: 2,
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            ex.tipoAlvo,
+                                            style: const TextStyle(
+                                              color: AppTheme.primary,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 2),
+                                          const Icon(
+                                            Icons.swap_vert,
+                                            color: AppTheme.primary,
+                                            size: 14,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Expanded(
+                                child: Text(
+                                  'Carga',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: AppTheme.textSecondary,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Expanded(
+                                child: Text(
+                                  'Pausa',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: AppTheme.textSecondary,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 40),
+                            ],
+                          ),
+                        ),
+
+                      // SUBDIVISÕES
+                      if (aquecimentoSeries.isNotEmpty) ...[
+                        _buildSectionTitle('Aquecimento', Colors.amber),
+                        ...aquecimentoSeries.asMap().entries.map(
+                          (entry) => _buildSerieRow(
+                            exIndex,
+                            entry.value.key,
+                            entry.value.value,
+                            entry.key + 1,
+                            Colors.amber,
+                          ),
+                        ),
+                      ],
+                      if (feederSeries.isNotEmpty) ...[
+                        _buildSectionTitle('Feeder Sets', Colors.blueAccent),
+                        ...feederSeries.asMap().entries.map(
+                          (entry) => _buildSerieRow(
+                            exIndex,
+                            entry.value.key,
+                            entry.value.value,
+                            entry.key + 1,
+                            Colors.blueAccent,
+                          ),
+                        ),
+                      ],
+                      if (trabalhoSeries.isNotEmpty) ...[
+                        _buildSectionTitle(
+                          'Séries de Trabalho',
+                          AppTheme.textSecondary,
+                        ),
+                        ...trabalhoSeries.asMap().entries.map(
+                          (entry) => _buildSerieRow(
+                            exIndex,
+                            entry.value.key,
+                            entry.value.value,
+                            entry.key + 1,
+                            Colors.white,
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: 8),
+
+                      // BOTÃO ADICIONAR SÉRIE
+                      TextButton(
+                        onPressed: () => _adicionarSerie(exIndex),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero,
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add, color: AppTheme.primary, size: 18),
+                            SizedBox(width: 6),
+                            Text(
+                              'Adicionar Série',
+                              style: TextStyle(
+                                color: AppTheme.primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                // --- O FAMOSO MENU DE 3 PONTINHOS ---
-                PopupMenuButton<String>(
-                  icon: const Icon(
-                    Icons.more_horiz,
-                    color: AppTheme.textSecondary,
-                    size: 22,
-                  ),
-                  color: AppTheme.surfaceLight,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  position: PopupMenuPosition.under,
-                  padding: EdgeInsets.zero,
-                  onSelected: (value) {
-                    if (value == 'substituir') {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Em breve: Abrir biblioteca de substituição',
-                          ),
+  // --- WIDGET DO CABEÇALHO EXPANDIDO (Rico em opções) ---
+  Widget _buildExpandedHeader(ExercicioItem ex, int exIndex) {
+    return Padding(
+      key: const ValueKey('expanded_header'),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ReorderableDragStartListener(
+            index: exIndex,
+            child: const Icon(
+              Icons.drag_indicator,
+              color: AppTheme.textSecondary,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceLight,
+              borderRadius: BorderRadius.circular(12),
+              image: ex.imagemUrl != null
+                  ? DecorationImage(
+                      image: NetworkImage(ex.imagemUrl!),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
+            child: ex.imagemUrl == null
+                ? Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Icon(
+                        Icons.image_outlined,
+                        color: AppTheme.textSecondary.withAlpha(100),
+                        size: 28,
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withAlpha(100),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      );
-                    } else if (value == 'remover') {
-                      _removerExercicio(exIndex);
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: 'substituir',
-                      child: Row(
-                        children: [
-                          Icon(Icons.swap_horiz, color: Colors.white, size: 20),
-                          SizedBox(width: 12),
-                          Text(
-                            'Substituir exercício',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ],
                       ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'remover',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.delete_outline,
-                            color: Colors.redAccent,
-                            size: 20,
-                          ),
-                          SizedBox(width: 12),
-                          Text(
-                            'Remover',
-                            style: TextStyle(color: Colors.redAccent),
-                          ),
-                        ],
+                      const Icon(
+                        Icons.play_circle_fill,
+                        color: Colors.white,
+                        size: 28,
                       ),
+                    ],
+                  )
+                : const SizedBox(),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  ex.nome,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  ex.grupoMuscular,
+                  style: const TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(
+              Icons.more_horiz,
+              color: AppTheme.textSecondary,
+              size: 22,
+            ),
+            color: AppTheme.surfaceLight,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            position: PopupMenuPosition.under,
+            padding: EdgeInsets.zero,
+            onSelected: (value) {
+              if (value == 'substituir') {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Em breve: Abrir biblioteca')),
+                );
+              } else if (value == 'remover') {
+                _removerExercicio(exIndex);
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'substituir',
+                child: Row(
+                  children: [
+                    Icon(Icons.swap_horiz, color: Colors.white, size: 20),
+                    SizedBox(width: 12),
+                    Text(
+                      'Substituir exercício',
+                      style: TextStyle(color: Colors.white),
                     ),
                   ],
                 ),
-              ],
+              ),
+              const PopupMenuItem(
+                value: 'remover',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.delete_outline,
+                      color: Colors.redAccent,
+                      size: 20,
+                    ),
+                    SizedBox(width: 12),
+                    Text('Remover', style: TextStyle(color: Colors.redAccent)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 8),
+          AnimatedRotation(
+            turns: 0.5,
+            duration: const Duration(milliseconds: 300),
+            child: Icon(
+              Icons.keyboard_arrow_down,
+              color: AppTheme.textSecondary.withAlpha(150),
+              size: 24,
             ),
           ),
+        ],
+      ),
+    );
+  }
 
-          // 2. CAMPO DE OBSERVAÇÃO (INLINE E PREMIUM)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: InkWell(
-              onTap: () => _editarObservacao(context, exIndex),
-              borderRadius: BorderRadius.circular(8),
-              child: ex.observacao.isEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.add_comment_outlined,
-                            color: AppTheme.textSecondary.withAlpha(150),
-                            size: 16,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Adicionar nota...',
-                            style: TextStyle(
-                              color: AppTheme.textSecondary.withAlpha(150),
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withAlpha(5),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border(
-                          left: BorderSide(
-                            color: AppTheme.primary.withAlpha(150),
-                            width: 3,
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              ex.observacao,
-                              style: TextStyle(
-                                color: AppTheme.textSecondary.withAlpha(220),
-                                fontSize: 13,
-                                height: 1.4,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.edit_outlined,
-                            color: AppTheme.textSecondary.withAlpha(100),
-                            size: 16,
-                          ),
-                        ],
-                      ),
-                    ),
+  // --- WIDGET DO CABEÇALHO COLAPSADO (CORRIGIDO: MODERNO E INTUITIVO) ---
+  Widget _buildCollapsedHeader(ExercicioItem ex, int index) {
+    return Padding(
+      key: const ValueKey('collapsed_header'),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      child: Row(
+        children: [
+          ReorderableDragStartListener(
+            index: index,
+            child: const Icon(
+              Icons.drag_indicator,
+              color: AppTheme.textSecondary,
+              size: 24,
             ),
           ),
-
-          // 3. TABELA DE SÉRIES (CABEÇALHO COM TROCA INTELIGENTE)
-          if (ex.series.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Row(
-                children: [
-                  const SizedBox(
-                    width: 36,
-                    child: Text(
-                      'Série',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-
-                  Expanded(
-                    child: Center(
-                      child: InkWell(
-                        onTap: () {
-                          setState(() {
-                            if (ex.tipoAlvo == 'Reps') {
-                              ex.tipoAlvo = 'Tempo';
-                              for (var serie in ex.series) {
-                                String val = serie.alvo.trim();
-                                if (RegExp(r'\d$').hasMatch(val)) {
-                                  serie.alvo = '${val}s';
-                                }
-                              }
-                            } else {
-                              ex.tipoAlvo = 'Reps';
-                              for (var serie in ex.series) {
-                                serie.alvo = serie.alvo.trim().replaceAll(
-                                  RegExp(r's$'),
-                                  '',
-                                );
-                              }
-                            }
-                          });
-                        },
-                        borderRadius: BorderRadius.circular(6),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 2,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                ex.tipoAlvo,
-                                style: const TextStyle(
-                                  color: AppTheme.primary,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 2),
-                              const Icon(
-                                Icons.swap_vert,
-                                color: AppTheme.primary,
-                                size: 14,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text(
-                      'Carga',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text(
-                      'Pausa',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 40),
-                ],
-              ),
-            ),
-
-          // 4. SUBDIVISÕES RENDEREIZADAS DINAMICAMENTE
-          if (aquecimentoSeries.isNotEmpty) ...[
-            _buildSectionTitle('Aquecimento', Colors.amber),
-            ...aquecimentoSeries.asMap().entries.map(
-              (entry) => _buildSerieRow(
-                exIndex,
-                entry.value.key,
-                entry.value.value,
-                entry.key + 1,
-                Colors.amber,
-              ),
-            ),
-          ],
-
-          if (feederSeries.isNotEmpty) ...[
-            _buildSectionTitle('Feeder Sets', Colors.blueAccent),
-            ...feederSeries.asMap().entries.map(
-              (entry) => _buildSerieRow(
-                exIndex,
-                entry.value.key,
-                entry.value.value,
-                entry.key + 1,
-                Colors.blueAccent,
-              ),
-            ),
-          ],
-
-          if (trabalhoSeries.isNotEmpty) ...[
-            _buildSectionTitle('Séries de Trabalho', AppTheme.textSecondary),
-            ...trabalhoSeries.asMap().entries.map(
-              (entry) => _buildSerieRow(
-                exIndex,
-                entry.value.key,
-                entry.value.value,
-                entry.key + 1,
-                Colors.white,
-              ),
-            ),
-          ],
-
-          const SizedBox(height: 8),
-
-          // 5. BOTÃO ADICIONAR SÉRIE
-          TextButton(
-            onPressed: () => _adicionarSerie(exIndex),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.zero,
-              ),
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+          const SizedBox(width: 16),
+          // COLUNA COM NOME E SÉRIES
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.add, color: AppTheme.primary, size: 18),
-                SizedBox(width: 6),
                 Text(
-                  'Adicionar Série',
-                  style: TextStyle(
-                    color: AppTheme.primary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                  ex.nome,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600, // Tipografia moderna
+                    fontSize: 16,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                // INFO SECUNDÁRIA PREMIUM: SÉRIES + GRUPO (Cite: configurar_exercicios_page.dart)
+                Text(
+                  '${ex.series.length} ${ex.series.length == 1 ? 'série' : 'séries'} • ${ex.grupoMuscular.split('•').first.trim()}',
+                  style: const TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
+          ),
+          const SizedBox(width: 16),
+          // A SETINHA UNIVERSAL (CITE: CONFIGURAR_EXERCICIOS_PAGE.DART)
+          Icon(
+            Icons.keyboard_arrow_down,
+            color: AppTheme.textSecondary.withAlpha(150),
+            size: 24,
           ),
         ],
       ),
@@ -928,14 +1111,11 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           ),
           const SizedBox(width: 12),
 
-          // --- IMPLEMENTAÇÃO DOS SUFIXOS AUTOMÁTICOS ---
           Expanded(
             child: _buildCleanInput(
               serie.alvo,
               (val) => serie.alvo = val,
-              autoSuffix: _exercicios[exIndex].tipoAlvo == 'Tempo'
-                  ? 's'
-                  : null, // Se for tempo, adiciona 's'
+              autoSuffix: _exercicios[exIndex].tipoAlvo == 'Tempo' ? 's' : null,
             ),
           ),
           const SizedBox(width: 8),
@@ -943,7 +1123,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             child: _buildCleanInput(
               serie.carga,
               (val) => serie.carga = val,
-              autoSuffix: 'kg', // Carga ganha 'kg' automaticamente
+              autoSuffix: 'kg',
             ),
           ),
           const SizedBox(width: 8),
@@ -951,7 +1131,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             child: _buildCleanInput(
               serie.descanso,
               (val) => serie.descanso = val,
-              autoSuffix: 's', // Descanso ganha 's' (segundos) automaticamente
+              autoSuffix: 's',
             ),
           ),
 
@@ -973,7 +1153,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     );
   }
 
-  // Novo Widget agora recebe o autoSuffix
   Widget _buildCleanInput(
     String initialValue,
     ValueChanged<String> onChanged, {
@@ -1027,7 +1206,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 class _CleanInputWidget extends StatefulWidget {
   final String initialValue;
   final ValueChanged<String> onChanged;
-  final String? autoSuffix; // Agora recebe qualquer sufixo ('s', 'kg', etc.)
+  final String? autoSuffix;
 
   const _CleanInputWidget({
     required this.initialValue,
@@ -1048,23 +1227,15 @@ class _CleanInputWidgetState extends State<_CleanInputWidget> {
     super.initState();
     _controller = TextEditingController(text: widget.initialValue);
     _focusNode = FocusNode();
-
     _focusNode.addListener(_onFocusChange);
   }
 
   void _onFocusChange() {
-    // Quando o utilizador sai do campo de texto e existe um sufixo configurado
     if (!_focusNode.hasFocus && widget.autoSuffix != null) {
       final text = _controller.text.trim();
-
-      // MÁGICA: Se a string terminar num número (Ex: "60" ou "20"), adicionamos o sufixo passado
       if (RegExp(r'\d$').hasMatch(text)) {
         final newText = '$text${widget.autoSuffix}';
-
-        setState(() {
-          _controller.text = newText;
-        });
-
+        setState(() => _controller.text = newText);
         widget.onChanged(newText);
       }
     }
@@ -1075,9 +1246,7 @@ class _CleanInputWidgetState extends State<_CleanInputWidget> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.initialValue != widget.initialValue &&
         _controller.text != widget.initialValue) {
-      if (!_focusNode.hasFocus) {
-        _controller.text = widget.initialValue;
-      }
+      if (!_focusNode.hasFocus) _controller.text = widget.initialValue;
     }
   }
 
