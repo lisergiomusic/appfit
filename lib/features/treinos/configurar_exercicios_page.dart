@@ -84,7 +84,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     ExercicioItem(
       nome: 'Prancha Isométrica',
       grupoMuscular: 'Core • Peso Corporal',
-      observacao: '', // Este está vazio para testarmos o novo botão inline!
+      observacao: '',
       tipoAlvo: 'Tempo',
       series: [
         SerieItem(
@@ -569,7 +569,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   ),
                 ),
 
-                // --- O FAMOSO MENU DE 3 PONTINHOS (Limpo, sem ícone redundante) ---
+                // --- O FAMOSO MENU DE 3 PONTINHOS ---
                 PopupMenuButton<String>(
                   icon: const Icon(
                     Icons.more_horiz,
@@ -697,7 +697,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             ),
           ),
 
-          // 3. TABELA DE SÉRIES (CABEÇALHO)
+          // 3. TABELA DE SÉRIES (CABEÇALHO COM TROCA INTELIGENTE)
           if (ex.series.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -720,11 +720,27 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   Expanded(
                     child: Center(
                       child: InkWell(
-                        onTap: () => setState(
-                          () => ex.tipoAlvo = ex.tipoAlvo == 'Reps'
-                              ? 'Tempo'
-                              : 'Reps',
-                        ),
+                        onTap: () {
+                          setState(() {
+                            if (ex.tipoAlvo == 'Reps') {
+                              ex.tipoAlvo = 'Tempo';
+                              for (var serie in ex.series) {
+                                String val = serie.alvo.trim();
+                                if (RegExp(r'\d$').hasMatch(val)) {
+                                  serie.alvo = '${val}s';
+                                }
+                              }
+                            } else {
+                              ex.tipoAlvo = 'Reps';
+                              for (var serie in ex.series) {
+                                serie.alvo = serie.alvo.trim().replaceAll(
+                                  RegExp(r's$'),
+                                  '',
+                                );
+                              }
+                            }
+                          });
+                        },
                         borderRadius: BorderRadius.circular(6),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
@@ -908,7 +924,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
               child: Text(
                 '$visualNumber',
                 style: TextStyle(
-                  color: themeColor,
+                  color: AppTheme.textSecondary,
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
                 ),
@@ -917,18 +933,30 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           ),
           const SizedBox(width: 12),
 
+          // --- IMPLEMENTAÇÃO DOS SUFIXOS AUTOMÁTICOS ---
           Expanded(
-            child: _buildCleanInput(serie.alvo, (val) => serie.alvo = val),
+            child: _buildCleanInput(
+              serie.alvo,
+              (val) => serie.alvo = val,
+              autoSuffix: _exercicios[exIndex].tipoAlvo == 'Tempo'
+                  ? 's'
+                  : null, // Se for tempo, adiciona 's'
+            ),
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: _buildCleanInput(serie.carga, (val) => serie.carga = val),
+            child: _buildCleanInput(
+              serie.carga,
+              (val) => serie.carga = val,
+              autoSuffix: 'kg', // Carga ganha 'kg' automaticamente
+            ),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: _buildCleanInput(
               serie.descanso,
               (val) => serie.descanso = val,
+              autoSuffix: 's', // Descanso ganha 's' (segundos) automaticamente
             ),
           ),
 
@@ -950,28 +978,16 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     );
   }
 
-  Widget _buildCleanInput(String initialValue, ValueChanged<String> onChanged) {
-    return Container(
-      height: 36,
-      decoration: BoxDecoration(
-        color: Colors.white.withAlpha(12),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: TextFormField(
-        initialValue: initialValue,
-        onChanged: onChanged,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-        ),
-        decoration: const InputDecoration(
-          isDense: true,
-          contentPadding: EdgeInsets.symmetric(vertical: 9),
-          border: InputBorder.none,
-        ),
-      ),
+  // Novo Widget agora recebe o autoSuffix
+  Widget _buildCleanInput(
+    String initialValue,
+    ValueChanged<String> onChanged, {
+    String? autoSuffix,
+  }) {
+    return _CleanInputWidget(
+      initialValue: initialValue,
+      onChanged: onChanged,
+      autoSuffix: autoSuffix,
     );
   }
 
@@ -1004,6 +1020,103 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ==========================================
+// WIDGET SÊNIOR PARA CONTROLE DE ESTADO DO INPUT
+// ==========================================
+class _CleanInputWidget extends StatefulWidget {
+  final String initialValue;
+  final ValueChanged<String> onChanged;
+  final String? autoSuffix; // Agora recebe qualquer sufixo ('s', 'kg', etc.)
+
+  const _CleanInputWidget({
+    required this.initialValue,
+    required this.onChanged,
+    this.autoSuffix,
+  });
+
+  @override
+  State<_CleanInputWidget> createState() => _CleanInputWidgetState();
+}
+
+class _CleanInputWidgetState extends State<_CleanInputWidget> {
+  late TextEditingController _controller;
+  late FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+    _focusNode = FocusNode();
+
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    // Quando o utilizador sai do campo de texto e existe um sufixo configurado
+    if (!_focusNode.hasFocus && widget.autoSuffix != null) {
+      final text = _controller.text.trim();
+
+      // MÁGICA: Se a string terminar num número (Ex: "60" ou "20"), adicionamos o sufixo passado
+      if (RegExp(r'\d$').hasMatch(text)) {
+        final newText = '$text${widget.autoSuffix}';
+
+        setState(() {
+          _controller.text = newText;
+        });
+
+        widget.onChanged(newText);
+      }
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _CleanInputWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialValue != widget.initialValue &&
+        _controller.text != widget.initialValue) {
+      if (!_focusNode.hasFocus) {
+        _controller.text = widget.initialValue;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 36,
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: TextField(
+        controller: _controller,
+        focusNode: _focusNode,
+        onChanged: widget.onChanged,
+        textAlign: TextAlign.center,
+        keyboardType: TextInputType.text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+        ),
+        decoration: const InputDecoration(
+          isDense: true,
+          contentPadding: EdgeInsets.symmetric(vertical: 9),
+          border: InputBorder.none,
         ),
       ),
     );
