@@ -221,13 +221,13 @@ class TreinosPage extends StatelessWidget {
                       color: AppTheme.textSecondary,
                     ),
                     onTap: () {
-                      // <-- AQUI FOI CORRIGIDO: Passando o JSON completo como na arquitetura nova
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => RotinaDetalhePage(
-                            rotinaData:
-                                rotina, // A magia do Single Source of Truth
+                            rotinaData: rotina,
+                            rotinaId:
+                                doc.id, // <-- ENVIA O ID PARA LIBERAR A EDIÇÃO!
                           ),
                         ),
                       );

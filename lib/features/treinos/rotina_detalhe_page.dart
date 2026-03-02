@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import 'criar_rotina_page.dart'; // <-- IMPORTA A TELA DE EDIÇÃO
 
 class RotinaDetalhePage extends StatelessWidget {
   final Map<String, dynamic> rotinaData;
+  final String? rotinaId; // <-- ID DA ROTINA
+  final String? alunoId; // <-- ID DO ALUNO (Se existir)
+  final String? alunoNome; // <-- NOME DO ALUNO (Se existir)
 
-  const RotinaDetalhePage({super.key, required this.rotinaData});
+  const RotinaDetalhePage({
+    super.key,
+    required this.rotinaData,
+    this.rotinaId,
+    this.alunoId,
+    this.alunoNome,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,18 +26,35 @@ class RotinaDetalhePage extends StatelessWidget {
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text(
-          'Visão Geral da Rotina',
-          style: TextStyle(fontSize: 16),
-        ),
+        title: const Text('Visão Geral', style: TextStyle(fontSize: 16)),
         centerTitle: true,
+        actions: [
+          // --- NOVO: BOTÃO DE EDITAR NA APP BAR ---
+          if (rotinaId != null)
+            IconButton(
+              icon: const Icon(Icons.edit_outlined, color: AppTheme.primary),
+              tooltip: 'Editar Rotina',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CriarRotinaPage(
+                      rotinaId: rotinaId,
+                      rotinaData: rotinaData,
+                      alunoId: alunoId,
+                      alunoNome: alunoNome,
+                    ),
+                  ),
+                );
+              },
+            ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. CABEÇALHO DA ROTINA
             Text(
               titulo,
               style: const TextStyle(
@@ -67,7 +94,7 @@ class RotinaDetalhePage extends StatelessWidget {
                 int index = entry.key;
                 Map<String, dynamic> sessao =
                     entry.value as Map<String, dynamic>;
-                String letra = String.fromCharCode(65 + index); // A, B, C...
+                String letra = String.fromCharCode(65 + index);
                 return _buildSessaoCard(context, sessao, letra);
               }),
           ],
@@ -88,7 +115,6 @@ class RotinaDetalhePage extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
         onTap: () {
-          // NAVEGA PARA O NOVO VISUALIZADOR DE SESSÃO (READ-ONLY)
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -107,7 +133,6 @@ class RotinaDetalhePage extends StatelessWidget {
           ),
           child: Row(
             children: [
-              // Badge de Letra
               Container(
                 width: 48,
                 height: 48,
@@ -127,8 +152,6 @@ class RotinaDetalhePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-
-              // Informações do Treino
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,8 +175,6 @@ class RotinaDetalhePage extends StatelessWidget {
                   ],
                 ),
               ),
-
-              // Ícone de Ação
               Icon(
                 Icons.chevron_right,
                 color: AppTheme.textSecondary.withAlpha(150),
@@ -168,7 +189,7 @@ class RotinaDetalhePage extends StatelessWidget {
 }
 
 // ==============================================================
-// --- NOVA TELA: VISUALIZADOR DE SESSÃO (READ-ONLY) ---
+// --- TELA: VISUALIZADOR DE SESSÃO (READ-ONLY) REFATORADA ---
 // ==============================================================
 class SessaoVisualizerPage extends StatelessWidget {
   final Map<String, dynamic> sessaoData;
@@ -217,7 +238,6 @@ class SessaoVisualizerPage extends StatelessWidget {
     List<dynamic> series = ex['series'] ?? [];
     String tipoAlvo = ex['tipoAlvo'] ?? 'Reps';
 
-    // --- SEPARAÇÃO DAS SÉRIES (IGUAL À TELA DE EDIÇÃO) ---
     final aquecimentoSeries = series
         .where((s) => s['tipo'] == 'aquecimento')
         .toList();
@@ -243,7 +263,6 @@ class SessaoVisualizerPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // CABEÇALHO DO EXERCÍCIO
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -307,7 +326,6 @@ class SessaoVisualizerPage extends StatelessWidget {
             ),
           ),
 
-          // OBSERVAÇÃO
           if (ex['observacao'] != null &&
               ex['observacao'].toString().trim().isNotEmpty)
             Padding(
@@ -336,13 +354,11 @@ class SessaoVisualizerPage extends StatelessWidget {
               ),
             ),
 
-          // TABELA DE SÉRIES
           if (series.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
                 children: [
-                  // Cabeçalho da Tabela (AGORA COM COR NEUTRA, POIS NÃO É CLICÁVEL)
                   Row(
                     children: [
                       const SizedBox(
@@ -363,10 +379,9 @@ class SessaoVisualizerPage extends StatelessWidget {
                           tipoAlvo,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                            color: AppTheme.textSecondary, // <-- Sem Laranja
+                            color: AppTheme.textSecondary,
                             fontSize: 12,
-                            fontWeight:
-                                FontWeight.w600, // <-- Removido o extra bold
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -398,7 +413,6 @@ class SessaoVisualizerPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
 
-                  // SUBDIVISÕES RENDEREIZADAS DINAMICAMENTE
                   if (aquecimentoSeries.isNotEmpty) ...[
                     _buildSectionTitle('Aquecimento', Colors.amber),
                     ...aquecimentoSeries.asMap().entries.map(
@@ -434,8 +448,6 @@ class SessaoVisualizerPage extends StatelessWidget {
     );
   }
 
-  // --- WIDGETS AUXILIARES ---
-
   Widget _buildSectionTitle(String title, Color color) {
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 4),
@@ -461,7 +473,6 @@ class SessaoVisualizerPage extends StatelessWidget {
     );
   }
 
-  // NÚMEROS AGORA SÃO SEMPRE NEUTROS (Sem as cores do tipo de série)
   Widget _buildSerieReadOnlyRow(Map<String, dynamic> serie, int visualNumber) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
@@ -471,16 +482,14 @@ class SessaoVisualizerPage extends StatelessWidget {
             width: 36,
             height: 28,
             decoration: BoxDecoration(
-              color: AppTheme.surfaceLight.withAlpha(
-                100,
-              ), // Cor neutra de fundo
+              color: AppTheme.surfaceLight.withAlpha(100),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Center(
               child: Text(
                 '$visualNumber',
                 style: const TextStyle(
-                  color: AppTheme.textSecondary, // Cor de texto neutra
+                  color: AppTheme.textSecondary,
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
                 ),

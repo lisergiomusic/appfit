@@ -103,7 +103,7 @@ class PerfilAlunoPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<int>(
-                  value: semanasSelecionadas,
+                  initialValue: semanasSelecionadas,
                   dropdownColor: AppTheme.surfaceLight,
                   style: const TextStyle(color: Colors.white),
                   items: [4, 5, 6, 8, 10, 12]
@@ -247,7 +247,7 @@ class PerfilAlunoPage extends StatelessWidget {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 24),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -316,19 +316,21 @@ class PerfilAlunoPage extends StatelessWidget {
                       .where('alunoId', isNull: true)
                       .snapshots(),
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting)
+                    if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
                         child: CircularProgressIndicator(
                           color: AppTheme.primary,
                         ),
                       );
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty)
+                    }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                       return const Center(
                         child: Text(
                           'Sua biblioteca de rotinas está vazia.',
                           style: TextStyle(color: AppTheme.textSecondary),
                         ),
                       );
+                    }
 
                     return ListView.builder(
                       itemCount: snapshot.data!.docs.length,
@@ -342,7 +344,7 @@ class PerfilAlunoPage extends StatelessWidget {
                         return Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
-                            color: AppTheme.surfaceLight.withOpacity(0.5),
+                            color: AppTheme.surfaceLight.withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: ListTile(
@@ -514,7 +516,7 @@ class PerfilAlunoPage extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.success.withOpacity(0.15),
+                  backgroundColor: AppTheme.success.withValues(alpha: 0.15),
                   foregroundColor: AppTheme.success,
                   elevation: 0,
                   shadowColor: Colors.transparent,
@@ -614,8 +616,10 @@ class PerfilAlunoPage extends StatelessWidget {
                         color: isFeito
                             ? AppTheme.primary
                             : (isFalta
-                                  ? Colors.redAccent.withOpacity(0.3)
-                                  : AppTheme.textSecondary.withOpacity(0.1)),
+                                  ? Colors.redAccent.withValues(alpha: 0.3)
+                                  : AppTheme.textSecondary.withValues(
+                                      alpha: 0.1,
+                                    )),
                         width: 1.5,
                       ),
                     ),
@@ -628,8 +632,10 @@ class PerfilAlunoPage extends StatelessWidget {
                         color: isFeito
                             ? Colors.white
                             : (isFalta
-                                  ? Colors.redAccent.withOpacity(0.8)
-                                  : AppTheme.textSecondary.withOpacity(0.2)),
+                                  ? Colors.redAccent.withValues(alpha: 0.8)
+                                  : AppTheme.textSecondary.withValues(
+                                      alpha: 0.2,
+                                    )),
                       ),
                     ),
                   ),
@@ -651,7 +657,7 @@ class PerfilAlunoPage extends StatelessWidget {
     );
   }
 
-  // --- CÁLCULO INTELIGENTE DE DATAS E PROGRESSO NO HERO CARD ---
+  // A JOGADA DE MESTRE DE UI/UX: LÊ A ROTINA ATIVA DIRETAMENTE DA COLEÇÃO ROTINAS
   Widget _buildFichaAtivaHeroCard(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -737,17 +743,14 @@ class PerfilAlunoPage extends StatelessWidget {
               hoje.add(const Duration(days: 28));
 
           int totalDias = dataVencimento.difference(dataCriacao).inDays;
-          if (totalDias <= 0) totalDias = 1; // Evita divisão por zero
+          if (totalDias <= 0) totalDias = 1;
 
           int diasPassados = hoje.difference(dataCriacao).inDays;
           int diasRestantes = totalDias - diasPassados;
 
-          // Garante que o progresso fique entre 0% e 100%
           double progressoAtual = (diasPassados / totalDias).clamp(0.0, 1.0);
 
-          bool alertaVencimento =
-              diasRestantes <= 7 &&
-              diasRestantes >= 0; // Aviso na última semana
+          bool alertaVencimento = diasRestantes <= 7 && diasRestantes >= 0;
           Color corProgresso = AppTheme.success;
 
           String textoRestante;
@@ -769,7 +772,13 @@ class PerfilAlunoPage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => RotinaDetalhePage(rotinaData: rotina),
+                  builder: (context) => RotinaDetalhePage(
+                    rotinaData: rotina,
+                    rotinaId: treinoDoc
+                        .id, // Passa os IDs para habilitar edição lá dentro!
+                    alunoId: alunoId,
+                    alunoNome: alunoNome,
+                  ),
                 ),
               );
             },
@@ -827,6 +836,7 @@ class PerfilAlunoPage extends StatelessWidget {
                       ),
                       Row(
                         children: [
+                          // --- REMOVIDO: O Lápis daqui! ---
                           GestureDetector(
                             onTap: () =>
                                 _removerFichaAtiva(context, treinoDoc.id),
@@ -867,7 +877,7 @@ class PerfilAlunoPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'Toque para ver os treinos',
+                    'Toque para ver e editar treinos',
                     style: TextStyle(
                       color: AppTheme.textSecondary,
                       fontSize: 12,

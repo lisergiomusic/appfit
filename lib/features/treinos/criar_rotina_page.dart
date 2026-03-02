@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // <-- NOVO IMPORT PARA O TIMESTAMP
 import '../../core/theme/app_theme.dart';
 import '../../core/services/rotina_service.dart';
 import 'configurar_exercicios_page.dart';
@@ -22,7 +23,17 @@ class CriarRotinaPage extends StatefulWidget {
   final String? alunoId;
   final String? alunoNome;
 
-  const CriarRotinaPage({super.key, this.alunoId, this.alunoNome});
+  // --- NOVOS PARÂMETROS PARA EDIÇÃO ---
+  final String? rotinaId;
+  final Map<String, dynamic>? rotinaData;
+
+  const CriarRotinaPage({
+    super.key,
+    this.alunoId,
+    this.alunoNome,
+    this.rotinaId,
+    this.rotinaData,
+  });
 
   @override
   State<CriarRotinaPage> createState() => _CriarRotinaPageState();
@@ -32,9 +43,86 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
   final _nomeController = TextEditingController();
   final _objetivoController = TextEditingController();
 
-  int _duracaoSemanas = 4; // <-- NOVO: Controle de Duração
+  int _duracaoSemanas = 4;
   final List<_TreinoData> _treinos = [];
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _preencherDadosDeEdicao();
+  }
+
+  // --- MÁGICA: RECONSTRUÇÃO DA ÁRVORE DE DADOS ---
+  void _preencherDadosDeEdicao() {
+    if (widget.rotinaData != null) {
+      _nomeController.text = widget.rotinaData!['nome'] ?? '';
+      _objetivoController.text = widget.rotinaData!['objetivo'] ?? '';
+
+      // Tenta calcular as semanas baseando-se nas datas salvas
+      if (widget.rotinaData!['dataCriacao'] != null &&
+          widget.rotinaData!['dataVencimento'] != null) {
+        DateTime criacao = (widget.rotinaData!['dataCriacao'] as Timestamp)
+            .toDate();
+        DateTime vencimento =
+            (widget.rotinaData!['dataVencimento'] as Timestamp).toDate();
+        int dias = vencimento.difference(criacao).inDays;
+        if (dias > 0) {
+          int semanasCalc = (dias / 7).round();
+          if ([4, 5, 6, 8, 10, 12].contains(semanasCalc)) {
+            _duracaoSemanas = semanasCalc;
+          }
+        }
+      }
+
+      // Reconstrói as sessões e exercícios
+      List<dynamic> sessoesRaw = widget.rotinaData!['sessoes'] ?? [];
+      for (var sessao in sessoesRaw) {
+        List<ExercicioItem> exerciciosList = [];
+
+        for (var ex in (sessao['exercicios'] ?? [])) {
+          List<SerieItem> seriesList = [];
+
+          for (var s in (ex['series'] ?? [])) {
+            seriesList.add(
+              SerieItem(
+                tipo: _parseTipoSerie(s['tipo']),
+                alvo: s['alvo'] ?? '10',
+                carga: s['carga'] ?? '-',
+                descanso: s['descanso'] ?? '60s',
+              ),
+            );
+          }
+
+          exerciciosList.add(
+            ExercicioItem(
+              nome: ex['nome'] ?? 'Exercício',
+              grupoMuscular: ex['grupoMuscular'] ?? '',
+              observacao: ex['observacao'] ?? '',
+              tipoAlvo: ex['tipoAlvo'] ?? 'Reps',
+              imagemUrl: ex['imagemUrl'],
+              series: seriesList,
+            ),
+          );
+        }
+
+        _treinos.add(
+          _TreinoData(
+            nomeController: TextEditingController(text: sessao['nome']),
+            diaSemana: sessao['diaSemana'],
+            orientacoes: sessao['orientacoes'],
+            exercicios: exerciciosList,
+          ),
+        );
+      }
+    }
+  }
+
+  TipoSerie _parseTipoSerie(String? tipo) {
+    if (tipo == 'aquecimento') return TipoSerie.aquecimento;
+    if (tipo == 'feeder') return TipoSerie.feeder;
+    return TipoSerie.trabalho;
+  }
 
   @override
   void dispose() {
@@ -322,22 +410,40 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
         };
       }).toList();
 
-      await RotinaService().criarRotina(
-        alunoId: widget.alunoId,
-        nome: _nomeController.text.trim(),
-        objetivo: _objetivoController.text.trim(),
-        sessoes: sessoesJson,
-        duracaoDias:
-            _duracaoSemanas * 7, // <-- Passa a duração exata para o backend!
-      );
+      // --- MODO EDIÇÃO VS MODO CRIAÇÃO ---
+      if (widget.rotinaId != null && widget.rotinaData != null) {
+        await RotinaService().atualizarRotina(
+          rotinaId: widget.rotinaId!,
+          nome: _nomeController.text.trim(),
+          objetivo: _objetivoController.text.trim(),
+          sessoes: sessoesJson,
+          duracaoDias: _duracaoSemanas * 7,
+          dataCriacaoOriginal: widget.rotinaData!['dataCriacao'] as Timestamp?,
+        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Rotina atualizada com sucesso!'),
+            backgroundColor: AppTheme.success,
+          ),
+        );
+      } else {
+        await RotinaService().criarRotina(
+          alunoId: widget.alunoId,
+          nome: _nomeController.text.trim(),
+          objetivo: _objetivoController.text.trim(),
+          sessoes: sessoesJson,
+          duracaoDias: _duracaoSemanas * 7,
+        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Rotina salva com sucesso!'),
+            backgroundColor: AppTheme.success,
+          ),
+        );
+      }
 
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Rotina salva com sucesso!'),
-          backgroundColor: AppTheme.success,
-        ),
-      );
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
@@ -354,13 +460,15 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool isEditing = widget.rotinaId != null;
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text(
-          'Nova Rotina',
-          style: TextStyle(fontWeight: FontWeight.w600),
+        title: Text(
+          isEditing ? 'Editar Rotina' : 'Nova Rotina',
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
       ),
@@ -382,7 +490,9 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                     const Icon(Icons.person, color: AppTheme.primary, size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      'Criando para: ${widget.alunoNome}',
+                      isEditing
+                          ? 'Editando rotina de: ${widget.alunoNome}'
+                          : 'Criando para: ${widget.alunoNome}',
                       style: const TextStyle(
                         color: AppTheme.primary,
                         fontWeight: FontWeight.bold,
@@ -420,7 +530,6 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
             ),
             const SizedBox(height: 16),
 
-            // <-- NOVO: DROPDOWN DE DURAÇÃO -->
             DropdownButtonFormField<int>(
               value: _duracaoSemanas,
               dropdownColor: AppTheme.surfaceLight,
@@ -746,9 +855,11 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                         strokeWidth: 3,
                       ),
                     )
-                  : const Text(
-                      'Salvar Rotina Completa',
-                      style: TextStyle(
+                  : Text(
+                      isEditing
+                          ? 'Salvar Alterações'
+                          : 'Salvar Rotina Completa',
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
