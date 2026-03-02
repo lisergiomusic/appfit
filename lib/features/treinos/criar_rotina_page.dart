@@ -1,14 +1,15 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/services/rotina_service.dart'; // <-- IMPORTA O NOVO SERVIÇO
 import 'configurar_exercicios_page.dart';
 
-// estrutura de dados usada internamente pela página
+// --- ESTRUTURA DE DADOS DA SESSÃO ---
 class _TreinoData {
   final TextEditingController nomeController;
   String? diaSemana;
   String? orientacoes;
-  List<ExercicioItem>
-  exercicios; // <-- A LISTA DE EXERCÍCIOS FICA GUARDADA AQUI AGORA!
+  List<ExercicioItem> exercicios;
 
   _TreinoData({
     required this.nomeController,
@@ -31,8 +32,9 @@ class CriarRotinaPage extends StatefulWidget {
 class _CriarRotinaPageState extends State<CriarRotinaPage> {
   final _nomeController = TextEditingController();
   final _objetivoController = TextEditingController();
-
   final List<_TreinoData> _treinos = [];
+
+  bool _isLoading = false; // <-- CONTROLO DE LOADING PARA O BOTÃO FINAL
 
   @override
   void dispose() {
@@ -44,7 +46,6 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
     super.dispose();
   }
 
-  // helper sheet for both adding and editing a treino
   Future<Map<String, String?>?> _showTreinoForm({
     String? initialNome,
     String? initialDia,
@@ -59,7 +60,7 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
       isScrollControlled: true,
       backgroundColor: AppTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (_) {
         return Padding(
@@ -74,7 +75,7 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                initialNome == null ? 'Nova Sessão' : 'Editar Sessão',
+                initialNome == null ? 'Nova Sessão de Treino' : 'Editar Sessão',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 20,
@@ -87,7 +88,7 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   labelText: 'Nome',
-                  hintText: 'Ex: Treino A',
+                  hintText: 'Ex: Treino A - Costas e Bíceps',
                   labelStyle: const TextStyle(color: AppTheme.textSecondary),
                   hintStyle: TextStyle(
                     color: AppTheme.textSecondary.withAlpha(128),
@@ -135,7 +136,11 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   labelText: 'Orientações gerais',
+                  hintText: 'Ex: Foco no tempo sob tensão...',
                   labelStyle: const TextStyle(color: AppTheme.textSecondary),
+                  hintStyle: TextStyle(
+                    color: AppTheme.textSecondary.withAlpha(128),
+                  ),
                   filled: true,
                   fillColor: AppTheme.surfaceLight,
                   border: OutlineInputBorder(
@@ -221,7 +226,7 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         content: const Text(
-          'Tem certeza que deseja remover esta sessão?',
+          'Tem certeza que deseja remover esta sessão e todos os exercícios nela configurados?',
           style: TextStyle(color: AppTheme.textSecondary),
         ),
         actions: [
@@ -256,7 +261,7 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
     final result = await _showTreinoForm();
     if (result != null) {
       final name = (result['nome']?.isEmpty ?? true)
-          ? 'Treino ${String.fromCharCode(65 + _treinos.length)}' // Ex: Treino A, Treino B...
+          ? 'Treino ${String.fromCharCode(65 + _treinos.length)}'
           : result['nome']!;
       setState(() {
         _treinos.add(
@@ -264,23 +269,98 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
             nomeController: TextEditingController(text: name),
             diaSemana: result['diaSemana'],
             orientacoes: result['orientacoes'],
-            exercicios:
-                [], // <-- A MÁGICA: Começa com uma lista vazia individual para este treino!
+            exercicios: [],
           ),
         );
       });
     }
   }
 
-  void _salvarRotina() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('UI: Rotina salva com sucesso!'),
-        backgroundColor: AppTheme.success,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-    Navigator.pop(context);
+  // --- MÁGICA SÊNIOR: SERIALIZAÇÃO E ENVIO PARA O FIREBASE ---
+  Future<void> _salvarRotina() async {
+    // Validações básicas de segurança
+    if (_nomeController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Dê um nome à rotina!'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+    if (_treinos.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Adicione pelo menos uma sessão de treino!'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // 1. Converter a complexa árvore UI numa lista de Mapas puros (JSON)
+      List<Map<String, dynamic>> sessoesJson = _treinos.map((treino) {
+        return {
+          'nome': treino.nomeController.text.trim(),
+          'diaSemana': treino.diaSemana,
+          'orientacoes': treino.orientacoes,
+          'exercicios': treino.exercicios.map((ex) {
+            return {
+              'nome': ex.nome,
+              'grupoMuscular': ex.grupoMuscular,
+              'observacao': ex.observacao,
+              'tipoAlvo': ex.tipoAlvo,
+              'imagemUrl': ex.imagemUrl,
+              'series': ex.series.map((serie) {
+                return {
+                  'tipo': serie
+                      .tipo
+                      .name, // converte o Enum para String ('trabalho', 'aquecimento'...)
+                  'alvo': serie.alvo,
+                  'carga': serie.carga,
+                  'descanso': serie.descanso,
+                };
+              }).toList(),
+            };
+          }).toList(),
+        };
+      }).toList();
+
+      // 2. Chamar o serviço para enviar à Nuvem
+      await RotinaService().criarRotina(
+        alunoId:
+            widget.alunoId, // Será nulo se estivermos a criar para a biblioteca
+        nome: _nomeController.text.trim(),
+        objetivo: _objetivoController.text.trim(),
+        sessoes: sessoesJson,
+      );
+
+      if (!mounted) return;
+
+      // 3. Sucesso! Mostra aviso e fecha a página
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Rotina salva com sucesso no Banco de Dados!'),
+          backgroundColor: AppTheme.success,
+        ),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao salvar: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -423,14 +503,16 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                   return AnimatedBuilder(
                     animation: animation,
                     builder: (BuildContext context, Widget? child) {
-                      final double animValue = animation.value;
-                      final double elevation = 6.0 * animValue;
+                      final double animValue = Curves.easeInOut.transform(
+                        animation.value,
+                      );
+                      final double elevation = lerpDouble(0, 6, animValue)!;
                       return Material(
                         elevation: elevation,
                         color: Colors.transparent,
-                        shadowColor: Colors.black.withOpacity(0.25),
+                        shadowColor: Colors.black.withAlpha(100),
                         borderRadius: BorderRadius.circular(16),
-                        child: child,
+                        child: Transform.scale(scale: 1.02, child: child),
                       );
                     },
                     child: child,
@@ -447,42 +529,38 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                   final treino = _treinos[index];
                   return Container(
                     key: ValueKey(treino),
-                    margin: const EdgeInsets.only(bottom: 16),
+                    margin: const EdgeInsets.only(bottom: 12),
                     child: Material(
                       color: AppTheme.surfaceDark,
                       clipBehavior: Clip.antiAlias,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(color: Colors.white.withAlpha(13)),
+                        side: BorderSide(color: Colors.white.withAlpha(15)),
                       ),
                       child: InkWell(
                         onTap: () async {
-                          // AGUARDA a tela de exercícios fechar e depois atualiza o ecrã
                           await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => ConfigurarExerciciosPage(
                                 nomeTreino: treino.nomeController.text,
-                                exercicios: treino
-                                    .exercicios, // <-- PASSA A LISTA ESPECÍFICA DESTE TREINO
+                                exercicios: treino.exercicios,
                               ),
                             ),
                           );
-                          setState(
-                            () {},
-                          ); // <-- ATUALIZA O NÚMERO DE EXERCÍCIOS NO CARD
+                          setState(() {});
                         },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
-                            vertical: 12,
+                            vertical: 16,
                           ),
                           child: Row(
                             children: [
                               ReorderableDragStartListener(
                                 index: index,
                                 child: const Padding(
-                                  padding: EdgeInsets.only(right: 12),
+                                  padding: EdgeInsets.only(right: 16),
                                   child: Icon(
                                     Icons.drag_indicator,
                                     color: AppTheme.textSecondary,
@@ -490,17 +568,22 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                                 ),
                               ),
                               Container(
-                                padding: const EdgeInsets.all(10),
+                                width: 44,
+                                height: 44,
                                 decoration: BoxDecoration(
                                   color: AppTheme.surfaceLight,
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: Text(
-                                  String.fromCharCode(65 + index), // A, B, C...
-                                  style: const TextStyle(
-                                    color: AppTheme.primary,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                                child: Center(
+                                  child: Text(
+                                    String.fromCharCode(
+                                      65 + index,
+                                    ), // A, B, C...
+                                    style: const TextStyle(
+                                      color: AppTheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -510,7 +593,7 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      _treinos[index].nomeController.text,
+                                      treino.nomeController.text,
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
@@ -518,19 +601,16 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                                       ),
                                     ),
                                     const SizedBox(height: 4),
-                                    // <-- MOSTRA O NÚMERO EXATO DE EXERCÍCIOS SALVOS
                                     Text(
-                                      _treinos[index].exercicios.isEmpty
-                                          ? 'Toque para adicionar exercícios'
-                                          : '${_treinos[index].exercicios.length} ${_treinos[index].exercicios.length == 1 ? 'exercício configurado' : 'exercícios configurados'}',
+                                      treino.exercicios.isEmpty
+                                          ? 'Toque para configurar exercícios'
+                                          : '${treino.exercicios.length} ${treino.exercicios.length == 1 ? 'exercício configurado' : 'exercícios configurados'}',
                                       style: TextStyle(
-                                        color:
-                                            _treinos[index].exercicios.isEmpty
+                                        color: treino.exercicios.isEmpty
                                             ? AppTheme.textSecondary
                                             : AppTheme.primary,
                                         fontSize: 13,
-                                        fontWeight:
-                                            _treinos[index].exercicios.isEmpty
+                                        fontWeight: treino.exercicios.isEmpty
                                             ? FontWeight.normal
                                             : FontWeight.w600,
                                       ),
@@ -552,22 +632,6 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                                     case 'edit':
                                       _editarTreino(index);
                                       break;
-                                    case 'config':
-                                      await Navigator.push(
-                                        context,
-                                        MaterialPageRoute<void>(
-                                          builder: (context) =>
-                                              ConfigurarExerciciosPage(
-                                                nomeTreino: _treinos[index]
-                                                    .nomeController
-                                                    .text,
-                                                exercicios:
-                                                    _treinos[index].exercicios,
-                                              ),
-                                        ),
-                                      );
-                                      setState(() {});
-                                      break;
                                     case 'delete':
                                       _excluirTreino(index);
                                       break;
@@ -576,23 +640,38 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                                 itemBuilder: (context) => [
                                   const PopupMenuItem(
                                     value: 'edit',
-                                    child: Text(
-                                      'Editar informações',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: 'config',
-                                    child: Text(
-                                      'Configurar exercícios',
-                                      style: TextStyle(color: Colors.white),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.edit_outlined,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                        SizedBox(width: 12),
+                                        Text(
+                                          'Editar dados',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   const PopupMenuItem(
                                     value: 'delete',
-                                    child: Text(
-                                      'Excluir',
-                                      style: TextStyle(color: Colors.redAccent),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.delete_outline,
+                                          color: Colors.redAccent,
+                                          size: 20,
+                                        ),
+                                        SizedBox(width: 12),
+                                        Text(
+                                          'Excluir sessão',
+                                          style: TextStyle(
+                                            color: Colors.redAccent,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -620,7 +699,7 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
               ),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                side: BorderSide(color: Colors.white.withAlpha(51)),
+                side: BorderSide(color: Colors.white.withAlpha(50), width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -630,26 +709,36 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
 
             const SizedBox(height: 48),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 0),
-              child: ElevatedButton(
-                onPressed: _salvarRotina,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  minimumSize: const Size(double.infinity, 56),
-                  elevation: 8,
-                  shadowColor: AppTheme.primary.withAlpha(128),
+            // BOTÃO MÁGICO DE GRAVAÇÃO (COM LOADING)
+            ElevatedButton(
+              onPressed: _isLoading ? null : _salvarRotina,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Text(
-                  'Salvar Rotina Completa',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                minimumSize: const Size(double.infinity, 56),
+                elevation: _isLoading ? 0 : 8,
+                shadowColor: AppTheme.primary.withAlpha(128),
               ),
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 3,
+                      ),
+                    )
+                  : const Text(
+                      'Salvar Rotina Completa',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
             ),
             const SizedBox(height: 32),
           ],

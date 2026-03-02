@@ -17,31 +17,38 @@ class PerfilAlunoPage extends StatelessWidget {
     required this.alunoNome,
   });
 
-  // --- LÓGICA DE BANCO DE DADOS ---
+  // --- LÓGICA DE BANCO DE DADOS ATUALIZADA ---
 
+  // Clona um template da biblioteca e atribui ao aluno
   Future<void> _atribuirTreinoAoAluno(
     BuildContext context,
-    String treinoId,
-    String titulo,
-    String descricao,
+    String templateId,
+    String nomeRotina,
   ) async {
     try {
-      await FirebaseFirestore.instance
-          .collection('usuarios')
-          .doc(alunoId)
-          .collection('treinos_atribuidos')
-          .add({
-            'treinoIdOriginal': treinoId,
-            'titulo': titulo,
-            'descricao': descricao,
-            'dataAtribuicao': FieldValue.serverTimestamp(),
-          });
+      // 1. Busca os dados do Template original
+      final templateDoc = await FirebaseFirestore.instance
+          .collection('rotinas')
+          .doc(templateId)
+          .get();
+      if (!templateDoc.exists) return;
+
+      final rotinaData = templateDoc.data() as Map<String, dynamic>;
+
+      // 2. Modifica os dados para transformar numa rotina ativa para este aluno
+      rotinaData['alunoId'] = alunoId;
+      rotinaData['ativa'] = true;
+      rotinaData['dataCriacao'] =
+          FieldValue.serverTimestamp(); // Data atual de atribuição
+
+      // 3. Salva como uma nova rotina exclusiva do aluno
+      await FirebaseFirestore.instance.collection('rotinas').add(rotinaData);
 
       if (context.mounted) {
-        Navigator.pop(context);
+        Navigator.pop(context); // Fecha o modal de seleção
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Rotina "$titulo" vinculada!'),
+            content: Text('Rotina "$nomeRotina" ativada com sucesso!'),
             backgroundColor: AppTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
@@ -90,12 +97,11 @@ class PerfilAlunoPage extends StatelessWidget {
 
     if (confirmar == true) {
       try {
+        // Em vez de apagar fisicamente, apenas inativamos para guardar histórico
         await FirebaseFirestore.instance
-            .collection('usuarios')
-            .doc(alunoId)
-            .collection('treinos_atribuidos')
+            .collection('rotinas')
             .doc(docId)
-            .delete();
+            .update({'ativa': false});
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -153,7 +159,7 @@ class PerfilAlunoPage extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: () {
                   Navigator.pop(context); // Fecha o modal primeiro
-                  // Abre a nova tela passando os dados do aluno!
+                  // Abre a nova tela Sênior passando o alunoId (cria rotina exclusiva para o aluno)
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -199,19 +205,21 @@ class PerfilAlunoPage extends StatelessWidget {
 
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
+                  // AGORA BUSCA NA NOVA COLEÇÃO "rotinas" APENAS OS TEMPLATES (alunoId nulo)
                   stream: FirebaseFirestore.instance
-                      .collection('treinos')
+                      .collection('rotinas')
                       .where('personalId', isEqualTo: personalId)
+                      .where('alunoId', isNull: true)
                       .snapshots(),
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
                         child: CircularProgressIndicator(
                           color: AppTheme.primary,
                         ),
                       );
                     }
-                    if (snapshot.data!.docs.isEmpty) {
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                       return const Center(
                         child: Text(
                           'Sua biblioteca de rotinas está vazia.',
@@ -224,7 +232,13 @@ class PerfilAlunoPage extends StatelessWidget {
                       itemCount: snapshot.data!.docs.length,
                       itemBuilder: (context, index) {
                         var doc = snapshot.data!.docs[index];
-                        var treino = doc.data() as Map<String, dynamic>;
+                        var rotina = doc.data() as Map<String, dynamic>;
+
+                        // Calcula quantas sessões o template tem
+                        int qtdSessoes = rotina['sessoes'] != null
+                            ? (rotina['sessoes'] as List).length
+                            : 0;
+
                         return Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
@@ -233,14 +247,14 @@ class PerfilAlunoPage extends StatelessWidget {
                           ),
                           child: ListTile(
                             title: Text(
-                              treino['titulo'] ?? 'Rotina',
+                              rotina['nome'] ?? 'Rotina',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             subtitle: Text(
-                              'Rotina Completa • ${treino['descricao'] ?? ''}',
+                              'Template • $qtdSessoes sessões',
                               style: const TextStyle(
                                 color: AppTheme.textSecondary,
                                 fontSize: 12,
@@ -253,8 +267,7 @@ class PerfilAlunoPage extends StatelessWidget {
                             onTap: () => _atribuirTreinoAoAluno(
                               context,
                               doc.id,
-                              treino['titulo'],
-                              treino['descricao'],
+                              rotina['nome'] ?? 'Rotina',
                             ),
                           ),
                         );
@@ -270,8 +283,6 @@ class PerfilAlunoPage extends StatelessWidget {
     );
   }
 
-  // --- AÇÕES RÁPIDAS (Mock) ---
-
   void _chamarWhatsApp(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -280,8 +291,6 @@ class PerfilAlunoPage extends StatelessWidget {
       ),
     );
   }
-
-  // --- INTERFACE ---
 
   @override
   Widget build(BuildContext context) {
@@ -318,7 +327,6 @@ class PerfilAlunoPage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // HEADER HORIZONTAL
             const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -397,7 +405,6 @@ class PerfilAlunoPage extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            // Botão de WhatsApp em Destaque
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: ElevatedButton.icon(
@@ -422,18 +429,13 @@ class PerfilAlunoPage extends StatelessWidget {
             ),
 
             const SizedBox(height: 32),
-
-            // Ritmo da Semana
             _buildRitmoDaSemana(),
-
             const SizedBox(height: 32),
 
-            // Hero Card da Rotina Atual
+            // O CARD MÁGICO DE ROTINA ATIVA
             _buildFichaAtivaHeroCard(context),
 
             const SizedBox(height: 24),
-
-            // Menu Principal Restante
             _buildMenuOption(
               icon: Icons.calendar_month_outlined,
               title: 'Histórico de Feedbacks',
@@ -457,15 +459,12 @@ class PerfilAlunoPage extends StatelessWidget {
               title: 'Situação Financeira',
               onTap: () {},
             ),
-
             const SizedBox(height: 48),
           ],
         ),
       ),
     );
   }
-
-  // --- WIDGETS AUXILIARES ---
 
   Widget _buildRitmoDaSemana() {
     final dias = [
@@ -556,17 +555,15 @@ class PerfilAlunoPage extends StatelessWidget {
     );
   }
 
-  // A JOGADA DE MESTRE DE UI/UX (O Hero Card Inteligente de ROTINA)
+  // A JOGADA DE MESTRE DE UI/UX: LÊ A ROTINA ATIVA DIRETAMENTE DA COLEÇÃO ROTINAS
   Widget _buildFichaAtivaHeroCard(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
-            .collection('usuarios')
-            .doc(alunoId)
-            .collection('treinos_atribuidos')
-            .orderBy('dataAtribuicao', descending: true)
-            .limit(1)
+            .collection('rotinas')
+            .where('alunoId', isEqualTo: alunoId) // Puxa as rotinas deste aluno
+            .where('ativa', isEqualTo: true) // Apenas a que está ativa
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -575,7 +572,6 @@ class PerfilAlunoPage extends StatelessWidget {
             );
           }
 
-          // ESTADO VAZIO: NENHUMA FICHA ATIVA (CORRIGIDO)
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return InkWell(
               onTap: () => _exibirOpcoesVincularTreino(context),
@@ -633,9 +629,9 @@ class PerfilAlunoPage extends StatelessWidget {
             );
           }
 
-          // ESTADO ATIVO: O ALUNO TEM FICHA
+          // ESTADO ATIVO: Lê os dados e passa para a tela de Detalhe
           var treinoDoc = snapshot.data!.docs.first;
-          var treino = treinoDoc.data() as Map<String, dynamic>;
+          var rotina = treinoDoc.data() as Map<String, dynamic>;
 
           double progressoAtual = 0.85;
           bool alertaVencimento = progressoAtual >= 0.8;
@@ -645,13 +641,12 @@ class PerfilAlunoPage extends StatelessWidget {
 
           return InkWell(
             onTap: () {
-              // NAVEGAÇÃO PARA O DETALHE DA ROTINA (CORRIGIDO)
+              // AQUI NAVEGA PASSANDO O JSON REAL DO BANCO DE DADOS
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => RotinaDetalhePage(
-                    rotinaTitulo: treino['titulo'] ?? 'Projeto Hipertrofia',
-                    objetivo: treino['descricao'],
+                    rotinaData: rotina, // <-- O Mapeamento perfeito!
                   ),
                 ),
               );
@@ -725,7 +720,7 @@ class PerfilAlunoPage extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   Text(
-                    treino['titulo'] ?? 'Projeto Hipertrofia',
+                    rotina['nome'] ?? 'Projeto Hipertrofia',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,

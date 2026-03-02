@@ -2,108 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/theme/app_theme.dart';
-import 'detalhe_treino_page.dart';
+import 'criar_rotina_page.dart'; // <-- AGORA USAMOS A NOSSA TELA SÊNIOR!
+import 'rotina_detalhe_page.dart';
 
 class TreinosPage extends StatelessWidget {
   const TreinosPage({super.key});
 
-  // --- FUNÇÃO PARA SALVAR O TREINO NO BANCO ---
-  Future<void> _salvarTreino(
-    BuildContext context,
-    String titulo,
-    String descricao,
-  ) async {
-    if (titulo.isEmpty) return;
-
-    final String? personalId = FirebaseAuth.instance.currentUser?.uid;
-
-    if (personalId == null) {
-      debugPrint("Erro: Nenhum personal logado.");
-      return;
-    }
-
-    try {
-      // Criamos uma nova coleção chamada 'treinos'
-      await FirebaseFirestore.instance.collection('treinos').add({
-        'titulo': titulo,
-        'descricao': descricao,
-        'personalId': personalId, // <-- Segurança garantida: o treino é seu!
-        'dataCriacao': FieldValue.serverTimestamp(),
-      });
-      if (context.mounted) Navigator.pop(context); // Fecha o modal
-    } catch (e) {
-      debugPrint("Erro ao salvar treino: $e");
-    }
-  }
-
-  // --- MODAL PARA CRIAR O TREINO ---
-  void _exibirModalNovoTreino(BuildContext context) {
-    final tituloController = TextEditingController();
-    final descricaoController = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppTheme.surfaceDark,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 24,
-          right: 24,
-          top: 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Nova Ficha de Treino',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: tituloController,
-              decoration: const InputDecoration(
-                labelText: 'Nome do Treino (ex: Ficha A - Peito)',
-                prefixIcon: Icon(Icons.fitness_center),
-              ),
-              style: const TextStyle(color: Colors.white),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: descricaoController,
-              decoration: const InputDecoration(
-                labelText: 'Descrição (ex: Foco em hipertrofia)',
-                prefixIcon: Icon(Icons.description),
-              ),
-              style: const TextStyle(color: Colors.white),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => _salvarTreino(
-                context,
-                tituloController.text,
-                descricaoController.text,
-              ),
-              child: const Text('Salvar Treino'),
-            ),
-            const SizedBox(height: 32),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // --- FUNÇÃO PARA DELETAR TREINO ---
+  // --- FUNÇÃO PARA DELETAR ROTINA DA BIBLIOTECA ---
   Future<void> _deletarTreino(String id) async {
-    await FirebaseFirestore.instance.collection('treinos').doc(id).delete();
+    await FirebaseFirestore.instance.collection('rotinas').doc(id).delete();
   }
 
   @override
@@ -111,6 +18,7 @@ class TreinosPage extends StatelessWidget {
     final String? personalId = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: AppTheme.surfaceDark,
         title: const Text(
@@ -118,37 +26,55 @@ class TreinosPage extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () =>
-            _exibirModalNovoTreino(context), // <-- Agora abre o Modal!
+      // --- O FAB AGORA ABRE A NOSSA TELA PREMIUM DE CRIAR ROTINA ---
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              // Sem passar alunoId, ela entende que é um "Template" da Biblioteca!
+              builder: (context) => const CriarRotinaPage(),
+            ),
+          );
+        },
         backgroundColor: AppTheme.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text(
+          'Novo Template',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        // Buscamos apenas os treinos criados por ESTE personal
+        // Buscamos as ROTINAS (nova coleção) que são TEMPLATES (alunoId nulo) do Personal logado
         stream: FirebaseFirestore.instance
-            .collection('treinos')
+            .collection('rotinas')
             .where('personalId', isEqualTo: personalId)
+            .where(
+              'alunoId',
+              isNull: true,
+            ) // <-- Garante que traz apenas os genéricos da biblioteca
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(color: AppTheme.primary),
+            );
           }
 
-          // Se não tiver nenhum treino, mostramos aquela tela bonita vazia
+          // Se não tiver nenhum treino, mostramos a tela de "Empty State"
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.fitness_center,
+                    Icons.dashboard_customize_outlined,
                     size: 80,
-                    color: AppTheme.textSecondary.withValues(alpha: 0.5),
+                    color: AppTheme.textSecondary.withAlpha(100),
                   ),
                   const SizedBox(height: 24),
                   const Text(
-                    'Nenhum treino na biblioteca.',
+                    'Sua biblioteca está vazia.',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -157,10 +83,12 @@ class TreinosPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Clique no botão + para criar sua primeira ficha.',
+                    'Crie templates para enviar rapidamente\naos seus alunos no futuro.',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
                       color: AppTheme.textSecondary,
+                      height: 1.5,
                     ),
                   ),
                 ],
@@ -168,13 +96,23 @@ class TreinosPage extends StatelessWidget {
             );
           }
 
-          // Se tiver treinos, mostramos a lista!
+          // Se tiver treinos, mostramos a lista premium!
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(
+              16,
+              16,
+              16,
+              80,
+            ), // Padding extra no fundo para não bater no FAB
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
               var doc = snapshot.data!.docs[index];
-              var treino = doc.data() as Map<String, dynamic>;
+              var rotina = doc.data() as Map<String, dynamic>;
+
+              // Calcula quantas sessões este template tem (se a chave existir)
+              int qtdSessoes = rotina['sessoes'] != null
+                  ? (rotina['sessoes'] as List).length
+                  : 0;
 
               return Dismissible(
                 key: Key(doc.id),
@@ -185,12 +123,18 @@ class TreinosPage extends StatelessWidget {
                     builder: (BuildContext context) {
                       return AlertDialog(
                         backgroundColor: AppTheme.surfaceDark,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         title: const Text(
                           "Confirmar exclusão",
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         content: const Text(
-                          "Tem certeza que deseja excluir este treino?",
+                          "Tem certeza que deseja excluir este template da sua biblioteca?",
                           style: TextStyle(color: AppTheme.textSecondary),
                         ),
                         actions: <Widget>[
@@ -198,14 +142,17 @@ class TreinosPage extends StatelessWidget {
                             onPressed: () => Navigator.of(context).pop(false),
                             child: const Text(
                               "Cancelar",
-                              style: TextStyle(color: AppTheme.primary),
+                              style: TextStyle(color: AppTheme.textSecondary),
                             ),
                           ),
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(true),
                             child: const Text(
                               "Excluir",
-                              style: TextStyle(color: Colors.redAccent),
+                              style: TextStyle(
+                                color: Colors.redAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],
@@ -227,41 +174,60 @@ class TreinosPage extends StatelessWidget {
                 child: Card(
                   color: AppTheme.surfaceLight,
                   margin: const EdgeInsets.only(bottom: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(color: Colors.white.withAlpha(10)),
+                  ),
                   child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     leading: Container(
-                      padding: const EdgeInsets.all(8),
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
-                        color: AppTheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        color: AppTheme.primary.withAlpha(25),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppTheme.primary.withAlpha(50),
+                        ),
                       ),
                       child: const Icon(
-                        Icons.fitness_center,
+                        Icons.collections_bookmark,
                         color: AppTheme.primary,
                       ),
                     ),
                     title: Text(
-                      treino['titulo'] ?? 'Sem título',
+                      rotina['nome'] ?? 'Sem título',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
-                    subtitle: Text(
-                      treino['descricao'] ?? '',
-                      style: const TextStyle(color: AppTheme.textSecondary),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        'Template • $qtdSessoes sessões',
+                        style: const TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
                     ),
                     trailing: const Icon(
                       Icons.chevron_right,
                       color: AppTheme.textSecondary,
                     ),
                     onTap: () {
-                      // <-- AGORA NAVEGA PARA A TELA DE DETALHES
+                      // <-- AQUI FOI CORRIGIDO: Passando o JSON completo como na arquitetura nova
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => DetalheTreinoPage(
-                            treinoId: doc.id,
-                            treinoTitulo: treino['titulo'] ?? 'Treino',
+                          builder: (context) => RotinaDetalhePage(
+                            rotinaData:
+                                rotina, // A magia do Single Source of Truth
                           ),
                         ),
                       );

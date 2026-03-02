@@ -1,46 +1,25 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
-import 'detalhe_treino_page.dart'; // Reutilizamos para ver os exercícios
 
 class RotinaDetalhePage extends StatelessWidget {
-  final String rotinaTitulo;
-  final String? objetivo;
+  final Map<String, dynamic> rotinaData;
 
-  const RotinaDetalhePage({
-    super.key,
-    required this.rotinaTitulo,
-    this.objetivo,
-  });
+  const RotinaDetalhePage({super.key, required this.rotinaData});
 
   @override
   Widget build(BuildContext context) {
-    // Mock das sessões que compõem esta rotina
-    final List<Map<String, dynamic>> sessoes = [
-      {
-        'letra': 'A',
-        'nome': 'Membros Superiores',
-        'exercicios': 6,
-        'status': 'sugerido',
-      },
-      {
-        'letra': 'B',
-        'nome': 'Membros Inferiores',
-        'exercicios': 8,
-        'status': 'pendente',
-      },
-      {
-        'letra': 'C',
-        'nome': 'Core e Cardio',
-        'exercicios': 5,
-        'status': 'pendente',
-      },
-    ];
+    final titulo = rotinaData['nome'] ?? 'Rotina';
+    final objetivo = rotinaData['objetivo'] ?? 'Sem objetivo definido';
+    final List<dynamic> sessoes = rotinaData['sessoes'] ?? [];
 
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('Minha Rotina', style: TextStyle(fontSize: 16)),
+        title: const Text(
+          'Visão Geral da Rotina',
+          style: TextStyle(fontSize: 16),
+        ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -50,7 +29,7 @@ class RotinaDetalhePage extends StatelessWidget {
           children: [
             // 1. CABEÇALHO DA ROTINA
             Text(
-              rotinaTitulo,
+              titulo,
               style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -59,7 +38,7 @@ class RotinaDetalhePage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              objetivo ?? 'Foco em ganho de massa muscular',
+              objetivo,
               style: const TextStyle(
                 color: AppTheme.textSecondary,
                 fontSize: 16,
@@ -78,31 +57,43 @@ class RotinaDetalhePage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // 2. LISTA DE CARDS DE SESSÃO
-            ...sessoes
-                .map((sessao) => _buildSessaoCard(context, sessao))
-                .toList(),
+            if (sessoes.isEmpty)
+              const Text(
+                'Nenhuma sessão cadastrada.',
+                style: TextStyle(color: AppTheme.textSecondary),
+              )
+            else
+              ...sessoes.asMap().entries.map((entry) {
+                int index = entry.key;
+                Map<String, dynamic> sessao =
+                    entry.value as Map<String, dynamic>;
+                String letra = String.fromCharCode(65 + index); // A, B, C...
+                return _buildSessaoCard(context, sessao, letra);
+              }),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSessaoCard(BuildContext context, Map<String, dynamic> sessao) {
-    bool isSugerido = sessao['status'] == 'sugerido';
+  Widget _buildSessaoCard(
+    BuildContext context,
+    Map<String, dynamic> sessao,
+    String letra,
+  ) {
+    List<dynamic> exercicios = sessao['exercicios'] ?? [];
+    String nomeSessao = sessao['nome'] ?? 'Sessão $letra';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
         onTap: () {
-          // Navega para ver os exercícios (Vista do Aluno)
+          // NAVEGA PARA O NOVO VISUALIZADOR DE SESSÃO (READ-ONLY)
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => DetalheTreinoPage(
-                treinoId: 'mock_id',
-                treinoTitulo: sessao['nome'],
-              ),
+              builder: (context) =>
+                  SessaoVisualizerPage(sessaoData: sessao, letra: letra),
             ),
           );
         },
@@ -112,22 +103,7 @@ class RotinaDetalhePage extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppTheme.surfaceDark,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isSugerido
-                  ? AppTheme.primary.withAlpha(100)
-                  : Colors.white.withAlpha(13),
-              width: 1.5,
-            ),
-            gradient: isSugerido
-                ? LinearGradient(
-                    colors: [
-                      AppTheme.primary.withAlpha(20),
-                      Colors.transparent,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                : null,
+            border: Border.all(color: Colors.white.withAlpha(13), width: 1.5),
           ),
           child: Row(
             children: [
@@ -136,14 +112,14 @@ class RotinaDetalhePage extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: isSugerido ? AppTheme.primary : AppTheme.surfaceLight,
+                  color: AppTheme.surfaceLight,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
                   child: Text(
-                    sessao['letra'],
-                    style: TextStyle(
-                      color: isSugerido ? Colors.white : AppTheme.primary,
+                    letra,
+                    style: const TextStyle(
+                      color: AppTheme.primary,
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
                     ),
@@ -158,7 +134,7 @@ class RotinaDetalhePage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      sessao['nome'],
+                      nomeSessao,
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -167,7 +143,7 @@ class RotinaDetalhePage extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${sessao['exercicios']} exercícios',
+                      '${exercicios.length} exercícios',
                       style: const TextStyle(
                         color: AppTheme.textSecondary,
                         fontSize: 13,
@@ -179,13 +155,363 @@ class RotinaDetalhePage extends StatelessWidget {
 
               // Ícone de Ação
               Icon(
-                Icons.play_circle_fill,
-                color: isSugerido
-                    ? AppTheme.primary
-                    : AppTheme.textSecondary.withAlpha(100),
-                size: 32,
+                Icons.chevron_right,
+                color: AppTheme.textSecondary.withAlpha(150),
+                size: 28,
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ==============================================================
+// --- NOVA TELA: VISUALIZADOR DE SESSÃO (READ-ONLY) ---
+// ==============================================================
+class SessaoVisualizerPage extends StatelessWidget {
+  final Map<String, dynamic> sessaoData;
+  final String letra;
+
+  const SessaoVisualizerPage({
+    super.key,
+    required this.sessaoData,
+    required this.letra,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    String nomeSessao = sessaoData['nome'] ?? 'Treino $letra';
+    List<dynamic> exercicios = sessaoData['exercicios'] ?? [];
+
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: Text(
+          nomeSessao,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        centerTitle: true,
+      ),
+      body: exercicios.isEmpty
+          ? const Center(
+              child: Text(
+                'Nenhum exercício nesta sessão.',
+                style: TextStyle(color: AppTheme.textSecondary),
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: exercicios.length,
+              itemBuilder: (context, index) {
+                var ex = exercicios[index];
+                return _buildExercicioVisualizerCard(ex);
+              },
+            ),
+    );
+  }
+
+  Widget _buildExercicioVisualizerCard(Map<String, dynamic> ex) {
+    List<dynamic> series = ex['series'] ?? [];
+    String tipoAlvo = ex['tipoAlvo'] ?? 'Reps';
+
+    // --- SEPARAÇÃO DAS SÉRIES (IGUAL À TELA DE EDIÇÃO) ---
+    final aquecimentoSeries = series
+        .where((s) => s['tipo'] == 'aquecimento')
+        .toList();
+    final feederSeries = series.where((s) => s['tipo'] == 'feeder').toList();
+    final trabalhoSeries = series
+        .where((s) => s['tipo'] == 'trabalho')
+        .toList();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceDark,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withAlpha(10)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(20),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // CABEÇALHO DO EXERCÍCIO
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceLight,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Icon(
+                        Icons.image_outlined,
+                        color: AppTheme.textSecondary.withAlpha(100),
+                        size: 28,
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withAlpha(100),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      const Icon(
+                        Icons.play_circle_fill,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        ex['nome'] ?? 'Exercício',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        ex['grupoMuscular'] ?? '',
+                        style: const TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // OBSERVAÇÃO
+          if (ex['observacao'] != null &&
+              ex['observacao'].toString().trim().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withAlpha(5),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border(
+                    left: BorderSide(
+                      color: AppTheme.primary.withAlpha(150),
+                      width: 3,
+                    ),
+                  ),
+                ),
+                child: Text(
+                  ex['observacao'],
+                  style: TextStyle(
+                    color: AppTheme.textSecondary.withAlpha(220),
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ),
+
+          // TABELA DE SÉRIES
+          if (series.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Column(
+                children: [
+                  // Cabeçalho da Tabela (AGORA COM COR NEUTRA, POIS NÃO É CLICÁVEL)
+                  Row(
+                    children: [
+                      const SizedBox(
+                        width: 36,
+                        child: Text(
+                          'Série',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          tipoAlvo,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: AppTheme.textSecondary, // <-- Sem Laranja
+                            fontSize: 12,
+                            fontWeight:
+                                FontWeight.w600, // <-- Removido o extra bold
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          'Carga',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          'Pausa',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+
+                  // SUBDIVISÕES RENDEREIZADAS DINAMICAMENTE
+                  if (aquecimentoSeries.isNotEmpty) ...[
+                    _buildSectionTitle('Aquecimento', Colors.amber),
+                    ...aquecimentoSeries.asMap().entries.map(
+                      (entry) =>
+                          _buildSerieReadOnlyRow(entry.value, entry.key + 1),
+                    ),
+                  ],
+
+                  if (feederSeries.isNotEmpty) ...[
+                    _buildSectionTitle('Feeder Sets', Colors.blueAccent),
+                    ...feederSeries.asMap().entries.map(
+                      (entry) =>
+                          _buildSerieReadOnlyRow(entry.value, entry.key + 1),
+                    ),
+                  ],
+
+                  if (trabalhoSeries.isNotEmpty) ...[
+                    _buildSectionTitle(
+                      'Séries de Trabalho',
+                      AppTheme.textSecondary,
+                    ),
+                    ...trabalhoSeries.asMap().entries.map(
+                      (entry) =>
+                          _buildSerieReadOnlyRow(entry.value, entry.key + 1),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  // --- WIDGETS AUXILIARES ---
+
+  Widget _buildSectionTitle(String title, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 4),
+      child: Row(
+        children: [
+          Icon(
+            Icons.subdirectory_arrow_right,
+            size: 14,
+            color: color.withAlpha(200),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: TextStyle(
+              color: color.withAlpha(200),
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // NÚMEROS AGORA SÃO SEMPRE NEUTROS (Sem as cores do tipo de série)
+  Widget _buildSerieReadOnlyRow(Map<String, dynamic> serie, int visualNumber) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 28,
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceLight.withAlpha(
+                100,
+              ), // Cor neutra de fundo
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Center(
+              child: Text(
+                '$visualNumber',
+                style: const TextStyle(
+                  color: AppTheme.textSecondary, // Cor de texto neutra
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: _buildReadonlyBox(serie['alvo'] ?? '-')),
+          const SizedBox(width: 8),
+          Expanded(child: _buildReadonlyBox(serie['carga'] ?? '-')),
+          const SizedBox(width: 8),
+          Expanded(child: _buildReadonlyBox(serie['descanso'] ?? '-')),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReadonlyBox(String text) {
+    return Container(
+      height: 36,
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Center(
+        child: Text(
+          text,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
