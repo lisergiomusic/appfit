@@ -55,7 +55,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   final List<ExercicioItem> _exercicios = [
     ExercicioItem(
       nome: 'Supino Reto com Barra',
-      grupoMuscular: 'Peito • Barra',
+      grupoMuscular: 'Peito',
       observacao: 'Focar na cadência 3010. Não esticar totalmente o cotovelo.',
       tipoAlvo: 'Reps',
       series: [
@@ -656,16 +656,20 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                         children: [
                                           Text(
                                             ex.tipoAlvo,
-                                            style: const TextStyle(
-                                              color: AppTheme.primary,
+                                            style: TextStyle(
+                                              color: ex.tipoAlvo == 'Reps'
+                                                  ? AppTheme.textSecondary
+                                                  : AppTheme.primary,
                                               fontSize: 12,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                           const SizedBox(width: 2),
-                                          const Icon(
+                                          Icon(
                                             Icons.swap_vert,
-                                            color: AppTheme.primary,
+                                            color: ex.tipoAlvo == 'Reps'
+                                                ? AppTheme.textSecondary
+                                                : AppTheme.primary,
                                             size: 14,
                                           ),
                                         ],
@@ -857,29 +861,19 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   Widget _buildExpandedHeader(ExercicioItem ex, int exIndex) {
     return Padding(
       key: const ValueKey('expanded_header'),
-      padding: const EdgeInsets.all(16),
+      // match left padding with body rows (16) and reduce extra offset
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: ReorderableDragStartListener(
-              index: exIndex,
-              child: const Icon(
-                Icons.drag_indicator,
-                color: AppTheme.textSecondary,
-                size: 24,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
+          // no extra spacer needed when expanded; body content also has 16 horizontal padding
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // LINHA 1: Título e Ações (Mais espaço para o texto e botões)
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(
                       child: Text(
@@ -966,7 +960,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
 
                 // LINHA 2: Thumbnail e Info Complementar (Organizado e Clean)
                 Row(
