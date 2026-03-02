@@ -50,7 +50,7 @@ class ConfigurarExerciciosPage extends StatefulWidget {
 
 class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   // Controle do Accordion: Qual exercício está aberto no momento?
-  int? _expandedExIndex = 0;
+  int? _expandedExIndex; // null = todos colapsados
 
   final List<ExercicioItem> _exercicios = [
     ExercicioItem(
@@ -461,9 +461,17 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: AppTheme.primary),
-            tooltip: 'Adicionar exercício',
-            onPressed: _openLibrary,
+            icon: const Icon(Icons.check, color: AppTheme.primary),
+            tooltip: 'Finalizar treino',
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Treino finalizado com sucesso!'),
+                  backgroundColor: AppTheme.success,
+                ),
+              );
+              Navigator.pop(context);
+            },
           ),
         ],
       ),
@@ -571,9 +579,9 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         boxShadow: [
           if (isExpanded)
             BoxShadow(
-              color: Colors.black.withAlpha(80),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
+              color: Colors.black.withAlpha(40), // softer shadow when expanded
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             )
           else
             BoxShadow(
@@ -905,8 +913,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                         ex.nome,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
                           height: 1.2,
                         ),
                       ),
@@ -1248,19 +1256,10 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         border: Border(top: BorderSide(color: Colors.white.withAlpha(13))),
       ),
       child: ElevatedButton.icon(
-        onPressed: () {
-          // finalize workout
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Treino finalizado com sucesso!'),
-              backgroundColor: AppTheme.success,
-            ),
-          );
-          Navigator.pop(context);
-        },
-        icon: const Icon(Icons.check),
+        onPressed: _openLibrary,
+        icon: const Icon(Icons.add),
         label: const Text(
-          'Finalizar Treino',
+          'Adicionar Exercício',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(
