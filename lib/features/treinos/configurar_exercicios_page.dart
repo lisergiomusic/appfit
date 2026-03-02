@@ -242,7 +242,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         String cargaToClone = '-';
         String descansoToClone = '60s';
 
-        // Tenta clonar a última série do mesmo tipo, ou a última geral
         if (_exercicios[exIndex].series.isNotEmpty) {
           final ultimaSerie = _exercicios[exIndex].series.lastWhere(
             (s) => s.tipo == tipoEscolhido,
@@ -268,19 +267,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   void _removerSerie(int exIndex, int realIndex) {
     setState(() {
       _exercicios[exIndex].series.removeAt(realIndex);
-    });
-  }
-
-  void _alternarTipoSerie(int exIndex, int realIndex) {
-    setState(() {
-      final serie = _exercicios[exIndex].series[realIndex];
-      if (serie.tipo == TipoSerie.trabalho) {
-        serie.tipo = TipoSerie.aquecimento;
-      } else if (serie.tipo == TipoSerie.aquecimento) {
-        serie.tipo = TipoSerie.feeder;
-      } else {
-        serie.tipo = TipoSerie.trabalho;
-      }
     });
   }
 
@@ -345,7 +331,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   Widget _buildExercicioCard(int exIndex) {
     final ex = _exercicios[exIndex];
 
-    // Agrupamento das séries por tipo (com os seus índices reais mantidos)
     final aquecimentoSeries = ex.series
         .asMap()
         .entries
@@ -487,14 +472,15 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
               ),
             ),
 
-          // 3. TABELA DE SÉRIES (CABEÇALHO ÚNICO)
+          // 3. TABELA DE SÉRIES (CABEÇALHO ÚNICO COM ALINHAMENTO MATEMÁTICO CORRIGIDO)
           if (ex.series.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Row(
                 children: [
+                  // A largura de '36' é idêntica à largura da etiqueta (AQ/1/2) na linha abaixo
                   const SizedBox(
-                    width: 40,
+                    width: 36,
                     child: Text(
                       'Série',
                       textAlign: TextAlign.center,
@@ -506,6 +492,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     ),
                   ),
                   const SizedBox(width: 12),
+
                   Expanded(
                     child: Center(
                       child: InkWell(
@@ -568,7 +555,9 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 32),
+
+                  // Esta largura '40' garante que o espaçamento direito do título é igual ao espaço do X (8 margem + 32 X) na linha abaixo
+                  const SizedBox(width: 40),
                 ],
               ),
             ),
@@ -645,7 +634,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     );
   }
 
-  // Design limpo para o título da subdivisão
   Widget _buildSectionTitle(String title, Color color) {
     return Padding(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 4),
@@ -682,36 +670,31 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       child: Row(
         children: [
-          // TIPO DE SÉRIE (Apenas o número, sem letras!)
-          GestureDetector(
-            onTap: () => _alternarTipoSerie(exIndex, realIndex),
-            child: Container(
-              width: 36,
-              height: 28,
-              decoration: BoxDecoration(
-                color: themeColor == Colors.white
-                    ? AppTheme.surfaceLight.withAlpha(100)
-                    : themeColor.withAlpha(25),
-                borderRadius: BorderRadius.circular(6),
-                border: themeColor != Colors.white
-                    ? Border.all(color: themeColor.withAlpha(50))
-                    : null,
-              ),
-              child: Center(
-                child: Text(
-                  '$visualNumber',
-                  style: TextStyle(
-                    color: themeColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
+          Container(
+            width: 36, // Largura idêntica à do Cabeçalho "Série"
+            height: 28,
+            decoration: BoxDecoration(
+              color: themeColor == Colors.white
+                  ? AppTheme.surfaceLight.withAlpha(100)
+                  : themeColor.withAlpha(25),
+              borderRadius: BorderRadius.circular(6),
+              border: themeColor != Colors.white
+                  ? Border.all(color: themeColor.withAlpha(50))
+                  : null,
+            ),
+            child: Center(
+              child: Text(
+                '$visualNumber',
+                style: TextStyle(
+                  color: themeColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
                 ),
               ),
             ),
           ),
           const SizedBox(width: 12),
 
-          // INPUTS SUTIS COM GRAVAÇÃO REAL DOS DADOS (onChanged)
           Expanded(
             child: _buildCleanInput(serie.alvo, (val) => serie.alvo = val),
           ),
@@ -726,9 +709,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
               (val) => serie.descanso = val,
             ),
           ),
-          const SizedBox(width: 8),
 
-          // BOTÃO REMOVER
+          const SizedBox(width: 8), // Margem antes do X
           GestureDetector(
             onTap: () => _removerSerie(exIndex, realIndex),
             child: SizedBox(
@@ -740,13 +722,12 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                 size: 18,
               ),
             ),
-          ),
+          ), // Total: 8 + 32 = 40 (Idêntico ao SizedBox final do Cabeçalho)
         ],
       ),
     );
   }
 
-  // Atualizado para TextFormField para poder gravar o que se digita
   Widget _buildCleanInput(String initialValue, ValueChanged<String> onChanged) {
     return Container(
       height: 36,
