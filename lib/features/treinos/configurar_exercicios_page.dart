@@ -3,15 +3,16 @@ import '../../core/theme/app_theme.dart';
 import 'exercicios_library_page.dart';
 
 // --- MODELOS DE DADOS REFINADOS ---
+enum TipoSerie { aquecimento, feeder, trabalho }
+
 class SerieItem {
-  bool isAquecimento;
-  String
-  alvo; // <-- NOVO: Mudamos de 'reps' para 'alvo', pois pode ser repetição ou tempo
+  TipoSerie tipo;
+  String alvo;
   String carga;
   String descanso;
 
   SerieItem({
-    this.isAquecimento = false,
+    this.tipo = TipoSerie.trabalho,
     this.alvo = '10',
     this.carga = '-',
     this.descanso = '60s',
@@ -20,14 +21,18 @@ class SerieItem {
 
 class ExercicioItem {
   String nome;
+  String grupoMuscular;
   String observacao;
-  String tipoAlvo; // <-- NOVO: 'Reps' ou 'Tempo'
+  String tipoAlvo;
+  String? imagemUrl;
   List<SerieItem> series;
 
   ExercicioItem({
     required this.nome,
+    this.grupoMuscular = 'Peito',
     this.observacao = '',
-    this.tipoAlvo = 'Reps', // O padrão é Repetições
+    this.tipoAlvo = 'Reps',
+    this.imagemUrl,
     required this.series,
   });
 }
@@ -43,27 +48,33 @@ class ConfigurarExerciciosPage extends StatefulWidget {
 }
 
 class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
-  // Mock atualizado com um exercício de TEMPO (Prancha)
   final List<ExercicioItem> _exercicios = [
     ExercicioItem(
       nome: 'Supino Reto com Barra',
+      grupoMuscular: 'Peito • Barra',
       observacao: 'Focar na cadência 3010. Não esticar totalmente o cotovelo.',
       tipoAlvo: 'Reps',
       series: [
         SerieItem(
-          isAquecimento: true,
+          tipo: TipoSerie.aquecimento,
           alvo: '15',
           carga: '10kg',
           descanso: '45s',
         ),
         SerieItem(
-          isAquecimento: false,
+          tipo: TipoSerie.feeder,
+          alvo: '3',
+          carga: '26kg',
+          descanso: '60s',
+        ),
+        SerieItem(
+          tipo: TipoSerie.trabalho,
           alvo: '12',
           carga: '30kg',
           descanso: '90s',
         ),
         SerieItem(
-          isAquecimento: false,
+          tipo: TipoSerie.trabalho,
           alvo: '10',
           carga: '35kg',
           descanso: '90s',
@@ -71,24 +82,19 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       ],
     ),
     ExercicioItem(
-      nome: 'Prancha Isométrica', // Exemplo de exercício por tempo
-      observacao: 'Manter a contração do abdômen e glúteos.',
-      tipoAlvo: 'Tempo', // Já nasce configurado para tempo
+      nome: 'Prancha Isométrica',
+      grupoMuscular: 'Core • Peso Corporal',
+      observacao: '',
+      tipoAlvo: 'Tempo',
       series: [
         SerieItem(
-          isAquecimento: false,
+          tipo: TipoSerie.trabalho,
           alvo: '60s',
           carga: '-',
           descanso: '30s',
         ),
         SerieItem(
-          isAquecimento: false,
-          alvo: '60s',
-          carga: '-',
-          descanso: '30s',
-        ),
-        SerieItem(
-          isAquecimento: false,
+          tipo: TipoSerie.trabalho,
           alvo: '60s',
           carga: '-',
           descanso: '30s',
@@ -97,9 +103,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     ),
   ];
 
-  // --- LÓGICA DE ADICIONAR SÉRIE COM PERGUNTA (MANTIDA) ---
   Future<void> _adicionarSerie(int exIndex) async {
-    final bool? isAquecimento = await showModalBottomSheet<bool>(
+    final TipoSerie? tipoEscolhido = await showModalBottomSheet<TipoSerie>(
       context: context,
       backgroundColor: AppTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
@@ -124,6 +129,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   ),
                 ),
                 const SizedBox(height: 24),
+
                 ListTile(
                   leading: Container(
                     width: 48,
@@ -134,14 +140,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       border: Border.all(color: Colors.amber.withAlpha(50)),
                     ),
                     child: const Center(
-                      child: Text(
-                        'AQ',
-                        style: TextStyle(
-                          color: Colors.amber,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                      child: Icon(Icons.whatshot, color: Colors.amber),
                     ),
                   ),
                   title: const Text(
@@ -158,9 +157,43 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       fontSize: 12,
                     ),
                   ),
-                  onTap: () => Navigator.pop(context, true),
+                  onTap: () => Navigator.pop(context, TipoSerie.aquecimento),
                 ),
                 const SizedBox(height: 8),
+
+                ListTile(
+                  leading: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent.withAlpha(30),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.blueAccent.withAlpha(50),
+                      ),
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.flash_on, color: Colors.blueAccent),
+                    ),
+                  ),
+                  title: const Text(
+                    'Feeder Set',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'Aproximação de carga sem gerar fadiga',
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                  onTap: () => Navigator.pop(context, TipoSerie.feeder),
+                ),
+                const SizedBox(height: 8),
+
                 ListTile(
                   leading: Container(
                     width: 48,
@@ -194,7 +227,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       fontSize: 12,
                     ),
                   ),
-                  onTap: () => Navigator.pop(context, false),
+                  onTap: () => Navigator.pop(context, TipoSerie.trabalho),
                 ),
               ],
             ),
@@ -203,14 +236,18 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       },
     );
 
-    if (isAquecimento != null) {
+    if (tipoEscolhido != null) {
       setState(() {
         String alvoToClone = '10';
         String cargaToClone = '-';
         String descansoToClone = '60s';
 
+        // Tenta clonar a última série do mesmo tipo, ou a última geral
         if (_exercicios[exIndex].series.isNotEmpty) {
-          final ultimaSerie = _exercicios[exIndex].series.last;
+          final ultimaSerie = _exercicios[exIndex].series.lastWhere(
+            (s) => s.tipo == tipoEscolhido,
+            orElse: () => _exercicios[exIndex].series.last,
+          );
           alvoToClone = ultimaSerie.alvo;
           cargaToClone = ultimaSerie.carga;
           descansoToClone = ultimaSerie.descanso;
@@ -218,7 +255,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
         _exercicios[exIndex].series.add(
           SerieItem(
-            isAquecimento: isAquecimento,
+            tipo: tipoEscolhido,
             alvo: alvoToClone,
             carga: cargaToClone,
             descanso: descansoToClone,
@@ -228,16 +265,22 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     }
   }
 
-  void _removerSerie(int exIndex, int serieIndex) {
+  void _removerSerie(int exIndex, int realIndex) {
     setState(() {
-      _exercicios[exIndex].series.removeAt(serieIndex);
+      _exercicios[exIndex].series.removeAt(realIndex);
     });
   }
 
-  void _alternarTipoSerie(int exIndex, int serieIndex) {
+  void _alternarTipoSerie(int exIndex, int realIndex) {
     setState(() {
-      final serie = _exercicios[exIndex].series[serieIndex];
-      serie.isAquecimento = !serie.isAquecimento;
+      final serie = _exercicios[exIndex].series[realIndex];
+      if (serie.tipo == TipoSerie.trabalho) {
+        serie.tipo = TipoSerie.aquecimento;
+      } else if (serie.tipo == TipoSerie.aquecimento) {
+        serie.tipo = TipoSerie.feeder;
+      } else {
+        serie.tipo = TipoSerie.trabalho;
+      }
     });
   }
 
@@ -302,301 +345,399 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   Widget _buildExercicioCard(int exIndex) {
     final ex = _exercicios[exIndex];
 
+    // Agrupamento das séries por tipo (com os seus índices reais mantidos)
+    final aquecimentoSeries = ex.series
+        .asMap()
+        .entries
+        .where((e) => e.value.tipo == TipoSerie.aquecimento)
+        .toList();
+    final feederSeries = ex.series
+        .asMap()
+        .entries
+        .where((e) => e.value.tipo == TipoSerie.feeder)
+        .toList();
+    final trabalhoSeries = ex.series
+        .asMap()
+        .entries
+        .where((e) => e.value.tipo == TipoSerie.trabalho)
+        .toList();
+
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withAlpha(13)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withAlpha(10)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(50),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // CABEÇALHO DO EXERCÍCIO
+          // 1. CABEÇALHO DO EXERCÍCIO
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+            padding: const EdgeInsets.all(16),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceLight,
+                    borderRadius: BorderRadius.circular(12),
+                    image: ex.imagemUrl != null
+                        ? DecorationImage(
+                            image: NetworkImage(ex.imagemUrl!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: ex.imagemUrl == null
+                      ? Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Icon(
+                              Icons.image_outlined,
+                              color: AppTheme.textSecondary.withAlpha(100),
+                              size: 28,
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black.withAlpha(100),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            const Icon(
+                              Icons.play_circle_fill,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ],
+                        )
+                      : const SizedBox(),
+                ),
+                const SizedBox(width: 16),
                 Expanded(
-                  child: Text(
-                    ex.nome,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      height: 1.3,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        ex.nome,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        ex.grupoMuscular,
+                        style: const TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 IconButton(
                   icon: const Icon(
-                    Icons.note_add_outlined,
+                    Icons.more_horiz,
                     color: AppTheme.textSecondary,
-                    size: 20,
-                  ),
-                  tooltip: 'Adicionar observação',
-                  onPressed: () {},
-                  constraints: const BoxConstraints(),
-                  padding: const EdgeInsets.all(8),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.more_vert,
-                    color: AppTheme.textSecondary,
-                    size: 20,
                   ),
                   onPressed: () {},
+                  padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
-                  padding: const EdgeInsets.all(8),
                 ),
               ],
             ),
           ),
 
-          // CAMPO DE OBSERVAÇÃO (Se houver)
+          // 2. CAMPO DE OBSERVAÇÃO
           if (ex.observacao.isNotEmpty)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.primary.withAlpha(15),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppTheme.primary.withAlpha(50)),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: AppTheme.primary.withAlpha(200),
-                      size: 16,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        ex.observacao,
-                        style: TextStyle(
-                          color: AppTheme.primary.withAlpha(200),
-                          fontSize: 12,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-          // TABELA DE SÉRIES (CABEÇALHO)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                const SizedBox(
-                  width: 40,
-                  child: Text(
-                    'Série',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                // --- A MÁGICA ACONTECE AQUI: CABEÇALHO CLICÁVEL ---
-                Expanded(
-                  child: Center(
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          // Alterna o tipo de Alvo entre Reps e Tempo
-                          ex.tipoAlvo = ex.tipoAlvo == 'Reps'
-                              ? 'Tempo'
-                              : 'Reps';
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Meta alterada para ${ex.tipoAlvo}'),
-                            duration: const Duration(seconds: 1),
-                          ),
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(4),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 2,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              ex.tipoAlvo == 'Tempo' ? 'Tempo' : 'Reps',
-                              style: const TextStyle(
-                                color: AppTheme.primary, // Cor de destaque
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 2),
-                            const Icon(
-                              Icons.swap_vert,
-                              color: AppTheme.primary,
-                              size: 14,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const Expanded(
-                  child: Text(
-                    'Carga',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const Expanded(
-                  child: Text(
-                    'Pausa',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 32),
-              ],
-            ),
-          ),
-
-          // LINHAS DAS SÉRIES
-          ...List.generate(ex.series.length, (serieIndex) {
-            return _buildSerieRow(exIndex, serieIndex);
-          }),
-
-          // BOTÃO ADICIONAR SÉRIE
-          InkWell(
-            onTap: () => _adicionarSerie(exIndex),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: Colors.white.withAlpha(10)),
-                ),
-              ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
-                    Icons.add,
-                    color: AppTheme.textSecondary.withAlpha(200),
-                    size: 18,
+                    Icons.notes,
+                    color: AppTheme.textSecondary.withAlpha(150),
+                    size: 16,
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Adicionar Série',
-                    style: TextStyle(
-                      color: AppTheme.textSecondary.withAlpha(200),
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      ex.observacao,
+                      style: TextStyle(
+                        color: AppTheme.textSecondary.withAlpha(200),
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
+
+          // 3. TABELA DE SÉRIES (CABEÇALHO ÚNICO)
+          if (ex.series.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Row(
+                children: [
+                  const SizedBox(
+                    width: 40,
+                    child: Text(
+                      'Série',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Center(
+                      child: InkWell(
+                        onTap: () => setState(
+                          () => ex.tipoAlvo = ex.tipoAlvo == 'Reps'
+                              ? 'Tempo'
+                              : 'Reps',
+                        ),
+                        borderRadius: BorderRadius.circular(6),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 2,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                ex.tipoAlvo,
+                                style: const TextStyle(
+                                  color: AppTheme.primary,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              const Icon(
+                                Icons.swap_vert,
+                                color: AppTheme.primary,
+                                size: 14,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Carga',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Pausa',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 32),
+                ],
+              ),
+            ),
+
+          // 4. SUBDIVISÕES RENDEREIZADAS DINAMICAMENTE
+          if (aquecimentoSeries.isNotEmpty) ...[
+            _buildSectionTitle('Aquecimento', Colors.amber),
+            ...aquecimentoSeries.asMap().entries.map(
+              (entry) => _buildSerieRow(
+                exIndex,
+                entry.value.key,
+                entry.value.value,
+                entry.key + 1,
+                Colors.amber,
+              ),
+            ),
+          ],
+
+          if (feederSeries.isNotEmpty) ...[
+            _buildSectionTitle('Feeder Sets', Colors.blueAccent),
+            ...feederSeries.asMap().entries.map(
+              (entry) => _buildSerieRow(
+                exIndex,
+                entry.value.key,
+                entry.value.value,
+                entry.key + 1,
+                Colors.blueAccent,
+              ),
+            ),
+          ],
+
+          if (trabalhoSeries.isNotEmpty) ...[
+            _buildSectionTitle('Séries de Trabalho', AppTheme.textSecondary),
+            ...trabalhoSeries.asMap().entries.map(
+              (entry) => _buildSerieRow(
+                exIndex,
+                entry.value.key,
+                entry.value.value,
+                entry.key + 1,
+                Colors.white,
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 8),
+
+          // 5. BOTÃO ADICIONAR SÉRIE
+          TextButton(
+            onPressed: () => _adicionarSerie(exIndex),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.zero,
+              ),
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.add, color: AppTheme.primary, size: 18),
+                SizedBox(width: 6),
+                Text(
+                  'Adicionar Série',
+                  style: TextStyle(
+                    color: AppTheme.primary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSerieRow(int exIndex, int serieIndex) {
-    final serie = _exercicios[exIndex].series[serieIndex];
-
-    int numeroSerieTrabalho = 0;
-    for (int i = 0; i <= serieIndex; i++) {
-      if (!_exercicios[exIndex].series[i].isAquecimento) {
-        numeroSerieTrabalho++;
-      }
-    }
-
+  // Design limpo para o título da subdivisão
+  Widget _buildSectionTitle(String title, Color color) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 4),
       child: Row(
         children: [
-          // TIPO DE SÉRIE (Clicável para alternar entre AQ e Número)
+          Icon(
+            Icons.subdirectory_arrow_right,
+            size: 14,
+            color: color.withAlpha(200),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: TextStyle(
+              color: color.withAlpha(200),
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSerieRow(
+    int exIndex,
+    int realIndex,
+    SerieItem serie,
+    int visualNumber,
+    Color themeColor,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      child: Row(
+        children: [
+          // TIPO DE SÉRIE (Apenas o número, sem letras!)
           GestureDetector(
-            onTap: () => _alternarTipoSerie(exIndex, serieIndex),
+            onTap: () => _alternarTipoSerie(exIndex, realIndex),
             child: Container(
               width: 36,
               height: 28,
               decoration: BoxDecoration(
-                color: serie.isAquecimento
-                    ? Colors.amber.withAlpha(30)
-                    : AppTheme.surfaceLight,
+                color: themeColor == Colors.white
+                    ? AppTheme.surfaceLight.withAlpha(100)
+                    : themeColor.withAlpha(25),
                 borderRadius: BorderRadius.circular(6),
-                border: serie.isAquecimento
-                    ? Border.all(color: Colors.amber.withAlpha(50))
+                border: themeColor != Colors.white
+                    ? Border.all(color: themeColor.withAlpha(50))
                     : null,
               ),
               child: Center(
-                child: serie.isAquecimento
-                    ? const Text(
-                        'AQ',
-                        style: TextStyle(
-                          color: Colors.amber,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 11,
-                          letterSpacing: 0.5,
-                        ),
-                      )
-                    : Text(
-                        '$numeroSerieTrabalho',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
+                child: Text(
+                  '$visualNumber',
+                  style: TextStyle(
+                    color: themeColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
               ),
             ),
           ),
           const SizedBox(width: 12),
 
-          // ALVO INPUT (Reps ou Tempo)
-          Expanded(child: _buildMiniInput(serie.alvo)),
+          // INPUTS SUTIS COM GRAVAÇÃO REAL DOS DADOS (onChanged)
+          Expanded(
+            child: _buildCleanInput(serie.alvo, (val) => serie.alvo = val),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildCleanInput(serie.carga, (val) => serie.carga = val),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildCleanInput(
+              serie.descanso,
+              (val) => serie.descanso = val,
+            ),
+          ),
           const SizedBox(width: 8),
 
-          // CARGA INPUT
-          Expanded(child: _buildMiniInput(serie.carga)),
-          const SizedBox(width: 8),
-
-          // DESCANSO INPUT
-          Expanded(child: _buildMiniInput(serie.descanso)),
-          const SizedBox(width: 8),
-
-          // REMOVER SÉRIE
+          // BOTÃO REMOVER
           GestureDetector(
-            onTap: () => _removerSerie(exIndex, serieIndex),
-            child: const SizedBox(
+            onTap: () => _removerSerie(exIndex, realIndex),
+            child: SizedBox(
               width: 32,
               height: 32,
               child: Icon(
-                Icons.remove_circle_outline,
-                color: Colors.redAccent,
-                size: 20,
+                Icons.close,
+                color: AppTheme.textSecondary.withAlpha(150),
+                size: 18,
               ),
             ),
           ),
@@ -605,25 +746,26 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     );
   }
 
-  // Cria aqueles inputs minimalistas da tabela
-  Widget _buildMiniInput(String initialValue) {
+  // Atualizado para TextFormField para poder gravar o que se digita
+  Widget _buildCleanInput(String initialValue, ValueChanged<String> onChanged) {
     return Container(
-      height: 32,
+      height: 36,
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight.withAlpha(150),
+        color: Colors.white.withAlpha(12),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: TextField(
-        controller: TextEditingController(text: initialValue),
+      child: TextFormField(
+        initialValue: initialValue,
+        onChanged: onChanged,
         textAlign: TextAlign.center,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
         ),
         decoration: const InputDecoration(
           isDense: true,
-          contentPadding: EdgeInsets.symmetric(vertical: 8),
+          contentPadding: EdgeInsets.symmetric(vertical: 9),
           border: InputBorder.none,
         ),
       ),
