@@ -333,127 +333,163 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                 ),
               ),
             ] else ...[
-              ListView.builder(
+              ReorderableListView(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: _treinos.length,
-                itemBuilder: (context, index) {
+                buildDefaultDragHandles: false,
+                proxyDecorator: (child, index, animation) {
+                  return AnimatedBuilder(
+                    animation: animation,
+                    builder: (BuildContext context, Widget? child) {
+                      final double animValue = animation.value;
+                      final double elevation = 6.0 * animValue;
+                      return Material(
+                        elevation: elevation,
+                        color: Colors.transparent,
+                        shadowColor: Colors.black.withOpacity(0.25),
+                        borderRadius: BorderRadius.circular(16),
+                        child: child,
+                      );
+                    },
+                    child: child,
+                  );
+                },
+                onReorder: (oldIndex, newIndex) {
+                  setState(() {
+                    if (newIndex > oldIndex) newIndex -= 1;
+                    final item = _treinos.removeAt(oldIndex);
+                    _treinos.insert(newIndex, item);
+                  });
+                },
+                children: List.generate(_treinos.length, (index) {
+                  final treino = _treinos[index];
                   return Container(
+                    key: ValueKey(treino),
                     margin: const EdgeInsets.only(bottom: 16),
-                    child: InkWell(
-                      onTap: () {
-                        // NAVEGAÇÃO PARA CONFIGURAR EXERCÍCIOS
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ConfigurarExerciciosPage(
-                              nomeTreino: _treinos[index].nomeController.text,
-                            ),
-                          ),
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: AppTheme.surfaceDark,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white.withAlpha(13)),
-                        ),
-                        child: Row(
-                          children: [
-                            // Badge de Letra (A, B, C...)
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: AppTheme.surfaceLight,
-                                borderRadius: BorderRadius.circular(12),
+                    child: Material(
+                      color: AppTheme.surfaceDark,
+                      clipBehavior: Clip.antiAlias,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(color: Colors.white.withAlpha(13)),
+                      ),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ConfigurarExerciciosPage(
+                                nomeTreino: treino.nomeController.text,
                               ),
-                              child: Text(
-                                String.fromCharCode(65 + index),
-                                style: const TextStyle(
-                                  color: AppTheme.primary,
-                                  fontWeight: FontWeight.bold,
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          child: Row(
+                            children: [
+                              ReorderableDragStartListener(
+                                index: index,
+                                child: const Padding(
+                                  padding: EdgeInsets.only(right: 12),
+                                  child: Icon(
+                                    Icons.drag_indicator,
+                                    color: AppTheme.textSecondary,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 16),
-
-                            // Título e Contador
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _treinos[index].nomeController.text,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.surfaceLight,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  String.fromCharCode(65 + index),
+                                  style: const TextStyle(
+                                    color: AppTheme.primary,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  const SizedBox(height: 4),
-                                  const Text(
-                                    'Toque para configurar exercícios',
-                                    style: TextStyle(
-                                      color: AppTheme.textSecondary,
-                                      fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _treinos[index].nomeController.text,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
                                     ),
+                                    const SizedBox(height: 2),
+                                    const Text(
+                                      'Toque para configurar exercícios',
+                                      style: TextStyle(
+                                        color: AppTheme.textSecondary,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              PopupMenuButton<String>(
+                                icon: const Icon(
+                                  Icons.more_vert,
+                                  color: AppTheme.textSecondary,
+                                ),
+                                onSelected: (value) {
+                                  switch (value) {
+                                    case 'edit':
+                                      _editarTreino(index);
+                                      break;
+                                    case 'config':
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute<void>(
+                                          builder: (context) =>
+                                              ConfigurarExerciciosPage(
+                                                nomeTreino: _treinos[index]
+                                                    .nomeController
+                                                    .text,
+                                              ),
+                                        ),
+                                      );
+                                      break;
+                                    case 'delete':
+                                      _excluirTreino(index);
+                                      break;
+                                  }
+                                },
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    value: 'edit',
+                                    child: Text('Editar informações'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'config',
+                                    child: Text('Configurar exercícios'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: Text('Excluir'),
                                   ),
                                 ],
                               ),
-                            ),
-
-                            PopupMenuButton<String>(
-                              icon: const Icon(
-                                Icons.more_vert,
-                                color: AppTheme.textSecondary,
-                              ),
-                              onSelected: (value) {
-                                switch (value) {
-                                  case 'edit':
-                                    _editarTreino(index);
-                                    break;
-                                  case 'config':
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            ConfigurarExerciciosPage(
-                                              nomeTreino: _treinos[index]
-                                                  .nomeController
-                                                  .text,
-                                            ),
-                                      ),
-                                    );
-                                    break;
-                                  case 'delete':
-                                    _excluirTreino(index);
-                                    break;
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                  value: 'edit',
-                                  child: Text('Editar informações'),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'config',
-                                  child: Text('Configurar exercícios'),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'delete',
-                                  child: Text('Excluir'),
-                                ),
-                              ],
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   );
-                },
-              ),
+                }).toList(),
+              ), // ReorderableListView
             ],
             // BOTÃO DE ADICIONAR NOVA SESSÃO
             const SizedBox(height: 8),
@@ -474,34 +510,32 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
               ),
             ),
 
-            const SizedBox(
-              height: 100,
-            ), // Espaço para não ficar embaixo do botão flutuante
-          ],
-        ),
-      ),
+            const SizedBox(height: 32),
 
-      // Botão Principal de Salvar
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: ElevatedButton(
-          onPressed: _salvarRotina,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primary,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+            // Botão principal fixo no final da página
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: ElevatedButton(
+                onPressed: _salvarRotina,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  minimumSize: const Size(double.infinity, 56),
+                  elevation: 8,
+                  shadowColor: AppTheme.primary.withAlpha(128),
+                ),
+                child: const Text(
+                  'Salvar Rotina Completa',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
-            minimumSize: const Size(double.infinity, 56),
-            elevation: 8,
-            shadowColor: AppTheme.primary.withAlpha(128),
-          ),
-          child: const Text(
-            'Salvar Rotina Completa',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
+            const SizedBox(height: 24),
+          ],
         ),
       ),
     );
