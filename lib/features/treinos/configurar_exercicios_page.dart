@@ -84,7 +84,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     ExercicioItem(
       nome: 'Prancha Isométrica',
       grupoMuscular: 'Core • Peso Corporal',
-      observacao: '',
+      observacao: '', // Este está vazio para testarmos o novo botão inline!
       tipoAlvo: 'Tempo',
       series: [
         SerieItem(
@@ -102,6 +102,132 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       ],
     ),
   ];
+
+  void _removerExercicio(int exIndex) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppTheme.surfaceDark,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Remover Exercício?',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Tem certeza que deseja remover este exercício do treino?',
+          style: TextStyle(color: AppTheme.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: AppTheme.textSecondary),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _exercicios.removeAt(exIndex);
+              });
+              Navigator.pop(context);
+            },
+            child: const Text(
+              'Remover',
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _editarObservacao(BuildContext context, int exIndex) {
+    final controller = TextEditingController(
+      text: _exercicios[exIndex].observacao,
+    );
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surfaceDark,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 24,
+            right: 24,
+            top: 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.notes, color: AppTheme.primary),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Notas do Exercício',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                maxLines: 4,
+                autofocus: true,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Ex: Focar na contração de pico...',
+                  hintStyle: TextStyle(
+                    color: AppTheme.textSecondary.withAlpha(128),
+                  ),
+                  filled: true,
+                  fillColor: AppTheme.surfaceLight,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _exercicios[exIndex].observacao = controller.text.trim();
+                  });
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Salvar Nota',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   Future<void> _adicionarSerie(int exIndex) async {
     final TipoSerie? tipoEscolhido = await showModalBottomSheet<TipoSerie>(
@@ -283,8 +409,17 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.more_vert, color: AppTheme.textSecondary),
-            onPressed: () {},
+            icon: const Icon(Icons.playlist_add_check, color: AppTheme.primary),
+            tooltip: 'Salvar Treino',
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Treino salvo com sucesso!'),
+                  backgroundColor: AppTheme.success,
+                ),
+              );
+              Navigator.pop(context);
+            },
           ),
         ],
       ),
@@ -364,7 +499,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 1. CABEÇALHO DO EXERCÍCIO
+          // 1. CABEÇALHO DO EXERCÍCIO COM MENU LIMPO
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -433,52 +568,141 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     ],
                   ),
                 ),
-                IconButton(
+
+                // --- O FAMOSO MENU DE 3 PONTINHOS (Limpo, sem ícone redundante) ---
+                PopupMenuButton<String>(
                   icon: const Icon(
                     Icons.more_horiz,
                     color: AppTheme.textSecondary,
+                    size: 22,
                   ),
-                  onPressed: () {},
+                  color: AppTheme.surfaceLight,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  position: PopupMenuPosition.under,
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
+                  onSelected: (value) {
+                    if (value == 'substituir') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Em breve: Abrir biblioteca de substituição',
+                          ),
+                        ),
+                      );
+                    } else if (value == 'remover') {
+                      _removerExercicio(exIndex);
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'substituir',
+                      child: Row(
+                        children: [
+                          Icon(Icons.swap_horiz, color: Colors.white, size: 20),
+                          SizedBox(width: 12),
+                          Text(
+                            'Substituir exercício',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'remover',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.delete_outline,
+                            color: Colors.redAccent,
+                            size: 20,
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            'Remover',
+                            style: TextStyle(color: Colors.redAccent),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
 
-          // 2. CAMPO DE OBSERVAÇÃO
-          if (ex.observacao.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.notes,
-                    color: AppTheme.textSecondary.withAlpha(150),
-                    size: 16,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      ex.observacao,
-                      style: TextStyle(
-                        color: AppTheme.textSecondary.withAlpha(200),
-                        fontSize: 13,
+          // 2. CAMPO DE OBSERVAÇÃO (INLINE E PREMIUM)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: InkWell(
+              onTap: () => _editarObservacao(context, exIndex),
+              borderRadius: BorderRadius.circular(8),
+              child: ex.observacao.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.add_comment_outlined,
+                            color: AppTheme.textSecondary.withAlpha(150),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Adicionar nota...',
+                            style: TextStyle(
+                              color: AppTheme.textSecondary.withAlpha(150),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(5),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border(
+                          left: BorderSide(
+                            color: AppTheme.primary.withAlpha(150),
+                            width: 3,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              ex.observacao,
+                              style: TextStyle(
+                                color: AppTheme.textSecondary.withAlpha(220),
+                                fontSize: 13,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.edit_outlined,
+                            color: AppTheme.textSecondary.withAlpha(100),
+                            size: 16,
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
-              ),
             ),
+          ),
 
-          // 3. TABELA DE SÉRIES (CABEÇALHO ÚNICO COM ALINHAMENTO MATEMÁTICO CORRIGIDO)
+          // 3. TABELA DE SÉRIES (CABEÇALHO)
           if (ex.series.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Row(
                 children: [
-                  // A largura de '36' é idêntica à largura da etiqueta (AQ/1/2) na linha abaixo
                   const SizedBox(
                     width: 36,
                     child: Text(
@@ -555,8 +779,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       ),
                     ),
                   ),
-
-                  // Esta largura '40' garante que o espaçamento direito do título é igual ao espaço do X (8 margem + 32 X) na linha abaixo
                   const SizedBox(width: 40),
                 ],
               ),
@@ -671,7 +893,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       child: Row(
         children: [
           Container(
-            width: 36, // Largura idêntica à do Cabeçalho "Série"
+            width: 36,
             height: 28,
             decoration: BoxDecoration(
               color: themeColor == Colors.white
@@ -710,7 +932,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             ),
           ),
 
-          const SizedBox(width: 8), // Margem antes do X
+          const SizedBox(width: 8),
           GestureDetector(
             onTap: () => _removerSerie(exIndex, realIndex),
             child: SizedBox(
@@ -722,7 +944,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                 size: 18,
               ),
             ),
-          ), // Total: 8 + 32 = 40 (Idêntico ao SizedBox final do Cabeçalho)
+          ),
         ],
       ),
     );
