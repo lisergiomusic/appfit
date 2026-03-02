@@ -912,13 +912,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             width: 36,
             height: 28,
             decoration: BoxDecoration(
-              color: themeColor == Colors.white
-                  ? AppTheme.surfaceLight.withAlpha(100)
-                  : themeColor.withAlpha(25),
+              color: AppTheme.surfaceLight.withAlpha(100),
               borderRadius: BorderRadius.circular(6),
-              border: themeColor != Colors.white
-                  ? Border.all(color: themeColor.withAlpha(50))
-                  : null,
             ),
             child: Center(
               child: Text(
