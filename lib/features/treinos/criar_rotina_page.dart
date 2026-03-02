@@ -1,5 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import 'configurar_exercicios_page.dart';
+
+// estrutura de dados usada internamente pela página
+class _TreinoData {
+  final TextEditingController nomeController;
+  String? diaSemana;
+  String? orientacoes;
+
+  _TreinoData({required this.nomeController, this.diaSemana, this.orientacoes});
+}
 
 class CriarRotinaPage extends StatefulWidget {
   final String? alunoId;
@@ -15,38 +25,170 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
   final _nomeController = TextEditingController();
   final _objetivoController = TextEditingController();
 
-  // Agora usamos uma lista de Controllers para que cada treino possa ter seu nome editado dinamicamente
-  final List<TextEditingController> _treinoControllers = [
-    TextEditingController(text: 'Treino A'),
-  ];
+  final List<_TreinoData> _treinos = [];
 
   @override
   void dispose() {
     _nomeController.dispose();
     _objetivoController.dispose();
-    for (var controller in _treinoControllers) {
-      controller.dispose();
+    for (var t in _treinos) {
+      t.nomeController.dispose();
     }
     super.dispose();
   }
 
-  void _adicionarTreino() {
-    setState(() {
-      final proximasLetras = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-      final proximaLetra =
-          proximasLetras[_treinoControllers.length % proximasLetras.length];
-      _treinoControllers.add(
-        TextEditingController(text: 'Treino $proximaLetra'),
-      );
-    });
+  // helper sheet for both adding and editing a treino
+  Future<Map<String, String?>?> _showTreinoForm({
+    String? initialNome,
+    String? initialDia,
+    String? initialOrient,
+  }) {
+    final nomeCtr = TextEditingController(text: initialNome);
+    String? diaSemana = initialDia;
+    final orientacoesCtr = TextEditingController(text: initialOrient);
+
+    return showModalBottomSheet<Map<String, String?>>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                initialNome == null ? 'Nova Sessão' : 'Editar Sessão',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: nomeCtr,
+                decoration: const InputDecoration(
+                  labelText: 'Nome',
+                  hintText: 'Ex: Treino A',
+                ),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                initialValue: diaSemana,
+                items:
+                    <String>[
+                          'Segunda',
+                          'Terça',
+                          'Quarta',
+                          'Quinta',
+                          'Sexta',
+                          'Sábado',
+                          'Domingo',
+                        ]
+                        .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                        .toList(),
+                onChanged: (v) => diaSemana = v,
+                decoration: const InputDecoration(
+                  labelText: 'Dia da semana (opcional)',
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: orientacoesCtr,
+                decoration: const InputDecoration(
+                  labelText: 'Orientações gerais',
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancelar'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context, {
+                        'nome': nomeCtr.text,
+                        'diaSemana': diaSemana,
+                        'orientacoes': orientacoesCtr.text,
+                      });
+                    },
+                    child: Text(initialNome == null ? 'Adicionar' : 'Salvar'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
-  void _removerTreino(int index) {
-    setState(() {
-      _treinoControllers[index]
-          .dispose(); // Boa prática: descartar o controller da memória
-      _treinoControllers.removeAt(index);
-    });
+  Future<void> _editarTreino(int index) async {
+    final current = _treinos[index];
+    final result = await _showTreinoForm(
+      initialNome: current.nomeController.text,
+      initialDia: current.diaSemana,
+      initialOrient: current.orientacoes,
+    );
+    if (result != null) {
+      setState(() {
+        current.nomeController.text =
+            result['nome'] ?? current.nomeController.text;
+        current.diaSemana = result['diaSemana'];
+        current.orientacoes = result['orientacoes'];
+      });
+    }
+  }
+
+  void _excluirTreino(int index) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Excluir sessão?'),
+        content: const Text('Tem certeza que deseja remover esta sessão?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _treinos.removeAt(index);
+              });
+              Navigator.pop(context);
+            },
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _adicionarTreino() async {
+    final result = await _showTreinoForm();
+    if (result != null) {
+      final name = (result['nome']?.isEmpty ?? true)
+          ? 'Treino ${String.fromCharCode(65 + _treinos.length)}'
+          : result['nome']!;
+      setState(() {
+        _treinos.add(
+          _TreinoData(
+            nomeController: TextEditingController(text: name),
+            diaSemana: result['diaSemana'],
+            orientacoes: result['orientacoes'],
+          ),
+        );
+      });
+    }
   }
 
   void _salvarRotina() {
@@ -143,7 +285,7 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                   ),
                 ),
                 Text(
-                  '${_treinoControllers.length} sessões',
+                  '${_treinos.length} sessões',
                   style: const TextStyle(
                     color: AppTheme.primary,
                     fontWeight: FontWeight.bold,
@@ -155,161 +297,164 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
             const SizedBox(height: 16),
 
             // LISTA DINÂMICA DE TREINOS EDITÁVEIS
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _treinoControllers.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceDark,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withAlpha(13)),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Campo de Texto Editável para o Nome do Treino
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                TextField(
-                                  controller: _treinoControllers[index],
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: 'Nome do treino',
-                                    hintStyle: TextStyle(
-                                      color: AppTheme.textSecondary.withAlpha(
-                                        128,
-                                      ),
-                                    ),
-                                    border: InputBorder.none,
-                                    isDense: true,
-                                    contentPadding: EdgeInsets.zero,
-                                  ),
+            if (_treinos.isEmpty) ...[
+              Container(
+                padding: const EdgeInsets.all(40),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceDark,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.fitness_center,
+                      size: 48,
+                      color: AppTheme.textSecondary,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Nenhuma sessão adicionada',
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Clique em "Adicionar nova sessão" para começar',
+                      style: TextStyle(
+                        color: AppTheme.textSecondary.withAlpha(128),
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ] else ...[
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _treinos.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    child: InkWell(
+                      onTap: () {
+                        // NAVEGAÇÃO PARA CONFIGURAR EXERCÍCIOS
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ConfigurarExerciciosPage(
+                              nomeTreino: _treinos[index].nomeController.text,
+                            ),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceDark,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white.withAlpha(13)),
+                        ),
+                        child: Row(
+                          children: [
+                            // Badge de Letra (A, B, C...)
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppTheme.surfaceLight,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                String.fromCharCode(65 + index),
+                                style: const TextStyle(
+                                  color: AppTheme.primary,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  '0 exercícios adicionados',
-                                  style: TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+
+                            // Título e Contador
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _treinos[index].nomeController.text,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
                                   ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    'Toque para configurar exercícios',
+                                    style: TextStyle(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            PopupMenuButton<String>(
+                              icon: const Icon(
+                                Icons.more_vert,
+                                color: AppTheme.textSecondary,
+                              ),
+                              onSelected: (value) {
+                                switch (value) {
+                                  case 'edit':
+                                    _editarTreino(index);
+                                    break;
+                                  case 'config':
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            ConfigurarExerciciosPage(
+                                              nomeTreino: _treinos[index]
+                                                  .nomeController
+                                                  .text,
+                                            ),
+                                      ),
+                                    );
+                                    break;
+                                  case 'delete':
+                                    _excluirTreino(index);
+                                    break;
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'edit',
+                                  child: Text('Editar informações'),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'config',
+                                  child: Text('Configurar exercícios'),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'delete',
+                                  child: Text('Excluir'),
                                 ),
                               ],
                             ),
-                          ),
-
-                          // Menu de opções (Editar / Excluir)
-                          PopupMenuButton<String>(
-                            icon: const Icon(
-                              Icons.more_vert,
-                              color: AppTheme.textSecondary,
-                            ),
-                            onSelected: (value) {
-                              if (value == 'editar') {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Editar ${_treinoControllers[index].text}',
-                                    ),
-                                  ),
-                                );
-                              } else if (value == 'excluir') {
-                                _removerTreino(index);
-                              }
-                            },
-                            itemBuilder: (context) => [
-                              const PopupMenuItem(
-                                value: 'editar',
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.edit,
-                                      size: 20,
-                                      color: AppTheme.textSecondary,
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text('Editar'),
-                                  ],
-                                ),
-                              ),
-                              const PopupMenuItem(
-                                value: 'excluir',
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.delete_outline,
-                                      size: 20,
-                                      color: Colors.redAccent,
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Excluir',
-                                      style: TextStyle(color: Colors.redAccent),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        child: Divider(color: Colors.white10, height: 1),
-                      ),
-
-                      // Botão claro para abrir a lista de exercícios daquele treino específico
-                      InkWell(
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'UI: Abrir construtor de exercícios para "${_treinoControllers[index].text}"',
-                              ),
-                            ),
-                          );
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.fitness_center,
-                                color: AppTheme.primary.withAlpha(204),
-                                size: 18,
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Configurar Exercícios',
-                                style: TextStyle(
-                                  color: AppTheme.primary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
-
+                    ),
+                  );
+                },
+              ),
+            ],
             // BOTÃO DE ADICIONAR NOVA SESSÃO
             const SizedBox(height: 8),
             OutlinedButton.icon(
