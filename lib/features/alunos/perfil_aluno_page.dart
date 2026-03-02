@@ -5,6 +5,7 @@ import '../../core/theme/app_theme.dart';
 import '../treinos/criar_rotina_page.dart';
 import '../treinos/rotina_detalhe_page.dart';
 import 'gerenciar_aluno_page.dart';
+import 'feedback_historico_page.dart';
 
 class PerfilAlunoPage extends StatelessWidget {
   final String alunoId;
@@ -436,7 +437,15 @@ class PerfilAlunoPage extends StatelessWidget {
             _buildMenuOption(
               icon: Icons.calendar_month_outlined,
               title: 'Histórico de Feedbacks',
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        FeedbackHistoricoPage(alunoNome: alunoNome),
+                  ),
+                );
+              },
             ),
             _buildMenuOption(
               icon: Icons.assignment_outlined,
