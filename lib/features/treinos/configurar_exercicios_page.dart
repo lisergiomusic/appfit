@@ -87,7 +87,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     ),
     ExercicioItem(
       nome: 'Prancha Isométrica',
-      grupoMuscular: 'Core • Peso Corporal',
+      grupoMuscular: 'Core',
       observacao: '',
       tipoAlvo: 'Tempo',
       series: [
@@ -598,80 +598,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // CAMPO DE OBSERVAÇÃO
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                        child: InkWell(
-                          onTap: () => _editarObservacao(context, exIndex),
-                          borderRadius: BorderRadius.circular(8),
-                          child: ex.observacao.isEmpty
-                              ? Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 4.0,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.add_comment_outlined,
-                                        color: AppTheme.textSecondary.withAlpha(
-                                          150,
-                                        ),
-                                        size: 16,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Adicionar nota...',
-                                        style: TextStyle(
-                                          color: AppTheme.textSecondary
-                                              .withAlpha(150),
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withAlpha(5),
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border(
-                                      left: BorderSide(
-                                        color: AppTheme.primary.withAlpha(150),
-                                        width: 3,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          ex.observacao,
-                                          style: TextStyle(
-                                            color: AppTheme.textSecondary
-                                                .withAlpha(220),
-                                            fontSize: 13,
-                                            height: 1.4,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Icon(
-                                        Icons.edit_outlined,
-                                        color: AppTheme.textSecondary.withAlpha(
-                                          100,
-                                        ),
-                                        size: 16,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                        ),
-                      ),
-
                       // TABELA DE SÉRIES (CABEÇALHO)
                       if (ex.series.isNotEmpty)
                         Padding(
@@ -819,6 +745,80 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       ],
 
                       const SizedBox(height: 8),
+
+                      // CAMPO DE OBSERVAÇÃO movido para baixo das séries
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        child: InkWell(
+                          onTap: () => _editarObservacao(context, exIndex),
+                          borderRadius: BorderRadius.circular(8),
+                          child: ex.observacao.isEmpty
+                              ? Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4.0,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.add_comment_outlined,
+                                        color: AppTheme.textSecondary.withAlpha(
+                                          150,
+                                        ),
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Adicionar nota...',
+                                        style: TextStyle(
+                                          color: AppTheme.textSecondary
+                                              .withAlpha(150),
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withAlpha(5),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border(
+                                      left: BorderSide(
+                                        color: AppTheme.primary.withAlpha(150),
+                                        width: 3,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          ex.observacao,
+                                          style: TextStyle(
+                                            color: AppTheme.textSecondary
+                                                .withAlpha(220),
+                                            fontSize: 13,
+                                            height: 1.4,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Icon(
+                                        Icons.edit_outlined,
+                                        color: AppTheme.textSecondary.withAlpha(
+                                          100,
+                                        ),
+                                        size: 16,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                        ),
+                      ),
 
                       // BOTÃO ADICIONAR SÉRIE
                       TextButton(
