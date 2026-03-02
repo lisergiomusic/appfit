@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/theme/app_theme.dart';
-import '../treinos/detalhe_treino_page.dart';
+import '../treinos/criar_rotina_page.dart';
 import 'gerenciar_aluno_page.dart';
 
 class PerfilAlunoPage extends StatelessWidget {
@@ -39,18 +39,78 @@ class PerfilAlunoPage extends StatelessWidget {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Treino "$titulo" vinculado!'),
+            content: Text('Rotina "$titulo" vinculada!'),
             backgroundColor: AppTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
       }
     } catch (e) {
-      debugPrint("Erro ao vincular: $e");
+      debugPrint("Erro ao vincular rotina: $e");
     }
   }
 
-  void _exibirBibliotecaDeTreinos(BuildContext context) {
+  Future<void> _removerFichaAtiva(BuildContext context, String docId) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surfaceDark,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Remover Ficha?',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'O aluno ficará sem nenhuma rotina ativa no momento. Deseja continuar?',
+          style: TextStyle(color: AppTheme.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: AppTheme.textSecondary),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Sim, Remover',
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('usuarios')
+            .doc(alunoId)
+            .collection('treinos_atribuidos')
+            .doc(docId)
+            .delete();
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Rotina removida com sucesso.'),
+              backgroundColor: AppTheme.primary,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint("Erro ao remover ficha: $e");
+      }
+    }
+  }
+
+  void _exibirOpcoesVincularTreino(BuildContext context) {
     final String? personalId = FirebaseAuth.instance.currentUser?.uid;
 
     showModalBottomSheet(
@@ -61,7 +121,7 @@ class PerfilAlunoPage extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => SizedBox(
-        height: MediaQuery.of(context).size.height * 0.7,
+        height: MediaQuery.of(context).size.height * 0.85,
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -79,14 +139,62 @@ class PerfilAlunoPage extends StatelessWidget {
                 ),
               ),
               const Text(
-                'Sua Biblioteca',
+                'Nova Rotina Semanal',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
+              const SizedBox(height: 24),
+
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context); // Fecha o modal primeiro
+                  // Abre a nova tela passando os dados do aluno!
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CriarRotinaPage(
+                        alunoId: alunoId,
+                        alunoNome: alunoNome,
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.add_to_photos, color: Colors.white),
+                label: const Text(
+                  'Criar Nova Ficha Completa',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 0,
+                ),
+              ),
+
+              const SizedBox(height: 24),
+              const Divider(color: Colors.white10),
               const SizedBox(height: 16),
+
+              const Text(
+                'Ou escolha da sua Biblioteca de Fichas:',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 16),
+
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
@@ -104,7 +212,7 @@ class PerfilAlunoPage extends StatelessWidget {
                     if (snapshot.data!.docs.isEmpty) {
                       return const Center(
                         child: Text(
-                          'Nenhum treino na biblioteca.',
+                          'Sua biblioteca de rotinas está vazia.',
                           style: TextStyle(color: AppTheme.textSecondary),
                         ),
                       );
@@ -123,14 +231,14 @@ class PerfilAlunoPage extends StatelessWidget {
                           ),
                           child: ListTile(
                             title: Text(
-                              treino['titulo'] ?? '',
+                              treino['titulo'] ?? 'Rotina',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             subtitle: Text(
-                              treino['descricao'] ?? '',
+                              'Rotina Completa • ${treino['descricao'] ?? ''}',
                               style: const TextStyle(
                                 color: AppTheme.textSecondary,
                                 fontSize: 12,
@@ -196,8 +304,7 @@ class PerfilAlunoPage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(
-              Icons
-                  .settings_outlined, // Mudei de edit para settings (engrenagem)
+              Icons.settings_outlined,
               color: AppTheme.textSecondary,
             ),
             onPressed: () {
@@ -218,14 +325,14 @@ class PerfilAlunoPage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // HEADER HORIZONTAL - FINO, ALINHADO E PREMIUM
+            // HEADER HORIZONTAL
             const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
                 children: [
                   const CircleAvatar(
-                    radius: 36, // Tamanho padrão perfeito (72x72)
+                    radius: 36,
                     backgroundColor: AppTheme.surfaceLight,
                     child: Icon(
                       Icons.person,
@@ -237,8 +344,7 @@ class PerfilAlunoPage extends StatelessWidget {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment
-                          .center, // Garante o alinhamento com a foto
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
                           alunoNome,
@@ -251,13 +357,12 @@ class PerfilAlunoPage extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 6), // Espaçamento suave
-                        // LINHA DE STATUS: Idade + Ponto Verde + Ativo
+                        const SizedBox(height: 6),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             const Text(
-                              '28 anos', // TODO: Fazer a idade vir do banco de dados
+                              '28 anos',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: AppTheme.textSecondary,
@@ -275,7 +380,7 @@ class PerfilAlunoPage extends StatelessWidget {
                               width: 8,
                               height: 8,
                               decoration: const BoxDecoration(
-                                color: AppTheme.success, // Bolinha de status
+                                color: AppTheme.success,
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -330,7 +435,7 @@ class PerfilAlunoPage extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            // Hero Card da Ficha Atual
+            // Hero Card da Rotina Atual
             _buildFichaAtivaHeroCard(context),
 
             const SizedBox(height: 24),
@@ -344,6 +449,11 @@ class PerfilAlunoPage extends StatelessWidget {
             _buildMenuOption(
               icon: Icons.assignment_outlined,
               title: 'Avaliação Física',
+              onTap: () {},
+            ),
+            _buildMenuOption(
+              icon: Icons.payments_outlined,
+              title: 'Situação Financeira',
               onTap: () {},
             ),
 
@@ -445,7 +555,7 @@ class PerfilAlunoPage extends StatelessWidget {
     );
   }
 
-  // A JOGADA DE MESTRE DE UI/UX (O Hero Card Inteligente)
+  // A JOGADA DE MESTRE DE UI/UX (O Hero Card Inteligente de ROTINA)
   Widget _buildFichaAtivaHeroCard(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -466,7 +576,7 @@ class PerfilAlunoPage extends StatelessWidget {
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return InkWell(
-              onTap: () => _exibirBibliotecaDeTreinos(context),
+              onTap: () => _exibirOpcoesVincularTreino(context),
               borderRadius: BorderRadius.circular(16),
               child: Container(
                 padding: const EdgeInsets.all(24),
@@ -486,7 +596,10 @@ class PerfilAlunoPage extends StatelessWidget {
                         color: AppTheme.primary.withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.add, color: AppTheme.primary),
+                      child: const Icon(
+                        Icons.add_to_photos,
+                        color: AppTheme.primary,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     const Expanded(
@@ -494,7 +607,7 @@ class PerfilAlunoPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Nenhuma Ficha Ativa',
+                            'Nenhuma Rotina Ativa',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -503,7 +616,7 @@ class PerfilAlunoPage extends StatelessWidget {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            'Toque para vincular um treino',
+                            'Toque para montar ou vincular rotina',
                             style: TextStyle(
                               color: AppTheme.textSecondary,
                               fontSize: 13,
@@ -529,13 +642,13 @@ class PerfilAlunoPage extends StatelessWidget {
 
           return InkWell(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DetalheTreinoPage(
-                    treinoId: treino['treinoIdOriginal'],
-                    treinoTitulo: treino['titulo'],
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'UI: Em breve abrirá a lista de treinos desta Rotina (Ex: A, B, C)',
                   ),
+                  backgroundColor: AppTheme.primary,
+                  behavior: SnackBarBehavior.floating,
                 ),
               );
             },
@@ -562,10 +675,10 @@ class PerfilAlunoPage extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.bolt, size: 16, color: AppTheme.primary),
+                          Icon(Icons.style, size: 16, color: AppTheme.primary),
                           const SizedBox(width: 4),
                           Text(
-                            'FICHA ATUAL',
+                            'ROTINA ATUAL',
                             style: TextStyle(
                               color: AppTheme.primary,
                               fontSize: 10,
@@ -575,23 +688,40 @@ class PerfilAlunoPage extends StatelessWidget {
                           ),
                         ],
                       ),
-                      GestureDetector(
-                        onTap: () => _exibirBibliotecaDeTreinos(context),
-                        child: const Text(
-                          'Trocar',
-                          style: TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () =>
+                                _removerFichaAtiva(context, treinoDoc.id),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Icon(
+                                Icons.delete_outline,
+                                color: Colors.redAccent,
+                                size: 20,
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () => _exibirOpcoesVincularTreino(context),
+                            child: const Text(
+                              'Trocar',
+                              style: TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
 
                   Text(
-                    treino['titulo'] ?? 'Treino Personalizado',
+                    treino['titulo'] ?? 'Projeto Hipertrofia',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -600,7 +730,7 @@ class PerfilAlunoPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'Toque para ver os exercícios',
+                    'Toque para ver os treinos', // Voltamos ao simples "Toque para ver os treinos"
                     style: TextStyle(
                       color: AppTheme.textSecondary,
                       fontSize: 12,
@@ -613,7 +743,9 @@ class PerfilAlunoPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        alertaVencimento ? 'Vence em 3 dias' : 'Progresso',
+                        alertaVencimento
+                            ? 'Vence em 3 dias'
+                            : 'Progresso da Rotina',
                         style: TextStyle(
                           color: alertaVencimento
                               ? corProgresso
