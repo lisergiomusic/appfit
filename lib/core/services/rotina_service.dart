@@ -11,24 +11,43 @@ class RotinaService {
     required String nome,
     required String objetivo,
     required List<Map<String, dynamic>> sessoes,
+    int duracaoDias = 28, // <-- CORREÇÃO: O parâmetro que faltava!
   }) async {
-    // 1. Garante que sabemos quem é o Personal Trainer que está a criar
     final personalId = _auth.currentUser?.uid;
     if (personalId == null) throw Exception('Personal não autenticado.');
 
-    // 2. Monta o Payload (Pacote de Dados)
+    // 1. MÁGICA SÊNIOR: Se for para um aluno específico, vamos arquivar as rotinas ativas antigas dele!
+    if (alunoId != null) {
+      final rotinasAntigas = await _db
+          .collection('rotinas')
+          .where('alunoId', isEqualTo: alunoId)
+          .where('ativa', isEqualTo: true)
+          .get();
+
+      // Desativa todas as antigas para não haver conflitos no Hero Card
+      for (var doc in rotinasAntigas.docs) {
+        await doc.reference.update({'ativa': false});
+      }
+    }
+
+    // 2. Calcula a data de vencimento a partir de hoje
+    final dataVencimento = DateTime.now().add(Duration(days: duracaoDias));
+
+    // 3. Monta o pacote de dados
     final payload = {
       'personalId': personalId,
-      'alunoId':
-          alunoId, // Pode ser nulo se for uma rotina genérica da biblioteca
+      'alunoId': alunoId,
       'nome': nome,
       'objetivo': objetivo,
       'dataCriacao': FieldValue.serverTimestamp(),
-      'ativa': true, // Por padrão, a rotina nasce ativa
-      'sessoes': sessoes, // O Firebase aceita arrays de objetos diretamente!
+      'dataVencimento': Timestamp.fromDate(
+        dataVencimento,
+      ), // <-- Salva a data real
+      'ativa': true,
+      'sessoes': sessoes,
     };
 
-    // 3. Dispara para o Firestore na coleção 'rotinas'
+    // 4. Dispara para o banco de dados
     await _db.collection('rotinas').add(payload);
   }
 }

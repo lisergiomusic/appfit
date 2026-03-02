@@ -1,10 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/services/rotina_service.dart'; // <-- IMPORTA O NOVO SERVIÇO
+import '../../core/services/rotina_service.dart';
 import 'configurar_exercicios_page.dart';
 
-// --- ESTRUTURA DE DADOS DA SESSÃO ---
 class _TreinoData {
   final TextEditingController nomeController;
   String? diaSemana;
@@ -32,9 +31,10 @@ class CriarRotinaPage extends StatefulWidget {
 class _CriarRotinaPageState extends State<CriarRotinaPage> {
   final _nomeController = TextEditingController();
   final _objetivoController = TextEditingController();
-  final List<_TreinoData> _treinos = [];
 
-  bool _isLoading = false; // <-- CONTROLO DE LOADING PARA O BOTÃO FINAL
+  int _duracaoSemanas = 4; // <-- NOVO: Controle de Duração
+  final List<_TreinoData> _treinos = [];
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -239,9 +239,7 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
           ),
           TextButton(
             onPressed: () {
-              setState(() {
-                _treinos.removeAt(index);
-              });
+              setState(() => _treinos.removeAt(index));
               Navigator.pop(context);
             },
             child: const Text(
@@ -276,9 +274,7 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
     }
   }
 
-  // --- MÁGICA SÊNIOR: SERIALIZAÇÃO E ENVIO PARA O FIREBASE ---
   Future<void> _salvarRotina() async {
-    // Validações básicas de segurança
     if (_nomeController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -301,7 +297,6 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
     setState(() => _isLoading = true);
 
     try {
-      // 1. Converter a complexa árvore UI numa lista de Mapas puros (JSON)
       List<Map<String, dynamic>> sessoesJson = _treinos.map((treino) {
         return {
           'nome': treino.nomeController.text.trim(),
@@ -316,9 +311,7 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
               'imagemUrl': ex.imagemUrl,
               'series': ex.series.map((serie) {
                 return {
-                  'tipo': serie
-                      .tipo
-                      .name, // converte o Enum para String ('trabalho', 'aquecimento'...)
+                  'tipo': serie.tipo.name,
                   'alvo': serie.alvo,
                   'carga': serie.carga,
                   'descanso': serie.descanso,
@@ -329,21 +322,19 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
         };
       }).toList();
 
-      // 2. Chamar o serviço para enviar à Nuvem
       await RotinaService().criarRotina(
-        alunoId:
-            widget.alunoId, // Será nulo se estivermos a criar para a biblioteca
+        alunoId: widget.alunoId,
         nome: _nomeController.text.trim(),
         objetivo: _objetivoController.text.trim(),
         sessoes: sessoesJson,
+        duracaoDias:
+            _duracaoSemanas * 7, // <-- Passa a duração exata para o backend!
       );
 
       if (!mounted) return;
-
-      // 3. Sucesso! Mostra aviso e fecha a página
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Rotina salva com sucesso no Banco de Dados!'),
+          content: Text('Rotina salva com sucesso!'),
           backgroundColor: AppTheme.success,
         ),
       );
@@ -357,9 +348,7 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
         ),
       );
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -429,6 +418,41 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
               hint: 'Ex: Ganho de massa e força',
               icon: Icons.track_changes,
             ),
+            const SizedBox(height: 16),
+
+            // <-- NOVO: DROPDOWN DE DURAÇÃO -->
+            DropdownButtonFormField<int>(
+              value: _duracaoSemanas,
+              dropdownColor: AppTheme.surfaceLight,
+              style: const TextStyle(color: Colors.white),
+              items: [4, 5, 6, 8, 10, 12]
+                  .map(
+                    (w) =>
+                        DropdownMenuItem(value: w, child: Text('$w semanas')),
+                  )
+                  .toList(),
+              onChanged: (v) => setState(() => _duracaoSemanas = v!),
+              decoration: InputDecoration(
+                labelText: 'Duração da Rotina',
+                prefixIcon: const Icon(
+                  Icons.date_range,
+                  color: AppTheme.textSecondary,
+                ),
+                filled: true,
+                fillColor: AppTheme.surfaceDark,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: const BorderSide(
+                    color: AppTheme.primary,
+                    width: 1.5,
+                  ),
+                ),
+              ),
+            ),
 
             const SizedBox(height: 32),
 
@@ -456,7 +480,6 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
             ),
             const SizedBox(height: 16),
 
-            // LISTA DINÂMICA DE TREINOS EDITÁVEIS
             if (_treinos.isEmpty) ...[
               Container(
                 padding: const EdgeInsets.all(40),
@@ -484,7 +507,7 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Clique em "Adicionar nova sessão" para começar a montar o treino.',
+                      'Clique em "Adicionar nova sessão" para começar.',
                       style: TextStyle(
                         color: AppTheme.textSecondary.withAlpha(150),
                         fontSize: 14,
@@ -576,9 +599,7 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    String.fromCharCode(
-                                      65 + index,
-                                    ), // A, B, C...
+                                    String.fromCharCode(65 + index),
                                     style: const TextStyle(
                                       color: AppTheme.primary,
                                       fontWeight: FontWeight.bold,
@@ -628,14 +649,8 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 onSelected: (value) async {
-                                  switch (value) {
-                                    case 'edit':
-                                      _editarTreino(index);
-                                      break;
-                                    case 'delete':
-                                      _excluirTreino(index);
-                                      break;
-                                  }
+                                  if (value == 'edit') _editarTreino(index);
+                                  if (value == 'delete') _excluirTreino(index);
                                 },
                                 itemBuilder: (context) => [
                                   const PopupMenuItem(
@@ -709,7 +724,6 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
 
             const SizedBox(height: 48),
 
-            // BOTÃO MÁGICO DE GRAVAÇÃO (COM LOADING)
             ElevatedButton(
               onPressed: _isLoading ? null : _salvarRotina,
               style: ElevatedButton.styleFrom(

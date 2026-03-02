@@ -17,35 +17,46 @@ class PerfilAlunoPage extends StatelessWidget {
     required this.alunoNome,
   });
 
-  // --- LÓGICA DE BANCO DE DADOS ATUALIZADA ---
-
-  // Clona um template da biblioteca e atribui ao aluno
+  // --- LÓGICA DE CLONAGEM COM DATA DE VENCIMENTO ---
   Future<void> _atribuirTreinoAoAluno(
     BuildContext context,
     String templateId,
     String nomeRotina,
+    int duracaoSemanas,
   ) async {
     try {
-      // 1. Busca os dados do Template original
       final templateDoc = await FirebaseFirestore.instance
           .collection('rotinas')
           .doc(templateId)
           .get();
       if (!templateDoc.exists) return;
 
+      // 1. ARQUIVA A FICHA ANTIGA DO ALUNO PRIMEIRO (Segurança)
+      final rotinasAntigas = await FirebaseFirestore.instance
+          .collection('rotinas')
+          .where('alunoId', isEqualTo: alunoId)
+          .where('ativa', isEqualTo: true)
+          .get();
+
+      for (var doc in rotinasAntigas.docs) {
+        await doc.reference.update({'ativa': false});
+      }
+
+      // 2. PREPARA O CLONE DA NOVA FICHA
       final rotinaData = templateDoc.data() as Map<String, dynamic>;
 
-      // 2. Modifica os dados para transformar numa rotina ativa para este aluno
+      // Adiciona Aluno, Status e DATAS (Criação e Vencimento calculada)
       rotinaData['alunoId'] = alunoId;
       rotinaData['ativa'] = true;
-      rotinaData['dataCriacao'] =
-          FieldValue.serverTimestamp(); // Data atual de atribuição
+      rotinaData['dataCriacao'] = FieldValue.serverTimestamp();
+      rotinaData['dataVencimento'] = Timestamp.fromDate(
+        DateTime.now().add(Duration(days: duracaoSemanas * 7)),
+      );
 
-      // 3. Salva como uma nova rotina exclusiva do aluno
+      // 3. SALVA O CLONE ATIVADO
       await FirebaseFirestore.instance.collection('rotinas').add(rotinaData);
 
       if (context.mounted) {
-        Navigator.pop(context); // Fecha o modal de seleção
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Rotina "$nomeRotina" ativada com sucesso!'),
@@ -57,6 +68,103 @@ class PerfilAlunoPage extends StatelessWidget {
     } catch (e) {
       debugPrint("Erro ao vincular rotina: $e");
     }
+  }
+
+  // --- MODAL PARA ESCOLHER A DURAÇÃO ANTES DE CLONAR ---
+  void _confirmarAtivacaoTemplate(
+    BuildContext context,
+    String templateId,
+    String titulo,
+  ) {
+    int semanasSelecionadas = 4;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setStateDialog) {
+          return AlertDialog(
+            backgroundColor: AppTheme.surfaceDark,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text(
+              'Ativar Rotina',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Defina a duração da rotina "$titulo" para $alunoNome:',
+                  style: const TextStyle(color: AppTheme.textSecondary),
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<int>(
+                  value: semanasSelecionadas,
+                  dropdownColor: AppTheme.surfaceLight,
+                  style: const TextStyle(color: Colors.white),
+                  items: [4, 5, 6, 8, 10, 12]
+                      .map(
+                        (w) => DropdownMenuItem(
+                          value: w,
+                          child: Text('$w semanas'),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (v) =>
+                      setStateDialog(() => semanasSelecionadas = v!),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: AppTheme.surfaceLight,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text(
+                  'Cancelar',
+                  style: TextStyle(color: AppTheme.textSecondary),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(dialogContext); // Fecha o dialog
+                  Navigator.pop(context); // Fecha o bottom sheet de trás
+                  _atribuirTreinoAoAluno(
+                    context,
+                    templateId,
+                    titulo,
+                    semanasSelecionadas,
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'Ativar Ficha',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   Future<void> _removerFichaAtiva(BuildContext context, String docId) async {
@@ -97,16 +205,14 @@ class PerfilAlunoPage extends StatelessWidget {
 
     if (confirmar == true) {
       try {
-        // Em vez de apagar fisicamente, apenas inativamos para guardar histórico
         await FirebaseFirestore.instance
             .collection('rotinas')
             .doc(docId)
             .update({'ativa': false});
-
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Rotina removida com sucesso.'),
+              content: Text('Rotina arquivada com sucesso.'),
               backgroundColor: AppTheme.primary,
               behavior: SnackBarBehavior.floating,
             ),
@@ -158,8 +264,7 @@ class PerfilAlunoPage extends StatelessWidget {
 
               ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.pop(context); // Fecha o modal primeiro
-                  // Abre a nova tela Sênior passando o alunoId (cria rotina exclusiva para o aluno)
+                  Navigator.pop(context);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -205,36 +310,31 @@ class PerfilAlunoPage extends StatelessWidget {
 
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
-                  // AGORA BUSCA NA NOVA COLEÇÃO "rotinas" APENAS OS TEMPLATES (alunoId nulo)
                   stream: FirebaseFirestore.instance
                       .collection('rotinas')
                       .where('personalId', isEqualTo: personalId)
                       .where('alunoId', isNull: true)
                       .snapshots(),
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
+                    if (snapshot.connectionState == ConnectionState.waiting)
                       return const Center(
                         child: CircularProgressIndicator(
                           color: AppTheme.primary,
                         ),
                       );
-                    }
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty)
                       return const Center(
                         child: Text(
                           'Sua biblioteca de rotinas está vazia.',
                           style: TextStyle(color: AppTheme.textSecondary),
                         ),
                       );
-                    }
 
                     return ListView.builder(
                       itemCount: snapshot.data!.docs.length,
                       itemBuilder: (context, index) {
                         var doc = snapshot.data!.docs[index];
                         var rotina = doc.data() as Map<String, dynamic>;
-
-                        // Calcula quantas sessões o template tem
                         int qtdSessoes = rotina['sessoes'] != null
                             ? (rotina['sessoes'] as List).length
                             : 0;
@@ -264,7 +364,8 @@ class PerfilAlunoPage extends StatelessWidget {
                               Icons.add_circle,
                               color: AppTheme.primary,
                             ),
-                            onTap: () => _atribuirTreinoAoAluno(
+                            // <-- AGORA CHAMA O DIALOG DE DURAÇÃO ANTES DE CLONAR
+                            onTap: () => _confirmarAtivacaoTemplate(
                               context,
                               doc.id,
                               rotina['nome'] ?? 'Rotina',
@@ -402,9 +503,7 @@ class PerfilAlunoPage extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 32),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: ElevatedButton.icon(
@@ -427,7 +526,6 @@ class PerfilAlunoPage extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 32),
             _buildRitmoDaSemana(),
             const SizedBox(height: 32),
@@ -476,7 +574,6 @@ class PerfilAlunoPage extends StatelessWidget {
       {'dia': 'Sáb', 'status': 'futuro'},
       {'dia': 'Dom', 'status': 'futuro'},
     ];
-
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
       padding: const EdgeInsets.all(20),
@@ -501,7 +598,6 @@ class PerfilAlunoPage extends StatelessWidget {
             children: dias.map((d) {
               bool isFeito = d['status'] == 'feito';
               bool isFalta = d['status'] == 'falta';
-
               return Column(
                 children: [
                   Container(
@@ -555,15 +651,15 @@ class PerfilAlunoPage extends StatelessWidget {
     );
   }
 
-  // A JOGADA DE MESTRE DE UI/UX: LÊ A ROTINA ATIVA DIRETAMENTE DA COLEÇÃO ROTINAS
+  // --- CÁLCULO INTELIGENTE DE DATAS E PROGRESSO NO HERO CARD ---
   Widget _buildFichaAtivaHeroCard(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('rotinas')
-            .where('alunoId', isEqualTo: alunoId) // Puxa as rotinas deste aluno
-            .where('ativa', isEqualTo: true) // Apenas a que está ativa
+            .where('alunoId', isEqualTo: alunoId)
+            .where('ativa', isEqualTo: true)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -629,25 +725,51 @@ class PerfilAlunoPage extends StatelessWidget {
             );
           }
 
-          // ESTADO ATIVO: Lê os dados e passa para a tela de Detalhe
           var treinoDoc = snapshot.data!.docs.first;
           var rotina = treinoDoc.data() as Map<String, dynamic>;
 
-          double progressoAtual = 0.85;
-          bool alertaVencimento = progressoAtual >= 0.8;
-          Color corProgresso = alertaVencimento
-              ? Colors.orangeAccent
-              : AppTheme.success;
+          // --- LEITURA DAS DATAS E CÁLCULO MATEMÁTICO ---
+          DateTime hoje = DateTime.now();
+          DateTime dataCriacao =
+              (rotina['dataCriacao'] as Timestamp?)?.toDate() ?? hoje;
+          DateTime dataVencimento =
+              (rotina['dataVencimento'] as Timestamp?)?.toDate() ??
+              hoje.add(const Duration(days: 28));
+
+          int totalDias = dataVencimento.difference(dataCriacao).inDays;
+          if (totalDias <= 0) totalDias = 1; // Evita divisão por zero
+
+          int diasPassados = hoje.difference(dataCriacao).inDays;
+          int diasRestantes = totalDias - diasPassados;
+
+          // Garante que o progresso fique entre 0% e 100%
+          double progressoAtual = (diasPassados / totalDias).clamp(0.0, 1.0);
+
+          bool alertaVencimento =
+              diasRestantes <= 7 &&
+              diasRestantes >= 0; // Aviso na última semana
+          Color corProgresso = AppTheme.success;
+
+          String textoRestante;
+          if (diasRestantes < 0) {
+            textoRestante = 'Vencida há ${diasRestantes.abs()} dias';
+            corProgresso = Colors.redAccent;
+          } else if (diasRestantes == 0) {
+            textoRestante = 'Vence hoje';
+            corProgresso = Colors.orangeAccent;
+          } else if (alertaVencimento) {
+            textoRestante = 'Vence em $diasRestantes dias';
+            corProgresso = Colors.orangeAccent;
+          } else {
+            textoRestante = '$diasRestantes dias restantes';
+          }
 
           return InkWell(
             onTap: () {
-              // AQUI NAVEGA PASSANDO O JSON REAL DO BANCO DE DADOS
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => RotinaDetalhePage(
-                    rotinaData: rotina, // <-- O Mapeamento perfeito!
-                  ),
+                  builder: (context) => RotinaDetalhePage(rotinaData: rotina),
                 ),
               );
             },
@@ -664,7 +786,13 @@ class PerfilAlunoPage extends StatelessWidget {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withOpacity(0.05)),
+                border: Border.all(
+                  color: alertaVencimento
+                      ? Colors.orangeAccent.withAlpha(50)
+                      : (diasRestantes < 0
+                            ? Colors.redAccent.withAlpha(50)
+                            : Colors.white.withOpacity(0.05)),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -674,12 +802,22 @@ class PerfilAlunoPage extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.style, size: 16, color: AppTheme.primary),
+                          Icon(
+                            Icons.style,
+                            size: 16,
+                            color: diasRestantes < 0
+                                ? Colors.redAccent
+                                : AppTheme.primary,
+                          ),
                           const SizedBox(width: 4),
                           Text(
-                            'ROTINA ATUAL',
+                            diasRestantes < 0
+                                ? 'ROTINA EXPIRADA'
+                                : 'ROTINA ATUAL',
                             style: TextStyle(
-                              color: AppTheme.primary,
+                              color: diasRestantes < 0
+                                  ? Colors.redAccent
+                                  : AppTheme.primary,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.0,
@@ -695,8 +833,8 @@ class PerfilAlunoPage extends StatelessWidget {
                             child: const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 8.0),
                               child: Icon(
-                                Icons.delete_outline,
-                                color: Colors.redAccent,
+                                Icons.archive_outlined,
+                                color: AppTheme.textSecondary,
                                 size: 20,
                               ),
                             ),
@@ -742,15 +880,11 @@ class PerfilAlunoPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        alertaVencimento
-                            ? 'Vence em 3 dias'
-                            : 'Progresso da Rotina',
+                        textoRestante,
                         style: TextStyle(
-                          color: alertaVencimento
-                              ? corProgresso
-                              : AppTheme.textSecondary,
+                          color: corProgresso,
                           fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
