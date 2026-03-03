@@ -130,7 +130,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 0, bottom: 10),
+          padding: const EdgeInsets.only(left: 0, bottom: 12),
           child: Row(
             children: [
               Icon(icon, size: 16, color: AppTheme.primary),
@@ -139,9 +139,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 label,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: -0.3,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
                 ),
               ),
             ],
@@ -157,26 +157,26 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     return InputDecoration(
       hintText: hintText,
       hintStyle: TextStyle(
-        color: AppTheme.textSecondary.withAlpha(60),
+        color: AppTheme.textSecondary.withAlpha(80),
         fontSize: 15,
         fontWeight: FontWeight.w400,
       ),
       filled: true,
-      fillColor: Colors.white.withAlpha(5),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      fillColor: Colors.white.withAlpha(8),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(11),
-        borderSide: BorderSide(color: Colors.white.withAlpha(8), width: 1),
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: Colors.white.withAlpha(20), width: 0.5),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(11),
-        borderSide: BorderSide(color: Colors.white.withAlpha(8), width: 1),
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: Colors.white.withAlpha(20), width: 0.5),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(11),
+        borderRadius: BorderRadius.circular(10),
         borderSide: BorderSide(
-          color: AppTheme.primary.withAlpha(180),
-          width: 1.5,
+          color: AppTheme.primary.withAlpha(150),
+          width: 1,
         ),
       ),
     );
@@ -201,7 +201,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             bottom: MediaQuery.of(context).viewInsets.bottom,
             left: 24,
             right: 24,
-            top: 16,
+            top: 12,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -220,31 +220,16 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 ),
               ),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Configurar Rotina',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.close_rounded,
-                      color: AppTheme.textSecondary,
-                      size: 18,
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                    padding: const EdgeInsets.all(8),
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
+              const Text(
+                'Configurar Rotina',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.5,
+                ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
 
               _buildModernInput(
                 label: 'NOME DA ROTINA',
@@ -262,7 +247,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
 
               _buildModernInput(
                 label: 'OBJETIVO PRINCIPAL',
@@ -280,7 +265,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
 
               _buildModernInput(
                 label: 'DURAÇÃO PLANEJADA',
@@ -290,8 +275,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   dropdownColor: AppTheme.surfaceLight,
                   icon: Icon(
                     Icons.expand_more_rounded,
-                    color: AppTheme.primary.withAlpha(180),
-                    size: 20,
+                    color: AppTheme.primary.withAlpha(150),
+                    size: 18,
                   ),
                   style: const TextStyle(
                     color: Colors.white,
@@ -313,7 +298,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 36),
+              const SizedBox(height: 32),
 
               ElevatedButton(
                 onPressed: () {
@@ -374,7 +359,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           bottom: MediaQuery.of(context).viewInsets.bottom,
           left: 24,
           right: 24,
-          top: 16,
+          top: 12,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -392,31 +377,16 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               ),
             ),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  isEditing ? 'Editar Sessão' : 'Nova Sessão',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.close_rounded,
-                    color: AppTheme.textSecondary,
-                    size: 18,
-                  ),
-                  onPressed: () => Navigator.pop(context),
-                  padding: const EdgeInsets.all(8),
-                  constraints: const BoxConstraints(),
-                ),
-              ],
+            Text(
+              isEditing ? 'Editar Sessão' : 'Nova Sessão',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.5,
+              ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
             _buildModernInput(
               label: 'NOME DO TREINO',
@@ -434,7 +404,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
 
             _buildModernInput(
               label: 'DIA DA SEMANA (OPCIONAL)',
@@ -444,8 +414,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 dropdownColor: AppTheme.surfaceLight,
                 icon: Icon(
                   Icons.expand_more_rounded,
-                  color: AppTheme.primary.withAlpha(180),
-                  size: 20,
+                  color: AppTheme.primary.withAlpha(150),
+                  size: 18,
                 ),
                 style: const TextStyle(
                   color: Colors.white,
@@ -468,7 +438,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 decoration: _buildInputDecoration(hintText: 'Sem dia fixo'),
               ),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
 
             _buildModernInput(
               label: 'NOTAS GERAIS DA SESSÃO',
@@ -486,7 +456,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 36),
+            const SizedBox(height: 32),
 
             ElevatedButton(
               onPressed: () {
@@ -756,7 +726,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- HEADER DA ROTINA (MAIS DENSO E ELEGANTE) ---
+              // --- HEADER GIGANTE APPLE STYLE ---
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -765,60 +735,48 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _nome.isEmpty ? 'Defina um Nome' : _nome,
-                          style: TextStyle(
-                            fontSize: 24,
+                          _nome.isEmpty ? 'Nova Rotina' : _nome,
+                          style: const TextStyle(
+                            fontSize: 34,
                             fontWeight: FontWeight.w800,
-                            color: _nome.isEmpty
-                                ? AppTheme.textSecondary
-                                : Colors.white,
-                            letterSpacing: -0.5,
+                            color: Colors.white,
+                            letterSpacing: 0.2,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          _objetivo.isEmpty
-                              ? 'Toque no lápis para adicionar um objetivo'
-                              : _objetivo,
-                          style: const TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 14,
+                          _objetivo.isEmpty ? 'Defina o objetivo' : _objetivo,
+                          style: TextStyle(
+                            color: AppTheme.textSecondary.withAlpha(180),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400,
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.schedule,
-                              size: 14,
-                              color: AppTheme.textSecondary,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              '$_duracaoSemanas semanas',
-                              style: const TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
                         ),
                       ],
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.edit_outlined,
-                      color: AppTheme.textSecondary,
-                      size: 22,
+                  GestureDetector(
+                    onTap: () => _exibirModalInfo(context),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withAlpha(20),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.edit_rounded,
+                          color: AppTheme.primary,
+                          size: 20,
+                        ),
+                      ),
                     ),
-                    onPressed: () => _exibirModalInfo(context),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
 
               isTemplate ? _buildTemplateBadge() : const SizedBox.shrink(),
               isTemplate ? const SizedBox(height: 24) : const SizedBox.shrink(),
@@ -828,12 +786,12 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'SESSÕES DE TREINO',
+                    'Sessões',
                     style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
                       color: AppTheme.textSecondary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 11,
-                      letterSpacing: 1.5,
+                      letterSpacing: 0.5,
                     ),
                   ),
                   if (_treinos.isNotEmpty)
@@ -895,13 +853,26 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               const SizedBox(height: 12),
 
               if (_treinos.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Text(
-                    'Nenhuma sessão cadastrada. Adicione uma sessão abaixo para começar.',
-                    style: TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 13,
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 60),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.fitness_center,
+                          size: 60,
+                          color: Colors.white.withAlpha(20),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Nenhuma sessão',
+                          style: TextStyle(
+                            color: AppTheme.textSecondary.withAlpha(180),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 )
@@ -954,30 +925,28 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     );
   }
 
-  // BOTÃO FANTASMA SUTIL
+  // BOTÃO ADICIONAR SESSÃO
   Widget _buildAddSessaoButton() {
     return InkWell(
       onTap: () => _exibirModalSessao(),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.primary.withAlpha(50), width: 1.0),
-          color: Colors
-              .transparent, // Fundo invisível para não competir com os cards reais
+          color: AppTheme.surfaceDark,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.white.withAlpha(15), width: 0.5),
         ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
           children: [
-            Icon(Icons.add_rounded, color: AppTheme.primary, size: 18),
-            SizedBox(width: 8),
+            Icon(Icons.add_circle, color: AppTheme.primary, size: 22),
+            const SizedBox(width: 12),
             Text(
               'Nova Sessão',
               style: TextStyle(
                 color: AppTheme.primary,
                 fontWeight: FontWeight.w600,
-                fontSize: 13,
+                fontSize: 16,
               ),
             ),
           ],
@@ -1031,7 +1000,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     String letra = String.fromCharCode(65 + index);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
         onTap: isReordering
             ? null
@@ -1047,33 +1016,29 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 );
                 setState(() => _foiModificado = true);
               },
-        borderRadius: BorderRadius.circular(12), // Mais sutil
+        borderRadius: BorderRadius.circular(14),
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ), // Reduzido
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
             color: isReordering
                 ? AppTheme.surfaceLight.withAlpha(80)
                 : AppTheme.surfaceDark,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isReordering
                   ? AppTheme.primary.withAlpha(80)
-                  : Colors.white.withAlpha(10),
-              width: 1.0,
+                  : Colors.white.withAlpha(15),
+              width: 0.5,
             ),
           ),
           child: Row(
             children: [
               Container(
-                width: 36, // Reduzido, mais circular
-                height: 36,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: AppTheme.surfaceLight,
-                  shape: BoxShape
-                      .circle, // Ficou redondo (premium) em vez de quadrado!
+                  shape: BoxShape.circle,
                 ),
                 child: Center(
                   child: Text(
@@ -1096,15 +1061,15 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
-                        fontSize: 15,
+                        fontSize: 16,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
-                      '${sessao.exercicios.length} exercícios',
-                      style: const TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontSize: 12,
+                      '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}${sessao.diaSemana != null ? ' • ${sessao.diaSemana}' : ''}',
+                      style: TextStyle(
+                        color: AppTheme.textSecondary.withAlpha(180),
+                        fontSize: 13,
                       ),
                     ),
                   ],
@@ -1114,10 +1079,14 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 ReorderableDragStartListener(
                   index: index,
                   child: Container(
-                    padding: const EdgeInsets.all(8),
-                    color: Colors.transparent,
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withAlpha(20),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     child: const Icon(
-                      Icons.drag_indicator,
+                      Icons.drag_handle_rounded,
                       color: AppTheme.primary,
                       size: 20,
                     ),
@@ -1125,38 +1094,40 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 )
               else ...[
                 PopupMenuButton<String>(
-                  icon: const Icon(
-                    Icons.more_vert,
-                    color: AppTheme.textSecondary,
-                    size: 20,
-                  ),
+                  padding: EdgeInsets.zero,
                   color: AppTheme.surfaceLight,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
+                  ),
+                  position: PopupMenuPosition.under,
+                  icon: Icon(
+                    Icons.more_horiz,
+                    color: AppTheme.textSecondary.withAlpha(150),
+                    size: 20,
                   ),
                   onSelected: (value) {
                     if (value == 'edit') _exibirModalSessao(index: index);
                     if (value == 'delete') _excluirTreino(index);
                   },
                   itemBuilder: (context) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'edit',
                       child: Row(
                         children: [
                           Icon(
                             Icons.edit_outlined,
-                            color: Colors.white,
+                            color: AppTheme.textSecondary.withAlpha(200),
                             size: 18,
                           ),
-                          SizedBox(width: 12),
-                          Text(
-                            'Editar Título',
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Editar',
                             style: TextStyle(color: Colors.white, fontSize: 14),
                           ),
                         ],
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'delete',
                       child: Row(
                         children: [
@@ -1165,13 +1136,10 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                             color: Colors.redAccent,
                             size: 18,
                           ),
-                          SizedBox(width: 12),
-                          Text(
-                            'Excluir Sessão',
-                            style: TextStyle(
-                              color: Colors.redAccent,
-                              fontSize: 14,
-                            ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Excluir',
+                            style: TextStyle(color: Colors.white, fontSize: 14),
                           ),
                         ],
                       ),

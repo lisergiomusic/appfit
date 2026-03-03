@@ -512,6 +512,55 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     Navigator.pop(context, true);
   }
 
+  Future<void> _onBackPressed() async {
+    if (!_hasChanges) {
+      Navigator.pop(context);
+      return;
+    }
+    final sair = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surfaceLight,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        title: const Text(
+          'Descartar alterações?',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: const Text(
+          'As modificações nesta sessão não foram salvas.',
+          style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: AppTheme.primary, fontSize: 16),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Descartar',
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (sair == true) Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -564,7 +613,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         );
         if (!mounted) return;
         // ignore: use_build_context_synchronously
-        if (sair == true) Navigator.maybePop(context);
+        if (sair == true) Navigator.pop(context);
       },
       child: Scaffold(
         backgroundColor: AppTheme.background,
@@ -573,7 +622,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           elevation: 0,
           leadingWidth: 100,
           leading: GestureDetector(
-            onTap: () => Navigator.maybePop(context),
+            onTap: _onBackPressed,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
@@ -822,13 +871,123 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       maintainSize: true,
                       maintainAnimation: true,
                       maintainState: true,
-                      child: GestureDetector(
-                        onTap: () =>
-                            _confirmarRemocaoExercicio(context, exIndex),
-                        child: Icon(
-                          Icons.remove_circle_outline,
-                          color: AppTheme.textSecondary.withAlpha(150),
-                          size: 20,
+                      child: SizedBox(
+                        width: 36,
+                        height: 36,
+                        child: Center(
+                          child: PopupMenuButton<String>(
+                            padding: EdgeInsets.zero,
+                            color: AppTheme.surfaceLight,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            position: PopupMenuPosition.under,
+                            icon: Icon(
+                              Icons.more_horiz,
+                              color: AppTheme.textSecondary.withAlpha(150),
+                              size: 20,
+                            ),
+                            onSelected: (value) async {
+                              if (value == 'replace') {
+                                final String? nome = await Navigator.push<String>(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const ExerciciosLibraryPage(),
+                                  ),
+                                );
+                                if (nome != null && nome.isNotEmpty) {
+                                  setState(() {
+                                    _exerciciosLocais[exIndex] = ExercicioItem(
+                                      nome: nome,
+                                      grupoMuscular: _exerciciosLocais[exIndex].grupoMuscular,
+                                      observacao: '',
+                                      tipoAlvo: 'Reps',
+                                      imagemUrl: null,
+                                      series: [],
+                                    );
+                                    _hasChanges = true;
+                                  });
+                                }
+                              } else if (value == 'edit_video') {
+                                final controller = TextEditingController(
+                                    text: _exerciciosLocais[exIndex].imagemUrl ?? '');
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    backgroundColor: AppTheme.surfaceLight,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    title: const Text(
+                                      'Editar vídeo explicativo',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    content: TextField(
+                                      controller: controller,
+                                      style: const TextStyle(color: Colors.white),
+                                      decoration: InputDecoration(
+                                        hintText: 'URL do vídeo (opcional)',
+                                        hintStyle: TextStyle(color: AppTheme.textSecondary.withAlpha(120)),
+                                        filled: true,
+                                        fillColor: AppTheme.surfaceDark,
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('Cancelar', style: TextStyle(color: AppTheme.primary)),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _exerciciosLocais[exIndex].imagemUrl = controller.text.trim().isEmpty
+                                                ? null
+                                                : controller.text.trim();
+                                            _hasChanges = true;
+                                          });
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text('Salvar', style: TextStyle(color: AppTheme.primary)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              } else if (value == 'delete') {
+                                _confirmarRemocaoExercicio(context, exIndex);
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              PopupMenuItem(
+                                value: 'replace',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.swap_horiz, color: AppTheme.textSecondary.withAlpha(200), size: 18),
+                                    const SizedBox(width: 8),
+                                    const Text('Substituir exercício', style: TextStyle(color: Colors.white, fontSize: 14)),
+                                  ],
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'edit_video',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.video_library, color: AppTheme.textSecondary.withAlpha(200), size: 18),
+                                    const SizedBox(width: 8),
+                                    const Text('Editar video explicativo', style: TextStyle(color: Colors.white, fontSize: 14)),
+                                  ],
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.delete_outline, color: Colors.redAccent, size: 18),
+                                    const SizedBox(width: 8),
+                                    const Text('Excluir exercício', style: TextStyle(color: Colors.white, fontSize: 14)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
