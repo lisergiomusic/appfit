@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/theme/app_theme.dart';
-import 'criar_rotina_page.dart'; // <-- AGORA USAMOS A NOSSA TELA SÊNIOR!
 import 'rotina_detalhe_page.dart';
 
 class TreinosPage extends StatelessWidget {
   const TreinosPage({super.key});
 
-  // --- FUNÇÃO PARA DELETAR ROTINA DA BIBLIOTECA ---
   Future<void> _deletarTreino(String id) async {
     await FirebaseFirestore.instance.collection('rotinas').doc(id).delete();
   }
@@ -20,39 +18,39 @@ class TreinosPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.surfaceDark,
+        backgroundColor: Colors.transparent, // Fundo transparente
+        elevation: 0,
         title: const Text(
-          'Biblioteca de Treinos',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          'Sua Biblioteca',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
+        centerTitle: true,
       ),
-      // --- O FAB AGORA ABRE A NOSSA TELA PREMIUM DE CRIAR ROTINA ---
+      // --- FAB FLUTUANTE PREMIUM ---
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              // Sem passar alunoId, ela entende que é um "Template" da Biblioteca!
-              builder: (context) => const CriarRotinaPage(),
-            ),
+            MaterialPageRoute(builder: (context) => const RotinaDetalhePage()),
           );
         },
         backgroundColor: AppTheme.primary,
-        icon: const Icon(Icons.add, color: Colors.white),
+        elevation: 4,
+        icon: const Icon(Icons.add, color: Colors.white, size: 20),
         label: const Text(
           'Novo Template',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
         ),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        // Buscamos as ROTINAS (nova coleção) que são TEMPLATES (alunoId nulo) do Personal logado
         stream: FirebaseFirestore.instance
             .collection('rotinas')
             .where('personalId', isEqualTo: personalId)
-            .where(
-              'alunoId',
-              isNull: true,
-            ) // <-- Garante que traz apenas os genéricos da biblioteca
+            .where('alunoId', isNull: true)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -61,7 +59,6 @@ class TreinosPage extends StatelessWidget {
             );
           }
 
-          // Se não tiver nenhum treino, mostramos a tela de "Empty State"
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
               child: Column(
@@ -69,26 +66,25 @@ class TreinosPage extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.dashboard_customize_outlined,
-                    size: 80,
-                    color: AppTheme.textSecondary.withAlpha(100),
+                    size: 64,
+                    color: AppTheme.textSecondary.withAlpha(80),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                   const Text(
-                    'Sua biblioteca está vazia.',
+                    'Biblioteca vazia',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimary,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Crie templates para enviar rapidamente\naos seus alunos no futuro.',
+                    'Crie templates para atribuir\naos seus alunos.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
                       color: AppTheme.textSecondary,
-                      height: 1.5,
                     ),
                   ),
                 ],
@@ -96,20 +92,12 @@ class TreinosPage extends StatelessWidget {
             );
           }
 
-          // Se tiver treinos, mostramos a lista premium!
           return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(
-              16,
-              16,
-              16,
-              80,
-            ), // Padding extra no fundo para não bater no FAB
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
               var doc = snapshot.data!.docs[index];
               var rotina = doc.data() as Map<String, dynamic>;
-
-              // Calcula quantas sessões este template tem (se a chave existir)
               int qtdSessoes = rotina['sessoes'] != null
                   ? (rotina['sessoes'] as List).length
                   : 0;
@@ -127,17 +115,17 @@ class TreinosPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         title: const Text(
-                          "Confirmar exclusão",
+                          "Excluir template?",
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         content: const Text(
-                          "Tem certeza que deseja excluir este template da sua biblioteca?",
+                          "Isso removerá a ficha da sua biblioteca permanentemente.",
                           style: TextStyle(color: AppTheme.textSecondary),
                         ),
-                        actions: <Widget>[
+                        actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(false),
                             child: const Text(
@@ -162,76 +150,89 @@ class TreinosPage extends StatelessWidget {
                 },
                 background: Container(
                   alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 20),
+                  padding: const EdgeInsets.only(right: 24),
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
                     color: Colors.redAccent,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(Icons.delete, color: Colors.white),
+                  child: const Icon(Icons.delete_outline, color: Colors.white),
                 ),
                 onDismissed: (direction) => _deletarTreino(doc.id),
-                child: Card(
-                  color: AppTheme.surfaceLight,
+
+                // --- CARTÃO DA LISTA (REFINADO) ---
+                child: Container(
                   margin: const EdgeInsets.only(bottom: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: Colors.white.withAlpha(10)),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    leading: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary.withAlpha(25),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppTheme.primary.withAlpha(50),
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.collections_bookmark,
-                        color: AppTheme.primary,
-                      ),
-                    ),
-                    title: Text(
-                      rotina['nome'] ?? 'Sem título',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
-                      child: Text(
-                        'Template • $qtdSessoes sessões',
-                        style: const TextStyle(
-                          color: AppTheme.textSecondary,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.chevron_right,
-                      color: AppTheme.textSecondary,
-                    ),
+                  child: InkWell(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => RotinaDetalhePage(
                             rotinaData: rotina,
-                            rotinaId:
-                                doc.id, // <-- ENVIA O ID PARA LIBERAR A EDIÇÃO!
+                            rotinaId: doc.id,
                           ),
                         ),
                       );
                     },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceDark,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withAlpha(10),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primary.withAlpha(20),
+                              shape: BoxShape.circle, // Ícone num círculo
+                            ),
+                            child: const Icon(
+                              Icons.fitness_center,
+                              color: AppTheme.primary,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  rotina['nome'] ?? 'Sem título',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '$qtdSessoes sessões de treino',
+                                  style: const TextStyle(
+                                    color: AppTheme.textSecondary,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            Icons.chevron_right,
+                            color: AppTheme.textSecondary.withAlpha(100),
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               );

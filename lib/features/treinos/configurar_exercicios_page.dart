@@ -40,13 +40,12 @@ class ExercicioItem {
 
 class ConfigurarExerciciosPage extends StatefulWidget {
   final String nomeTreino;
-  final List<ExercicioItem>
-  exercicios; // <-- AGORA RECEBE A LISTA DA SESSÃO PAI
+  final List<ExercicioItem> exercicios;
 
   const ConfigurarExerciciosPage({
     super.key,
     required this.nomeTreino,
-    required this.exercicios, // <-- PARÂMETRO OBRIGATÓRIO
+    required this.exercicios,
   });
 
   @override
@@ -55,10 +54,37 @@ class ConfigurarExerciciosPage extends StatefulWidget {
 }
 
 class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
-  // Controle do Accordion: Qual exercício está aberto no momento?
-  int? _expandedExIndex; // null = todos colapsados
+  int? _expandedExIndex;
 
-  // O MOCK FOI REMOVIDO DAQUI. AGORA USAMOS widget.exercicios EM TUDO!
+  // --- CONTROLE DE ESTADO E RASCUNHO ---
+  late List<ExercicioItem> _exerciciosLocais;
+  bool _hasChanges = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Fazemos um "Deep Clone" (cópia exata) para o rascunho.
+    // Assim, se o utilizador descartar, a lista original do pai fica intocada!
+    _exerciciosLocais = widget.exercicios.map((ex) {
+      return ExercicioItem(
+        nome: ex.nome,
+        grupoMuscular: ex.grupoMuscular,
+        observacao: ex.observacao,
+        tipoAlvo: ex.tipoAlvo,
+        imagemUrl: ex.imagemUrl,
+        series: ex.series
+            .map(
+              (s) => SerieItem(
+                tipo: s.tipo,
+                alvo: s.alvo,
+                carga: s.carga,
+                descanso: s.descanso,
+              ),
+            )
+            .toList(),
+      );
+    }).toList();
+  }
 
   void _removerExercicio(int exIndex) {
     showDialog(
@@ -85,7 +111,9 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           TextButton(
             onPressed: () {
               setState(() {
-                widget.exercicios.removeAt(exIndex); // Usa a lista do widget
+                _exerciciosLocais.removeAt(exIndex);
+                _hasChanges = true; // Marca como modificado
+
                 if (_expandedExIndex == exIndex) {
                   _expandedExIndex = null;
                 } else if (_expandedExIndex != null &&
@@ -110,7 +138,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
   void _editarObservacao(BuildContext context, int exIndex) {
     final controller = TextEditingController(
-      text: widget.exercicios[exIndex].observacao,
+      text: _exerciciosLocais[exIndex].observacao,
     );
 
     showModalBottomSheet(
@@ -132,11 +160,11 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
+              const Row(
                 children: [
-                  const Icon(Icons.notes, color: AppTheme.primary),
-                  const SizedBox(width: 8),
-                  const Text(
+                  Icon(Icons.notes, color: AppTheme.primary),
+                  SizedBox(width: 8),
+                  Text(
                     'Notas do Exercício',
                     style: TextStyle(
                       color: Colors.white,
@@ -169,20 +197,21 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
               ElevatedButton(
                 onPressed: () {
                   setState(() {
-                    widget.exercicios[exIndex].observacao = controller.text
+                    _exerciciosLocais[exIndex].observacao = controller.text
                         .trim();
+                    _hasChanges = true; // Marca como modificado
                   });
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: const Text(
                   'Salvar Nota',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                 ),
               ),
               const SizedBox(height: 24),
@@ -222,15 +251,19 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
                 ListTile(
                   leading: Container(
-                    width: 48,
-                    height: 48,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: Colors.amber.withAlpha(30),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: Colors.amber.withAlpha(50)),
                     ),
                     child: const Center(
-                      child: Icon(Icons.whatshot, color: Colors.amber),
+                      child: Icon(
+                        Icons.whatshot,
+                        color: Colors.amber,
+                        size: 20,
+                      ),
                     ),
                   ),
                   title: const Text(
@@ -238,6 +271,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
+                      fontSize: 14,
                     ),
                   ),
                   subtitle: const Text(
@@ -249,21 +283,25 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   ),
                   onTap: () => Navigator.pop(context, TipoSerie.aquecimento),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
 
                 ListTile(
                   leading: Container(
-                    width: 48,
-                    height: 48,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: Colors.blueAccent.withAlpha(30),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: Colors.blueAccent.withAlpha(50),
                       ),
                     ),
                     child: const Center(
-                      child: Icon(Icons.flash_on, color: Colors.blueAccent),
+                      child: Icon(
+                        Icons.flash_on,
+                        color: Colors.blueAccent,
+                        size: 20,
+                      ),
                     ),
                   ),
                   title: const Text(
@@ -271,6 +309,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
+                      fontSize: 14,
                     ),
                   ),
                   subtitle: const Text(
@@ -282,15 +321,15 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   ),
                   onTap: () => Navigator.pop(context, TipoSerie.feeder),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
 
                 ListTile(
                   leading: Container(
-                    width: 48,
-                    height: 48,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: AppTheme.surfaceLight,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Center(
                       child: Text(
@@ -298,7 +337,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 14,
                         ),
                       ),
                     ),
@@ -308,6 +347,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
+                      fontSize: 14,
                     ),
                   ),
                   subtitle: const Text(
@@ -332,17 +372,17 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         String cargaToClone = '-';
         String descansoToClone = '60s';
 
-        if (widget.exercicios[exIndex].series.isNotEmpty) {
-          final ultimaSerie = widget.exercicios[exIndex].series.lastWhere(
+        if (_exerciciosLocais[exIndex].series.isNotEmpty) {
+          final ultimaSerie = _exerciciosLocais[exIndex].series.lastWhere(
             (s) => s.tipo == tipoEscolhido,
-            orElse: () => widget.exercicios[exIndex].series.last,
+            orElse: () => _exerciciosLocais[exIndex].series.last,
           );
           alvoToClone = ultimaSerie.alvo;
           cargaToClone = ultimaSerie.carga;
           descansoToClone = ultimaSerie.descanso;
         }
 
-        widget.exercicios[exIndex].series.add(
+        _exerciciosLocais[exIndex].series.add(
           SerieItem(
             tipo: tipoEscolhido,
             alvo: alvoToClone,
@@ -350,25 +390,25 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             descanso: descansoToClone,
           ),
         );
+        _hasChanges = true; // Marca como modificado
       });
     }
   }
 
   void _removerSerie(int exIndex, int realIndex) {
     setState(() {
-      widget.exercicios[exIndex].series.removeAt(realIndex);
+      _exerciciosLocais[exIndex].series.removeAt(realIndex);
+      _hasChanges = true; // Marca como modificado
     });
   }
 
   void _onReorder(int oldIndex, int newIndex) {
     setState(() {
-      if (newIndex > oldIndex) {
-        newIndex -= 1;
-      }
-      final item = widget.exercicios.removeAt(oldIndex);
-      widget.exercicios.insert(newIndex, item);
+      if (newIndex > oldIndex) newIndex -= 1;
+      final item = _exerciciosLocais.removeAt(oldIndex);
+      _exerciciosLocais.insert(newIndex, item);
+      _hasChanges = true; // Marca como modificado
 
-      // Ajusta o índice expandido para acompanhar o item movido
       if (_expandedExIndex != null) {
         if (_expandedExIndex == oldIndex) {
           _expandedExIndex = newIndex;
@@ -391,72 +431,202 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
     if (nome != null && nome.isNotEmpty) {
       setState(() {
-        widget.exercicios.add(ExercicioItem(nome: nome, series: []));
-        // Expand the newly added exercise and collapse others
-        _expandedExIndex = widget.exercicios.length - 1;
+        _exerciciosLocais.add(ExercicioItem(nome: nome, series: []));
+        _expandedExIndex = _exerciciosLocais.length - 1;
+        _hasChanges = true; // Marca como modificado
       });
     }
   }
 
+  // --- FUNÇÃO PARA SALVAR DE FATO ---
+  void _concluirEdicao() {
+    // Apaga a lista original e injeta o rascunho
+    widget.exercicios.clear();
+    widget.exercicios.addAll(_exerciciosLocais);
+    // Volta indicando que houve edição
+    Navigator.pop(context, true);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text(
-          widget.nomeTreino,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.check, color: AppTheme.primary),
-            tooltip: 'Finalizar treino',
-            onPressed: () {
-              Navigator.pop(
-                context,
-              ); // Os dados já estão salvos na lista do pai
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: widget.exercicios.isEmpty
-                ? _buildEmptyState()
-                : ReorderableListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                    itemCount: widget.exercicios.length,
-                    onReorder: _onReorder,
-                    proxyDecorator: (child, index, animation) {
-                      return AnimatedBuilder(
-                        animation: animation,
-                        builder: (BuildContext context, Widget? child) {
-                          final double animValue = Curves.easeInOut.transform(
-                            animation.value,
-                          );
-                          final double elevation = lerpDouble(0, 6, animValue)!;
-                          return Material(
-                            elevation: elevation,
-                            color: Colors.transparent,
-                            shadowColor: Colors.black.withAlpha(100),
-                            borderRadius: BorderRadius.circular(16),
-                            child: Transform.scale(scale: 1.02, child: child),
-                          );
-                        },
-                        child: child,
-                      );
-                    },
-                    itemBuilder: (context, index) => _buildExercicioCard(index),
+    return WillPopScope(
+      onWillPop: () async {
+        // Se nada foi alterado, sai normalmente
+        if (!_hasChanges) return true;
+
+        // Se tem alteração, mostra o alerta!
+        final sair = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: AppTheme.surfaceDark,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text(
+              'Descartar alterações?',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: const Text(
+              'Você fez modificações nesta sessão. Se voltar agora sem clicar em "Concluir", todas elas serão perdidas.',
+              style: TextStyle(color: AppTheme.textSecondary),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false), // Fica na tela
+                child: const Text(
+                  'Cancelar',
+                  style: TextStyle(color: AppTheme.textSecondary),
+                ),
+              ),
+              TextButton(
+                onPressed: () =>
+                    Navigator.pop(context, true), // Sai e perde as alterações
+                child: const Text(
+                  'Descartar',
+                  style: TextStyle(
+                    color: Colors.redAccent,
+                    fontWeight: FontWeight.bold,
                   ),
+                ),
+              ),
+            ],
           ),
-          if (widget.exercicios.isNotEmpty) _buildBottomBar(),
-        ],
+        );
+        return sair ?? false;
+      },
+      child: Scaffold(
+        backgroundColor: AppTheme.background,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: TextButton.icon(
+                onPressed: _concluirEdicao,
+                icon: const Icon(
+                  Icons.check,
+                  color: AppTheme.primary,
+                  size: 20,
+                ),
+                label: const Text(
+                  'Concluir',
+                  style: TextStyle(
+                    color: AppTheme.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // =====================================
+            // HEADER ESTILO "APPLE HEALTH / NOTION"
+            // =====================================
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.nomeTreino,
+                    style: const TextStyle(
+                      fontSize: 32, // Fonte gigante editorial
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: -1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${_exerciciosLocais.length} ${_exerciciosLocais.length == 1 ? 'exercício' : 'exercícios'} configurados',
+                    style: const TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // =====================================
+            // LISTA DE EXERCÍCIOS (REORDERABLE)
+            // =====================================
+            Expanded(
+              child: _exerciciosLocais.isEmpty
+                  ? _buildEmptyState()
+                  : ReorderableListView.builder(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                      itemCount:
+                          _exerciciosLocais.length +
+                          1, // +1 para o botão adicionar
+                      onReorder: (oldIndex, newIndex) {
+                        if (oldIndex == _exerciciosLocais.length ||
+                            newIndex > _exerciciosLocais.length)
+                          return;
+                        _onReorder(oldIndex, newIndex);
+                      },
+                      proxyDecorator: (child, index, animation) {
+                        return Material(
+                          elevation: 8,
+                          color: Colors.transparent,
+                          shadowColor: Colors.black.withAlpha(150),
+                          child: child,
+                        );
+                      },
+                      itemBuilder: (context, index) {
+                        if (index == _exerciciosLocais.length) {
+                          return Container(
+                            key: const ValueKey('ghost_add_button'),
+                            margin: const EdgeInsets.only(top: 8),
+                            child: _buildGhostAddButton(),
+                          );
+                        }
+                        return _buildExercicioCard(index);
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- BOTÃO FANTASMA (MINIMALISTA) ---
+  Widget _buildGhostAddButton() {
+    return InkWell(
+      onTap: _openLibrary,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.primary.withAlpha(50), width: 1.5),
+          color: AppTheme.primary.withAlpha(10),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add_rounded, color: AppTheme.primary, size: 20),
+            SizedBox(width: 8),
+            Text(
+              'Adicionar Exercício',
+              style: TextStyle(
+                color: AppTheme.primary,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -469,25 +639,24 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           Icon(
             Icons.fitness_center,
             size: 64,
-            color: Colors.white.withAlpha(26),
+            color: Colors.white.withAlpha(20),
           ),
           const SizedBox(height: 16),
           const Text(
-            'Nenhum exercício adicionado',
-            style: TextStyle(color: AppTheme.textSecondary),
+            'Sessão vazia.',
+            style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: _openLibrary,
             icon: const Icon(Icons.add, size: 20),
-            label: const Text('Adicionar exercício'),
+            label: const Text('Explorar Biblioteca'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             ),
           ),
         ],
@@ -496,28 +665,22 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   }
 
   Widget _buildExercicioCard(int exIndex) {
-    final ex = widget.exercicios[exIndex];
+    final ex = _exerciciosLocais[exIndex];
     final bool isExpanded = _expandedExIndex == exIndex;
 
     final aquecimentoSeries = ex.series
-        .asMap()
-        .entries
-        .where((e) => e.value.tipo == TipoSerie.aquecimento)
+        .where((s) => s.tipo == TipoSerie.aquecimento)
         .toList();
     final feederSeries = ex.series
-        .asMap()
-        .entries
-        .where((e) => e.value.tipo == TipoSerie.feeder)
+        .where((s) => s.tipo == TipoSerie.feeder)
         .toList();
     final trabalhoSeries = ex.series
-        .asMap()
-        .entries
-        .where((e) => e.value.tipo == TipoSerie.trabalho)
+        .where((s) => s.tipo == TipoSerie.trabalho)
         .toList();
 
     return Container(
       key: ObjectKey(ex),
-      margin: const EdgeInsets.only(bottom: 8), // Mais compacto
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
         borderRadius: BorderRadius.circular(16),
@@ -525,15 +688,9 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         boxShadow: [
           if (isExpanded)
             BoxShadow(
-              color: Colors.black.withAlpha(40), // softer shadow when expanded
-              blurRadius: 8,
+              color: Colors.black.withAlpha(40),
+              blurRadius: 10,
               offset: const Offset(0, 4),
-            )
-          else
-            BoxShadow(
-              color: Colors.black.withAlpha(30),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
             ),
         ],
       ),
@@ -541,9 +698,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // =====================================
-          // 1. CABEÇALHO ANIMADO (HEADER)
-          // =====================================
+          // 1. CABEÇALHO ANIMADO
           Material(
             color: Colors.transparent,
             child: InkWell(
@@ -554,20 +709,15 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                 });
               },
               child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                transitionBuilder: (Widget child, Animation<double> animation) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
+                duration: const Duration(milliseconds: 200),
                 child: isExpanded
                     ? _buildExpandedHeader(ex, exIndex)
-                    : _buildCollapsedHeader(ex, exIndex), // Versão Intuitiva
+                    : _buildCollapsedHeader(ex, exIndex),
               ),
             ),
           ),
 
-          // =====================================
           // 2. CORPO DO CARTÃO (ACORDEÃO)
-          // =====================================
           AnimatedSize(
             duration: const Duration(milliseconds: 300),
             curve: Curves.fastOutSlowIn,
@@ -577,23 +727,22 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // TABELA DE SÉRIES (CABEÇALHO)
                       if (ex.series.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
-                            vertical: 4,
+                            vertical: 8,
                           ),
                           child: Row(
                             children: [
                               const SizedBox(
-                                width: 36,
+                                width: 32,
                                 child: Text(
                                   'Série',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: AppTheme.textSecondary,
-                                    fontSize: 12,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -607,10 +756,11 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                         if (ex.tipoAlvo == 'Reps') {
                                           ex.tipoAlvo = 'Tempo';
                                           for (var serie in ex.series) {
-                                            String val = serie.alvo.trim();
-                                            if (RegExp(r'\d$').hasMatch(val)) {
-                                              serie.alvo = '${val}s';
-                                            }
+                                            if (RegExp(
+                                              r'\d$',
+                                            ).hasMatch(serie.alvo.trim()))
+                                              serie.alvo =
+                                                  '${serie.alvo.trim()}s';
                                           }
                                         } else {
                                           ex.tipoAlvo = 'Reps';
@@ -620,6 +770,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                                 .replaceAll(RegExp(r's$'), '');
                                           }
                                         }
+                                        _hasChanges =
+                                            true; // Marca como modificado
                                       });
                                     },
                                     borderRadius: BorderRadius.circular(6),
@@ -639,7 +791,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                               color: ex.tipoAlvo == 'Reps'
                                                   ? AppTheme.textSecondary
                                                   : AppTheme.primary,
-                                              fontSize: 12,
+                                              fontSize: 11,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -649,7 +801,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                             color: ex.tipoAlvo == 'Reps'
                                                 ? AppTheme.textSecondary
                                                 : AppTheme.primary,
-                                            size: 14,
+                                            size: 12,
                                           ),
                                         ],
                                       ),
@@ -664,7 +816,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: AppTheme.textSecondary,
-                                    fontSize: 12,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -676,90 +828,93 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: AppTheme.textSecondary,
-                                    fontSize: 12,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 40),
+                              const SizedBox(width: 32),
                             ],
                           ),
                         ),
 
-                      // SUBDIVISÕES
                       if (aquecimentoSeries.isNotEmpty) ...[
                         _buildSectionTitle('Aquecimento', Colors.amber),
-                        ...aquecimentoSeries.asMap().entries.map(
-                          (entry) => _buildSerieRow(
-                            exIndex,
-                            entry.value.key,
-                            entry.value.value,
-                            entry.key + 1,
-                            Colors.amber,
-                          ),
-                        ),
+                        ...ex.series
+                            .asMap()
+                            .entries
+                            .where((e) => e.value.tipo == TipoSerie.aquecimento)
+                            .map(
+                              (entry) => _buildSerieRow(
+                                exIndex,
+                                entry.key,
+                                entry.value,
+                                aquecimentoSeries.indexOf(entry.value) + 1,
+                              ),
+                            ),
                       ],
                       if (feederSeries.isNotEmpty) ...[
                         _buildSectionTitle('Feeder Sets', Colors.blueAccent),
-                        ...feederSeries.asMap().entries.map(
-                          (entry) => _buildSerieRow(
-                            exIndex,
-                            entry.value.key,
-                            entry.value.value,
-                            entry.key + 1,
-                            Colors.blueAccent,
-                          ),
-                        ),
+                        ...ex.series
+                            .asMap()
+                            .entries
+                            .where((e) => e.value.tipo == TipoSerie.feeder)
+                            .map(
+                              (entry) => _buildSerieRow(
+                                exIndex,
+                                entry.key,
+                                entry.value,
+                                feederSeries.indexOf(entry.value) + 1,
+                              ),
+                            ),
                       ],
                       if (trabalhoSeries.isNotEmpty) ...[
                         _buildSectionTitle(
                           'Séries de Trabalho',
                           AppTheme.textSecondary,
                         ),
-                        ...trabalhoSeries.asMap().entries.map(
-                          (entry) => _buildSerieRow(
-                            exIndex,
-                            entry.value.key,
-                            entry.value.value,
-                            entry.key + 1,
-                            Colors.white,
-                          ),
-                        ),
+                        ...ex.series
+                            .asMap()
+                            .entries
+                            .where((e) => e.value.tipo == TipoSerie.trabalho)
+                            .map(
+                              (entry) => _buildSerieRow(
+                                exIndex,
+                                entry.key,
+                                entry.value,
+                                trabalhoSeries.indexOf(entry.value) + 1,
+                              ),
+                            ),
                       ],
 
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
 
-                      // CAMPO DE OBSERVAÇÃO movido para baixo das séries
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                         child: InkWell(
                           onTap: () => _editarObservacao(context, exIndex),
                           borderRadius: BorderRadius.circular(8),
                           child: ex.observacao.isEmpty
-                              ? Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 4.0,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.add_comment_outlined,
+                              ? Row(
+                                  children: [
+                                    Icon(
+                                      Icons.add_comment_outlined,
+                                      color: AppTheme.textSecondary.withAlpha(
+                                        100,
+                                      ),
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Adicionar nota...',
+                                      style: TextStyle(
                                         color: AppTheme.textSecondary.withAlpha(
                                           150,
                                         ),
-                                        size: 16,
+                                        fontSize: 13,
                                       ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Adicionar nota...',
-                                        style: TextStyle(
-                                          color: AppTheme.textSecondary
-                                              .withAlpha(150),
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 )
                               : Container(
                                   width: double.infinity,
@@ -803,25 +958,31 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                         ),
                       ),
 
-                      // BOTÃO ADICIONAR SÉRIE
                       TextButton(
                         onPressed: () => _adicionarSerie(exIndex),
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.zero,
+                            borderRadius: BorderRadius.vertical(
+                              bottom: Radius.circular(16),
+                            ),
                           ),
+                          backgroundColor: Colors.white.withAlpha(5),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.add, color: AppTheme.primary, size: 18),
-                            SizedBox(width: 6),
+                            Icon(
+                              Icons.add,
+                              color: AppTheme.textSecondary.withAlpha(200),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
                             Text(
                               'Adicionar Série',
                               style: TextStyle(
-                                color: AppTheme.primary,
-                                fontSize: 14,
+                                color: AppTheme.textSecondary.withAlpha(200),
+                                fontSize: 13,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -836,19 +997,17 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     );
   }
 
-  // --- WIDGET DO CABEÇALHO EXPANDIDO (Rico em opções) ---
   Widget _buildExpandedHeader(ExercicioItem ex, int exIndex) {
     return Padding(
       key: const ValueKey('expanded_header'),
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // LINHA 1: Título e Ações
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -859,11 +1018,9 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
-                          height: 1.2,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
                     PopupMenuButton<String>(
                       icon: const Icon(
                         Icons.more_horiz,
@@ -877,34 +1034,9 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       position: PopupMenuPosition.under,
                       padding: EdgeInsets.zero,
                       onSelected: (value) {
-                        if (value == 'substituir') {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Em breve: Abrir biblioteca'),
-                            ),
-                          );
-                        } else if (value == 'remover') {
-                          _removerExercicio(exIndex);
-                        }
+                        if (value == 'remover') _removerExercicio(exIndex);
                       },
                       itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 'substituir',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.swap_horiz,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                              SizedBox(width: 12),
-                              Text(
-                                'Substituir exercício',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        ),
                         const PopupMenuItem(
                           value: 'remover',
                           child: Row(
@@ -916,7 +1048,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                               ),
                               SizedBox(width: 12),
                               Text(
-                                'Remover',
+                                'Remover Exercício',
                                 style: TextStyle(color: Colors.redAccent),
                               ),
                             ],
@@ -936,18 +1068,15 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 8),
-
-                // LINHA 2: Thumbnail e Info Complementar
                 Row(
                   children: [
                     Container(
-                      width: 64,
-                      height: 64,
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
                         color: AppTheme.surfaceLight,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                         image: ex.imagemUrl != null
                             ? DecorationImage(
                                 image: NetworkImage(ex.imagemUrl!),
@@ -966,34 +1095,34 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                 Icon(
                                   Icons.image_outlined,
                                   color: AppTheme.textSecondary.withAlpha(80),
-                                  size: 28,
+                                  size: 24,
                                 ),
                                 Container(
                                   decoration: BoxDecoration(
                                     color: Colors.black.withAlpha(60),
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
                                 const Icon(
                                   Icons.play_circle_fill,
                                   color: AppTheme.primary,
-                                  size: 32,
+                                  size: 24,
                                 ),
                               ],
                             )
                           : const SizedBox(),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'GRUPO MUSCULAR',
+                            'MÚSCULO ALVO',
                             style: TextStyle(
                               color: AppTheme.textSecondary.withAlpha(150),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
                               letterSpacing: 0.5,
                             ),
                           ),
@@ -1019,12 +1148,10 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     );
   }
 
-  // --- WIDGET DO CABEÇALHO COLAPSADO ---
   Widget _buildCollapsedHeader(ExercicioItem ex, int index) {
     return Padding(
       key: const ValueKey('collapsed_header'),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Row(
         children: [
           ReorderableDragStartListener(
@@ -1032,11 +1159,10 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             child: const Icon(
               Icons.drag_indicator,
               color: AppTheme.textSecondary,
-              size: 24,
+              size: 22,
             ),
           ),
           const SizedBox(width: 16),
-          // COLUNA COM NOME E SÉRIES
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1057,7 +1183,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   style: const TextStyle(
                     color: AppTheme.textSecondary,
                     fontSize: 13,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -1067,7 +1192,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           Icon(
             Icons.keyboard_arrow_down,
             color: AppTheme.textSecondary.withAlpha(150),
-            size: 24,
+            size: 22,
           ),
         ],
       ),
@@ -1081,16 +1206,16 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         children: [
           Icon(
             Icons.subdirectory_arrow_right,
-            size: 14,
+            size: 12,
             color: color.withAlpha(200),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Text(
             title,
             style: TextStyle(
               color: color.withAlpha(200),
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
               letterSpacing: 0.5,
             ),
           ),
@@ -1104,15 +1229,14 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     int realIndex,
     SerieItem serie,
     int visualNumber,
-    Color themeColor,
   ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       child: Row(
         children: [
           Container(
-            width: 36,
-            height: 28,
+            width: 32,
+            height: 30,
             decoration: BoxDecoration(
               color: AppTheme.surfaceLight.withAlpha(100),
               borderRadius: BorderRadius.circular(6),
@@ -1120,52 +1244,51 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             child: Center(
               child: Text(
                 '$visualNumber',
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppTheme.textSecondary,
                   fontWeight: FontWeight.bold,
-                  fontSize: 13,
+                  fontSize: 12,
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
-
+          const SizedBox(width: 10),
           Expanded(
             child: _buildCleanInput(
               serie.alvo,
-              (val) => serie.alvo = val,
-              autoSuffix: widget.exercicios[exIndex].tipoAlvo == 'Tempo'
+              (val) {
+                serie.alvo = val;
+                _hasChanges = true; // Marca como modificado
+              },
+              autoSuffix: _exerciciosLocais[exIndex].tipoAlvo == 'Tempo'
                   ? 's'
                   : null,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Expanded(
-            child: _buildCleanInput(
-              serie.carga,
-              (val) => serie.carga = val,
-              autoSuffix: 'kg',
-            ),
+            child: _buildCleanInput(serie.carga, (val) {
+              serie.carga = val;
+              _hasChanges = true; // Marca como modificado
+            }, autoSuffix: 'kg'),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Expanded(
-            child: _buildCleanInput(
-              serie.descanso,
-              (val) => serie.descanso = val,
-              autoSuffix: 's',
-            ),
+            child: _buildCleanInput(serie.descanso, (val) {
+              serie.descanso = val;
+              _hasChanges = true; // Marca como modificado
+            }, autoSuffix: 's'),
           ),
-
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           GestureDetector(
             onTap: () => _removerSerie(exIndex, realIndex),
             child: SizedBox(
-              width: 32,
-              height: 32,
+              width: 28,
+              height: 30,
               child: Icon(
                 Icons.close,
                 color: AppTheme.textSecondary.withAlpha(150),
-                size: 18,
+                size: 16,
               ),
             ),
           ),
@@ -1185,38 +1308,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       autoSuffix: autoSuffix,
     );
   }
-
-  Widget _buildBottomBar() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 48),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceDark,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(top: BorderSide(color: Colors.white.withAlpha(13))),
-      ),
-      child: ElevatedButton.icon(
-        onPressed: _openLibrary,
-        icon: const Icon(Icons.add),
-        label: const Text(
-          'Adicionar Exercício',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.primary,
-          foregroundColor: Colors.white,
-          minimumSize: const Size(double.infinity, 54),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
-// ==========================================
-// WIDGET SÊNIOR PARA CONTROLE DE ESTADO DO INPUT
-// ==========================================
 class _CleanInputWidget extends StatefulWidget {
   final String initialValue;
   final ValueChanged<String> onChanged;
@@ -1275,10 +1368,10 @@ class _CleanInputWidgetState extends State<_CleanInputWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 36,
+      height: 30,
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(12),
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.white.withAlpha(10),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: TextField(
         controller: _controller,
@@ -1288,12 +1381,12 @@ class _CleanInputWidgetState extends State<_CleanInputWidget> {
         keyboardType: TextInputType.text,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
         ),
         decoration: const InputDecoration(
           isDense: true,
-          contentPadding: EdgeInsets.symmetric(vertical: 9),
+          contentPadding: EdgeInsets.symmetric(vertical: 8),
           border: InputBorder.none,
         ),
       ),
