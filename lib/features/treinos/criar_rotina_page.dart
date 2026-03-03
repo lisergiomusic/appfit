@@ -533,37 +533,6 @@ class _CriarRotinaPageState extends State<CriarRotinaPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (widget.alunoNome != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primary.withAlpha(26),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.primary.withAlpha(77)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.person,
-                        color: AppTheme.primary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        isEditing
-                            ? 'Editando rotina de: ${widget.alunoNome}'
-                            : 'Criando para: ${widget.alunoNome}',
-                        style: const TextStyle(
-                          color: AppTheme.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-
               const Text(
                 'INFORMAÇÕES BÁSICAS',
                 style: TextStyle(
