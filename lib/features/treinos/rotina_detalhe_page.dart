@@ -120,7 +120,69 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     return TipoSerie.trabalho;
   }
 
-  // --- MODAL PARA EDITAR CABEÇALHO ---
+  // --- WIDGET AUXILIAR PARA INPUTS (APPLE NATIVE) ---
+  Widget _buildModernInput({
+    required String label,
+    required IconData icon,
+    required Widget child,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 0, bottom: 10),
+          child: Row(
+            children: [
+              Icon(icon, size: 16, color: AppTheme.primary),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+        child,
+      ],
+    );
+  }
+
+  // --- BUILD CUSTOM INPUT DECORATION (APPLE NATIVE) ---
+  InputDecoration _buildInputDecoration({required String hintText}) {
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: TextStyle(
+        color: AppTheme.textSecondary.withAlpha(60),
+        fontSize: 15,
+        fontWeight: FontWeight.w400,
+      ),
+      filled: true,
+      fillColor: Colors.white.withAlpha(5),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(11),
+        borderSide: BorderSide(color: Colors.white.withAlpha(8), width: 1),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(11),
+        borderSide: BorderSide(color: Colors.white.withAlpha(8), width: 1),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(11),
+        borderSide: BorderSide(
+          color: AppTheme.primary.withAlpha(180),
+          width: 1.5,
+        ),
+      ),
+    );
+  }
+
+  // --- MODAL PARA EDITAR CABEÇALHO (REFINADO) ---
   void _exibirModalInfo(BuildContext context) {
     final nomeCtrl = TextEditingController(text: _nome);
     final objCtrl = TextEditingController(text: _objetivo);
@@ -139,58 +201,120 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             bottom: MediaQuery.of(context).viewInsets.bottom,
             left: 24,
             right: 24,
-            top: 24,
+            top: 16,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Informações da Rotina',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              // HANDLE DE ARRASTAR
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withAlpha(30),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: nomeCtrl,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  labelText: 'Nome da Rotina',
-                  hintText: 'Ex: Projeto Hipertrofia Mês 1',
-                  prefixIcon: Icon(Icons.title),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Configurar Rotina',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: AppTheme.textSecondary,
+                      size: 18,
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                    padding: const EdgeInsets.all(8),
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+
+              _buildModernInput(
+                label: 'NOME DA ROTINA',
+                icon: Icons.title,
+                child: TextField(
+                  controller: nomeCtrl,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: -0.3,
+                  ),
+                  decoration: _buildInputDecoration(
+                    hintText: 'Ex: Projeto Hipertrofia Mês 1',
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: objCtrl,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  labelText: 'Objetivo Principal',
-                  hintText: 'Ex: Ganho de massa e força',
-                  prefixIcon: Icon(Icons.track_changes),
+              const SizedBox(height: 28),
+
+              _buildModernInput(
+                label: 'OBJETIVO PRINCIPAL',
+                icon: Icons.track_changes,
+                child: TextField(
+                  controller: objCtrl,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: -0.3,
+                  ),
+                  decoration: _buildInputDecoration(
+                    hintText: 'Ex: Ganho de massa e força',
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<int>(
-                value: semanasSelecionadas,
-                dropdownColor: AppTheme.surfaceLight,
-                style: const TextStyle(color: Colors.white),
-                items: [4, 5, 6, 8, 10, 12]
-                    .map(
-                      (w) =>
-                          DropdownMenuItem(value: w, child: Text('$w semanas')),
-                    )
-                    .toList(),
-                onChanged: (v) => setStateModal(() => semanasSelecionadas = v!),
-                decoration: const InputDecoration(
-                  labelText: 'Duração da Rotina',
-                  prefixIcon: Icon(Icons.date_range),
+              const SizedBox(height: 28),
+
+              _buildModernInput(
+                label: 'DURAÇÃO PLANEJADA',
+                icon: Icons.schedule,
+                child: DropdownButtonFormField<int>(
+                  value: semanasSelecionadas,
+                  dropdownColor: AppTheme.surfaceLight,
+                  icon: Icon(
+                    Icons.expand_more_rounded,
+                    color: AppTheme.primary.withAlpha(180),
+                    size: 20,
+                  ),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  items: [4, 5, 6, 8, 10, 12]
+                      .map(
+                        (w) => DropdownMenuItem(
+                          value: w,
+                          child: Text('$w semanas'),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (v) =>
+                      setStateModal(() => semanasSelecionadas = v!),
+                  decoration: _buildInputDecoration(
+                    hintText: 'Escolha a duração',
+                  ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 36),
+
               ElevatedButton(
                 onPressed: () {
                   setState(() {
@@ -201,7 +325,23 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   });
                   Navigator.pop(context);
                 },
-                child: const Text('Concluir'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  elevation: 0,
+                  shadowColor: Colors.transparent,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                ),
+                child: const Text(
+                  'Concluir',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    letterSpacing: -0.3,
+                  ),
+                ),
               ),
               const SizedBox(height: 24),
             ],
@@ -211,7 +351,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     );
   }
 
-  // --- MODAL PARA ADICIONAR/EDITAR SESSÃO ---
+  // --- MODAL PARA ADICIONAR/EDITAR SESSÃO (REFINADO) ---
   void _exibirModalSessao({int? index}) {
     final bool isEditing = index != null;
     final nomeCtrl = TextEditingController(
@@ -234,58 +374,120 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           bottom: MediaQuery.of(context).viewInsets.bottom,
           left: 24,
           right: 24,
-          top: 24,
+          top: 16,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              isEditing ? 'Editar Sessão' : 'Nova Sessão de Treino',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  color: Colors.white.withAlpha(30),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: nomeCtrl,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
-                labelText: 'Nome',
-                hintText: 'Ex: Treino A - Costas e Bíceps',
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  isEditing ? 'Editar Sessão' : 'Nova Sessão',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: AppTheme.textSecondary,
+                    size: 18,
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  padding: const EdgeInsets.all(8),
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+
+            _buildModernInput(
+              label: 'NOME DO TREINO',
+              icon: Icons.fitness_center,
+              child: TextField(
+                controller: nomeCtrl,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: -0.3,
+                ),
+                decoration: _buildInputDecoration(
+                  hintText: 'Ex: Push, Pull, Costas...',
+                ),
               ),
             ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              initialValue: diaSemana,
-              dropdownColor: AppTheme.surfaceLight,
-              style: const TextStyle(color: Colors.white),
-              items: <String>[
-                'Segunda',
-                'Terça',
-                'Quarta',
-                'Quinta',
-                'Sexta',
-                'Sábado',
-                'Domingo',
-              ].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
-              onChanged: (v) => diaSemana = v,
-              decoration: const InputDecoration(
-                labelText: 'Dia da semana (opcional)',
+            const SizedBox(height: 28),
+
+            _buildModernInput(
+              label: 'DIA DA SEMANA (OPCIONAL)',
+              icon: Icons.calendar_today,
+              child: DropdownButtonFormField<String>(
+                initialValue: diaSemana,
+                dropdownColor: AppTheme.surfaceLight,
+                icon: Icon(
+                  Icons.expand_more_rounded,
+                  color: AppTheme.primary.withAlpha(180),
+                  size: 20,
+                ),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                ),
+                items:
+                    <String>[
+                          'Segunda',
+                          'Terça',
+                          'Quarta',
+                          'Quinta',
+                          'Sexta',
+                          'Sábado',
+                          'Domingo',
+                        ]
+                        .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                        .toList(),
+                onChanged: (v) => diaSemana = v,
+                decoration: _buildInputDecoration(hintText: 'Sem dia fixo'),
               ),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: orientCtrl,
-              maxLines: 3,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
-                labelText: 'Orientações gerais (opcional)',
+            const SizedBox(height: 28),
+
+            _buildModernInput(
+              label: 'NOTAS GERAIS DA SESSÃO',
+              icon: Icons.notes,
+              child: TextField(
+                controller: orientCtrl,
+                maxLines: 3,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                ),
+                decoration: _buildInputDecoration(
+                  hintText: 'Ex: Aquecer manguito rotador antes...',
+                ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 36),
+
             ElevatedButton(
               onPressed: () {
                 final newName = nomeCtrl.text.trim().isEmpty
@@ -309,7 +511,23 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 });
                 Navigator.pop(context);
               },
-              child: Text(isEditing ? 'Salvar Sessão' : 'Adicionar Sessão'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                elevation: 0,
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(11),
+                ),
+              ),
+              child: Text(
+                isEditing ? 'Salvar' : 'Adicionar',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  letterSpacing: -0.3,
+                ),
+              ),
             ),
             const SizedBox(height: 24),
           ],
@@ -481,29 +699,53 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           elevation: 0,
         ),
 
-        // --- NOVO FAB FLUTUANTE (PREMIUM E COMPACTO) ---
+        // --- FAB MINIMALISTA E MODERNO ---
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: (_foiModificado || widget.rotinaId == null)
-            ? FloatingActionButton.extended(
-                onPressed: _isLoading ? null : _salvarRotinaCompleta,
-                backgroundColor: AppTheme.success,
-                elevation: 4,
-                icon: _isLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Icon(Icons.check, color: Colors.white, size: 20),
-                label: Text(
-                  _isLoading ? 'Salvando...' : 'Salvar Alterações',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+            ? Padding(
+                padding: const EdgeInsets.only(bottom: 24),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.success.withAlpha(40),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: FloatingActionButton.extended(
+                    onPressed: _isLoading ? null : _salvarRotinaCompleta,
+                    backgroundColor: AppTheme.success,
+                    elevation: 0,
+                    highlightElevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    icon: _isLoading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.check_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                    label: Text(
+                      _isLoading ? 'Salvando...' : 'Salvar',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
                   ),
                 ),
               )
