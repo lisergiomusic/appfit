@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/theme/app_theme.dart';
-import '../treinos/criar_rotina_page.dart';
 import '../treinos/rotina_detalhe_page.dart';
 import 'gerenciar_aluno_page.dart';
 import 'feedback_historico_page.dart';
@@ -268,7 +267,7 @@ class PerfilAlunoPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CriarRotinaPage(
+                      builder: (context) => RotinaDetalhePage(
                         alunoId: alunoId,
                         alunoNome: alunoNome,
                       ),
