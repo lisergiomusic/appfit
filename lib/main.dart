@@ -23,7 +23,7 @@ class AppFit extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'AppFit',
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.themeData,
       home: const ChecagemPagina(), // <-- O App agora começa no Porteiro!
     );
   }

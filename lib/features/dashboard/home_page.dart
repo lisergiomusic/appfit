@@ -2,30 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/theme/app_theme.dart';
-import '../treinos/treinos_page.dart'; // <-- IMPORTANTE: Importamos a tela de treinos aqui!
+import '../treinos/treinos_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Pegamos o ID do Personal para buscar apenas os alunos dele
     final String? personalId = FirebaseAuth.instance.currentUser?.uid;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Visão Geral',
+            'VISÃO GERAL',
             style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.textPrimary,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textSecondary,
+              letterSpacing: 1.5,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
           Row(
             children: [
               // --- CARD DE ALUNOS ---
@@ -34,46 +34,55 @@ class HomePage extends StatelessWidget {
                   stream: FirebaseFirestore.instance
                       .collection('usuarios')
                       .where('tipoUsuario', isEqualTo: 'aluno')
-                      .where(
-                        'personalId',
-                        isEqualTo: personalId,
-                      ) // Filtra os SEUS alunos
+                      .where('personalId', isEqualTo: personalId)
                       .snapshots(),
                   builder: (context, snapshot) {
-                    String quantidadeAlunos = '...';
-
+                    String quantidadeAlunos = '-';
                     if (snapshot.hasData) {
                       quantidadeAlunos = snapshot.data!.docs.length
                           .toString()
                           .padLeft(2, '0');
                     }
-
-                    return _buildSummaryCard(
-                      'Alunos',
-                      quantidadeAlunos,
-                      Icons.people_outline,
-                      AppTheme.primary,
-                      null, // <-- null porque a aba alunos já está lá embaixo
+                    return _buildPremiumSummaryCard(
+                      title: 'Alunos',
+                      value: quantidadeAlunos,
+                      icon: Icons.people_alt_outlined,
+                      color: AppTheme.primary,
+                      onTap: null, // Ação acontece na aba inferior
                     );
                   },
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
 
-              // --- CARD DE TREINOS (AGORA CLICÁVEL) ---
+              // --- CARD DE TREINOS (CONECTADO E CLICÁVEL) ---
               Expanded(
-                child: _buildSummaryCard(
-                  'Treinos',
-                  '00',
-                  Icons.fitness_center,
-                  AppTheme.success,
-                  () {
-                    // <-- Ação para abrir a página de treinos
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const TreinosPage(),
-                      ),
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('rotinas')
+                      .where('personalId', isEqualTo: personalId)
+                      .where('alunoId', isNull: true) // Conta só os templates!
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    String quantidadeTreinos = '-';
+                    if (snapshot.hasData) {
+                      quantidadeTreinos = snapshot.data!.docs.length
+                          .toString()
+                          .padLeft(2, '0');
+                    }
+                    return _buildPremiumSummaryCard(
+                      title: 'Templates',
+                      value: quantidadeTreinos,
+                      icon: Icons.collections_bookmark_outlined,
+                      color: AppTheme.success,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const TreinosPage(),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),
@@ -81,33 +90,32 @@ class HomePage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 32),
-          const Text(
-            'Ações Rápidas',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 16),
 
-          _buildActionCard(
-            'Adicionar Aluno',
-            'Envie um convite',
-            Icons.person_add_outlined,
-            () {
-              // Em breve podemos abrir o modal direto daqui!
-            },
+          const Text(
+            'AÇÕES RÁPIDAS',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textSecondary,
+              letterSpacing: 1.5,
+            ),
           ),
           const SizedBox(height: 12),
 
-          // --- BOTÃO DE NOVO TREINO (AGORA CLICÁVEL) ---
-          _buildActionCard(
-            'Biblioteca de Treinos',
-            'Gerencie seus templates',
-            Icons.note_add_outlined,
-            () {
-              // <-- Ação para abrir a página de treinos
+          _buildPremiumActionCard(
+            title: 'Adicionar Aluno',
+            subtitle: 'Enviar convite de acesso',
+            icon: Icons.person_add_alt_1_outlined,
+            onTap: () {
+              // Modal abrirá aqui em breve
+            },
+          ),
+          const SizedBox(height: 10),
+          _buildPremiumActionCard(
+            title: 'Biblioteca de Treinos',
+            subtitle: 'Gerir os seus templates base',
+            icon: Icons.layers_outlined,
+            onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const TreinosPage()),
@@ -119,41 +127,50 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // <-- ADICIONAMOS O PARÂMETRO 'VoidCallback? onTap'
-  Widget _buildSummaryCard(
-    String title,
-    String value,
-    IconData icon,
-    Color color,
+  Widget _buildPremiumSummaryCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
     VoidCallback? onTap,
-  ) {
+  }) {
     return GestureDetector(
-      // <-- Ouve o toque na tela
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceLight,
-          borderRadius: BorderRadius.circular(12),
+          color: AppTheme.surfaceDark,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withAlpha(10), width: 1.0),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: color, size: 28),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withAlpha(20),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
             const SizedBox(height: 16),
             Text(
               value,
               style: const TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.w900,
-                color: AppTheme.textPrimary,
+                fontSize: 24, // Fim da fonte gigante 32
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                letterSpacing: -0.5,
               ),
             ),
+            const SizedBox(height: 2),
             Text(
               title,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 color: AppTheme.textSecondary,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -162,27 +179,32 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // <-- ADICIONAMOS O PARÂMETRO 'VoidCallback onTap'
-  Widget _buildActionCard(
-    String title,
-    String subtitle,
-    IconData icon,
-    VoidCallback onTap,
-  ) {
+  Widget _buildPremiumActionCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
-      // <-- Ouve o toque na tela e dá um efeitinho visual
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
           color: AppTheme.surfaceDark,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF333333)),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withAlpha(10), width: 1.0),
         ),
         child: Row(
           children: [
-            Icon(icon, color: AppTheme.primary),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceLight,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: AppTheme.textSecondary, size: 20),
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -191,10 +213,12 @@ class HomePage extends StatelessWidget {
                   Text(
                     title,
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimary,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      fontSize: 15,
                     ),
                   ),
+                  const SizedBox(height: 2),
                   Text(
                     subtitle,
                     style: const TextStyle(
@@ -205,7 +229,11 @@ class HomePage extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+            Icon(
+              Icons.chevron_right,
+              color: AppTheme.textSecondary.withAlpha(100),
+              size: 20,
+            ),
           ],
         ),
       ),
