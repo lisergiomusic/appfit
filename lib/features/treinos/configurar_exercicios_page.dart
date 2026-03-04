@@ -22,6 +22,7 @@ class ConfigurarExerciciosPage extends StatefulWidget {
 class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   late List<ExercicioItem> _exerciciosLocais;
   bool _hasChanges = false;
+  late TextEditingController _nomeTreinoController;
 
   @override
   void initState() {
@@ -46,57 +47,14 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   .toList(),
             );
           }).toList()
-        : [
-            // Mocked data
-            ExercicioItem(
-              nome: 'Supino Reto',
-              grupoMuscular: 'Peito',
-              observacao: 'Aquecimento',
-              tipoAlvo: 'Reps',
-              series: [
-                SerieItem(
-                  tipo: TipoSerie.aquecimento,
-                  alvo: '15',
-                  carga: '20kg',
-                  descanso: '60s',
-                ),
-                SerieItem(
-                  tipo: TipoSerie.trabalho,
-                  alvo: '10',
-                  carga: '40kg',
-                  descanso: '90s',
-                ),
-              ],
-            ),
-            ExercicioItem(
-              nome: 'Rosca Direta',
-              grupoMuscular: 'Bíceps',
-              observacao: 'Foco na execução',
-              tipoAlvo: 'Reps',
-              series: [
-                SerieItem(
-                  tipo: TipoSerie.trabalho,
-                  alvo: '12',
-                  carga: '15kg',
-                  descanso: '60s',
-                ),
-              ],
-            ),
-            ExercicioItem(
-              nome: 'Agachamento Livre',
-              grupoMuscular: 'Pernas',
-              observacao: 'Cuidado com a postura',
-              tipoAlvo: 'Reps',
-              series: [
-                SerieItem(
-                  tipo: TipoSerie.trabalho,
-                  alvo: '8',
-                  carga: '60kg',
-                  descanso: '120s',
-                ),
-              ],
-            ),
-          ];
+        : [];
+    _nomeTreinoController = TextEditingController(text: widget.nomeTreino);
+  }
+
+  @override
+  void dispose() {
+    _nomeTreinoController.dispose();
+    super.dispose();
   }
 
   void _onReorder(int oldIndex, int newIndex) {
@@ -174,296 +132,221 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        if (!_hasChanges) {
-          Navigator.maybePop(context);
-          return;
-        }
-        final sair = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: AppTheme.surfaceLight,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            title: const Text(
-              'Descartar alterações?',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        toolbarHeight: 44,
+        leadingWidth: 100,
+        leading: GestureDetector(
+          onTap: _onBackPressed,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: const [
+              SizedBox(width: 16),
+              Icon(
+                Icons.arrow_back_ios_new,
+                color: AppTheme.primary,
+                size: 20,
               ),
-            ),
-            content: const Text(
-              'As modificações nesta sessão não foram salvas.',
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text(
-                  'Cancelar',
-                  style: TextStyle(color: AppTheme.primary, fontSize: 16),
-                ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  'Descartar',
-                  style: TextStyle(
-                    color: Colors.redAccent,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
+              SizedBox(width: 4),
             ],
           ),
-        );
-        if (!mounted) return;
-        // ignore: use_build_context_synchronously
-        if (sair == true) Navigator.pop(context);
-      },
-      child: Scaffold(
-        backgroundColor: Colors.black, // Mantido o preto que escolheste
-        body: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: BouncingScrollPhysics(),
-          ),
-          slivers: [
-            // --- O MAGNÍFICO SLIVER APP BAR NATIVO (COM MORPHING PERFEITO) ---
-            SliverAppBar(
-              backgroundColor: Colors.black,
-              surfaceTintColor: Colors.transparent,
-              pinned: true,
-              expandedHeight: 140.0,
-              leadingWidth: 100,
-              leading: GestureDetector(
-                onTap: _onBackPressed,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const SizedBox(width: 16),
-                    const Icon(
-                      Icons.arrow_back_ios_new,
-                      color: AppTheme.primary,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 4),
-                    const Text(
-                      'Voltar',
-                      style: TextStyle(
-                        color: AppTheme.primary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: TextButton(
+              onPressed: _concluirEdicao,
+              child: const Text(
+                'Concluir',
+                style: TextStyle(
+                  color: AppTheme.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
                 ),
-              ),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: TextButton(
-                    onPressed: _concluirEdicao,
-                    child: const Text(
-                      'Concluir',
-                      style: TextStyle(
-                        color: AppTheme.primary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-              flexibleSpace: LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-                  // Calcula a altura colapsada exata (Status Bar + Toolbar padrão)
-                  final double collapsedHeight =
-                      MediaQuery.of(context).padding.top + kToolbarHeight;
-                  // Ocorre a transição de opacidade quando está a 20px de fechar totalmente
-                  final bool isCollapsed =
-                      constraints.biggest.height <= collapsedHeight + 20;
-
-                  return FlexibleSpaceBar(
-                    centerTitle: true,
-                    titlePadding: const EdgeInsets.only(bottom: 14),
-                    // --- TÍTULO PEQUENO (Aparece centralizado no topo) ---
-                    title: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 250),
-                      opacity: isCollapsed ? 1.0 : 0.0,
-                      child: Text(
-                        widget.nomeTreino,
-                        style: const TextStyle(
-                          fontFamily: '.SF UI Display',
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
-                    // --- TÍTULO GIGANTE (Fica ancorado à esquerda em baixo) ---
-                    background: Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 20, bottom: 16),
-                        child: AnimatedOpacity(
-                          duration: const Duration(milliseconds: 250),
-                          opacity: isCollapsed ? 0.0 : 1.0,
-                          child: Text(
-                            widget.nomeTreino,
-                            style: const TextStyle(
-                              fontFamily: '.SF UI Display',
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 48,
-                              letterSpacing: 0.2,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
               ),
             ),
+          ),
+        ],
+        title: const Text(
+          'Editar Treino',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.7),
+          child: Container(
+            height: 0.7,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withOpacity(0.08),
+                  Colors.white.withOpacity(0.02),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+        ),
+      ),
+      body: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        slivers: [
 
-            // --- O CORPO DA PÁGINA (SUBTÍTULO E LISTA) ---
-            SliverToBoxAdapter(
+          // --- O CORPO DA PÁGINA (SUBTÍTULO E LISTA) ---
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // O subtítulo fica logo abaixo do título gigante, mas sobe com o scroll
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                    child: Text(
-                      '${_exerciciosLocais.length} exercícios configurados',
-                      style: TextStyle(
-                        color: AppTheme.textSecondary.withAlpha(180),
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
+                  Text(
+                    widget.nomeTreino,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 44,
+                      letterSpacing: 0.2,
+                      color: Colors.white,
                     ),
                   ),
-
-                  // --- NOVA SEÇÃO: PILLS DE MÚSCULOS ---
+                  const SizedBox(height: 8),
+                  Text(
+                    '${_exerciciosLocais.length} exercícios configurados',
+                    style: TextStyle(
+                      color: const Color(0xFF8e8e93),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   if (_gruposMuscularesUnicos.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-                      child: Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: _gruposMuscularesUnicos.map((grupo) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _gruposMuscularesUnicos.map((grupo) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1c1c1e),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.05),
+                              width: 1,
                             ),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primary.withAlpha(20),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: AppTheme.primary.withAlpha(60),
-                                width: 0.5,
-                              ),
+                          ),
+                          child: Text(
+                            grupo.toUpperCase(),
+                            style: TextStyle(
+                              color: AppTheme.textSecondary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.8,
                             ),
-                            child: Text(
-                              grupo.toUpperCase(),
-                              style: const TextStyle(
-                                color: AppTheme.primary,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
+                          ),
+                        );
+                      }).toList(),
                     ),
-                  // --- FIM DA NOVA SEÇÃO ---
-
-                  // Se estiver vazio, mostra o empty state
+                  const SizedBox(height: 32),
                   if (_exerciciosLocais.isEmpty)
-                    SizedBox(
-                      height:
-                          400, // Altura fixa para centralizar o empty state no scroll
-                      child: _buildEmptyState(),
-                    ),
+                    SizedBox(height: 400, child: _buildEmptyState()),
                 ],
               ),
             ),
+          ),
 
-            // --- A LISTA REORDENÁVEL COMO UM SLIVER ---
-            if (_exerciciosLocais.isNotEmpty)
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                sliver: SliverReorderableList(
-                  itemCount: _exerciciosLocais.length + 1,
-                  onReorder: (oldIndex, newIndex) {
-                    if (oldIndex == _exerciciosLocais.length ||
-                        newIndex > _exerciciosLocais.length) {
-                      return;
-                    }
-                    _onReorder(oldIndex, newIndex);
-                  },
-                  proxyDecorator: (child, index, animation) {
-                    return Material(
-                      elevation: 0,
-                      color: Colors.transparent,
-                      child: child,
+          if (_exerciciosLocais.isNotEmpty)
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+              sliver: SliverReorderableList(
+                itemCount: _exerciciosLocais.length + 1,
+                onReorder: (oldIndex, newIndex) {
+                  if (oldIndex == _exerciciosLocais.length ||
+                      newIndex > _exerciciosLocais.length) {
+                    return;
+                  }
+                  _onReorder(oldIndex, newIndex);
+                },
+                proxyDecorator: (child, index, animation) {
+                  return Material(
+                    elevation: 0,
+                    color: Colors.transparent,
+                    child: child,
+                  );
+                },
+                itemBuilder: (context, index) {
+                  if (index == _exerciciosLocais.length) {
+                    return Container(
+                      key: const ValueKey('add_button'),
+                      margin: const EdgeInsets.only(top: 8),
+                      child: _buildAddExercicioButton(),
                     );
-                  },
-                  itemBuilder: (context, index) {
-                    if (index == _exerciciosLocais.length) {
-                      return Container(
-                        key: const ValueKey('add_button'),
-                        margin: const EdgeInsets.only(top: 8),
-                        child: _buildAddExercicioButton(),
-                      );
-                    }
-                    return _buildExercicioCard(index);
-                  },
-                ),
+                  }
+                  return _buildExercicioCard(index);
+                },
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
 
   Widget _buildAddExercicioButton() {
-    return InkWell(
-      onTap: _openLibrary,
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          color: AppTheme.primary.withAlpha(25),
+    return Container(
+      margin: const EdgeInsets.only(top: 16, bottom: 32),
+      width: double.infinity,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(24),
+        child: InkWell(
+          onTap: _openLibrary,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: AppTheme.primary.withAlpha(100),
-            width: 1.5,
-            style: BorderStyle.solid,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.add_circle_outline, color: AppTheme.primary, size: 22),
-            const SizedBox(width: 8),
-            Text(
-              'Adicionar Exercício',
-              style: TextStyle(
-                color: AppTheme.primary,
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
-                letterSpacing: -0.2,
+          splashColor: Colors.white.withOpacity(0.04),
+          highlightColor: Colors.white.withOpacity(0.02),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 16), // py-4
+            decoration: BoxDecoration(
+              color: const Color(0xFF1c1c1e), // bg-[#1c1c1e]
+              borderRadius: BorderRadius.circular(24), // rounded-2xl
+              border: Border.all(
+                color: Colors.white.withOpacity(0.05), // border-white/5
+                width: 1,
               ),
             ),
-          ],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Icon(
+                  Icons.add_circle,
+                  color: AppTheme.primary, // laranja do tema
+                  size: 28,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Adicionar Exercício',
+                  style: TextStyle(
+                    color: AppTheme.primary, // laranja do tema
+                    fontWeight: FontWeight.w700, // font-semibold
+                    fontSize: 17, // text-[17px]
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -506,16 +389,17 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
     return Container(
       key: ObjectKey(ex),
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 16), // gap-4
       decoration: BoxDecoration(
-        color: AppTheme.surfaceDark,
+        color: const Color(0xFF1c1c1e),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withAlpha(15), width: 0.5),
+        border: Border.all(color: Colors.white.withOpacity(0.05), width: 1),
       ),
-      clipBehavior: Clip.antiAlias,
       child: Material(
         color: Colors.transparent,
+        borderRadius: BorderRadius.circular(24),
         child: InkWell(
+          borderRadius: BorderRadius.circular(24),
           onTap: () async {
             await Navigator.push(
               context,
@@ -526,21 +410,26 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                 ),
               ),
             );
-            setState(() {}); // Atualiza a contagem de séries na lista ao voltar
+            setState(() {});
           },
+          splashColor: Colors.white.withOpacity(0.04),
+          highlightColor: const Color(0xFF2c2c2e), // active:bg-[#2c2c2e]
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: const EdgeInsets.all(16), // p-4
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                ReorderableDragStartListener(
-                  index: exIndex,
-                  child: Icon(
-                    Icons.drag_indicator,
-                    color: AppTheme.textSecondary.withAlpha(80),
-                    size: 24,
+                Container(
+                  margin: const EdgeInsets.only(right: 16),
+                  child: ReorderableDragStartListener(
+                    index: exIndex,
+                    child: Icon(
+                      Icons.drag_indicator,
+                      color: const Color(0xFF48484a),
+                      size: 28,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -549,28 +438,32 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                         ex.nome,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 19,
+                          letterSpacing: -0.2,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
-                        '${ex.series.length} ${ex.series.length == 1 ? 'série' : 'séries'} • ${ex.grupoMuscular}',
-                        style: TextStyle(
-                          color: AppTheme.textSecondary.withAlpha(180),
-                          fontSize: 14,
+                        '${ex.series.length} ${ex.series.length == 1 ? 'série' : 'séries'}',
+                        style: const TextStyle(
+                          color: Color(0xFF8e8e93),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                Icon(
-                  Icons.chevron_right,
-                  color: AppTheme.textSecondary.withAlpha(150),
-                  size: 22,
+                Container(
+                  margin: const EdgeInsets.only(left: 12),
+                  child: Icon(
+                    Icons.chevron_right,
+                    color: const Color(0xFF48484a),
+                    size: 28,
+                  ),
                 ),
               ],
             ),
@@ -590,4 +483,3 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     return grupos;
   }
 }
-
