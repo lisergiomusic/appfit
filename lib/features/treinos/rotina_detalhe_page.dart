@@ -1215,7 +1215,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             margin: const EdgeInsets.only(bottom: 16),
             child: InkWell(
               onTap: () async {
-                await Navigator.push(
+                final String? novoNomeTreino = await Navigator.push<String?>(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ConfigurarExerciciosPage(
@@ -1224,7 +1224,14 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     ),
                   ),
                 );
-                setState(() => _foiModificado = true);
+                if (!mounted) return;
+                setState(() {
+                  _foiModificado = true;
+                  final novoNomeTrim = novoNomeTreino?.trim() ?? '';
+                  if (novoNomeTrim.isNotEmpty && novoNomeTrim != sessao.nome) {
+                    sessao.nome = novoNomeTrim;
+                  }
+                });
               },
               borderRadius: BorderRadius.circular(24), // Pill Style
               child: cardContent,

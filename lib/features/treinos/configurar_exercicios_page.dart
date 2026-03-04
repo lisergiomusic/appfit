@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import 'exercicios_library_page.dart';
@@ -83,7 +84,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   void _concluirEdicao() {
     widget.exercicios.clear();
     widget.exercicios.addAll(_exerciciosLocais);
-    Navigator.pop(context, true);
+    Navigator.pop(context, _nomeTreinoController.text.trim());
   }
 
   Future<void> _onBackPressed() async {
@@ -146,11 +147,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: const [
               SizedBox(width: 16),
-              Icon(
-                Icons.arrow_back_ios_new,
-                color: AppTheme.primary,
-                size: 20,
-              ),
+              Icon(Icons.arrow_back_ios_new, color: AppTheme.primary, size: 20),
               SizedBox(width: 4),
             ],
           ),
@@ -202,7 +199,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           parent: BouncingScrollPhysics(),
         ),
         slivers: [
-
           // --- O CORPO DA PÁGINA (SUBTÍTULO E LISTA) ---
           SliverToBoxAdapter(
             child: Padding(
@@ -210,16 +206,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    widget.nomeTreino,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 44,
-                      letterSpacing: 0.2,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
+                  _buildNomeTreinoField(),
+                  const SizedBox(height: 12),
                   Text(
                     '${_exerciciosLocais.length} exercícios configurados',
                     style: TextStyle(
@@ -378,6 +366,80 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildNomeTreinoField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(CupertinoIcons.textformat, size: 16, color: AppTheme.primary),
+            const SizedBox(width: 8),
+            Text(
+              'Nome do treino',
+              style: TextStyle(
+                color: AppTheme.textSecondary.withAlpha(200),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.7,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        CupertinoTextField(
+          controller: _nomeTreinoController,
+          keyboardType: TextInputType.text,
+          textInputAction: TextInputAction.done,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 34,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.2,
+          ),
+          cursorColor: AppTheme.primary,
+          minLines: 1,
+          maxLines: 1,
+          clearButtonMode: OverlayVisibilityMode.editing,
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          decoration: BoxDecoration(
+            color: Colors.white.withAlpha(12),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withOpacity(0.05),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          placeholder: 'Ex: Upper Blast',
+          placeholderStyle: TextStyle(
+            color: AppTheme.textSecondary.withAlpha(160),
+            fontWeight: FontWeight.w500,
+          ),
+          suffix: Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: Icon(
+              CupertinoIcons.pencil,
+              color: AppTheme.primary.withOpacity(0.85),
+              size: 20,
+            ),
+          ),
+          onChanged: (value) {
+            if (!_hasChanges) {
+              final trimmed = value.trim();
+              if (trimmed != widget.nomeTreino) {
+                _hasChanges = true;
+              }
+            }
+          },
+          onSubmitted: (_) => FocusScope.of(context).unfocus(),
+        ),
+      ],
     );
   }
 
