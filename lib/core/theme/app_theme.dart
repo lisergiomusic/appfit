@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // --- 1. CORES ---
@@ -40,7 +41,7 @@ class AppTheme {
       primaryColor: primary,
       scaffoldBackgroundColor: background,
       canvasColor: surfaceDark,
-      fontFamily: 'Manrope',
+      textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
       colorScheme: const ColorScheme.dark(
         primary: primary,
         background: background,
@@ -56,9 +57,7 @@ class AppTheme {
           color: textPrimary,
           fontSize: 16,
           fontWeight: FontWeight.w600,
-          fontFamily: 'Manrope',
         ),
-        iconTheme: IconThemeData(color: textPrimary, size: 22),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -69,10 +68,9 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMedium),
           ),
-          textStyle: const TextStyle(
+          textStyle: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            fontFamily: 'Manrope',
           ),
         ),
       ),
@@ -83,15 +81,10 @@ class AppTheme {
           vertical: 14,
           horizontal: 16,
         ),
-        labelStyle: const TextStyle(
-          color: textSecondary,
-          fontSize: 13,
-          fontFamily: 'Manrope',
-        ),
-        hintStyle: TextStyle(
+        labelStyle: GoogleFonts.inter(color: textSecondary, fontSize: 13),
+        hintStyle: GoogleFonts.inter(
           color: textSecondary.withAlpha(128),
           fontSize: 13,
-          fontFamily: 'Manrope',
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
