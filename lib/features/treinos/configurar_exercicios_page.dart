@@ -226,7 +226,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                         child: Padding(
                           padding: const EdgeInsets.only(
                             left: 16,
-                            bottom: 16,
+                            bottom: 8,
                             right: 16,
                           ),
                           child: AnimatedOpacity(
@@ -298,10 +298,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                 decoration: BoxDecoration(
                                   color: AppTheme.primary.withAlpha(15),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: AppTheme.primary.withAlpha(30),
-                                    width: 0.5,
-                                  ),
+                                  // Removida a borda laranja
                                 ),
                                 child: Row(
                                   children: [
@@ -318,9 +315,9 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                       '$_totalSeries SÉRIES',
                                       style: const TextStyle(
                                         color: AppTheme.primary,
-                                        fontSize: 10,
+                                        fontSize: 9,
                                         fontWeight: FontWeight.w700,
-                                        letterSpacing: 0.2,
+                                        letterSpacing: 0.5,
                                       ),
                                     ),
                                   ],
