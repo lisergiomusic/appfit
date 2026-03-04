@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/rotina_service.dart';
 import 'configurar_exercicios_page.dart';
+import 'models/exercicio_model.dart';
 
 // Modelo local para gerir as sessões durante a edição
 class _TreinoData {
