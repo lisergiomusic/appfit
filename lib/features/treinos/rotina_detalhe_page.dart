@@ -114,8 +114,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
   TipoSerie _parseTipoSerie(String? tipo) {
-    if (tipo == 'aquecimento' || tipo == 'TipoSerie.aquecimento')
+    if (tipo == 'aquecimento' || tipo == 'TipoSerie.aquecimento') {
       return TipoSerie.aquecimento;
+    }
     if (tipo == 'feeder' || tipo == 'TipoSerie.feeder') return TipoSerie.feeder;
     return TipoSerie.trabalho;
   }
@@ -659,278 +660,289 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       },
       child: Scaffold(
         backgroundColor: AppTheme.background,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-            onPressed: () {
-              if (!_foiModificado) {
-                Navigator.pop(context);
-              } else {
-                showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: AppTheme.surfaceDark,
-                    title: const Text(
-                      'Descartar alterações?',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    content: const Text(
-                      'Você fez mudanças nesta rotina. Se voltar agora, elas não serão salvas no banco de dados.',
-                      style: TextStyle(color: AppTheme.textSecondary),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text(
-                          'Ficar',
-                          style: TextStyle(color: AppTheme.textSecondary),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context, true);
-                          Navigator.pop(context);
-                        },
-                        child: const Text(
-                          'Descartar',
+        // --- NOVO APPLE LARGE TITLE COM CUSTOM SCROLL VIEW ---
+        body: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          slivers: [
+            SliverAppBar.large(
+              backgroundColor: AppTheme.background,
+              surfaceTintColor: Colors.transparent,
+              pinned: true,
+              leadingWidth: 60,
+              leading: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_ios_new,
+                  size: 20,
+                  color: AppTheme.primary,
+                ),
+                onPressed: () {
+                  if (!_foiModificado) {
+                    Navigator.pop(context);
+                  } else {
+                    showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        backgroundColor: AppTheme.surfaceDark,
+                        title: const Text(
+                          'Descartar alterações?',
                           style: TextStyle(
-                            color: Colors.redAccent,
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                        content: const Text(
+                          'Você fez mudanças nesta rotina. Se voltar agora, elas não serão salvas no banco de dados.',
+                          style: TextStyle(color: AppTheme.textSecondary),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text(
+                              'Ficar',
+                              style: TextStyle(color: AppTheme.textSecondary),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context, true);
+                              Navigator.pop(context);
+                            },
+                            child: const Text(
+                              'Descartar',
+                              style: TextStyle(
+                                color: Colors.redAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    );
+                  }
+                },
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => _exibirModalInfo(context),
+                  child: const Text(
+                    'Editar',
+                    style: TextStyle(
+                      color: AppTheme.primary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
                   ),
-                );
-              }
-            },
-          ),
-          title: Text(
-            widget.rotinaId == null ? 'Nova Rotina' : 'Visão Geral',
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-          ),
-          centerTitle: true,
-          elevation: 0,
-          actions: [
-            TextButton(
-              onPressed: () => _exibirModalInfo(context),
-              child: const Text(
-                'Editar',
-                style: TextStyle(
-                  color: AppTheme.primary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+                ),
+                const SizedBox(width: 8),
+              ],
+              title: Text(
+                _nome.isEmpty ? 'Nova Rotina' : _nome,
+                style: const TextStyle(
+                  fontFamily: '.SF UI Display',
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.2,
                 ),
               ),
             ),
-            const SizedBox(width: 8),
-          ],
-        ),
 
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // --- HEADER GIGANTE APPLE STYLE ---
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _nome.isEmpty ? 'Nova Rotina' : _nome,
-                    style: const TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _objetivo.isEmpty ? 'Defina o objetivo' : _objetivo,
-                    style: TextStyle(
-                      color: AppTheme.textSecondary.withAlpha(180),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.schedule,
-                        size: 14,
-                        color: AppTheme.textSecondary.withAlpha(150),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '$_duracaoSemanas semanas',
-                        style: TextStyle(
-                          color: AppTheme.textSecondary.withAlpha(150),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 28),
-
-              isTemplate ? _buildTemplateBadge() : const SizedBox.shrink(),
-              isTemplate ? const SizedBox(height: 24) : const SizedBox.shrink(),
-
-              // --- CABEÇALHO DA LISTA DE SESSÕES ---
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Sessões',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textSecondary,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  if (_treinos.isNotEmpty)
-                    GestureDetector(
-                      onTap: () {
-                        if (_treinos.length > 1) {
-                          setState(() => _isReordering = !_isReordering);
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Precisas de pelo menos 2 sessões para reordenar.',
-                              ),
-                              backgroundColor: AppTheme.surfaceLight,
-                            ),
-                          );
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _isReordering
-                              ? AppTheme.primary.withAlpha(30)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _isReordering
-                                  ? Icons.check_rounded
-                                  : Icons.swap_vert_outlined,
-                              size: 16,
-                              color: _isReordering
-                                  ? AppTheme.primary
-                                  : AppTheme.textSecondary,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              _isReordering ? 'Concluir' : 'Reordenar',
-                              style: TextStyle(
-                                color: _isReordering
-                                    ? AppTheme.primary
-                                    : AppTheme.textSecondary,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
+            // O Resto da tela
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 16.0,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _objetivo.isEmpty ? 'Defina o objetivo' : _objetivo,
+                      style: TextStyle(
+                        color: AppTheme.textSecondary.withAlpha(180),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              if (_treinos.isEmpty)
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 60),
-                    child: Column(
+                    const SizedBox(height: 8),
+                    Row(
                       children: [
                         Icon(
-                          Icons.fitness_center,
-                          size: 60,
-                          color: Colors.white.withAlpha(20),
+                          Icons.schedule,
+                          size: 14,
+                          color: AppTheme.textSecondary.withAlpha(150),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(width: 6),
                         Text(
-                          'Nenhuma sessão',
+                          '$_duracaoSemanas semanas',
                           style: TextStyle(
-                            color: AppTheme.textSecondary.withAlpha(180),
-                            fontSize: 16,
+                            color: AppTheme.textSecondary.withAlpha(150),
+                            fontSize: 13,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                )
-              else if (_isReordering)
-                ReorderableListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  buildDefaultDragHandles: false,
-                  itemCount: _treinos.length,
-                  onReorder: (oldIndex, newIndex) {
-                    setState(() {
-                      if (newIndex > oldIndex) newIndex -= 1;
-                      final item = _treinos.removeAt(oldIndex);
-                      _treinos.insert(newIndex, item);
-                      _foiModificado = true;
-                    });
-                  },
-                  proxyDecorator: (child, index, animation) {
-                    return Transform.scale(
-                      scale: 1.0,
-                      child: Material(
-                        elevation: 0,
-                        color: Colors.transparent,
-                        child: child,
+
+                    const SizedBox(height: 28),
+
+                    isTemplate
+                        ? _buildTemplateBadge()
+                        : const SizedBox.shrink(),
+                    isTemplate
+                        ? const SizedBox(height: 24)
+                        : const SizedBox.shrink(),
+
+                    // --- CABEÇALHO DA LISTA DE SESSÕES ---
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Sessões',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textSecondary,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        if (_treinos.isNotEmpty)
+                          GestureDetector(
+                            onTap: () {
+                              if (_treinos.length > 1) {
+                                setState(() => _isReordering = !_isReordering);
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Precisas de pelo menos 2 sessões para reordenar.',
+                                    ),
+                                    backgroundColor: AppTheme.surfaceLight,
+                                  ),
+                                );
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _isReordering
+                                    ? AppTheme.primary.withAlpha(30)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _isReordering
+                                        ? Icons.check_rounded
+                                        : Icons.swap_vert_outlined,
+                                    size: 16,
+                                    color: _isReordering
+                                        ? AppTheme.primary
+                                        : AppTheme.textSecondary,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    _isReordering ? 'Concluir' : 'Reordenar',
+                                    style: TextStyle(
+                                      color: _isReordering
+                                          ? AppTheme.primary
+                                          : AppTheme.textSecondary,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    if (_treinos.isEmpty)
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 60),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.fitness_center,
+                                size: 60,
+                                color: Colors.white.withAlpha(20),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Nenhuma sessão',
+                                style: TextStyle(
+                                  color: AppTheme.textSecondary.withAlpha(180),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else if (_isReordering)
+                      ReorderableListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        buildDefaultDragHandles: false,
+                        itemCount: _treinos.length,
+                        onReorder: (oldIndex, newIndex) {
+                          setState(() {
+                            if (newIndex > oldIndex) newIndex -= 1;
+                            final item = _treinos.removeAt(oldIndex);
+                            _treinos.insert(newIndex, item);
+                            _foiModificado = true;
+                          });
+                        },
+                        proxyDecorator: (child, index, animation) {
+                          return Transform.scale(
+                            scale: 1.0,
+                            child: Material(
+                              elevation: 0,
+                              color: Colors.transparent,
+                              child: child,
+                            ),
+                          );
+                        },
+                        itemBuilder: (context, index) {
+                          var sessao = _treinos[index];
+                          return Container(
+                            key: ValueKey(sessao),
+                            child: _buildSessaoCard(
+                              sessao,
+                              index,
+                              isReordering: true,
+                            ),
+                          );
+                        },
+                      )
+                    else
+                      ..._treinos.asMap().entries.map(
+                        (entry) => _buildSessaoCard(
+                          entry.value,
+                          entry.key,
+                          isReordering: false,
+                        ),
                       ),
-                    );
-                  },
-                  itemBuilder: (context, index) {
-                    var sessao = _treinos[index];
-                    return Container(
-                      key: ValueKey(sessao),
-                      child: _buildSessaoCard(
-                        sessao,
-                        index,
-                        isReordering: true,
-                      ),
-                    );
-                  },
-                )
-              else
-                ..._treinos.asMap().entries.map(
-                  (entry) => _buildSessaoCard(
-                    entry.value,
-                    entry.key,
-                    isReordering: false,
-                  ),
+
+                    const SizedBox(height: 8),
+
+                    if (!_isReordering) _buildAddSessaoButton(),
+                  ],
                 ),
-
-              const SizedBox(height: 8),
-
-              // --- BOTÃO ADICIONAR "FANTASMA" (FINO E ELEGANTE) ---
-              if (!_isReordering) _buildAddSessaoButton(),
-            ],
-          ),
+              ),
+            ),
+          ],
         ),
         bottomNavigationBar: (_foiModificado || widget.rotinaId == null)
             ? SafeArea(
@@ -947,7 +959,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                           backgroundColor: const Color(0xFF34C759),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(
+                              26,
+                            ), // Pílula Perfeita
                           ),
                         ),
                         child: _isLoading
@@ -978,28 +992,33 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     );
   }
 
-  // BOTÃO ADICIONAR SESSÃO
+  // BOTÃO ADICIONAR SESSÃO - REFINADO (OUTLINE PILL)
   Widget _buildAddSessaoButton() {
     return InkWell(
       onTap: () => _exibirModalSessao(),
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(24),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceDark,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withAlpha(15), width: 0.5),
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: AppTheme.primary.withAlpha(120),
+            width: 1.5,
+          ),
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_circle, color: AppTheme.primary, size: 22),
-            const SizedBox(width: 12),
-            Text(
+            Icon(Icons.add_circle_outline, color: AppTheme.primary, size: 22),
+            const SizedBox(width: 8),
+            const Text(
               'Nova Sessão',
               style: TextStyle(
                 color: AppTheme.primary,
                 fontWeight: FontWeight.w600,
                 fontSize: 16,
+                letterSpacing: 0.3,
               ),
             ),
           ],
@@ -1013,7 +1032,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: AppTheme.primary.withAlpha(15),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(24), // Ajustado para Pill Style
         border: Border.all(color: AppTheme.primary.withAlpha(30)),
       ),
       child: const Row(
@@ -1057,7 +1076,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(24), // Pill Style
         border: Border.all(color: Colors.white.withAlpha(15), width: 0.5),
       ),
       child: Row(
@@ -1065,9 +1084,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           Container(
             width: 36,
             height: 36,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppTheme.surfaceLight,
-              borderRadius: BorderRadius.circular(8),
+              shape: BoxShape.circle, // Avatar agora é 100% redondo
             ),
             child: Center(
               child: Text(
@@ -1115,9 +1134,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                         color: AppTheme.primary.withAlpha(20),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(
-                        Icons.drag_handle_rounded,
-                        color: AppTheme.primary,
+                      child: Icon(
+                        Icons.drag_indicator, // Ícone elegante de drag
+                        color: AppTheme.textSecondary.withAlpha(80),
                         size: 20,
                       ),
                     ),
@@ -1206,7 +1225,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 );
                 setState(() => _foiModificado = true);
               },
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(24), // Pill Style
               child: cardContent,
             ),
           );
