@@ -521,15 +521,10 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.surfaceLight,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: const Text(
           'Descartar alterações?',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
         content: const Text(
           'As modificações nesta sessão não foram salvas.',
@@ -616,7 +611,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         if (sair == true) Navigator.pop(context);
       },
       child: Scaffold(
-        backgroundColor: AppTheme.background,
+        backgroundColor: Colors.black,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -673,7 +668,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   Text(
                     widget.nomeTreino,
                     style: const TextStyle(
-                      fontSize: 34,
+                      fontSize: 48,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
                       letterSpacing: 0.2,
@@ -684,8 +679,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     '${_exerciciosLocais.length} exercícios configurados',
                     style: TextStyle(
                       color: AppTheme.textSecondary.withAlpha(180),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w400,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -734,23 +729,30 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   Widget _buildAddExercicioButton() {
     return InkWell(
       onTap: _openLibrary,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(24),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceDark,
-          borderRadius: BorderRadius.circular(14),
+          color: AppTheme.primary.withAlpha(25),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: AppTheme.primary.withAlpha(100),
+            width: 1.5,
+            style: BorderStyle.solid,
+          ),
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_circle, color: AppTheme.primary, size: 22),
-            const SizedBox(width: 12),
+            Icon(Icons.add_circle_outline, color: AppTheme.primary, size: 22),
+            const SizedBox(width: 8),
             Text(
               'Adicionar Exercício',
               style: TextStyle(
                 color: AppTheme.primary,
-                fontWeight: FontWeight.w500,
-                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+                letterSpacing: -0.2,
               ),
             ),
           ],
@@ -793,492 +795,73 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   // =======================================================
   Widget _buildExercicioCard(int exIndex) {
     final ex = _exerciciosLocais[exIndex];
-    final bool isExpanded = _expandedExIndex == exIndex;
-
-    final aquecimentoSeries = ex.series
-        .where((s) => s.tipo == TipoSerie.aquecimento)
-        .toList();
-    final feederSeries = ex.series
-        .where((s) => s.tipo == TipoSerie.feeder)
-        .toList();
-    final trabalhoSeries = ex.series
-        .where((s) => s.tipo == TipoSerie.trabalho)
-        .toList();
 
     return Container(
       key: ObjectKey(ex),
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withAlpha(15), width: 0.5),
       ),
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // CABEÇALHO UNIFICADO
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                FocusScope.of(context).unfocus();
-                setState(() {
-                  _expandedExIndex = isExpanded ? null : exIndex;
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    ReorderableDragStartListener(
-                      index: exIndex,
-                      child: Icon(
-                        Icons.drag_handle,
-                        color: AppTheme.textSecondary.withAlpha(100),
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            ex.nome,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${ex.series.length} ${ex.series.length == 1 ? 'série' : 'séries'} • ${ex.grupoMuscular}',
-                            style: TextStyle(
-                              color: AppTheme.textSecondary.withAlpha(180),
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Visibility(
-                      visible: isExpanded,
-                      maintainSize: true,
-                      maintainAnimation: true,
-                      maintainState: true,
-                      child: SizedBox(
-                        width: 36,
-                        height: 36,
-                        child: Center(
-                          child: PopupMenuButton<String>(
-                            padding: EdgeInsets.zero,
-                            color: AppTheme.surfaceLight,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            position: PopupMenuPosition.under,
-                            icon: Icon(
-                              Icons.more_horiz,
-                              color: AppTheme.textSecondary.withAlpha(150),
-                              size: 20,
-                            ),
-                            onSelected: (value) async {
-                              if (value == 'replace') {
-                                final String? nome = await Navigator.push<String>(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const ExerciciosLibraryPage(),
-                                  ),
-                                );
-                                if (nome != null && nome.isNotEmpty) {
-                                  setState(() {
-                                    _exerciciosLocais[exIndex] = ExercicioItem(
-                                      nome: nome,
-                                      grupoMuscular: _exerciciosLocais[exIndex].grupoMuscular,
-                                      observacao: '',
-                                      tipoAlvo: 'Reps',
-                                      imagemUrl: null,
-                                      series: [],
-                                    );
-                                    _hasChanges = true;
-                                  });
-                                }
-                              } else if (value == 'edit_video') {
-                                final controller = TextEditingController(
-                                    text: _exerciciosLocais[exIndex].imagemUrl ?? '');
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    backgroundColor: AppTheme.surfaceLight,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    title: const Text(
-                                      'Editar vídeo explicativo',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                    content: TextField(
-                                      controller: controller,
-                                      style: const TextStyle(color: Colors.white),
-                                      decoration: InputDecoration(
-                                        hintText: 'URL do vídeo (opcional)',
-                                        hintStyle: TextStyle(color: AppTheme.textSecondary.withAlpha(120)),
-                                        filled: true,
-                                        fillColor: AppTheme.surfaceDark,
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                      ),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: const Text('Cancelar', style: TextStyle(color: AppTheme.primary)),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _exerciciosLocais[exIndex].imagemUrl = controller.text.trim().isEmpty
-                                                ? null
-                                                : controller.text.trim();
-                                            _hasChanges = true;
-                                          });
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text('Salvar', style: TextStyle(color: AppTheme.primary)),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              } else if (value == 'delete') {
-                                _confirmarRemocaoExercicio(context, exIndex);
-                              }
-                            },
-                            itemBuilder: (context) => [
-                              PopupMenuItem(
-                                value: 'replace',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.swap_horiz, color: AppTheme.textSecondary.withAlpha(200), size: 18),
-                                    const SizedBox(width: 8),
-                                    const Text('Substituir exercício', style: TextStyle(color: Colors.white, fontSize: 14)),
-                                  ],
-                                ),
-                              ),
-                              PopupMenuItem(
-                                value: 'edit_video',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.video_library, color: AppTheme.textSecondary.withAlpha(200), size: 18),
-                                    const SizedBox(width: 8),
-                                    const Text('Editar video explicativo', style: TextStyle(color: Colors.white, fontSize: 14)),
-                                  ],
-                                ),
-                              ),
-                              PopupMenuItem(
-                                value: 'delete',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.delete_outline, color: Colors.redAccent, size: 18),
-                                    const SizedBox(width: 8),
-                                    const Text('Excluir exercício', style: TextStyle(color: Colors.white, fontSize: 14)),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    AnimatedRotation(
-                      turns: isExpanded ? 0.5 : 0,
-                      duration: const Duration(milliseconds: 200),
-                      child: Icon(
-                        Icons.keyboard_arrow_down,
-                        color: AppTheme.textSecondary.withAlpha(150),
-                        size: 22,
-                      ),
-                    ),
-                  ],
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+            setState(() {
+              _expandedExIndex = _expandedExIndex == exIndex ? null : exIndex;
+            });
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              children: [
+                ReorderableDragStartListener(
+                  index: exIndex,
+                  child: Icon(
+                    Icons.drag_indicator,
+                    color: AppTheme.textSecondary.withAlpha(80),
+                    size: 24,
+                  ),
                 ),
-              ),
-            ),
-          ),
-
-          // CORPO DO EXERCÍCIO
-          AnimatedSize(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.fastOutSlowIn,
-            alignment: Alignment.topCenter,
-            child: !isExpanded
-                ? const SizedBox(width: double.infinity)
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Divider(
-                        height: 1,
-                        thickness: 0.5,
-                        color: Colors.white.withAlpha(20),
-                      ),
-
-                      // MINIATURA DE VÍDEO PREMIUM
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: InkWell(
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Abrindo vídeo explicativo de ${ex.nome}...',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                backgroundColor: AppTheme.primary,
-                                duration: const Duration(milliseconds: 1500),
-                                behavior: SnackBarBehavior.floating,
-                                margin: const EdgeInsets.all(16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                            );
-                          },
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            height: 140,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              image: DecorationImage(
-                                image: NetworkImage(
-                                  ex.imagemUrl ??
-                                      'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=280&fit=crop',
-                                ),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                // Overlay escuro para melhor legibilidade
-                                Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Colors.black.withAlpha(0),
-                                        Colors.black.withAlpha(80),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                // Ícone de play com efeito glassmorphism
-                                ClipOval(
-                                  child: BackdropFilter(
-                                    filter: ImageFilter.blur(
-                                      sigmaX: 4,
-                                      sigmaY: 4,
-                                    ),
-                                    child: Container(
-                                      width: 56,
-                                      height: 56,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withAlpha(40),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Colors.white.withAlpha(60),
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Icon(
-                                        Icons.play_circle_fill,
-                                        color: Colors.white.withAlpha(200),
-                                        size: 48,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                      Text(
+                        ex.nome,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 8),
-
-                      // CABEÇALHO DA TABELA
-                      if (ex.series.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 16,
-                            right: 16,
-                            top: 12,
-                            bottom: 4,
-                          ),
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 44,
-                                child: Text(
-                                  'SÉRIE',
-                                  style: _sectionHeaderStyle(),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      if (ex.tipoAlvo == 'Reps') {
-                                        ex.tipoAlvo = 'Tempo';
-                                        for (var serie in ex.series) {
-                                          if (RegExp(
-                                            r'\d$',
-                                          ).hasMatch(serie.alvo.trim())) {
-                                            serie.alvo =
-                                                '${serie.alvo.trim()}s';
-                                          }
-                                        }
-                                      } else {
-                                        ex.tipoAlvo = 'Reps';
-                                        for (var serie in ex.series) {
-                                          serie.alvo = serie.alvo
-                                              .trim()
-                                              .replaceAll(RegExp(r's$'), '');
-                                        }
-                                      }
-                                      _hasChanges = true;
-                                    });
-                                  },
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        ex.tipoAlvo.toUpperCase(),
-                                        style: _sectionHeaderStyle(),
-                                      ),
-                                      const SizedBox(width: 2),
-                                      Icon(
-                                        Icons.swap_vert,
-                                        color: AppTheme.textSecondary.withAlpha(
-                                          150,
-                                        ),
-                                        size: 12,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8), // Cravado em 8
-                              Expanded(
-                                child: Center(
-                                  child: Text(
-                                    'CARGA',
-                                    style: _sectionHeaderStyle(),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8), // Cravado em 8
-                              Expanded(
-                                child: Center(
-                                  child: Text(
-                                    'PAUSA',
-                                    style: _sectionHeaderStyle(),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 40), // 8 margem + 32 menu
-                            ],
-                          ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${ex.series.length} ${ex.series.length == 1 ? 'série' : 'séries'} • ${ex.grupoMuscular}',
+                        style: TextStyle(
+                          color: AppTheme.textSecondary.withAlpha(180),
+                          fontSize: 14,
                         ),
-
-                      // SÉRIES Renderizadas
-                      if (aquecimentoSeries.isNotEmpty) ...[
-                        _buildBadgeTitle('Aquecimento', Colors.amber),
-                        ...ex.series
-                            .asMap()
-                            .entries
-                            .where((e) => e.value.tipo == TipoSerie.aquecimento)
-                            .map(
-                              (entry) => _buildSerieRow(
-                                exIndex,
-                                entry.key,
-                                entry.value,
-                                aquecimentoSeries.indexOf(entry.value) + 1,
-                              ),
-                            ),
-                      ],
-                      if (feederSeries.isNotEmpty) ...[
-                        _buildBadgeTitle('Feeder Sets', Colors.blueAccent),
-                        ...ex.series
-                            .asMap()
-                            .entries
-                            .where((e) => e.value.tipo == TipoSerie.feeder)
-                            .map(
-                              (entry) => _buildSerieRow(
-                                exIndex,
-                                entry.key,
-                                entry.value,
-                                feederSeries.indexOf(entry.value) + 1,
-                              ),
-                            ),
-                      ],
-                      if (trabalhoSeries.isNotEmpty) ...[
-                        _buildBadgeTitle(
-                          'Trabalho',
-                          Colors.white,
-                        ), // Removido o laranja do titulo
-                        ...ex.series
-                            .asMap()
-                            .entries
-                            .where((e) => e.value.tipo == TipoSerie.trabalho)
-                            .map(
-                              (entry) => _buildSerieRow(
-                                exIndex,
-                                entry.key,
-                                entry.value,
-                                trabalhoSeries.indexOf(entry.value) + 1,
-                              ),
-                            ),
-                      ],
-                      const SizedBox(height: 8),
-
-                      // --- MENU DE AÇÕES NATIVO (DESCOLORIDO) ---
-                      _buildCardAction(
-                        icon: ex.observacao.isEmpty
-                            ? Icons.edit_note
-                            : Icons.sticky_note_2,
-                        color:
-                            Colors.white, // Texto branco, sem poluição visual
-                        title: ex.observacao.isEmpty
-                            ? 'Adicionar nota'
-                            : ex.observacao,
-                        onTap: () => _editarObservacao(context, exIndex),
-                        showDivider: false,
-                        isNote: ex.observacao.isNotEmpty,
-                        onRemoveNote: ex.observacao.isNotEmpty
-                            ? () => _confirmarRemocaoNota(context, exIndex)
-                            : null,
-                      ),
-
-                      _buildCardAction(
-                        icon: Icons.add_circle,
-                        color: Colors
-                            .white, // Textos e ícones brancos para ações comuns
-                        title: 'Adicionar Série',
-                        onTap: () => _adicionarSerie(exIndex),
-                        showDivider: true,
-                        iconColor: AppTheme.success,
                       ),
                     ],
                   ),
+                ),
+                const SizedBox(width: 12),
+                Icon(
+                  Icons.chevron_right,
+                  color: AppTheme.textSecondary.withAlpha(150),
+                  size: 22,
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }

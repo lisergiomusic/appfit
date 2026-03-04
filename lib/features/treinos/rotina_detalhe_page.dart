@@ -661,65 +661,75 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         backgroundColor: AppTheme.background,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            onPressed: () {
+              if (!_foiModificado) {
+                Navigator.pop(context);
+              } else {
+                showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: AppTheme.surfaceDark,
+                    title: const Text(
+                      'Descartar alterações?',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    content: const Text(
+                      'Você fez mudanças nesta rotina. Se voltar agora, elas não serão salvas no banco de dados.',
+                      style: TextStyle(color: AppTheme.textSecondary),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text(
+                          'Ficar',
+                          style: TextStyle(color: AppTheme.textSecondary),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context, true);
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          'Descartar',
+                          style: TextStyle(
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
           title: Text(
             widget.rotinaId == null ? 'Nova Rotina' : 'Visão Geral',
             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           ),
           centerTitle: true,
           elevation: 0,
-        ),
-
-        // --- FAB MINIMALISTA E MODERNO ---
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: (_foiModificado || widget.rotinaId == null)
-            ? Padding(
-                padding: const EdgeInsets.only(bottom: 24),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.success.withAlpha(40),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: FloatingActionButton.extended(
-                    onPressed: _isLoading ? null : _salvarRotinaCompleta,
-                    backgroundColor: AppTheme.success,
-                    elevation: 0,
-                    highlightElevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    icon: _isLoading
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2.5,
-                            ),
-                          )
-                        : const Icon(
-                            Icons.check_rounded,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                    label: Text(
-                      _isLoading ? 'Salvando...' : 'Salvar',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ),
+          actions: [
+            TextButton(
+              onPressed: () => _exibirModalInfo(context),
+              child: const Text(
+                'Editar',
+                style: TextStyle(
+                  color: AppTheme.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
                 ),
-              )
-            : null,
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
 
         body: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
@@ -727,51 +737,45 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // --- HEADER GIGANTE APPLE STYLE ---
-              Row(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _nome.isEmpty ? 'Nova Rotina' : _nome,
-                          style: const TextStyle(
-                            fontSize: 34,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _objetivo.isEmpty ? 'Defina o objetivo' : _objetivo,
-                          style: TextStyle(
-                            color: AppTheme.textSecondary.withAlpha(180),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
+                  Text(
+                    _nome.isEmpty ? 'Nova Rotina' : _nome,
+                    style: const TextStyle(
+                      fontSize: 34,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: 0.2,
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () => _exibirModalInfo(context),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary.withAlpha(20),
-                        borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 4),
+                  Text(
+                    _objetivo.isEmpty ? 'Defina o objetivo' : _objetivo,
+                    style: TextStyle(
+                      color: AppTheme.textSecondary.withAlpha(180),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.schedule,
+                        size: 14,
+                        color: AppTheme.textSecondary.withAlpha(150),
                       ),
-                      child: Center(
-                        child: Icon(
-                          Icons.edit_rounded,
-                          color: AppTheme.primary,
-                          size: 20,
+                      const SizedBox(width: 6),
+                      Text(
+                        '$_duracaoSemanas semanas',
+                        style: TextStyle(
+                          color: AppTheme.textSecondary.withAlpha(150),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
@@ -890,6 +894,16 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       _foiModificado = true;
                     });
                   },
+                  proxyDecorator: (child, index, animation) {
+                    return Transform.scale(
+                      scale: 1.0,
+                      child: Material(
+                        elevation: 0,
+                        color: Colors.transparent,
+                        child: child,
+                      ),
+                    );
+                  },
                   itemBuilder: (context, index) {
                     var sessao = _treinos[index];
                     return Container(
@@ -915,12 +929,51 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
               // --- BOTÃO ADICIONAR "FANTASMA" (FINO E ELEGANTE) ---
               if (!_isReordering) _buildAddSessaoButton(),
-
-              // Espaço extra no fundo para o botão FAB flutuante não cobrir o último item
-              const SizedBox(height: 80),
             ],
           ),
         ),
+        bottomNavigationBar: (_foiModificado || widget.rotinaId == null)
+            ? SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _salvarRotinaCompleta,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF34C759),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
+                              )
+                            : Text(
+                                _isLoading ? 'Salvando...' : 'Salvar',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : null,
       ),
     );
   }
@@ -999,12 +1052,149 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }) {
     String letra = String.fromCharCode(65 + index);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: InkWell(
-        onTap: isReordering
-            ? null
-            : () async {
+    // Widget que contém o conteúdo do card
+    final cardContent = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceDark,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withAlpha(15), width: 0.5),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceLight,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Text(
+                letra,
+                style: const TextStyle(
+                  color: AppTheme.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  sessao.nome,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}${sessao.diaSemana != null ? ' • ${sessao.diaSemana}' : ''}',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary.withAlpha(180),
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            width: 44,
+            height: 44,
+            child: isReordering
+                ? ReorderableDragStartListener(
+                    index: index,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withAlpha(20),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.drag_handle_rounded,
+                        color: AppTheme.primary,
+                        size: 20,
+                      ),
+                    ),
+                  )
+                : PopupMenuButton<String>(
+                    padding: EdgeInsets.zero,
+                    color: AppTheme.surfaceLight,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    position: PopupMenuPosition.under,
+                    icon: Icon(
+                      Icons.chevron_right,
+                      color: AppTheme.textSecondary.withAlpha(100),
+                      size: 22,
+                    ),
+                    onSelected: (value) {
+                      if (value == 'edit') _exibirModalSessao(index: index);
+                      if (value == 'delete') _excluirTreino(index);
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.edit_outlined,
+                              color: AppTheme.textSecondary.withAlpha(200),
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Editar',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.delete_outline,
+                              color: Colors.redAccent,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Excluir',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    );
+
+    return isReordering
+        ? Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            child: cardContent,
+          )
+        : Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            child: InkWell(
+              onTap: () async {
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -1016,141 +1206,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 );
                 setState(() => _foiModificado = true);
               },
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          decoration: BoxDecoration(
-            color: isReordering
-                ? AppTheme.surfaceLight.withAlpha(80)
-                : AppTheme.surfaceDark,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isReordering
-                  ? AppTheme.primary.withAlpha(80)
-                  : Colors.white.withAlpha(15),
-              width: 0.5,
+              borderRadius: BorderRadius.circular(14),
+              child: cardContent,
             ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceLight,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    letra,
-                    style: const TextStyle(
-                      color: AppTheme.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      sessao.nome,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}${sessao.diaSemana != null ? ' • ${sessao.diaSemana}' : ''}',
-                      style: TextStyle(
-                        color: AppTheme.textSecondary.withAlpha(180),
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isReordering)
-                ReorderableDragStartListener(
-                  index: index,
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primary.withAlpha(20),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.drag_handle_rounded,
-                      color: AppTheme.primary,
-                      size: 20,
-                    ),
-                  ),
-                )
-              else ...[
-                PopupMenuButton<String>(
-                  padding: EdgeInsets.zero,
-                  color: AppTheme.surfaceLight,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  position: PopupMenuPosition.under,
-                  icon: Icon(
-                    Icons.more_horiz,
-                    color: AppTheme.textSecondary.withAlpha(150),
-                    size: 20,
-                  ),
-                  onSelected: (value) {
-                    if (value == 'edit') _exibirModalSessao(index: index);
-                    if (value == 'delete') _excluirTreino(index);
-                  },
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.edit_outlined,
-                            color: AppTheme.textSecondary.withAlpha(200),
-                            size: 18,
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Editar',
-                            style: TextStyle(color: Colors.white, fontSize: 14),
-                          ),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.delete_outline,
-                            color: Colors.redAccent,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Excluir',
-                            style: TextStyle(color: Colors.white, fontSize: 14),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
+          );
   }
 }
