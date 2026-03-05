@@ -459,7 +459,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text('SÉRIE', style: _microLabelStyle()),
-                            const SizedBox(height: AppTheme.space6),
+                            const SizedBox(height: AppTheme.space12),
                             Text(
                               '$visualNumber',
                               textAlign: TextAlign.center,
