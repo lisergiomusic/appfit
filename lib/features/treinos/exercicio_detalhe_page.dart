@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/orange_glass_action_button.dart';
+import '../../core/widgets/sliver_safe_title.dart';
 import 'models/exercicio_model.dart';
 
 class ExercicioDetalhePage extends StatefulWidget {
@@ -142,6 +144,17 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     }
   }
 
+  Color _getSerieNumberColor(TipoSerie tipoSerie) {
+    switch (tipoSerie) {
+      case TipoSerie.trabalho:
+        return AppTheme.primary;
+      case TipoSerie.aquecimento:
+        return AppTheme.iosAmber;
+      case TipoSerie.feeder:
+        return Colors.green;
+    }
+  }
+
   Widget _buildModalOption({
     required String title,
     required IconData icon,
@@ -263,8 +276,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     padding: const EdgeInsets.only(bottom: 2),
                     child: Text(
                       '$visualNumber',
-                      style: const TextStyle(
-                        color: AppTheme.primary,
+                      style: TextStyle(
+                        color: _getSerieNumberColor(serie.tipo),
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
                       ),
@@ -405,6 +418,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
 
   @override
   Widget build(BuildContext context) {
+    final exerciseTitle = SliverSafeTitle.safeTitle(
+      ex.nome,
+      fallback: 'Exercício',
+    );
     final warmupEntries = ex.series
         .asMap()
         .entries
@@ -427,193 +444,221 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        toolbarHeight: 44,
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        centerTitle: false,
-        leadingWidth: 108,
-        leading: TextButton.icon(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(
-            Icons.chevron_left,
-            color: AppTheme.primary,
-            size: 18,
-          ),
-          label: const Text(
-            'Voltar',
-            style: TextStyle(
-              color: AppTheme.primary,
-              fontSize: 17,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          style: TextButton.styleFrom(
-            foregroundColor: AppTheme.primary,
-            minimumSize: const Size(44, 44),
-            padding: const EdgeInsets.only(left: 4, right: 8),
-          ),
+      body: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(
-              foregroundColor: AppTheme.primary,
-              minimumSize: const Size(44, 44),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-            ),
-            child: const Text(
-              'Concluir',
-              style: TextStyle(
+        slivers: [
+          SliverAppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: Colors.black.withValues(alpha: 0.9),
+            surfaceTintColor: Colors.transparent,
+            pinned: true,
+            expandedHeight: 130,
+            leadingWidth: 108,
+            leading: TextButton.icon(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(
+                Icons.chevron_left,
                 color: AppTheme.primary,
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
+                size: 18,
+              ),
+              label: const Text(
+                'Voltar',
+                style: TextStyle(
+                  color: AppTheme.primary,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: AppTheme.primary,
+                minimumSize: const Size(44, 44),
+                padding: const EdgeInsets.only(left: 4, right: 8),
               ),
             ),
-          ),
-          const SizedBox(width: 4),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 48),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                ex.nome,
-                style: const TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  height: 1.14,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                muscleGroupsText,
-                style: TextStyle(
-                  color: Colors.white.withAlpha(150),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.25,
-                ),
-              ),
-              const SizedBox(height: 36),
-              InkWell(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Abrindo vídeo explicativo de ${ex.nome}...',
-                      ),
-                      backgroundColor: AppTheme.primary,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
-                borderRadius: BorderRadius.circular(24),
-                child: AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: Colors.white.withAlpha(20),
-                        width: 0.5,
-                      ),
-                      image: DecorationImage(
-                        image: NetworkImage(
-                          ex.imagemUrl ??
-                              'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=280&fit=crop',
-                        ),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    child: Stack(
-                      children: [
-                        Center(
-                          child: Container(
-                            width: 54,
-                            height: 54,
-                            decoration: BoxDecoration(
-                              color: Colors.black.withAlpha(80),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white.withAlpha(30),
-                                width: 0.5,
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.play_arrow,
-                              color: Colors.white,
-                              size: 30,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 36),
-              Text(
-                'INSTRUÇÕES',
-                style: TextStyle(
-                  color: Colors.white.withAlpha(150),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.25,
-                ),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                instructionsText,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  height: 1.45,
-                ),
-              ),
-              const SizedBox(height: 32),
-              _buildSeriesSection(
-                icon: Icons.local_fire_department,
-                iconColor: const Color(0xFFFFB300),
-                title: 'AQUECIMENTO',
-                entries: warmupEntries,
-              ),
-              const SizedBox(height: 12),
-              _buildSeriesSection(
-                icon: Icons.label,
-                iconColor: Colors.white,
-                title: 'SÉRIES DE TRABALHO',
-                entries: workEntries,
-              ),
-              const SizedBox(height: 20),
-              TextButton.icon(
-                onPressed: _adicionarSerie,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
                 style: TextButton.styleFrom(
                   foregroundColor: AppTheme.primary,
-                  padding: EdgeInsets.zero,
                   minimumSize: const Size(44, 44),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                 ),
-                icon: const Icon(Icons.add, size: 24),
-                label: const Text(
-                  'ADICIONAR SÉRIE',
+                child: const Text(
+                  'Concluir',
                   style: TextStyle(
-                    fontSize: 14,
+                    color: AppTheme.primary,
+                    fontSize: 17,
                     fontWeight: FontWeight.w600,
-                    letterSpacing: 0.4,
                   ),
                 ),
               ),
+              const SizedBox(width: 4),
             ],
+            flexibleSpace: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                final double collapsedHeight =
+                    MediaQuery.of(context).padding.top + kToolbarHeight;
+                final bool isCollapsed =
+                    constraints.biggest.height <= collapsedHeight + 20;
+
+                return FlexibleSpaceBar(
+                  centerTitle: true,
+                  titlePadding: const EdgeInsets.only(bottom: 14),
+                  title: SliverSafeTitle(
+                    title: exerciseTitle,
+                    isVisible: isCollapsed,
+                  ),
+                  background: Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        bottom: 10,
+                      ),
+                      child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 200),
+                        opacity: isCollapsed ? 0.0 : 1.0,
+                        child: Text(
+                          exerciseTitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 34,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            height: 1.14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
-        ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 48),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    muscleGroupsText,
+                    style: TextStyle(
+                      color: Colors.white.withAlpha(150),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.25,
+                    ),
+                  ),
+                  const SizedBox(height: 36),
+                  InkWell(
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Abrindo vídeo explicativo de $exerciseTitle...',
+                          ),
+                          backgroundColor: AppTheme.primary,
+                          behavior: SnackBarBehavior.floating,
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(24),
+                    child: AspectRatio(
+                      aspectRatio: 16 / 9,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: Colors.white.withAlpha(20),
+                            width: 0.5,
+                          ),
+                          image: DecorationImage(
+                            image: NetworkImage(
+                              ex.imagemUrl ??
+                                  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=280&fit=crop',
+                            ),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        child: Stack(
+                          children: [
+                            Center(
+                              child: Container(
+                                width: 54,
+                                height: 54,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withAlpha(80),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white.withAlpha(30),
+                                    width: 0.5,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.play_arrow,
+                                  color: Colors.white,
+                                  size: 30,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 36),
+                  Text(
+                    'INSTRUÇÕES',
+                    style: TextStyle(
+                      color: Colors.white.withAlpha(150),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.25,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    instructionsText,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  _buildSeriesSection(
+                    icon: Icons.local_fire_department,
+                    iconColor: const Color(0xFFFFB300),
+                    title: 'AQUECIMENTO',
+                    entries: warmupEntries,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildSeriesSection(
+                    icon: Icons.label,
+                    iconColor: Colors.white,
+                    title: 'SÉRIES DE TRABALHO',
+                    entries: workEntries,
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
+      floatingActionButton: OrangeGlassActionButton(
+        label: 'Adicionar Série',
+        onTap: _adicionarSerie,
+        bottomMargin: 0,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

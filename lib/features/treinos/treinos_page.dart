@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/appfit_simple_app_bar.dart';
 import 'rotina_detalhe_page.dart';
 
 class TreinosPage extends StatelessWidget {
@@ -17,13 +18,8 @@ class TreinosPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent, // Fundo transparente
-        elevation: 0,
-        title: const Text(
-          'Sua Biblioteca',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
+      appBar: const AppFitSimpleAppBar(
+        title: 'Sua Biblioteca',
         centerTitle: true,
       ),
       // --- FAB FLUTUANTE PREMIUM ---

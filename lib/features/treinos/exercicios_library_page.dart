@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/appfit_simple_app_bar.dart';
 
 class ExerciciosLibraryPage extends StatefulWidget {
   const ExerciciosLibraryPage({super.key});
@@ -33,12 +34,8 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const Text(
-          'Biblioteca de Exercícios',
-          style: TextStyle(fontSize: 18),
-        ),
+      appBar: const AppFitSimpleAppBar(
+        title: 'Biblioteca de Exercícios',
         centerTitle: true,
       ),
       body: Column(

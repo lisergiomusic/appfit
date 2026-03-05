@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/orange_glass_action_button.dart';
+import '../../core/widgets/sliver_safe_title.dart';
 import 'exercicios_library_page.dart';
 import 'exercicio_detalhe_page.dart';
 import 'models/exercicio_model.dart';
@@ -24,7 +26,6 @@ class ConfigurarExerciciosPage extends StatefulWidget {
 class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   late List<ExercicioItem> _exerciciosLocais;
   bool _hasChanges = false;
-  bool _isAddFabPressed = false;
   late TextEditingController _nomeTreinoController;
   bool _isEditingTitle = false;
   late FocusNode _titleFocusNode;
@@ -241,79 +242,14 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     if (sair == true) Navigator.pop(context);
   }
 
-  // --- O NOVO GLASS FAB LARANJA (ORANGE TINTED GLASS) ---
-  Widget _buildOrangeGlassFAB() {
-    final glowShadows = _isAddFabPressed
-        ? <BoxShadow>[
-            BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.38),
-              blurRadius: 18,
-              spreadRadius: 0.6,
-              offset: const Offset(0, 4),
-            ),
-          ]
-        : <BoxShadow>[
-            BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.34),
-              blurRadius: 22,
-              spreadRadius: 0.4,
-              offset: const Offset(0, 6),
-            ),
-          ];
-
-    final buttonWidth = MediaQuery.of(context).size.width - 32;
-
-    return Container(
-      width: buttonWidth,
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: AppTheme.primary,
-        borderRadius: BorderRadius.circular(999),
-        boxShadow: glowShadows,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _openLibrary,
-          onHighlightChanged: (isHighlighted) {
-            if (_isAddFabPressed != isHighlighted) {
-              setState(() => _isAddFabPressed = isHighlighted);
-            }
-          },
-          borderRadius: BorderRadius.circular(999),
-          splashColor: Colors.white.withValues(alpha: 0.16),
-          highlightColor: Colors.black.withValues(alpha: 0.06),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Icon(
-                  Icons.add_circle_outline_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Adicionar Exercício',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final safeTreinoTitle = SliverSafeTitle.safeTitle(
+      _nomeTreinoController.text.isEmpty
+          ? widget.nomeTreino
+          : _nomeTreinoController.text,
+      fallback: 'Treino',
+    );
     final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
     final shouldShowFab = !_isEditingTitle && !isKeyboardVisible;
 
@@ -326,7 +262,11 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           scale: shouldShowFab ? 1.0 : 0.0,
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutCubic,
-          child: _buildOrangeGlassFAB(),
+          child: OrangeGlassActionButton(
+            label: 'Adicionar Exercício',
+            onTap: _openLibrary,
+            bottomMargin: 8,
+          ),
         ),
       ),
       body: CustomScrollView(
@@ -396,19 +336,9 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                 return FlexibleSpaceBar(
                   centerTitle: true,
                   titlePadding: const EdgeInsets.only(bottom: 14),
-                  title: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 200),
-                    opacity: isCollapsed ? 1.0 : 0.0,
-                    child: Text(
-                      _nomeTreinoController.text.isEmpty
-                          ? widget.nomeTreino
-                          : _nomeTreinoController.text,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 18,
-                      ),
-                    ),
+                  title: SliverSafeTitle(
+                    title: safeTreinoTitle,
+                    isVisible: isCollapsed,
                   ),
                   background: Align(
                     alignment: Alignment.bottomLeft,
@@ -433,6 +363,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                       ? TextField(
                                           controller: _nomeTreinoController,
                                           focusNode: _titleFocusNode,
+                                          maxLines: 1,
+                                          minLines: 1,
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
@@ -453,9 +385,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                       : GestureDetector(
                                           onTap: _toggleEditTitle,
                                           child: Text(
-                                            _nomeTreinoController.text.isEmpty
-                                                ? widget.nomeTreino
-                                                : _nomeTreinoController.text,
+                                            safeTreinoTitle,
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,
