@@ -1,11 +1,3 @@
-  // ...existing code...
-class ExercicioDetalhePage extends StatefulWidget {
-  // ...existing code...
-}
-
-class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
-  final Map<String, String> _lastValues = {};
-  // ...existing code...
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -31,6 +23,7 @@ class ExercicioDetalhePage extends StatefulWidget {
 class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   late ExercicioItem ex;
   final Map<String, TextEditingController> _controllers = {};
+  final Map<String, String> _lastValues = {};
 
   @override
   void initState() {
