@@ -24,6 +24,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   late ExercicioItem ex;
   final Map<String, TextEditingController> _controllers = {};
   final Map<String, String> _lastValues = {};
+  final Map<String, bool> _hasUserEdited = {};
+  final Set<String> _suppressNextOnChanged = {};
 
   @override
   void initState() {
@@ -46,11 +48,80 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     return _controllers[fieldKey]!;
   }
 
+  void _setControllerText(
+    String fieldKey,
+    TextEditingController controller,
+    String value,
+  ) {
+    _suppressNextOnChanged.add(fieldKey);
+    controller.value = TextEditingValue(
+      text: value,
+      selection: TextSelection.collapsed(offset: value.length),
+    );
+  }
+
+  void _startEditingField(String fieldKey, TextEditingController controller) {
+    _lastValues[fieldKey] = controller.text;
+    _hasUserEdited[fieldKey] = false;
+    _setControllerText(fieldKey, controller, '');
+  }
+
+  void _restorePreviousIfNoChange({
+    required String fieldKey,
+    required TextEditingController controller,
+    required void Function(String) onRestore,
+    void Function(String)? onCommitEdited,
+  }) {
+    final hasEdited = _hasUserEdited[fieldKey] ?? false;
+    if (!hasEdited) {
+      final previousValue = _lastValues[fieldKey] ?? controller.text;
+      _setControllerText(fieldKey, controller, previousValue);
+      onRestore(previousValue);
+      widget.onChanged();
+    } else if (onCommitEdited != null) {
+      final committed = controller.text.isEmpty ? '' : controller.text;
+      onCommitEdited(committed);
+      widget.onChanged();
+    }
+    _lastValues.remove(fieldKey);
+    _hasUserEdited.remove(fieldKey);
+  }
+
+  void _handleFieldChanged({
+    required String fieldKey,
+    required TextEditingController controller,
+    required String value,
+    required String emptyFallback,
+    required void Function(String) onSave,
+  }) {
+    if (_suppressNextOnChanged.contains(fieldKey)) {
+      // Ignora apenas a limpeza programática; se já houver entrada do usuário,
+      // processa normalmente para não perder a primeira digitação.
+      if (value.isEmpty) {
+        _suppressNextOnChanged.remove(fieldKey);
+        return;
+      }
+      _suppressNextOnChanged.remove(fieldKey);
+    }
+
+    _hasUserEdited[fieldKey] = true;
+    final nextValue = value.isEmpty ? emptyFallback : value;
+    if (nextValue != value) {
+      _setControllerText(fieldKey, controller, nextValue);
+    }
+    onSave(nextValue);
+    widget.onChanged();
+  }
+
   String _extractDigits(String value) {
     return value.replaceAll(RegExp(r'[^0-9]'), '');
   }
 
   String _formatCargaInputValue(String value) {
+    if (value.trim() == '-') {
+      return '-';
+    }
+
     final digits = _extractDigits(value);
     if (digits.isEmpty) {
       return '';
@@ -272,12 +343,17 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   ) {
     final realIndex = entry.key;
     final serie = entry.value;
+    final repsFieldKey = 'reps_$realIndex';
+    final cargaFieldKey = 'carga_$realIndex';
+    final descansoFieldKey = 'descanso_$realIndex';
+
+    final repsController = _getController(repsFieldKey, serie.alvo);
     final cargaController = _getController(
-      'carga_${realIndex}_${serie.carga}',
+      cargaFieldKey,
       _formatCargaInputValue(serie.carga),
     );
     final descansoController = _getController(
-      'descanso_${realIndex}_${serie.descanso}',
+      descansoFieldKey,
       _formatDescansoInputValue(serie.descanso),
     );
 
@@ -319,28 +395,37 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                             Text('REPS', style: _microLabelStyle()),
                             const SizedBox(height: AppTheme.space6),
                             TextFormField(
-                              controller: _getController(
-                                'alvo_${realIndex}_${serie.alvo}',
-                                serie.alvo,
-                              ),
+                              controller: repsController,
                               onTap: () {
-                                final key = 'alvo_${realIndex}_${serie.alvo}';
-                                _lastValues[key] = _getController(
-                                  key,
-                                  serie.alvo,
-                                ).text;
-                                _getController(key, serie.alvo).clear();
+                                _startEditingField(
+                                  repsFieldKey,
+                                  repsController,
+                                );
                               },
                               onChanged: (val) {
-                                final key = 'alvo_${realIndex}_${serie.alvo}';
-                                if (val.isEmpty) {
-                                  _getController(key, serie.alvo).text = '0';
-                                  serie.alvo = '0';
-                                } else {
-                                  serie.alvo = val;
-                                }
-                                _lastValues.remove(key);
-                                widget.onChanged();
+                                _handleFieldChanged(
+                                  fieldKey: repsFieldKey,
+                                  controller: repsController,
+                                  value: val,
+                                  emptyFallback: '0',
+                                  onSave: (saved) => serie.alvo = saved,
+                                );
+                              },
+                              onFieldSubmitted: (_) {
+                                _restorePreviousIfNoChange(
+                                  fieldKey: repsFieldKey,
+                                  controller: repsController,
+                                  onRestore: (restored) =>
+                                      serie.alvo = restored,
+                                );
+                              },
+                              onTapOutside: (_) {
+                                _restorePreviousIfNoChange(
+                                  fieldKey: repsFieldKey,
+                                  controller: repsController,
+                                  onRestore: (restored) =>
+                                      serie.alvo = restored,
+                                );
                               },
                               textAlign: TextAlign.center,
                               style: const TextStyle(
@@ -379,36 +464,45 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                 ],
                                 controller: cargaController,
                                 onTap: () {
-                                  _lastValues['carga_${realIndex}'] =
-                                      cargaController.text;
-                                  cargaController.clear();
+                                  _startEditingField(
+                                    cargaFieldKey,
+                                    cargaController,
+                                  );
                                 },
                                 onChanged: (val) {
-                                  if (val.isEmpty) {
-                                    cargaController.text = '-';
-                                    serie.carga = '-';
-                                  } else {
-                                    serie.carga = val;
-                                  }
-                                  _lastValues.remove('carga_${realIndex}');
-                                  widget.onChanged();
+                                  _handleFieldChanged(
+                                    fieldKey: cargaFieldKey,
+                                    controller: cargaController,
+                                    value: val,
+                                    emptyFallback: '-',
+                                    onSave: (saved) => serie.carga = saved,
+                                  );
                                 },
-                                onFieldSubmitted: (val) {
-                                  // Se não alterou, não faz nada
+                                onFieldSubmitted: (_) {
+                                  _restorePreviousIfNoChange(
+                                    fieldKey: cargaFieldKey,
+                                    controller: cargaController,
+                                    onRestore: (restored) =>
+                                        serie.carga = restored,
+                                    onCommitEdited: (committed) {
+                                      serie.carga = committed.isEmpty
+                                          ? '-'
+                                          : committed;
+                                    },
+                                  );
                                 },
-                                onEditingComplete: () {
-                                  // Se não alterou, não faz nada
-                                },
-                                onTapOutside: (event) {
-                                  if ((cargaController.text.isEmpty ||
-                                          cargaController.text == '') &&
-                                      _lastValues.containsKey(
-                                        'carga_${realIndex}',
-                                      )) {
-                                    cargaController.text =
-                                        _lastValues['carga_${realIndex}']!;
-                                    _lastValues.remove('carga_${realIndex}');
-                                  }
+                                onTapOutside: (_) {
+                                  _restorePreviousIfNoChange(
+                                    fieldKey: cargaFieldKey,
+                                    controller: cargaController,
+                                    onRestore: (restored) =>
+                                        serie.carga = restored,
+                                    onCommitEdited: (committed) {
+                                      serie.carga = committed.isEmpty
+                                          ? '-'
+                                          : committed;
+                                    },
+                                  );
                                 },
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
@@ -456,40 +550,36 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                     ],
                                     controller: descansoController,
                                     onTap: () {
-                                      _lastValues['descanso_${realIndex}'] =
-                                          descansoController.text;
-                                      descansoController.clear();
+                                      _startEditingField(
+                                        descansoFieldKey,
+                                        descansoController,
+                                      );
                                     },
                                     onChanged: (val) {
-                                      if (val.isEmpty) {
-                                        descansoController.text = '0';
-                                        serie.descanso = '0';
-                                      } else {
-                                        serie.descanso = val;
-                                      }
-                                      _lastValues.remove(
-                                        'descanso_${realIndex}',
+                                      _handleFieldChanged(
+                                        fieldKey: descansoFieldKey,
+                                        controller: descansoController,
+                                        value: val,
+                                        emptyFallback: '0',
+                                        onSave: (saved) =>
+                                            serie.descanso = saved,
                                       );
-                                      widget.onChanged();
                                     },
-                                    onFieldSubmitted: (val) {
-                                      // Se não alterou, não faz nada
+                                    onFieldSubmitted: (_) {
+                                      _restorePreviousIfNoChange(
+                                        fieldKey: descansoFieldKey,
+                                        controller: descansoController,
+                                        onRestore: (restored) =>
+                                            serie.descanso = restored,
+                                      );
                                     },
-                                    onEditingComplete: () {
-                                      // Se não alterou, não faz nada
-                                    },
-                                    onTapOutside: (event) {
-                                      if ((descansoController.text.isEmpty ||
-                                              descansoController.text == '') &&
-                                          _lastValues.containsKey(
-                                            'descanso_${realIndex}',
-                                          )) {
-                                        descansoController.text =
-                                            _lastValues['descanso_${realIndex}']!;
-                                        _lastValues.remove(
-                                          'descanso_${realIndex}',
-                                        );
-                                      }
+                                    onTapOutside: (_) {
+                                      _restorePreviousIfNoChange(
+                                        fieldKey: descansoFieldKey,
+                                        controller: descansoController,
+                                        onRestore: (restored) =>
+                                            serie.descanso = restored,
+                                      );
                                     },
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
