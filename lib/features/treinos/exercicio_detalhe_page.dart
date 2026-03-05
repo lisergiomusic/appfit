@@ -398,9 +398,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
           ),
           if (showDivider)
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: AppTheme.space16),
+              margin: const EdgeInsets.symmetric(horizontal: 24),
               height: 0.5,
-              color: Colors.white.withAlpha(16),
+              color: Colors.white.withAlpha(25),
             ),
         ],
       ),
@@ -426,7 +426,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
             padding: const EdgeInsets.symmetric(horizontal: AppTheme.space16),
             child: Row(
               children: [
-                Icon(icon, color: iconColor, size: 17),
+                Icon(icon, color: iconColor, size: 18),
                 const SizedBox(width: AppTheme.space10),
                 Text(
                   title,
@@ -513,7 +513,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.primary,
                 minimumSize: const Size(44, 44),
-                padding: const EdgeInsets.only(left: 4, right: 8),
+                padding: const EdgeInsets.only(left: 2, right: 8),
               ),
             ),
             actions: [
@@ -550,7 +550,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     isVisible: isCollapsed,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -714,7 +714,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
       floatingActionButton: OrangeGlassActionButton(
         label: 'Adicionar Série',
         onTap: _adicionarSerie,
-        bottomMargin: 0,
+        bottomMargin: 32,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
