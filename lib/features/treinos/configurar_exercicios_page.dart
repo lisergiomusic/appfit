@@ -479,7 +479,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '${_exerciciosLocais.length} exercícios prescritos',
+                          '${_exerciciosLocais.length} ${_exerciciosLocais.length == 1 ? 'exercício prescrito' : 'exercícios prescritos'}',
                           style: TextStyle(
                             color: AppTheme.textSecondary.withAlpha(180),
                             fontSize: 14,
@@ -508,7 +508,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                   ),
                                 ),
                                 Text(
-                                  '$_totalSeries SÉRIES',
+                                  '$_totalSeries SÉRIE${_totalSeries == 1 ? '' : 'S'}',
                                   style: const TextStyle(
                                     color: AppTheme.primary,
                                     fontSize: 9,
