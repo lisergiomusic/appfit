@@ -388,33 +388,36 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
       return const SizedBox.shrink();
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Icon(icon, color: iconColor, size: 17),
-              const SizedBox(width: 10),
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white.withAlpha(150),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.25,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Icon(icon, color: iconColor, size: 17),
+                const SizedBox(width: 10),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: Colors.white.withAlpha(150),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.25,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        ...entries.asMap().entries.map((mapped) {
-          final isLast = mapped.key == entries.length - 1;
-          return _buildSerieRow(mapped.value, mapped.key + 1, !isLast);
-        }),
-      ],
+          const SizedBox(height: 4),
+          ...entries.asMap().entries.map((mapped) {
+            final isLast = mapped.key == entries.length - 1;
+            return _buildSerieRow(mapped.value, mapped.key + 1, !isLast);
+          }),
+        ],
+      ),
     );
   }
 
@@ -645,33 +648,28 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  if (warmupEntries.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: _buildSeriesSection(
-                        icon: Icons.local_fire_department,
-                        iconColor: const Color(0xFFFFB300),
-                        title: 'AQUECIMENTO',
-                        entries: warmupEntries,
-                      ),
+                  _buildSeriesSection(
+                    icon: Icons.local_fire_department,
+                    iconColor: const Color(0xFFFFB300),
+                    title: 'AQUECIMENTO',
+                    entries: warmupEntries,
+                  ),
+                  if (feederEntries.isNotEmpty) ...[
+                    _buildSeriesSection(
+                      icon: Icons.flash_on,
+                      iconColor: Colors.blueAccent,
+                      title: 'FEEDER',
+                      entries: feederEntries,
                     ),
-                  if (feederEntries.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: _buildSeriesSection(
-                        icon: Icons.flash_on,
-                        iconColor: Colors.blueAccent,
-                        title: 'FEEDER',
-                        entries: feederEntries,
-                      ),
-                    ),
-                  if (workEntries.isNotEmpty)
+                  ],
+                  if (workEntries.isNotEmpty) ...[
                     _buildSeriesSection(
                       icon: Icons.label,
                       iconColor: Colors.white,
                       title: 'SÉRIES DE TRABALHO',
                       entries: workEntries,
                     ),
+                  ],
                   const SizedBox(height: 20),
                 ],
               ),
