@@ -325,16 +325,21 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                               ),
                               onTap: () {
                                 final key = 'alvo_${realIndex}_${serie.alvo}';
-                                _lastValues[key] = _getController(key, serie.alvo).text;
+                                _lastValues[key] = _getController(
+                                  key,
+                                  serie.alvo,
+                                ).text;
                                 _getController(key, serie.alvo).clear();
                               },
                               onChanged: (val) {
                                 final key = 'alvo_${realIndex}_${serie.alvo}';
                                 if (val.isEmpty) {
                                   _getController(key, serie.alvo).text = '0';
+                                  serie.alvo = '0';
+                                } else {
+                                  serie.alvo = val;
                                 }
                                 _lastValues.remove(key);
-                                serie.alvo = val;
                                 widget.onChanged();
                               },
                               textAlign: TextAlign.center,
@@ -374,7 +379,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                 ],
                                 controller: cargaController,
                                 onTap: () {
-                                  _lastValues['carga_${realIndex}'] = cargaController.text;
+                                  _lastValues['carga_${realIndex}'] =
+                                      cargaController.text;
                                   cargaController.clear();
                                 },
                                 onChanged: (val) {
@@ -394,8 +400,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                   // Se não alterou, não faz nada
                                 },
                                 onTapOutside: (event) {
-                                  if ((cargaController.text.isEmpty || cargaController.text == '') && _lastValues.containsKey('carga_${realIndex}')) {
-                                    cargaController.text = _lastValues['carga_${realIndex}']!;
+                                  if ((cargaController.text.isEmpty ||
+                                          cargaController.text == '') &&
+                                      _lastValues.containsKey(
+                                        'carga_${realIndex}',
+                                      )) {
+                                    cargaController.text =
+                                        _lastValues['carga_${realIndex}']!;
                                     _lastValues.remove('carga_${realIndex}');
                                   }
                                 },
@@ -445,7 +456,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                     ],
                                     controller: descansoController,
                                     onTap: () {
-                                      _lastValues['descanso_${realIndex}'] = descansoController.text;
+                                      _lastValues['descanso_${realIndex}'] =
+                                          descansoController.text;
                                       descansoController.clear();
                                     },
                                     onChanged: (val) {
@@ -455,7 +467,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                       } else {
                                         serie.descanso = val;
                                       }
-                                      _lastValues.remove('descanso_${realIndex}');
+                                      _lastValues.remove(
+                                        'descanso_${realIndex}',
+                                      );
                                       widget.onChanged();
                                     },
                                     onFieldSubmitted: (val) {
@@ -465,9 +479,16 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                       // Se não alterou, não faz nada
                                     },
                                     onTapOutside: (event) {
-                                      if ((descansoController.text.isEmpty || descansoController.text == '') && _lastValues.containsKey('descanso_${realIndex}')) {
-                                        descansoController.text = _lastValues['descanso_${realIndex}']!;
-                                        _lastValues.remove('descanso_${realIndex}');
+                                      if ((descansoController.text.isEmpty ||
+                                              descansoController.text == '') &&
+                                          _lastValues.containsKey(
+                                            'descanso_${realIndex}',
+                                          )) {
+                                        descansoController.text =
+                                            _lastValues['descanso_${realIndex}']!;
+                                        _lastValues.remove(
+                                          'descanso_${realIndex}',
+                                        );
                                       }
                                     },
                                     textAlign: TextAlign.center,
