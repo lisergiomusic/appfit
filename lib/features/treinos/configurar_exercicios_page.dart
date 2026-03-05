@@ -294,6 +294,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       'Voltar',
                       style: TextStyle(
                         color: AppTheme.primary,
+                        fontSize: 17,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -320,7 +321,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       'Concluir',
                       style: TextStyle(
                         color: AppTheme.primary,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -335,10 +337,15 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
                 return FlexibleSpaceBar(
                   centerTitle: true,
-                  titlePadding: const EdgeInsets.only(bottom: 14),
+                  titlePadding: const EdgeInsets.only(bottom: 16),
                   title: SliverSafeTitle(
                     title: safeTreinoTitle,
                     isVisible: isCollapsed,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   background: Align(
                     alignment: Alignment.bottomLeft,

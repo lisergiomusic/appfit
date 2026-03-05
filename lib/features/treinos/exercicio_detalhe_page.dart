@@ -340,14 +340,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                   color: AppTheme.primary,
                                   size: 15,
                                 ),
-                                const SizedBox(width: 6),
                                 SizedBox(
                                   width: 44,
                                   child: _buildMinimalInput(
                                     fieldKey:
                                         'descanso_${realIndex}_${serie.descanso}',
                                     initialValue: serie.descanso,
-                                    textAlign: TextAlign.right,
+                                    textAlign: TextAlign.center,
                                     onChanged: (val) {
                                       serie.descanso = val;
                                       widget.onChanged();
@@ -468,7 +467,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                 style: TextStyle(
                   color: AppTheme.primary,
                   fontSize: 17,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               style: TextButton.styleFrom(
@@ -505,10 +504,15 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
 
                 return FlexibleSpaceBar(
                   centerTitle: true,
-                  titlePadding: const EdgeInsets.only(bottom: 14),
+                  titlePadding: const EdgeInsets.only(bottom: 16),
                   title: SliverSafeTitle(
                     title: exerciseTitle,
                     isVisible: isCollapsed,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   background: Align(
                     alignment: Alignment.bottomLeft,
