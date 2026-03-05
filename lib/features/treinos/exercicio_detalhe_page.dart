@@ -330,6 +330,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                               },
                               onChanged: (val) {
                                 final key = 'alvo_${realIndex}_${serie.alvo}';
+                                if (val.isEmpty) {
+                                  _getController(key, serie.alvo).text = '0';
+                                }
                                 _lastValues.remove(key);
                                 serie.alvo = val;
                                 widget.onChanged();
@@ -375,8 +378,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                   cargaController.clear();
                                 },
                                 onChanged: (val) {
+                                  if (val.isEmpty) {
+                                    cargaController.text = '-';
+                                    serie.carga = '-';
+                                  } else {
+                                    serie.carga = val;
+                                  }
                                   _lastValues.remove('carga_${realIndex}');
-                                  serie.carga = val;
                                   widget.onChanged();
                                 },
                                 onFieldSubmitted: (val) {
@@ -441,8 +449,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                       descansoController.clear();
                                     },
                                     onChanged: (val) {
+                                      if (val.isEmpty) {
+                                        descansoController.text = '0';
+                                        serie.descanso = '0';
+                                      } else {
+                                        serie.descanso = val;
+                                      }
                                       _lastValues.remove('descanso_${realIndex}');
-                                      serie.descanso = val;
                                       widget.onChanged();
                                     },
                                     onFieldSubmitted: (val) {
