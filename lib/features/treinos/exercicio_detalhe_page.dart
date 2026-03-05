@@ -450,6 +450,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     );
   }
 
+  bool _isKeyboardVisible() {
+    return MediaQuery.of(context).viewInsets.bottom > 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     final exerciseTitle = SliverSafeTitle.safeTitle(
@@ -711,12 +715,17 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
           ),
         ],
       ),
-      floatingActionButton: OrangeGlassActionButton(
-        label: 'Adicionar Série',
-        onTap: _adicionarSerie,
-        bottomMargin: 24,
-      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: AnimatedScale(
+        scale: _isKeyboardVisible() ? 0.0 : 1.0,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        child: OrangeGlassActionButton(
+          label: 'Adicionar Série',
+          onTap: _adicionarSerie,
+          bottomMargin: 24,
+        ),
+      ),
     );
   }
 }
