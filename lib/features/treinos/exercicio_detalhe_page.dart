@@ -1,3 +1,4 @@
+  final Map<String, String> _lastValues = {};
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -323,9 +324,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                 serie.alvo,
                               ),
                               onTap: () {
-                                _getController('alvo_${realIndex}_${serie.alvo}', serie.alvo).clear();
+                                final key = 'alvo_${realIndex}_${serie.alvo}';
+                                _lastValues[key] = _getController(key, serie.alvo).text;
+                                _getController(key, serie.alvo).clear();
                               },
                               onChanged: (val) {
+                                final key = 'alvo_${realIndex}_${serie.alvo}';
+                                _lastValues.remove(key);
                                 serie.alvo = val;
                                 widget.onChanged();
                               },
@@ -366,11 +371,25 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                 ],
                                 controller: cargaController,
                                 onTap: () {
+                                  _lastValues['carga_${realIndex}'] = cargaController.text;
                                   cargaController.clear();
                                 },
                                 onChanged: (val) {
+                                  _lastValues.remove('carga_${realIndex}');
                                   serie.carga = val;
                                   widget.onChanged();
+                                },
+                                onFieldSubmitted: (val) {
+                                  // Se não alterou, não faz nada
+                                },
+                                onEditingComplete: () {
+                                  // Se não alterou, não faz nada
+                                },
+                                onTapOutside: (event) {
+                                  if ((cargaController.text.isEmpty || cargaController.text == '') && _lastValues.containsKey('carga_${realIndex}')) {
+                                    cargaController.text = _lastValues['carga_${realIndex}']!;
+                                    _lastValues.remove('carga_${realIndex}');
+                                  }
                                 },
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
@@ -418,11 +437,25 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                     ],
                                     controller: descansoController,
                                     onTap: () {
+                                      _lastValues['descanso_${realIndex}'] = descansoController.text;
                                       descansoController.clear();
                                     },
                                     onChanged: (val) {
+                                      _lastValues.remove('descanso_${realIndex}');
                                       serie.descanso = val;
                                       widget.onChanged();
+                                    },
+                                    onFieldSubmitted: (val) {
+                                      // Se não alterou, não faz nada
+                                    },
+                                    onEditingComplete: () {
+                                      // Se não alterou, não faz nada
+                                    },
+                                    onTapOutside: (event) {
+                                      if ((descansoController.text.isEmpty || descansoController.text == '') && _lastValues.containsKey('descanso_${realIndex}')) {
+                                        descansoController.text = _lastValues['descanso_${realIndex}']!;
+                                        _lastValues.remove('descanso_${realIndex}');
+                                      }
                                     },
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
