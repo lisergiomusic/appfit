@@ -398,7 +398,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
           ),
           if (showDivider)
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 24),
+              margin: const EdgeInsets.only(left: 44, right: 24),
               height: 0.5,
               color: Colors.white.withAlpha(25),
             ),
