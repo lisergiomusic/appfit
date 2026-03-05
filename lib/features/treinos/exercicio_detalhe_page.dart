@@ -1,4 +1,11 @@
+  // ...existing code...
+class ExercicioDetalhePage extends StatefulWidget {
+  // ...existing code...
+}
+
+class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   final Map<String, String> _lastValues = {};
+  // ...existing code...
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
