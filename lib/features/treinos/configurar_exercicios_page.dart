@@ -1,5 +1,3 @@
-import 'dart:ui' as ui; // Necessário para o ImageFilter
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_theme.dart';
@@ -30,11 +28,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   late TextEditingController _nomeTreinoController;
   bool _isEditingTitle = false;
   late FocusNode _titleFocusNode;
-
-  Color get _darkPrimary {
-    final hsl = HSLColor.fromColor(AppTheme.primary);
-    return hsl.withLightness((hsl.lightness - 0.18).clamp(0.0, 1.0)).toColor();
-  }
 
   double _fabProtectionSpace(BuildContext context) {
     return 140 + MediaQuery.of(context).padding.bottom;
@@ -111,51 +104,55 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     const technicalOrange = Color(0xFFFF6D00);
 
     return SizedBox(
-      height: 24,
+      height: 26,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
-        child: Row(
-          children: [
-            for (var i = 0; i < _gruposMuscularesUnicos.length; i++) ...[
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 3,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0D0D0D),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: technicalOrange.withAlpha(200),
-                    width: 0.5,
+        clipBehavior: Clip.none,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 1),
+          child: Row(
+            children: [
+              for (var i = 0; i < _gruposMuscularesUnicos.length; i++) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 3,
                   ),
-                ),
-                child: Text(
-                  _gruposMuscularesUnicos[i].toUpperCase(),
-                  style: TextStyle(
-                    color: technicalOrange.withAlpha(232),
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1.5,
-                    height: 1.0,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0D0D0D),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: technicalOrange.withAlpha(165),
+                      width: 1,
+                    ),
                   ),
-                ),
-              ),
-              if (i < _gruposMuscularesUnicos.length - 1)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Text(
-                    '•',
+                    _gruposMuscularesUnicos[i].toUpperCase(),
                     style: TextStyle(
-                      color: Colors.white.withAlpha(78),
-                      fontSize: 9,
-                      fontWeight: FontWeight.w500,
+                      color: technicalOrange.withAlpha(232),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.5,
+                      height: 1.0,
                     ),
                   ),
                 ),
+                if (i < _gruposMuscularesUnicos.length - 1)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      '•',
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(78),
+                        fontSize: 9,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -249,131 +246,65 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     final glowShadows = _isAddFabPressed
         ? <BoxShadow>[
             BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.28),
-              blurRadius: 22,
-              spreadRadius: 0.9,
-              offset: Offset.zero,
-            ),
-            BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.15),
-              blurRadius: 34,
-              spreadRadius: 1.5,
-              offset: Offset.zero,
-            ),
-            BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.07),
-              blurRadius: 48,
-              spreadRadius: 2.1,
-              offset: Offset.zero,
+              color: AppTheme.primary.withValues(alpha: 0.38),
+              blurRadius: 18,
+              spreadRadius: 0.6,
+              offset: const Offset(0, 4),
             ),
           ]
         : <BoxShadow>[
             BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.20),
-              blurRadius: 16,
-              spreadRadius: 0.5,
-              offset: Offset.zero,
-            ),
-            BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.10),
-              blurRadius: 28,
-              spreadRadius: 1.1,
-              offset: Offset.zero,
+              color: AppTheme.primary.withValues(alpha: 0.34),
+              blurRadius: 22,
+              spreadRadius: 0.4,
+              offset: const Offset(0, 6),
             ),
           ];
 
+    final buttonWidth = MediaQuery.of(context).size.width - 32;
+
     return Container(
+      width: buttonWidth,
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(99),
-        boxShadow: [...glowShadows],
+        color: AppTheme.primary,
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: glowShadows,
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(99),
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(
-            sigmaX: 16.0,
-            sigmaY: 16.0,
-          ), // Blur nativo Apple
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppTheme.primary.withValues(alpha: 0.52),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppTheme.primary.withValues(alpha: 0.88),
-                  AppTheme.primary.withValues(alpha: 0.78),
-                  _darkPrimary.withValues(alpha: 0.94),
-                ],
-                stops: const [0.0, 0.32, 1.0],
-              ),
-              borderRadius: BorderRadius.circular(99),
-              border: Border.all(
-                color: _darkPrimary.withValues(alpha: 0.7),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primary.withValues(alpha: 0.18),
-                  blurRadius: 1,
-                  offset: const Offset(0, -0.5),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _openLibrary,
+          onHighlightChanged: (isHighlighted) {
+            if (_isAddFabPressed != isHighlighted) {
+              setState(() => _isAddFabPressed = isHighlighted);
+            }
+          },
+          borderRadius: BorderRadius.circular(999),
+          splashColor: Colors.white.withValues(alpha: 0.16),
+          highlightColor: Colors.black.withValues(alpha: 0.06),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Icon(
+                  Icons.add_circle_outline_rounded,
+                  color: Colors.white,
+                  size: 20,
                 ),
-                BoxShadow(
-                  color: AppTheme.primary.withValues(alpha: 0.35),
-                  blurRadius: 12,
-                  offset: const Offset(0, 5),
+                const SizedBox(width: 8),
+                Text(
+                  'Adicionar Exercício',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    letterSpacing: 0.2,
+                  ),
                 ),
               ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: _openLibrary,
-                onHighlightChanged: (isHighlighted) {
-                  if (_isAddFabPressed != isHighlighted) {
-                    setState(() => _isAddFabPressed = isHighlighted);
-                  }
-                },
-                splashColor: Colors.white.withValues(alpha: 0.2),
-                highlightColor: Colors.white.withValues(alpha: 0.1),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(0),
-                        child: Icon(
-                          Icons.add_circle_outline_rounded,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Adicionar Exercício',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                          letterSpacing: 0.3,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withValues(alpha: 0.25),
-                              offset: Offset(0, 1),
-                              blurRadius: 2,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ),
           ),
         ),
