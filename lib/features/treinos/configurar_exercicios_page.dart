@@ -485,7 +485,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 0, 16),
+                    padding: const EdgeInsets.fromLTRB(24, 0, 0, 10),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -510,7 +510,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                             _totalSeriesText,
                             style: const TextStyle(
                               color: AppTheme.primary,
-                              fontSize: 11,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600, // Bold suave
                               letterSpacing: 0.5,
                             ),
                           ),
@@ -519,12 +520,17 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     ),
                   ),
 
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 14),
+                    child: const NoteSection(),
+                  ),
+
                   if (_gruposMuscularesUnicos.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(
                         left: 24,
                         right: 0,
-                        bottom: 16,
+                        bottom: 20,
                       ),
                       child: SizedBox(
                         height: 30,
@@ -565,15 +571,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       ),
                     ),
 
-                  // Botão de adicionar observação/notas (após os pills)
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 16,
-                      right: 16,
-                      bottom: 32,
-                    ),
-                    child: NoteSection(),
-                  ),
                   if (_exerciciosLocais.isEmpty)
                     Padding(
                       padding: const EdgeInsets.only(

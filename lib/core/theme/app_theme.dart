@@ -13,7 +13,7 @@ class AppTheme {
   static const Color surfaceDark = Color(0xFF1E1E1E);
   static const Color surfaceLight = Color(0xFF2C2C2E);
   static const Color textPrimary = Colors.white;
-  static const Color textSecondary = Color(0xFFA0A0A0);
+  static const Color textSecondary = Color.fromARGB(160, 255, 255, 255);
   static const Color success = Color(0xFF4CAF50);
   static const Color error = Colors.redAccent;
 
