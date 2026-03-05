@@ -322,6 +322,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                 'alvo_${realIndex}_${serie.alvo}',
                                 serie.alvo,
                               ),
+                              onTap: () {
+                                _getController('alvo_${realIndex}_${serie.alvo}', serie.alvo).clear();
+                              },
                               onChanged: (val) {
                                 serie.alvo = val;
                                 widget.onChanged();
@@ -362,6 +365,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                   _CargaKgInputFormatter(),
                                 ],
                                 controller: cargaController,
+                                onTap: () {
+                                  cargaController.clear();
+                                },
                                 onChanged: (val) {
                                   serie.carga = val;
                                   widget.onChanged();
@@ -411,6 +417,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                       _DescansoSecondsInputFormatter(),
                                     ],
                                     controller: descansoController,
+                                    onTap: () {
+                                      descansoController.clear();
+                                    },
                                     onChanged: (val) {
                                       serie.descanso = val;
                                       widget.onChanged();
