@@ -652,7 +652,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     entries: warmupEntries,
                   ),
                   if (feederEntries.isNotEmpty) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     _buildSeriesSection(
                       icon: Icons.flash_on,
                       iconColor: Colors.blueAccent,
@@ -661,7 +661,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     ),
                   ],
                   if (workEntries.isNotEmpty) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     _buildSeriesSection(
                       icon: Icons.label,
                       iconColor: Colors.white,
