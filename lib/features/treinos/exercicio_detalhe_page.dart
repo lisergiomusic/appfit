@@ -714,7 +714,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
       floatingActionButton: OrangeGlassActionButton(
         label: 'Adicionar Série',
         onTap: _adicionarSerie,
-        bottomMargin: 32,
+        bottomMargin: 24,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
