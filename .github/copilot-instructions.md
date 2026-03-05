@@ -34,6 +34,14 @@ When editing:
 - Preserve theming tokens in `lib/core/theme/app_theme.dart` to avoid visual regressions.
 - Prefer small, localized changes in feature folders. When you must refactor cross-cutting concerns (auth, services, theme), document the change in the PR description.
 
+UI hierarchy + spacing defaults (Apple-inspired, cross-platform):
+- Prioritize clear visual hierarchy: `title -> section label -> value/content -> helper text` with progressively lighter emphasis.
+- Use spacing tokens from `AppTheme` (e.g., `space4/8/12/16/24/32`) instead of hard-coded numeric gaps whenever possible.
+- Keep a consistent vertical rhythm in screens: prefer predictable steps (`8, 12, 16, 24, 32`) and avoid arbitrary jumps.
+- In dense list rows/forms, use subtle separators and avoid combining strong separators with large external gaps.
+- Avoid introducing new colors, typography families, or custom shadows outside the existing theme tokens.
+- For iOS-like readability, keep layouts compact-but-breathable: reduce visual noise, emphasize content blocks, and maintain alignment consistency across columns.
+
 Examples to reference when implementing features or fixes:
 - Feature-to-service call: `lib/features/treinos/criar_rotina_page.dart` -> `lib/core/services/rotina_service.dart`.
 - User gating by role: [lib/main.dart](lib/main.dart#L1) reads `tipoUsuario` from `usuarios` collection and constructs `DashboardPage(userType: tipo)`.

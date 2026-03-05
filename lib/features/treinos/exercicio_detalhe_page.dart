@@ -168,12 +168,15 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
         GestureDetector(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.space16,
+              vertical: AppTheme.space16,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(icon, color: color, size: 20),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppTheme.space16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -266,7 +269,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.space16,
+              vertical: AppTheme.space12,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -284,7 +290,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppTheme.space8),
                 Expanded(
                   child: Row(
                     children: [
@@ -294,7 +300,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text('REPS', style: _microLabelStyle()),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppTheme.space6),
                             _buildMinimalInput(
                               fieldKey: 'alvo_${realIndex}_${serie.alvo}',
                               initialValue: serie.alvo,
@@ -307,14 +313,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: AppTheme.space12),
                       Expanded(
                         flex: 3,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text('CARGA', style: _microLabelStyle()),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppTheme.space6),
                             _buildMinimalInput(
                               fieldKey: 'carga_${realIndex}_${serie.carga}',
                               initialValue: serie.carga,
@@ -327,21 +333,21 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: AppTheme.space12),
                       Expanded(
                         flex: 3,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text('DESCANSO', style: _microLabelStyle()),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppTheme.space6),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.timer,
-                                  color: AppTheme.primary,
-                                  size: 15,
+                                  color: Colors.white.withAlpha(170),
+                                  size: 14,
                                 ),
                                 SizedBox(
                                   width: 44,
@@ -369,9 +375,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
           ),
           if (showDivider)
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
+              margin: const EdgeInsets.symmetric(horizontal: AppTheme.space16),
               height: 0.5,
-              color: Colors.white.withAlpha(20),
+              color: Colors.white.withAlpha(16),
             ),
         ],
       ),
@@ -389,16 +395,16 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 28),
+      padding: const EdgeInsets.only(bottom: AppTheme.space24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.space16),
             child: Row(
               children: [
                 Icon(icon, color: iconColor, size: 17),
-                const SizedBox(width: 10),
+                const SizedBox(width: AppTheme.space10),
                 Text(
                   title,
                   style: TextStyle(
@@ -411,7 +417,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
               ],
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppTheme.space10),
           ...entries.asMap().entries.map((mapped) {
             final isLast = mapped.key == entries.length - 1;
             return _buildSerieRow(mapped.value, mapped.key + 1, !isLast);
@@ -529,8 +535,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     alignment: Alignment.bottomLeft,
                     child: Padding(
                       padding: const EdgeInsets.only(
-                        left: 16,
-                        right: 16,
+                        left: AppTheme.space16,
+                        right: AppTheme.space16,
                         bottom: 10,
                       ),
                       child: AnimatedOpacity(
@@ -556,7 +562,12 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 48),
+              padding: const EdgeInsets.fromLTRB(
+                AppTheme.space16,
+                AppTheme.space12,
+                AppTheme.space16,
+                AppTheme.space48,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -569,7 +580,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                       letterSpacing: 1.25,
                     ),
                   ),
-                  const SizedBox(height: 36),
+                  const SizedBox(height: AppTheme.space24),
                   InkWell(
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -627,7 +638,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 36),
+                  const SizedBox(height: AppTheme.space28),
                   Text(
                     'INSTRUÇÕES',
                     style: TextStyle(
@@ -637,7 +648,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                       letterSpacing: 1.25,
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: AppTheme.space10),
                   Text(
                     instructionsText,
                     style: TextStyle(
@@ -647,7 +658,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                       height: 1.45,
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: AppTheme.space24),
                   _buildSeriesSection(
                     icon: Icons.local_fire_department,
                     iconColor: const Color(0xFFFFB300),
@@ -670,7 +681,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                       entries: workEntries,
                     ),
                   ],
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppTheme.space20),
                 ],
               ),
             ),
