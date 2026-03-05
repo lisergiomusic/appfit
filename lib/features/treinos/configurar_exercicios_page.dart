@@ -673,6 +673,49 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         ),
         child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
       ),
+      confirmDismiss: (direction) async {
+        return await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                backgroundColor: AppTheme.surfaceLight,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                title: const Text(
+                  'Remover exercício?',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                content: const Text(
+                  'Tem certeza que deseja excluir este exercício da rotina?',
+                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text(
+                      'Cancelar',
+                      style: TextStyle(color: AppTheme.primary, fontSize: 16),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text(
+                      'Remover',
+                      style: TextStyle(
+                        color: Colors.redAccent,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ) ??
+            false;
+      },
       onDismissed: (direction) {
         setState(() {
           _exerciciosLocais.removeAt(exIndex);
