@@ -151,7 +151,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
       case TipoSerie.aquecimento:
         return AppTheme.iosAmber;
       case TipoSerie.feeder:
-        return Colors.green;
+        return Colors.blueAccent;
     }
   }
 
