@@ -93,6 +93,16 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   int get _totalSeries =>
       _exerciciosLocais.fold(0, (sum, ex) => sum + ex.series.length);
 
+  String get _totalSeriesText {
+    if (_totalSeries == 0) {
+      return 'Nenhuma série adicionada';
+    } else if (_totalSeries == 1) {
+      return 'Total de 1 série';
+    } else {
+      return 'Total de $_totalSeries séries';
+    }
+  }
+
   List<String> get _gruposMuscularesUnicos {
     final grupos = _exerciciosLocais
         .map((ex) => ex.grupoMuscular)
@@ -487,39 +497,24 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        if (_totalSeries > 0)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primary.withAlpha(15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              children: [
-                                Text(
-                                  'TOTAL DE SÉRIES: ',
-                                  style: TextStyle(
-                                    color: AppTheme.primary.withAlpha(200),
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                                Text(
-                                  '$_totalSeries SÉRIE${_totalSeries == 1 ? '' : 'S'}',
-                                  style: const TextStyle(
-                                    color: AppTheme.primary,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary.withAlpha(15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            _totalSeriesText,
+                            style: const TextStyle(
+                              color: AppTheme.primary,
+                              fontSize: 11,
+                              letterSpacing: 0.5,
                             ),
                           ),
+                        ),
                       ],
                     ),
                   ),
