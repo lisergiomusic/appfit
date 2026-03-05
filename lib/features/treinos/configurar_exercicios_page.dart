@@ -111,7 +111,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     const technicalOrange = Color(0xFFFF6D00);
 
     return SizedBox(
-      height: 22,
+      height: 24,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -119,19 +119,22 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           children: [
             for (var i = 0; i < _gruposMuscularesUnicos.length; i++) ...[
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 3,
+                ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF080808),
+                  color: const Color(0xFF0D0D0D),
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
-                    color: technicalOrange.withAlpha(220),
+                    color: technicalOrange.withAlpha(200),
                     width: 0.5,
                   ),
                 ),
                 child: Text(
                   _gruposMuscularesUnicos[i].toUpperCase(),
                   style: TextStyle(
-                    color: technicalOrange.withAlpha(240),
+                    color: technicalOrange.withAlpha(232),
                     fontSize: 10.5,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.5,
@@ -145,7 +148,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   child: Text(
                     '•',
                     style: TextStyle(
-                      color: Colors.white.withAlpha(95),
+                      color: Colors.white.withAlpha(78),
                       fontSize: 9,
                       fontWeight: FontWeight.w500,
                     ),
@@ -464,7 +467,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       padding: const EdgeInsets.only(
                         left: 24,
                         bottom: 8,
-                        right: 16,
+                        right: 24,
                       ),
                       child: AnimatedOpacity(
                         duration: const Duration(milliseconds: 200),
@@ -745,20 +748,25 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         });
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: 14),
         decoration: BoxDecoration(
           color: AppTheme
               .glassCard, // Supondo que você tenha AppTheme.glassCard (preto translúcido)
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.08),
-            width: 0.3,
+            color: Colors.white.withValues(alpha: 0.1),
+            width: 0.35,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.white.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.28),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+            BoxShadow(
+              color: Colors.white.withValues(alpha: 0.03),
+              blurRadius: 1,
+              offset: const Offset(0, -0.5),
             ),
           ],
         ),
@@ -788,7 +796,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     index: exIndex,
                     child: Icon(
                       Icons.drag_indicator,
-                      color: Colors.grey[600],
+                      color: Colors.white.withValues(alpha: 0.42),
                       size: 28,
                     ),
                   ),
@@ -801,8 +809,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                           ex.nome,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16.5,
                             letterSpacing: -0.3,
                           ),
                           maxLines: 1,
@@ -813,9 +821,9 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                           '${ex.series.length} SÉRIES',
                           style: TextStyle(
                             color: AppTheme.primary.withAlpha(220),
-                            fontSize: 10,
+                            fontSize: 10.5,
                             fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
+                            letterSpacing: 0.7,
                             height: 1.2,
                           ),
                         ),
@@ -823,7 +831,11 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Icon(Icons.chevron_right, color: Colors.grey[600], size: 28),
+                  Icon(
+                    Icons.chevron_right,
+                    color: Colors.white.withValues(alpha: 0.42),
+                    size: 28,
+                  ),
                 ],
               ),
             ),
