@@ -38,6 +38,7 @@ class AppTheme {
   static const double space28 = 28.0;
   static const double space32 = 32.0;
   static const double space36 = 36.0;
+  static const double space40 = 40.0;
   static const double space48 = 48.0;
 
   // --- 3. ARREDONDAMENTOS (Radii) ---

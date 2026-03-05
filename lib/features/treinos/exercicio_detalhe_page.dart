@@ -704,7 +704,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                       entries: workEntries,
                     ),
                   ],
-                  const SizedBox(height: AppTheme.space32),
+                  const SizedBox(height: AppTheme.space40),
                 ],
               ),
             ),
