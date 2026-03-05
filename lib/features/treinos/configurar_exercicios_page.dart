@@ -314,59 +314,77 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+    final shouldShowFab = !_isEditingTitle && !isKeyboardVisible;
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton:
-          _buildOrangeGlassFAB(), // Chamando o FAB Laranja de Vidro
+      floatingActionButton: IgnorePointer(
+        ignoring: !shouldShowFab,
+        child: AnimatedScale(
+          scale: shouldShowFab ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          child: _buildOrangeGlassFAB(),
+        ),
+      ),
       body: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics(),
         ),
         slivers: [
           SliverAppBar(
+            automaticallyImplyLeading: false,
             backgroundColor: AppTheme.background.withValues(alpha: 0.9),
             surfaceTintColor: Colors.transparent,
             pinned: true,
             expandedHeight: 140.0,
-            leadingWidth: 100,
-            leading: TextButton.icon(
-              onPressed: _onBackPressed,
-              icon: Icon(Icons.chevron_left, color: AppTheme.primary, size: 28),
-              label: Text(
-                'Voltar',
-                style: TextStyle(
-                  color: AppTheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              style: TextButton.styleFrom(
-                foregroundColor: AppTheme.primary,
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                minimumSize: const Size(44, 44),
-                tapTargetSize: MaterialTapTargetSize.padded,
-              ),
-            ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 16.0),
-                child: TextButton(
-                  onPressed: _concluirEdicao,
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppTheme.primary,
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    minimumSize: const Size(44, 44),
-                    tapTargetSize: MaterialTapTargetSize.padded,
-                  ),
-                  child: Text(
-                    'Concluir',
-                    style: TextStyle(
+            leadingWidth: _isEditingTitle ? 0 : 100,
+            leading: _isEditingTitle
+                ? const SizedBox.shrink()
+                : TextButton.icon(
+                    onPressed: _onBackPressed,
+                    icon: Icon(
+                      Icons.chevron_left,
                       color: AppTheme.primary,
-                      fontWeight: FontWeight.bold,
+                      size: 28,
+                    ),
+                    label: Text(
+                      'Voltar',
+                      style: TextStyle(
+                        color: AppTheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppTheme.primary,
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      minimumSize: const Size(44, 44),
+                      tapTargetSize: MaterialTapTargetSize.padded,
+                    ),
+                  ),
+            actions: [
+              if (!_isEditingTitle)
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: TextButton(
+                    onPressed: _concluirEdicao,
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppTheme.primary,
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      minimumSize: const Size(44, 44),
+                      tapTargetSize: MaterialTapTargetSize.padded,
+                    ),
+                    child: Text(
+                      'Concluir',
+                      style: TextStyle(
+                        color: AppTheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
             flexibleSpace: LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
@@ -465,7 +483,11 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                               ],
                             ),
                             const SizedBox(height: 6),
-                            _buildTechnicalMuscleLabels(),
+                            AnimatedOpacity(
+                              duration: const Duration(milliseconds: 200),
+                              opacity: _isEditingTitle ? 0.3 : 1.0,
+                              child: _buildTechnicalMuscleLabels(),
+                            ),
                           ],
                         ),
                       ),
@@ -605,7 +627,9 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
               ),
             ),
           SliverToBoxAdapter(
-            child: SizedBox(height: _fabProtectionSpace(context)),
+            child: SizedBox(
+              height: shouldShowFab ? _fabProtectionSpace(context) : 0,
+            ),
           ),
         ],
       ),
