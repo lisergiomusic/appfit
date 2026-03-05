@@ -396,7 +396,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     alignment: Alignment.bottomLeft,
                     child: Padding(
                       padding: const EdgeInsets.only(
-                        left: 16,
+                        left: 24,
                         bottom: 8,
                         right: 16,
                       ),
@@ -470,100 +470,154 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           SliverOpacity(
             opacity: _isEditingTitle ? 0.3 : 1.0,
             sliver: SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(4, 0, 0, 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${_exerciciosLocais.length} exercícios prescritos',
-                            style: TextStyle(
-                              color: AppTheme.textSecondary.withAlpha(180),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 0, 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${_exerciciosLocais.length} exercícios prescritos',
+                          style: TextStyle(
+                            color: AppTheme.textSecondary.withAlpha(180),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        if (_totalSeries > 0)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primary.withAlpha(15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  'TOTAL DE SÉRIES: ',
+                                  style: TextStyle(
+                                    color: AppTheme.primary.withAlpha(200),
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                Text(
+                                  '$_totalSeries SÉRIES',
+                                  style: const TextStyle(
+                                    color: AppTheme.primary,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          if (_totalSeries > 0)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppTheme.primary.withAlpha(15),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    'TOTAL DE SÉRIES: ',
-                                    style: TextStyle(
-                                      color: AppTheme.primary.withAlpha(200),
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w600,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                  Text(
-                                    '$_totalSeries SÉRIES',
-                                    style: const TextStyle(
-                                      color: AppTheme.primary,
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ],
+                      ],
+                    ),
+                  ),
+                  if (_gruposMuscularesUnicos.isNotEmpty)
+                    SizedBox(
+                      height: 30,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: _gruposMuscularesUnicos.length,
+                        separatorBuilder: (_, _) => const SizedBox(width: 8),
+                        itemBuilder: (context, i) {
+                          final grupo = _gruposMuscularesUnicos[i];
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withAlpha(20),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: Colors.white.withAlpha(25),
+                                width: 0.5,
                               ),
                             ),
-                        ],
+                            child: Center(
+                              child: Text(
+                                grupo.toUpperCase(),
+                                style: TextStyle(
+                                  color: Colors.white.withAlpha(220),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
-                    if (_gruposMuscularesUnicos.isNotEmpty)
-                      SizedBox(
-                        height: 30,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: _gruposMuscularesUnicos.length,
-                          separatorBuilder: (_, _) => const SizedBox(width: 8),
-                          itemBuilder: (context, i) {
-                            final grupo = _gruposMuscularesUnicos[i];
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
+                  if (_exerciciosLocais.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: 100,
+                      ), // Empurra suavemente para o centro da tela
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 88,
+                              height: 88,
                               decoration: BoxDecoration(
-                                color: Colors.white.withAlpha(20),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: Colors.white.withAlpha(25),
-                                  width: 0.5,
+                                color: Colors.white.withValues(
+                                  alpha: 0.05,
+                                ), // Fundo circular escuro/translúcido
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons
+                                      .assignment_outlined, // Ícone de prancheta
+                                  size: 40,
+                                  color: AppTheme.primary, // Laranja vibrante
                                 ),
                               ),
-                              child: Center(
-                                child: Text(
-                                  grupo.toUpperCase(),
-                                  style: TextStyle(
-                                    color: Colors.white.withAlpha(220),
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.8,
-                                  ),
+                            ),
+                            const SizedBox(height: 24),
+                            const Text(
+                              'Nenhum exercício adicionado',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 40,
+                              ),
+                              child: Text(
+                                'Comece a montar o treino do seu aluno\nadicionando o primeiro exercício abaixo.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: AppTheme.textSecondary,
+                                  fontSize: 14,
+                                  height:
+                                      1.4, // Line-height elegante para leitura
                                 ),
                               ),
-                            );
-                          },
+                            ),
+                          ],
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                ],
               ),
             ),
           ),
