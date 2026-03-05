@@ -645,30 +645,33 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  _buildSeriesSection(
-                    icon: Icons.local_fire_department,
-                    iconColor: const Color(0xFFFFB300),
-                    title: 'AQUECIMENTO',
-                    entries: warmupEntries,
-                  ),
-                  if (feederEntries.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    _buildSeriesSection(
-                      icon: Icons.flash_on,
-                      iconColor: Colors.blueAccent,
-                      title: 'FEEDER',
-                      entries: feederEntries,
+                  if (warmupEntries.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _buildSeriesSection(
+                        icon: Icons.local_fire_department,
+                        iconColor: const Color(0xFFFFB300),
+                        title: 'AQUECIMENTO',
+                        entries: warmupEntries,
+                      ),
                     ),
-                  ],
-                  if (workEntries.isNotEmpty) ...[
-                    const SizedBox(height: 16),
+                  if (feederEntries.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _buildSeriesSection(
+                        icon: Icons.flash_on,
+                        iconColor: Colors.blueAccent,
+                        title: 'FEEDER',
+                        entries: feederEntries,
+                      ),
+                    ),
+                  if (workEntries.isNotEmpty)
                     _buildSeriesSection(
                       icon: Icons.label,
                       iconColor: Colors.white,
                       title: 'SÉRIES DE TRABALHO',
                       entries: workEntries,
                     ),
-                  ],
                   const SizedBox(height: 20),
                 ],
               ),
