@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/orange_glass_action_button.dart';
@@ -42,6 +43,26 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
       _controllers[fieldKey] = TextEditingController(text: initialValue);
     }
     return _controllers[fieldKey]!;
+  }
+
+  String _extractDigits(String value) {
+    return value.replaceAll(RegExp(r'[^0-9]'), '');
+  }
+
+  String _formatCargaInputValue(String value) {
+    final digits = _extractDigits(value);
+    if (digits.isEmpty) {
+      return '';
+    }
+    return '${digits}kg';
+  }
+
+  String _formatDescansoInputValue(String value) {
+    final digits = _extractDigits(value);
+    if (digits.isEmpty) {
+      return '';
+    }
+    return '${digits}s';
   }
 
   void _removerSerie(int realIndex) {
@@ -243,42 +264,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     );
   }
 
-  Widget _buildMinimalInput({
-    required String fieldKey,
-    required String initialValue,
-    required TextAlign textAlign,
-    required ValueChanged<String> onChanged,
-  }) {
-    final controller = _getController(fieldKey, initialValue);
-    return TextFormField(
-      key: ValueKey(fieldKey),
-      controller: controller,
-      onChanged: onChanged,
-      onTap: () {
-        controller.selection = TextSelection(
-          baseOffset: 0,
-          extentOffset: controller.text.length,
-        );
-      },
-      textAlign: textAlign,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 17,
-        fontWeight: FontWeight.w400,
-      ),
-      cursorColor: AppTheme.primary,
-      decoration: const InputDecoration(
-        isDense: true,
-        contentPadding: EdgeInsets.zero,
-        border: InputBorder.none,
-        focusedBorder: InputBorder.none,
-        enabledBorder: InputBorder.none,
-        fillColor: Colors.transparent, // Ensure no background color
-        filled: false, // Disable filling
-      ),
-    );
-  }
-
   Widget _buildSerieRow(
     MapEntry<int, SerieItem> entry,
     int visualNumber,
@@ -286,6 +271,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   ) {
     final realIndex = entry.key;
     final serie = entry.value;
+    final cargaController = _getController(
+      'carga_${realIndex}_${serie.carga}',
+      _formatCargaInputValue(serie.carga),
+    );
+    final descansoController = _getController(
+      'descanso_${realIndex}_${serie.descanso}',
+      _formatDescansoInputValue(serie.descanso),
+    );
 
     return GestureDetector(
       onLongPress: () => _removerSerie(realIndex),
@@ -324,14 +317,31 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                           children: [
                             Text('REPS', style: _microLabelStyle()),
                             const SizedBox(height: AppTheme.space6),
-                            _buildMinimalInput(
-                              fieldKey: 'alvo_${realIndex}_${serie.alvo}',
-                              initialValue: serie.alvo,
-                              textAlign: TextAlign.center,
+                            TextFormField(
+                              controller: _getController(
+                                'alvo_${realIndex}_${serie.alvo}',
+                                serie.alvo,
+                              ),
                               onChanged: (val) {
                                 serie.alvo = val;
                                 widget.onChanged();
                               },
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              cursorColor: AppTheme.primary,
+                              decoration: const InputDecoration(
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
+                                border: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                fillColor: Colors.transparent,
+                                filled: false,
+                              ),
                             ),
                           ],
                         ),
@@ -344,14 +354,35 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                           children: [
                             Text('CARGA', style: _microLabelStyle()),
                             const SizedBox(height: AppTheme.space6),
-                            _buildMinimalInput(
-                              fieldKey: 'carga_${realIndex}_${serie.carga}',
-                              initialValue: serie.carga,
-                              textAlign: TextAlign.center,
-                              onChanged: (val) {
-                                serie.carga = val;
-                                widget.onChanged();
-                              },
+                            SizedBox(
+                              width: 74,
+                              child: TextFormField(
+                                keyboardType: TextInputType.number,
+                                inputFormatters: const [
+                                  _CargaKgInputFormatter(),
+                                ],
+                                controller: cargaController,
+                                onChanged: (val) {
+                                  serie.carga = val;
+                                  widget.onChanged();
+                                },
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                cursorColor: AppTheme.primary,
+                                decoration: const InputDecoration(
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                  border: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  fillColor: Colors.transparent,
+                                  filled: false,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -374,15 +405,32 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                 ),
                                 SizedBox(
                                   width: 44,
-                                  child: _buildMinimalInput(
-                                    fieldKey:
-                                        'descanso_${realIndex}_${serie.descanso}',
-                                    initialValue: serie.descanso,
-                                    textAlign: TextAlign.center,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: const [
+                                      _DescansoSecondsInputFormatter(),
+                                    ],
+                                    controller: descansoController,
                                     onChanged: (val) {
                                       serie.descanso = val;
                                       widget.onChanged();
                                     },
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                    cursorColor: AppTheme.primary,
+                                    decoration: const InputDecoration(
+                                      isDense: true,
+                                      contentPadding: EdgeInsets.zero,
+                                      border: InputBorder.none,
+                                      focusedBorder: InputBorder.none,
+                                      enabledBorder: InputBorder.none,
+                                      fillColor: Colors.transparent,
+                                      filled: false,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -726,6 +774,56 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
           bottomMargin: 24,
         ),
       ),
+    );
+  }
+}
+
+class _CargaKgInputFormatter extends TextInputFormatter {
+  const _CargaKgInputFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) {
+      return const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
+    }
+
+    final formatted = '${digits}kg';
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: digits.length),
+      composing: TextRange.empty,
+    );
+  }
+}
+
+class _DescansoSecondsInputFormatter extends TextInputFormatter {
+  const _DescansoSecondsInputFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) {
+      return const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
+    }
+
+    final formatted = '${digits}s';
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: digits.length),
+      composing: TextRange.empty,
     );
   }
 }
