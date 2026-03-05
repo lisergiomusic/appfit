@@ -370,17 +370,22 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 SizedBox(
-                  width: 28,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 2),
-                    child: Text(
-                      '$visualNumber',
-                      style: TextStyle(
-                        color: _getSerieNumberColor(serie.tipo),
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
+                  width: 44,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text('SÉRIE', style: _microLabelStyle()),
+                      const SizedBox(height: AppTheme.space6),
+                      Text(
+                        '$visualNumber',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: _getSerieNumberColor(serie.tipo),
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: AppTheme.space8),
