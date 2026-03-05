@@ -267,34 +267,59 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  width: 28,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 2),
-                    child: Text(
-                      '$visualNumber',
-                      style: TextStyle(
-                        color: _getSerieNumberColor(serie.tipo),
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Center(
+                        child: Text('REPS', style: _microLabelStyle()),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 3,
+                      child: Center(
+                        child: Text('CARGA', style: _microLabelStyle()),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 3,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Text('DESCANSO', style: _microLabelStyle()),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text('REPS', style: _microLabelStyle()),
-                            _buildMinimalInput(
+                const SizedBox(height: 10),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    SizedBox(
+                      width: 28,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 2),
+                        child: Text(
+                          '$visualNumber',
+                          style: TextStyle(
+                            color: _getSerieNumberColor(serie.tipo),
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: _buildMinimalInput(
                               fieldKey: 'alvo_${realIndex}_${serie.alvo}',
                               initialValue: serie.alvo,
                               textAlign: TextAlign.center,
@@ -303,17 +328,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                 widget.onChanged();
                               },
                             ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 3,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text('CARGA', style: _microLabelStyle()),
-                            _buildMinimalInput(
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 3,
+                            child: _buildMinimalInput(
                               fieldKey: 'carga_${realIndex}_${serie.carga}',
                               initialValue: serie.carga,
                               textAlign: TextAlign.center,
@@ -322,17 +341,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                 widget.onChanged();
                               },
                             ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 3,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text('DESCANSO', style: _microLabelStyle()),
-                            Row(
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 3,
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 const Icon(
@@ -355,11 +368,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ],
             ),
