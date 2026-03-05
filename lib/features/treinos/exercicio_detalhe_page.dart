@@ -26,6 +26,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   final Map<String, String> _lastValues = {};
   final Map<String, bool> _hasUserEdited = {};
   final Set<String> _suppressNextOnChanged = {};
+  final Set<String> _hapticTriggeredDismissKeys = {};
 
   @override
   void initState() {
@@ -35,10 +36,22 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
 
   @override
   void dispose() {
+    _disposeControllers();
+    super.dispose();
+  }
+
+  void _disposeControllers() {
     for (var controller in _controllers.values) {
       controller.dispose();
     }
-    super.dispose();
+    _controllers.clear();
+  }
+
+  void _clearEditingState() {
+    _disposeControllers();
+    _lastValues.clear();
+    _hasUserEdited.clear();
+    _suppressNextOnChanged.clear();
   }
 
   TextEditingController _getController(String fieldKey, String initialValue) {
@@ -140,8 +153,17 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   void _removerSerie(int realIndex) {
     setState(() {
       ex.series.removeAt(realIndex);
+      _clearEditingState();
       widget.onChanged();
     });
+  }
+
+  void _removerSeriePorReferencia(SerieItem serie) {
+    final index = ex.series.indexOf(serie);
+    if (index == -1) {
+      return;
+    }
+    _removerSerie(index);
   }
 
   Future<void> _adicionarSerie() async {
@@ -356,234 +378,121 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
       descansoFieldKey,
       _formatDescansoInputValue(serie.descanso),
     );
+    final dismissKey = '${serie.hashCode}_$realIndex';
+    final borderRadius = BorderRadius.circular(14);
 
-    return GestureDetector(
-      onLongPress: () => _removerSerie(realIndex),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.space16,
-              vertical: AppTheme.space8,
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.space8,
+        vertical: AppTheme.space4,
+      ),
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        child: Dismissible(
+          key: ValueKey(dismissKey),
+          direction: DismissDirection.endToStart,
+          movementDuration: const Duration(milliseconds: 300),
+          resizeDuration: const Duration(milliseconds: 300),
+          dismissThresholds: const {DismissDirection.endToStart: 0.45},
+          onUpdate: (details) {
+            final reachedThreshold = details.progress >= 0.45;
+            if (reachedThreshold &&
+                !_hapticTriggeredDismissKeys.contains(dismissKey)) {
+              _hapticTriggeredDismissKeys.add(dismissKey);
+              HapticFeedback.mediumImpact();
+            } else if (!reachedThreshold) {
+              _hapticTriggeredDismissKeys.remove(dismissKey);
+            }
+          },
+          onDismissed: (_) {
+            _hapticTriggeredDismissKeys.remove(dismissKey);
+            _removerSeriePorReferencia(serie);
+          },
+          background: Container(color: Colors.black),
+          secondaryBackground: Container(
+            color: Colors.redAccent,
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: AppTheme.space20),
+            child: const Icon(
+              Icons.delete_outline,
+              color: Colors.white,
+              size: 24,
             ),
-            child: Row(
+          ),
+          child: Container(
+            color: Colors.transparent,
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                SizedBox(
-                  width: 44,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text('SÉRIE', style: _microLabelStyle()),
-                      const SizedBox(height: AppTheme.space6),
-                      Text(
-                        '$visualNumber',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: _getSerieNumberColor(serie.tipo),
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.space16,
+                    vertical: AppTheme.space8,
                   ),
-                ),
-                const SizedBox(width: AppTheme.space8),
-                Expanded(
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Expanded(
-                        flex: 3,
+                      SizedBox(
+                        width: 44,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text('REPS', style: _microLabelStyle()),
+                            Text('SÉRIE', style: _microLabelStyle()),
                             const SizedBox(height: AppTheme.space6),
-                            TextFormField(
-                              controller: repsController,
-                              onTap: () {
-                                _startEditingField(
-                                  repsFieldKey,
-                                  repsController,
-                                );
-                              },
-                              onChanged: (val) {
-                                _handleFieldChanged(
-                                  fieldKey: repsFieldKey,
-                                  controller: repsController,
-                                  value: val,
-                                  emptyFallback: '0',
-                                  onSave: (saved) => serie.alvo = saved,
-                                );
-                              },
-                              onFieldSubmitted: (_) {
-                                _restorePreviousIfNoChange(
-                                  fieldKey: repsFieldKey,
-                                  controller: repsController,
-                                  onRestore: (restored) =>
-                                      serie.alvo = restored,
-                                );
-                              },
-                              onTapOutside: (_) {
-                                _restorePreviousIfNoChange(
-                                  fieldKey: repsFieldKey,
-                                  controller: repsController,
-                                  onRestore: (restored) =>
-                                      serie.alvo = restored,
-                                );
-                              },
+                            Text(
+                              '$visualNumber',
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: _getSerieNumberColor(serie.tipo),
                                 fontSize: 17,
-                                fontWeight: FontWeight.w400,
-                              ),
-                              cursorColor: AppTheme.primary,
-                              decoration: const InputDecoration(
-                                isDense: true,
-                                contentPadding: EdgeInsets.zero,
-                                border: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                fillColor: Colors.transparent,
-                                filled: false,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(width: AppTheme.space12),
+                      const SizedBox(width: AppTheme.space8),
                       Expanded(
-                        flex: 3,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                        child: Row(
                           children: [
-                            Text('CARGA', style: _microLabelStyle()),
-                            const SizedBox(height: AppTheme.space6),
-                            SizedBox(
-                              width: 74,
-                              child: TextFormField(
-                                keyboardType: TextInputType.number,
-                                inputFormatters: const [
-                                  _CargaKgInputFormatter(),
-                                ],
-                                controller: cargaController,
-                                onTap: () {
-                                  _startEditingField(
-                                    cargaFieldKey,
-                                    cargaController,
-                                  );
-                                },
-                                onChanged: (val) {
-                                  _handleFieldChanged(
-                                    fieldKey: cargaFieldKey,
-                                    controller: cargaController,
-                                    value: val,
-                                    emptyFallback: '-',
-                                    onSave: (saved) => serie.carga = saved,
-                                  );
-                                },
-                                onFieldSubmitted: (_) {
-                                  _restorePreviousIfNoChange(
-                                    fieldKey: cargaFieldKey,
-                                    controller: cargaController,
-                                    onRestore: (restored) =>
-                                        serie.carga = restored,
-                                    onCommitEdited: (committed) {
-                                      serie.carga = committed.isEmpty
-                                          ? '-'
-                                          : committed;
-                                    },
-                                  );
-                                },
-                                onTapOutside: (_) {
-                                  _restorePreviousIfNoChange(
-                                    fieldKey: cargaFieldKey,
-                                    controller: cargaController,
-                                    onRestore: (restored) =>
-                                        serie.carga = restored,
-                                    onCommitEdited: (committed) {
-                                      serie.carga = committed.isEmpty
-                                          ? '-'
-                                          : committed;
-                                    },
-                                  );
-                                },
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                cursorColor: AppTheme.primary,
-                                decoration: const InputDecoration(
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.zero,
-                                  border: InputBorder.none,
-                                  focusedBorder: InputBorder.none,
-                                  enabledBorder: InputBorder.none,
-                                  fillColor: Colors.transparent,
-                                  filled: false,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: AppTheme.space12),
-                      Expanded(
-                        flex: 3,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text('DESCANSO', style: _microLabelStyle()),
-                            const SizedBox(height: AppTheme.space6),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Icon(
-                                  Icons.timer,
-                                  color: Colors.white.withAlpha(170),
-                                  size: 14,
-                                ),
-                                SizedBox(
-                                  width: 44,
-                                  child: TextFormField(
-                                    keyboardType: TextInputType.number,
-                                    inputFormatters: const [
-                                      _DescansoSecondsInputFormatter(),
-                                    ],
-                                    controller: descansoController,
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text('REPS', style: _microLabelStyle()),
+                                  const SizedBox(height: AppTheme.space6),
+                                  TextFormField(
+                                    controller: repsController,
                                     onTap: () {
                                       _startEditingField(
-                                        descansoFieldKey,
-                                        descansoController,
+                                        repsFieldKey,
+                                        repsController,
                                       );
                                     },
                                     onChanged: (val) {
                                       _handleFieldChanged(
-                                        fieldKey: descansoFieldKey,
-                                        controller: descansoController,
+                                        fieldKey: repsFieldKey,
+                                        controller: repsController,
                                         value: val,
                                         emptyFallback: '0',
-                                        onSave: (saved) =>
-                                            serie.descanso = saved,
+                                        onSave: (saved) => serie.alvo = saved,
                                       );
                                     },
                                     onFieldSubmitted: (_) {
                                       _restorePreviousIfNoChange(
-                                        fieldKey: descansoFieldKey,
-                                        controller: descansoController,
+                                        fieldKey: repsFieldKey,
+                                        controller: repsController,
                                         onRestore: (restored) =>
-                                            serie.descanso = restored,
+                                            serie.alvo = restored,
                                       );
                                     },
                                     onTapOutside: (_) {
                                       _restorePreviousIfNoChange(
-                                        fieldKey: descansoFieldKey,
-                                        controller: descansoController,
+                                        fieldKey: repsFieldKey,
+                                        controller: repsController,
                                         onRestore: (restored) =>
-                                            serie.descanso = restored,
+                                            serie.alvo = restored,
                                       );
                                     },
                                     textAlign: TextAlign.center,
@@ -603,8 +512,166 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                       filled: false,
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: AppTheme.space12),
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text('CARGA', style: _microLabelStyle()),
+                                  const SizedBox(height: AppTheme.space6),
+                                  SizedBox(
+                                    width: 74,
+                                    child: TextFormField(
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: const [
+                                        _CargaKgInputFormatter(),
+                                      ],
+                                      controller: cargaController,
+                                      onTap: () {
+                                        _startEditingField(
+                                          cargaFieldKey,
+                                          cargaController,
+                                        );
+                                      },
+                                      onChanged: (val) {
+                                        _handleFieldChanged(
+                                          fieldKey: cargaFieldKey,
+                                          controller: cargaController,
+                                          value: val,
+                                          emptyFallback: '-',
+                                          onSave: (saved) =>
+                                              serie.carga = saved,
+                                        );
+                                      },
+                                      onFieldSubmitted: (_) {
+                                        _restorePreviousIfNoChange(
+                                          fieldKey: cargaFieldKey,
+                                          controller: cargaController,
+                                          onRestore: (restored) =>
+                                              serie.carga = restored,
+                                          onCommitEdited: (committed) {
+                                            serie.carga = committed.isEmpty
+                                                ? '-'
+                                                : committed;
+                                          },
+                                        );
+                                      },
+                                      onTapOutside: (_) {
+                                        _restorePreviousIfNoChange(
+                                          fieldKey: cargaFieldKey,
+                                          controller: cargaController,
+                                          onRestore: (restored) =>
+                                              serie.carga = restored,
+                                          onCommitEdited: (committed) {
+                                            serie.carga = committed.isEmpty
+                                                ? '-'
+                                                : committed;
+                                          },
+                                        );
+                                      },
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                      cursorColor: AppTheme.primary,
+                                      decoration: const InputDecoration(
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.zero,
+                                        border: InputBorder.none,
+                                        focusedBorder: InputBorder.none,
+                                        enabledBorder: InputBorder.none,
+                                        fillColor: Colors.transparent,
+                                        filled: false,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: AppTheme.space12),
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text('DESCANSO', style: _microLabelStyle()),
+                                  const SizedBox(height: AppTheme.space6),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Icon(
+                                        Icons.timer,
+                                        color: Colors.white.withAlpha(170),
+                                        size: 14,
+                                      ),
+                                      SizedBox(
+                                        width: 44,
+                                        child: TextFormField(
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: const [
+                                            _DescansoSecondsInputFormatter(),
+                                          ],
+                                          controller: descansoController,
+                                          onTap: () {
+                                            _startEditingField(
+                                              descansoFieldKey,
+                                              descansoController,
+                                            );
+                                          },
+                                          onChanged: (val) {
+                                            _handleFieldChanged(
+                                              fieldKey: descansoFieldKey,
+                                              controller: descansoController,
+                                              value: val,
+                                              emptyFallback: '0',
+                                              onSave: (saved) =>
+                                                  serie.descanso = saved,
+                                            );
+                                          },
+                                          onFieldSubmitted: (_) {
+                                            _restorePreviousIfNoChange(
+                                              fieldKey: descansoFieldKey,
+                                              controller: descansoController,
+                                              onRestore: (restored) =>
+                                                  serie.descanso = restored,
+                                            );
+                                          },
+                                          onTapOutside: (_) {
+                                            _restorePreviousIfNoChange(
+                                              fieldKey: descansoFieldKey,
+                                              controller: descansoController,
+                                              onRestore: (restored) =>
+                                                  serie.descanso = restored,
+                                            );
+                                          },
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                          cursorColor: AppTheme.primary,
+                                          decoration: const InputDecoration(
+                                            isDense: true,
+                                            contentPadding: EdgeInsets.zero,
+                                            border: InputBorder.none,
+                                            focusedBorder: InputBorder.none,
+                                            enabledBorder: InputBorder.none,
+                                            fillColor: Colors.transparent,
+                                            filled: false,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -612,16 +679,16 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     ],
                   ),
                 ),
+                if (showDivider)
+                  Container(
+                    margin: const EdgeInsets.only(left: 44, right: 24),
+                    height: 0.5,
+                    color: Colors.white.withAlpha(25),
+                  ),
               ],
             ),
           ),
-          if (showDivider)
-            Container(
-              margin: const EdgeInsets.only(left: 44, right: 24),
-              height: 0.5,
-              color: Colors.white.withAlpha(25),
-            ),
-        ],
+        ),
       ),
     );
   }
