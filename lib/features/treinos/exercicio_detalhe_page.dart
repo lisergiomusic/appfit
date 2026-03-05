@@ -21,11 +21,27 @@ class ExercicioDetalhePage extends StatefulWidget {
 
 class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   late ExercicioItem ex;
+  final Map<String, TextEditingController> _controllers = {};
 
   @override
   void initState() {
     super.initState();
     ex = widget.exercicio;
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  TextEditingController _getController(String fieldKey, String initialValue) {
+    if (!_controllers.containsKey(fieldKey)) {
+      _controllers[fieldKey] = TextEditingController(text: initialValue);
+    }
+    return _controllers[fieldKey]!;
   }
 
   void _removerSerie(int realIndex) {
@@ -233,10 +249,17 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     required TextAlign textAlign,
     required ValueChanged<String> onChanged,
   }) {
+    final controller = _getController(fieldKey, initialValue);
     return TextFormField(
       key: ValueKey(fieldKey),
-      initialValue: initialValue,
+      controller: controller,
       onChanged: onChanged,
+      onTap: () {
+        controller.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: controller.text.length,
+        );
+      },
       textAlign: textAlign,
       style: const TextStyle(
         color: Colors.white,
