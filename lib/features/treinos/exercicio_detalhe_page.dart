@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
@@ -205,11 +203,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   }
 
   TextStyle _microLabelStyle() {
-    return TextStyle(
-      color: AppTheme.textSecondary.withAlpha(190),
-      fontSize: 11,
+    return const TextStyle(
+      color: Color.fromARGB(150, 255, 255, 255),
+      fontSize: 10,
       fontWeight: FontWeight.w600,
-      letterSpacing: 0.8,
+      letterSpacing: 1.25,
     );
   }
 
@@ -242,119 +240,125 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     );
   }
 
-  Widget _buildSerieRow(MapEntry<int, SerieItem> entry, int visualNumber) {
+  Widget _buildSerieRow(
+    MapEntry<int, SerieItem> entry,
+    int visualNumber,
+    bool showDivider,
+  ) {
     final realIndex = entry.key;
     final serie = entry.value;
 
     return GestureDetector(
       onLongPress: () => _removerSerie(realIndex),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: Colors.white.withValues(alpha: 0.10),
-              width: 0.5,
-            ),
-          ),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            SizedBox(
-              width: 28,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: Text(
-                  '$visualNumber',
-                  style: const TextStyle(
-                    color: AppTheme.primary,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                SizedBox(
+                  width: 28,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Text(
+                      '$visualNumber',
+                      style: const TextStyle(
+                        color: AppTheme.primary,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text('REPS', style: _microLabelStyle()),
-                        _buildMinimalInput(
-                          fieldKey: 'alvo_${realIndex}_${serie.alvo}',
-                          initialValue: serie.alvo,
-                          textAlign: TextAlign.center,
-                          onChanged: (val) {
-                            serie.alvo = val;
-                            widget.onChanged();
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text('CARGA', style: _microLabelStyle()),
-                        _buildMinimalInput(
-                          fieldKey: 'carga_${realIndex}_${serie.carga}',
-                          initialValue: serie.carga,
-                          textAlign: TextAlign.center,
-                          onChanged: (val) {
-                            serie.carga = val;
-                            widget.onChanged();
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text('DESCANSO', style: _microLabelStyle()),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            const Icon(
-                              Icons.timer,
-                              color: AppTheme.primary,
-                              size: 15,
-                            ),
-                            const SizedBox(width: 6),
-                            SizedBox(
-                              width: 44,
-                              child: _buildMinimalInput(
-                                fieldKey:
-                                    'descanso_${realIndex}_${serie.descanso}',
-                                initialValue: serie.descanso,
-                                textAlign: TextAlign.right,
-                                onChanged: (val) {
-                                  serie.descanso = val;
-                                  widget.onChanged();
-                                },
-                              ),
+                            Text('REPS', style: _microLabelStyle()),
+                            _buildMinimalInput(
+                              fieldKey: 'alvo_${realIndex}_${serie.alvo}',
+                              initialValue: serie.alvo,
+                              textAlign: TextAlign.center,
+                              onChanged: (val) {
+                                serie.alvo = val;
+                                widget.onChanged();
+                              },
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 3,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text('CARGA', style: _microLabelStyle()),
+                            _buildMinimalInput(
+                              fieldKey: 'carga_${realIndex}_${serie.carga}',
+                              initialValue: serie.carga,
+                              textAlign: TextAlign.center,
+                              onChanged: (val) {
+                                serie.carga = val;
+                                widget.onChanged();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 3,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text('DESCANSO', style: _microLabelStyle()),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                const Icon(
+                                  Icons.timer,
+                                  color: AppTheme.primary,
+                                  size: 15,
+                                ),
+                                const SizedBox(width: 6),
+                                SizedBox(
+                                  width: 44,
+                                  child: _buildMinimalInput(
+                                    fieldKey:
+                                        'descanso_${realIndex}_${serie.descanso}',
+                                    initialValue: serie.descanso,
+                                    textAlign: TextAlign.right,
+                                    onChanged: (val) {
+                                      serie.descanso = val;
+                                      widget.onChanged();
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          if (showDivider)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              height: 0.5,
+              color: Colors.white.withAlpha(20),
+            ),
+        ],
       ),
     );
   }
@@ -369,36 +373,33 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
       return const SizedBox.shrink();
     }
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Icon(icon, color: iconColor, size: 17),
-                const SizedBox(width: 10),
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: AppTheme.textSecondary.withAlpha(190),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1.2,
-                  ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Icon(icon, color: iconColor, size: 17),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.white.withAlpha(150),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.25,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-
-          ...entries.asMap().entries.map(
-            (mapped) => _buildSerieRow(mapped.value, mapped.key + 1),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 12),
+        ...entries.asMap().entries.map((mapped) {
+          final isLast = mapped.key == entries.length - 1;
+          return _buildSerieRow(mapped.value, mapped.key + 1, !isLast);
+        }),
+      ],
     );
   }
 
@@ -425,50 +426,59 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
         : ex.observacao;
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        toolbarHeight: 44,
         backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
         centerTitle: false,
-        leadingWidth: 100,
+        leadingWidth: 108,
         leading: TextButton.icon(
           onPressed: () => Navigator.pop(context),
           icon: const Icon(
             Icons.chevron_left,
             color: AppTheme.primary,
-            size: 20,
+            size: 18,
           ),
           label: const Text(
             'Voltar',
             style: TextStyle(
               color: AppTheme.primary,
               fontSize: 17,
-              fontWeight: FontWeight.w400,
+              fontWeight: FontWeight.w500,
             ),
           ),
           style: TextButton.styleFrom(
             foregroundColor: AppTheme.primary,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            minimumSize: const Size(44, 44),
+            padding: const EdgeInsets.only(left: 4, right: 8),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.primary,
+              minimumSize: const Size(44, 44),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+            ),
             child: const Text(
               'Concluir',
               style: TextStyle(
                 color: AppTheme.primary,
                 fontSize: 17,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
         ],
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 34),
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 48),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -478,20 +488,20 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                   fontSize: 34,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
-                  height: 1.12,
+                  height: 1.14,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 10),
               Text(
                 muscleGroupsText,
                 style: TextStyle(
-                  color: AppTheme.textSecondary.withAlpha(190),
-                  fontSize: 12,
+                  color: Colors.white.withAlpha(150),
+                  fontSize: 10,
                   fontWeight: FontWeight.w600,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.25,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 36),
               InkWell(
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -504,14 +514,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     ),
                   );
                 },
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(24),
                 child: AspectRatio(
                   aspectRatio: 16 / 9,
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.15),
+                        color: Colors.white.withAlpha(20),
                         width: 0.5,
                       ),
                       image: DecorationImage(
@@ -524,52 +534,23 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     ),
                     child: Stack(
                       children: [
-                        Positioned.fill(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(14),
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.black.withValues(alpha: 0.05),
-                                  Colors.black.withValues(alpha: 0.35),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
                         Center(
-                          child: ClipOval(
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                              child: Container(
-                                width: 56,
-                                height: 56,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.30),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.20),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: const Icon(
-                                  Icons.play_arrow,
-                                  color: Colors.white,
-                                  size: 32,
-                                ),
+                          child: Container(
+                            width: 54,
+                            height: 54,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withAlpha(80),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withAlpha(30),
+                                width: 0.5,
                               ),
                             ),
-                          ),
-                        ),
-                        Positioned(
-                          left: 12,
-                          bottom: 10,
-                          child: Icon(
-                            Icons.pause,
-                            color: Colors.white.withValues(alpha: 0.95),
-                            size: 24,
+                            child: const Icon(
+                              Icons.play_arrow,
+                              color: Colors.white,
+                              size: 30,
+                            ),
                           ),
                         ),
                       ],
@@ -577,51 +558,54 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 36),
               Text(
                 'INSTRUÇÕES',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
+                  color: Colors.white.withAlpha(150),
+                  fontSize: 10,
                   fontWeight: FontWeight.w600,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.25,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 14),
               Text(
                 instructionsText,
                 style: TextStyle(
-                  color: AppTheme.textSecondary.withAlpha(180),
+                  color: Colors.white,
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
+                  height: 1.45,
                 ),
               ),
               const SizedBox(height: 32),
               _buildSeriesSection(
                 icon: Icons.local_fire_department,
                 iconColor: const Color(0xFFFFB300),
-                title: 'WARM-UP',
+                title: 'AQUECIMENTO',
                 entries: warmupEntries,
               ),
+              const SizedBox(height: 12),
               _buildSeriesSection(
                 icon: Icons.label,
                 iconColor: Colors.white,
-                title: 'WORK SETS',
+                title: 'SÉRIES DE TRABALHO',
                 entries: workEntries,
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 20),
               TextButton.icon(
                 onPressed: _adicionarSerie,
                 style: TextButton.styleFrom(
                   foregroundColor: AppTheme.primary,
                   padding: EdgeInsets.zero,
+                  minimumSize: const Size(44, 44),
                 ),
                 icon: const Icon(Icons.add, size: 24),
                 label: const Text(
                   'ADICIONAR SÉRIE',
                   style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: 0.4,
                   ),
                 ),
