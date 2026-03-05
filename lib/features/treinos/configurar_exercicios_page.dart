@@ -101,7 +101,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       return const SizedBox.shrink();
     }
 
-    const technicalOrange = Color(0xFFFF6D00);
+    final technicalOrange = AppTheme.primary;
 
     return SizedBox(
       height: 26,
