@@ -429,10 +429,15 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
         .entries
         .where((e) => e.value.tipo == TipoSerie.aquecimento)
         .toList();
+    final feederEntries = ex.series
+        .asMap()
+        .entries
+        .where((e) => e.value.tipo == TipoSerie.feeder)
+        .toList();
     final workEntries = ex.series
         .asMap()
         .entries
-        .where((e) => e.value.tipo != TipoSerie.aquecimento)
+        .where((e) => e.value.tipo == TipoSerie.trabalho)
         .toList();
     final muscleGroupsText = ex.grupoMuscular.trim().isEmpty
         ? 'EXERCÍCIO'
@@ -646,13 +651,24 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     title: 'AQUECIMENTO',
                     entries: warmupEntries,
                   ),
-                  const SizedBox(height: 12),
-                  _buildSeriesSection(
-                    icon: Icons.label,
-                    iconColor: Colors.white,
-                    title: 'SÉRIES DE TRABALHO',
-                    entries: workEntries,
-                  ),
+                  if (feederEntries.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    _buildSeriesSection(
+                      icon: Icons.flash_on,
+                      iconColor: Colors.blueAccent,
+                      title: 'FEEDER',
+                      entries: feederEntries,
+                    ),
+                  ],
+                  if (workEntries.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    _buildSeriesSection(
+                      icon: Icons.label,
+                      iconColor: Colors.white,
+                      title: 'SÉRIES DE TRABALHO',
+                      entries: workEntries,
+                    ),
+                  ],
                   const SizedBox(height: 20),
                 ],
               ),
