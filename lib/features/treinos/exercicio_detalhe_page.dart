@@ -451,7 +451,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     vertical: AppTheme.space8,
                   ),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
                         width: 44,
