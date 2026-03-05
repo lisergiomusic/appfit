@@ -523,41 +523,48 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     ),
                   ),
                   if (_gruposMuscularesUnicos.isNotEmpty)
-                    SizedBox(
-                      height: 30,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: _gruposMuscularesUnicos.length,
-                        separatorBuilder: (_, _) => const SizedBox(width: 8),
-                        itemBuilder: (context, i) {
-                          final grupo = _gruposMuscularesUnicos[i];
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withAlpha(20),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: Colors.white.withAlpha(25),
-                                width: 0.5,
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 24,
+                        right: 0,
+                        bottom: 16,
+                      ),
+                      child: SizedBox(
+                        height: 30,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: _gruposMuscularesUnicos.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 8),
+                          itemBuilder: (context, i) {
+                            final grupo = _gruposMuscularesUnicos[i];
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
                               ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                grupo.toUpperCase(),
-                                style: TextStyle(
-                                  color: Colors.white.withAlpha(220),
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.8,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withAlpha(20),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.white.withAlpha(25),
+                                  width: 0.5,
                                 ),
                               ),
-                            ),
-                          );
-                        },
+                              child: Center(
+                                child: Text(
+                                  grupo.toUpperCase(),
+                                  style: TextStyle(
+                                    color: Colors.white.withAlpha(220),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   if (_exerciciosLocais.isEmpty)
