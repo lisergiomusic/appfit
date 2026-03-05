@@ -287,7 +287,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppTheme.space16,
-              vertical: AppTheme.space12,
+              vertical: AppTheme.space8,
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -466,7 +466,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppTheme.space24),
+      padding: const EdgeInsets.only(bottom: AppTheme.space16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -488,7 +488,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
               ],
             ),
           ),
-          const SizedBox(height: AppTheme.space10),
+          const SizedBox(height: AppTheme.space8),
           ...entries.asMap().entries.map((mapped) {
             final isLast = mapped.key == entries.length - 1;
             return _buildSerieRow(mapped.value, mapped.key + 1, !isLast);
