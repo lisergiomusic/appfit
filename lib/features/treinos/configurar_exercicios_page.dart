@@ -6,6 +6,7 @@ import '../../core/theme/app_theme.dart';
 import 'exercicios_library_page.dart';
 import 'exercicio_detalhe_page.dart';
 import 'models/exercicio_model.dart';
+import 'package:appfit/features/treinos/_note_section.dart';
 
 class ConfigurarExerciciosPage extends StatefulWidget {
   final String nomeTreino;
@@ -522,6 +523,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       ],
                     ),
                   ),
+
                   if (_gruposMuscularesUnicos.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(
@@ -567,6 +569,16 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                         ),
                       ),
                     ),
+
+                  // Botão de adicionar observação/notas (após os pills)
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      bottom: 32,
+                    ),
+                    child: NoteSection(),
+                  ),
                   if (_exerciciosLocais.isEmpty)
                     Padding(
                       padding: const EdgeInsets.only(

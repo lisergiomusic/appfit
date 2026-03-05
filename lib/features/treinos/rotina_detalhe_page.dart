@@ -445,16 +445,36 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             _buildModernInput(
               label: 'NOTAS GERAIS DA SESSÃO',
               icon: Icons.notes,
-              child: TextField(
-                controller: orientCtrl,
-                maxLines: 3,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceDark,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withAlpha(15),
+                    width: 0.5,
+                  ),
                 ),
-                decoration: _buildInputDecoration(
-                  hintText: 'Ex: Aquecer manguito rotador antes...',
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
+                child: TextField(
+                  controller: orientCtrl,
+                  maxLines: 3,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  decoration:
+                      _buildInputDecoration(
+                        hintText: 'Ex: Aquecer manguito rotador antes...',
+                      ).copyWith(
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        fillColor: Colors.transparent,
+                      ),
                 ),
               ),
             ),
