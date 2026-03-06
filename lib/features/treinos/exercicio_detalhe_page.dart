@@ -416,7 +416,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     final borderRadius = BorderRadius.circular(14);
 
     return Padding(
-      padding: EdgeInsets.only(bottom: showDivider ? AppTheme.space8 : 0),
+      padding: EdgeInsets.only(bottom: 0),
       child: ClipRRect(
         borderRadius: borderRadius,
         child: Dismissible(
@@ -450,245 +450,233 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
               size: 24,
             ),
           ),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.white.withAlpha(40),
-                  width: 1.0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppTheme.space4,
+                  horizontal: AppTheme.space12,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 48,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text('SÉRIE', style: _microLabelStyle()),
+                          const SizedBox(height: AppTheme.space12),
+                          Text(
+                            '$visualNumber',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: _getSerieNumberColor(serie.tipo),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: AppTheme.space8),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text('REPS', style: _microLabelStyle()),
+                                const SizedBox(height: AppTheme.space6),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: TextFormField(
+                                    controller: repsController,
+                                    onTap: () {
+                                      _startEditingField(
+                                        repsFieldKey,
+                                        repsController,
+                                      );
+                                    },
+                                    onChanged: (val) {
+                                      _handleFieldChanged(
+                                        fieldKey: repsFieldKey,
+                                        controller: repsController,
+                                        value: val,
+                                        emptyFallback: '0',
+                                        onSave: (saved) => serie.alvo = saved,
+                                      );
+                                    },
+                                    onFieldSubmitted: (_) {
+                                      _restorePreviousIfNoChange(
+                                        fieldKey: repsFieldKey,
+                                        controller: repsController,
+                                        onRestore: (restored) =>
+                                            serie.alvo = restored,
+                                      );
+                                    },
+                                    onTapOutside: (_) {
+                                      _restorePreviousIfNoChange(
+                                        fieldKey: repsFieldKey,
+                                        controller: repsController,
+                                        onRestore: (restored) =>
+                                            serie.alvo = restored,
+                                      );
+                                    },
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    cursorColor: AppTheme.primary,
+                                    decoration: _editableFieldDecoration(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: AppTheme.space8),
+                          Expanded(
+                            flex: 3,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text('CARGA', style: _microLabelStyle()),
+                                const SizedBox(height: AppTheme.space6),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: const [
+                                      _CargaKgInputFormatter(),
+                                    ],
+                                    controller: cargaController,
+                                    onTap: () {
+                                      _startEditingField(
+                                        cargaFieldKey,
+                                        cargaController,
+                                      );
+                                    },
+                                    onChanged: (val) {
+                                      _handleFieldChanged(
+                                        fieldKey: cargaFieldKey,
+                                        controller: cargaController,
+                                        value: val,
+                                        emptyFallback: '-',
+                                        onSave: (saved) => serie.carga = saved,
+                                      );
+                                    },
+                                    onFieldSubmitted: (_) {
+                                      _restorePreviousIfNoChange(
+                                        fieldKey: cargaFieldKey,
+                                        controller: cargaController,
+                                        onRestore: (restored) =>
+                                            serie.carga = restored,
+                                        onCommitEdited: (committed) {
+                                          serie.carga = committed.isEmpty
+                                              ? '-'
+                                              : committed;
+                                        },
+                                      );
+                                    },
+                                    onTapOutside: (_) {
+                                      _restorePreviousIfNoChange(
+                                        fieldKey: cargaFieldKey,
+                                        controller: cargaController,
+                                        onRestore: (restored) =>
+                                            serie.carga = restored,
+                                        onCommitEdited: (committed) {
+                                          serie.carga = committed.isEmpty
+                                              ? '-'
+                                              : committed;
+                                        },
+                                      );
+                                    },
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    cursorColor: AppTheme.primary,
+                                    decoration: _editableFieldDecoration(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: AppTheme.space8),
+                          Expanded(
+                            flex: 3,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text('DESCANSO', style: _microLabelStyle()),
+                                const SizedBox(height: AppTheme.space6),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: const [
+                                      _DescansoSecondsInputFormatter(),
+                                    ],
+                                    controller: descansoController,
+                                    onTap: () {
+                                      _startEditingField(
+                                        descansoFieldKey,
+                                        descansoController,
+                                      );
+                                    },
+                                    onChanged: (val) {
+                                      _handleFieldChanged(
+                                        fieldKey: descansoFieldKey,
+                                        controller: descansoController,
+                                        value: val,
+                                        emptyFallback: '0',
+                                        onSave: (saved) =>
+                                            serie.descanso = saved,
+                                      );
+                                    },
+                                    onFieldSubmitted: (_) {
+                                      _restorePreviousIfNoChange(
+                                        fieldKey: descansoFieldKey,
+                                        controller: descansoController,
+                                        onRestore: (restored) =>
+                                            serie.descanso = restored,
+                                      );
+                                    },
+                                    onTapOutside: (_) {
+                                      _restorePreviousIfNoChange(
+                                        fieldKey: descansoFieldKey,
+                                        controller: descansoController,
+                                        onRestore: (restored) =>
+                                            serie.descanso = restored,
+                                      );
+                                    },
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    cursorColor: AppTheme.primary,
+                                    decoration: _editableFieldDecoration(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppTheme.space12,
-                    horizontal: AppTheme.space12,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 48,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text('SÉRIE', style: _microLabelStyle()),
-                            const SizedBox(height: AppTheme.space12),
-                            Text(
-                              '$visualNumber',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: _getSerieNumberColor(serie.tipo),
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: AppTheme.space8),
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 3,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text('REPS', style: _microLabelStyle()),
-                                  const SizedBox(height: AppTheme.space6),
-                                  SizedBox(
-                                    width: double.infinity,
-
-                                    child: TextFormField(
-                                      controller: repsController,
-                                      onTap: () {
-                                        _startEditingField(
-                                          repsFieldKey,
-                                          repsController,
-                                        );
-                                      },
-                                      onChanged: (val) {
-                                        _handleFieldChanged(
-                                          fieldKey: repsFieldKey,
-                                          controller: repsController,
-                                          value: val,
-                                          emptyFallback: '0',
-                                          onSave: (saved) => serie.alvo = saved,
-                                        );
-                                      },
-                                      onFieldSubmitted: (_) {
-                                        _restorePreviousIfNoChange(
-                                          fieldKey: repsFieldKey,
-                                          controller: repsController,
-                                          onRestore: (restored) =>
-                                              serie.alvo = restored,
-                                        );
-                                      },
-                                      onTapOutside: (_) {
-                                        _restorePreviousIfNoChange(
-                                          fieldKey: repsFieldKey,
-                                          controller: repsController,
-                                          onRestore: (restored) =>
-                                              serie.alvo = restored,
-                                        );
-                                      },
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      cursorColor: AppTheme.primary,
-                                      decoration: _editableFieldDecoration(),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: AppTheme.space8),
-                            Expanded(
-                              flex: 3,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text('CARGA', style: _microLabelStyle()),
-                                  const SizedBox(height: AppTheme.space6),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: TextFormField(
-                                      keyboardType: TextInputType.number,
-                                      inputFormatters: const [
-                                        _CargaKgInputFormatter(),
-                                      ],
-                                      controller: cargaController,
-                                      onTap: () {
-                                        _startEditingField(
-                                          cargaFieldKey,
-                                          cargaController,
-                                        );
-                                      },
-                                      onChanged: (val) {
-                                        _handleFieldChanged(
-                                          fieldKey: cargaFieldKey,
-                                          controller: cargaController,
-                                          value: val,
-                                          emptyFallback: '-',
-                                          onSave: (saved) =>
-                                              serie.carga = saved,
-                                        );
-                                      },
-                                      onFieldSubmitted: (_) {
-                                        _restorePreviousIfNoChange(
-                                          fieldKey: cargaFieldKey,
-                                          controller: cargaController,
-                                          onRestore: (restored) =>
-                                              serie.carga = restored,
-                                          onCommitEdited: (committed) {
-                                            serie.carga = committed.isEmpty
-                                                ? '-'
-                                                : committed;
-                                          },
-                                        );
-                                      },
-                                      onTapOutside: (_) {
-                                        _restorePreviousIfNoChange(
-                                          fieldKey: cargaFieldKey,
-                                          controller: cargaController,
-                                          onRestore: (restored) =>
-                                              serie.carga = restored,
-                                          onCommitEdited: (committed) {
-                                            serie.carga = committed.isEmpty
-                                                ? '-'
-                                                : committed;
-                                          },
-                                        );
-                                      },
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      cursorColor: AppTheme.primary,
-                                      decoration: _editableFieldDecoration(),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: AppTheme.space8),
-                            Expanded(
-                              flex: 3,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text('DESCANSO', style: _microLabelStyle()),
-                                  const SizedBox(height: AppTheme.space6),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: TextFormField(
-                                      keyboardType: TextInputType.number,
-                                      inputFormatters: const [
-                                        _DescansoSecondsInputFormatter(),
-                                      ],
-                                      controller: descansoController,
-                                      onTap: () {
-                                        _startEditingField(
-                                          descansoFieldKey,
-                                          descansoController,
-                                        );
-                                      },
-                                      onChanged: (val) {
-                                        _handleFieldChanged(
-                                          fieldKey: descansoFieldKey,
-                                          controller: descansoController,
-                                          value: val,
-                                          emptyFallback: '0',
-                                          onSave: (saved) =>
-                                              serie.descanso = saved,
-                                        );
-                                      },
-                                      onFieldSubmitted: (_) {
-                                        _restorePreviousIfNoChange(
-                                          fieldKey: descansoFieldKey,
-                                          controller: descansoController,
-                                          onRestore: (restored) =>
-                                              serie.descanso = restored,
-                                        );
-                                      },
-                                      onTapOutside: (_) {
-                                        _restorePreviousIfNoChange(
-                                          fieldKey: descansoFieldKey,
-                                          controller: descansoController,
-                                          onRestore: (restored) =>
-                                              serie.descanso = restored,
-                                        );
-                                      },
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      cursorColor: AppTheme.primary,
-                                      decoration: _editableFieldDecoration(),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            ],
           ),
         ),
       ),
@@ -799,252 +787,261 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
         ? 'Foco na profundidade e controle. Mantenha o tronco ereto e os joelhos alinhados com os pés. Empurre com os calcanhares.'
         : ex.observacao;
 
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      body: CustomScrollView(
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
-        slivers: [
-          SliverAppBar(
-            automaticallyImplyLeading: false,
-            backgroundColor: Colors.black,
-            surfaceTintColor: Colors.transparent,
-            pinned: true,
-            expandedHeight: 138,
-            leadingWidth: 108,
-            leading: TextButton.icon(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(
-                Icons.chevron_left,
-                color: AppTheme.primary,
-                size: 18,
-              ),
-              label: const Text(
-                'Voltar',
-                style: TextStyle(
-                  color: AppTheme.primary,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              style: TextButton.styleFrom(
-                foregroundColor: AppTheme.primary,
-                minimumSize: const Size(44, 44),
-                padding: const EdgeInsets.only(left: 2, right: 8),
-              ),
-            ),
-            actions: [
-              TextButton(
+    return GestureDetector(
+      onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        if (!currentFocus.hasPrimaryFocus &&
+            currentFocus.focusedChild != null) {
+          currentFocus.unfocus();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppTheme.background,
+        body: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          slivers: [
+            SliverAppBar(
+              automaticallyImplyLeading: false,
+              backgroundColor: Colors.black,
+              surfaceTintColor: Colors.transparent,
+              pinned: true,
+              expandedHeight: 138,
+              leadingWidth: 108,
+              leading: TextButton.icon(
                 onPressed: () => Navigator.pop(context),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppTheme.primary,
-                  minimumSize: const Size(44, 44),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                icon: const Icon(
+                  Icons.chevron_left,
+                  color: AppTheme.primary,
+                  size: 18,
                 ),
-                child: const Text(
-                  'Concluir',
+                label: const Text(
+                  'Voltar',
                   style: TextStyle(
                     color: AppTheme.primary,
                     fontSize: 17,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppTheme.primary,
+                  minimumSize: const Size(44, 44),
+                  padding: const EdgeInsets.only(left: 2, right: 8),
+                ),
               ),
-              const SizedBox(width: 4),
-            ],
-            flexibleSpace: LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints constraints) {
-                final double collapsedHeight =
-                    MediaQuery.of(context).padding.top + kToolbarHeight;
-                final bool isCollapsed =
-                    constraints.biggest.height <= collapsedHeight + 20;
-
-                return FlexibleSpaceBar(
-                  centerTitle: true,
-                  titlePadding: const EdgeInsets.only(bottom: 16),
-                  title: SliverSafeTitle(
-                    title: exerciseTitle,
-                    isVisible: isCollapsed,
-                    style: const TextStyle(
-                      color: Colors.white,
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppTheme.primary,
+                    minimumSize: const Size(44, 44),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                  child: const Text(
+                    'Concluir',
+                    style: TextStyle(
+                      color: AppTheme.primary,
                       fontSize: 17,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  background: Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        left: AppTheme.space16,
-                        right: AppTheme.space16,
-                        bottom: 10,
+                ),
+                const SizedBox(width: 4),
+              ],
+              flexibleSpace: LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  final double collapsedHeight =
+                      MediaQuery.of(context).padding.top + kToolbarHeight;
+                  final bool isCollapsed =
+                      constraints.biggest.height <= collapsedHeight + 20;
+
+                  return FlexibleSpaceBar(
+                    centerTitle: true,
+                    titlePadding: const EdgeInsets.only(bottom: 16),
+                    title: SliverSafeTitle(
+                      title: exerciseTitle,
+                      isVisible: isCollapsed,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
                       ),
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 200),
-                        opacity: isCollapsed ? 0.0 : 1.0,
-                        child: Text(
-                          exerciseTitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 34,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            height: 1.14,
+                    ),
+                    background: Align(
+                      alignment: Alignment.bottomLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: AppTheme.space16,
+                          right: AppTheme.space16,
+                          bottom: 10,
+                        ),
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 200),
+                          opacity: isCollapsed ? 0.0 : 1.0,
+                          child: Text(
+                            exerciseTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 34,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                              height: 1.14,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppTheme.space16,
-                AppTheme.space4,
-                AppTheme.space16,
-                AppTheme.space48,
+                  );
+                },
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(muscleGroupsText, style: _sectionEyebrowStyle()),
-                  const SizedBox(height: AppTheme.space16),
-                  InkWell(
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Abrindo vídeo explicativo de $exerciseTitle...',
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppTheme.space16,
+                  AppTheme.space4,
+                  AppTheme.space16,
+                  AppTheme.space48,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(muscleGroupsText, style: _sectionEyebrowStyle()),
+                    const SizedBox(height: AppTheme.space16),
+                    InkWell(
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Abrindo vídeo explicativo de $exerciseTitle...',
+                            ),
+                            backgroundColor: AppTheme.primary,
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 2),
                           ),
-                          backgroundColor: AppTheme.primary,
-                          behavior: SnackBarBehavior.floating,
-                          duration: const Duration(seconds: 2),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(22),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(8),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(22),
-                    child: Container(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: AspectRatio(
+                            aspectRatio: 16 / 9,
+                            child: Container(
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(
+                                    ex.imagemUrl ??
+                                        'https://lh3.googleusercontent.com/aida-public/AB6AXuAXzEmkEB7BMnRUWQ6iIDF5Oc_gVzBjCjxHaac9LYJyL8KxdAi-mTOKK2v2nO9Vt3-DXPcDcoSM3RkTh-iDX0q8oShyD0TllFVTVsQBP3fKU0HPHHtOlkO5uRRx_yIiMes1tmlEr6VkkMyvhy-LTIzYuWYuJaLsSzeba5FPnNX9_RQjcusWmbIyWrBVLVSmLZjDaMcPJMKiSSY6S-RSZFaAzRzHQdDbWnPbv1aUP1akkwSiPE9Rriwmdn8VrF3w0ZIWei1Cxfd7B2Ut',
+                                  ),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              child: Stack(
+                                children: [
+                                  Center(
+                                    child: Container(
+                                      width: 56,
+                                      height: 56,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withAlpha(88),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white.withAlpha(35),
+                                          width: 0.9,
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.play_arrow,
+                                        color: Colors.white,
+                                        size: 30,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppTheme.space20),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(
+                        0,
+                        AppTheme.space16,
+                        0,
+                        AppTheme.space16,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withAlpha(8),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: AspectRatio(
-                          aspectRatio: 16 / 9,
-                          child: Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: NetworkImage(
-                                  ex.imagemUrl ??
-                                      'https://lh3.googleusercontent.com/aida-public/AB6AXuAXzEmkEB7BMnRUWQ6iIDF5Oc_gVzBjCjxHaac9LYJyL8KxdAi-mTOKK2v2nO9Vt3-DXPcDcoSM3RkTh-iDX0q8oShyD0TllFVTVsQBP3fKU0HPHHtOlkO5uRRx_yIiMes1tmlEr6VkkMyvhy-LTIzYuWYuJaLsSzeba5FPnNX9_RQjcusWmbIyWrBVLVSmLZjDaMcPJMKiSSY6S-RSZFaAzRzHQdDbWnPbv1aUP1akkwSiPE9Rriwmdn8VrF3w0ZIWei1Cxfd7B2Ut',
-                                ),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            child: Stack(
-                              children: [
-                                Center(
-                                  child: Container(
-                                    width: 56,
-                                    height: 56,
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withAlpha(88),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.white.withAlpha(35),
-                                        width: 0.9,
-                                      ),
-                                    ),
-                                    child: const Icon(
-                                      Icons.play_arrow,
-                                      color: Colors.white,
-                                      size: 30,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('INSTRUÇÕES', style: _sectionEyebrowStyle()),
+                          const SizedBox(height: AppTheme.space10),
+                          Text(
+                            instructionsText,
+                            style: const TextStyle(
+                              color: AppTheme.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              height: 1.5,
                             ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: AppTheme.space20),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(
-                      0,
-                      AppTheme.space16,
-                      0,
-                      AppTheme.space16,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(8),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('INSTRUÇÕES', style: _sectionEyebrowStyle()),
-                        const SizedBox(height: AppTheme.space10),
-                        Text(
-                          instructionsText,
-                          style: const TextStyle(
-                            color: AppTheme.textPrimary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            height: 1.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppTheme.space24),
-                  _buildSeriesSection(
-                    icon: Icons.local_fire_department,
-                    iconColor: const Color(0xFFFFB300),
-                    title: 'AQUECIMENTO',
-                    entries: warmupEntries,
-                  ),
-                  if (feederEntries.isNotEmpty) ...[
+                    const SizedBox(height: AppTheme.space24),
                     _buildSeriesSection(
-                      icon: Icons.flash_on,
-                      iconColor: Colors.blueAccent,
-                      title: 'FEEDER',
-                      entries: feederEntries,
+                      icon: Icons.local_fire_department,
+                      iconColor: const Color(0xFFFFB300),
+                      title: 'AQUECIMENTO',
+                      entries: warmupEntries,
                     ),
+                    if (feederEntries.isNotEmpty) ...[
+                      _buildSeriesSection(
+                        icon: Icons.flash_on,
+                        iconColor: Colors.blueAccent,
+                        title: 'FEEDER',
+                        entries: feederEntries,
+                      ),
+                    ],
+                    if (workEntries.isNotEmpty) ...[
+                      _buildSeriesSection(
+                        icon: Icons.label,
+                        iconColor: Colors.white,
+                        title: 'SÉRIES DE TRABALHO',
+                        entries: workEntries,
+                      ),
+                    ],
+                    const SizedBox(height: AppTheme.space40),
                   ],
-                  if (workEntries.isNotEmpty) ...[
-                    _buildSeriesSection(
-                      icon: Icons.label,
-                      iconColor: Colors.white,
-                      title: 'SÉRIES DE TRABALHO',
-                      entries: workEntries,
-                    ),
-                  ],
-                  const SizedBox(height: AppTheme.space40),
-                ],
+                ),
               ),
             ),
+          ],
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: AnimatedScale(
+          scale: _isKeyboardVisible() ? 0.0 : 1.0,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          child: OrangeGlassActionButton(
+            label: 'Adicionar Série',
+            onTap: _adicionarSerie,
+            bottomMargin: 24,
           ),
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: AnimatedScale(
-        scale: _isKeyboardVisible() ? 0.0 : 1.0,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        child: OrangeGlassActionButton(
-          label: 'Adicionar Série',
-          onTap: _adicionarSerie,
-          bottomMargin: 24,
         ),
       ),
     );
