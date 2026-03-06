@@ -395,8 +395,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   Widget _buildSerieRow(
     MapEntry<int, SerieItem> entry,
     int visualNumber,
-    bool showDivider,
-  ) {
+    bool showDivider, {
+    bool showHeader = false,
+  }) {
     final realIndex = entry.key;
     final serie = entry.value;
     final repsFieldKey = 'reps_$realIndex';
@@ -489,8 +490,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text('REPS', style: _microLabelStyle()),
-                                const SizedBox(height: AppTheme.space6),
+                                if (showHeader) ...[
+                                  Text('REPS', style: _microLabelStyle()),
+                                  const SizedBox(height: AppTheme.space6),
+                                ],
                                 SizedBox(
                                   width: double.infinity,
                                   child: TextFormField(
@@ -545,8 +548,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text('CARGA', style: _microLabelStyle()),
-                                const SizedBox(height: AppTheme.space6),
+                                if (showHeader) ...[
+                                  Text('CARGA', style: _microLabelStyle()),
+                                  const SizedBox(height: AppTheme.space6),
+                                ],
                                 SizedBox(
                                   width: double.infinity,
                                   child: TextFormField(
@@ -615,8 +620,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text('DESCANSO', style: _microLabelStyle()),
-                                const SizedBox(height: AppTheme.space6),
+                                if (showHeader) ...[
+                                  Text('DESCANSO', style: _microLabelStyle()),
+                                  const SizedBox(height: AppTheme.space6),
+                                ],
                                 SizedBox(
                                   width: double.infinity,
                                   child: TextFormField(
@@ -742,7 +749,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
               children: [
                 ...entries.asMap().entries.map((mapped) {
                   final isLast = mapped.key == entries.length - 1;
-                  return _buildSerieRow(mapped.value, mapped.key + 1, !isLast);
+                  final isFirst = mapped.key == 0;
+                  return _buildSerieRow(
+                    mapped.value,
+                    mapped.key + 1,
+                    !isLast,
+                    showHeader: isFirst,
+                  );
                 }),
               ],
             ),
