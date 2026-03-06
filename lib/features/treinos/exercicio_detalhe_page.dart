@@ -451,11 +451,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
             ),
           ),
           child: Container(
-            decoration: BoxDecoration(
-              color: AppTheme.surfaceDark.withAlpha(170),
-              borderRadius: borderRadius,
-              border: Border.all(color: Colors.white.withAlpha(18), width: 0.9),
-            ),
+            decoration: BoxDecoration(borderRadius: borderRadius),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -704,47 +700,60 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppTheme.space20),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(
-          AppTheme.space12,
-          AppTheme.space12,
-          AppTheme.space12,
-          AppTheme.space12,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white.withAlpha(8),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.white.withAlpha(20), width: 0.8),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.space4),
-              child: Row(
-                children: [
-                  Icon(icon, color: iconColor, size: 18),
-                  const SizedBox(width: AppTheme.space10),
-                  Text(title, style: _sectionEyebrowStyle()),
-                  const Spacer(),
-                  Text(
-                    '${entries.length} séries',
-                    style: TextStyle(
-                      color: Colors.white.withAlpha(140),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(
+              left: AppTheme.space4,
+              right: AppTheme.space12,
+              bottom: AppTheme.space10,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(icon, color: iconColor, size: 18),
+                const SizedBox(width: AppTheme.space10),
+                Text(title, style: _sectionEyebrowStyle()),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      '${entries.length} ${entries.length == 1 ? 'série' : 'séries'}',
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(140),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const SizedBox(height: AppTheme.space10),
-            ...entries.asMap().entries.map((mapped) {
-              final isLast = mapped.key == entries.length - 1;
-              return _buildSerieRow(mapped.value, mapped.key + 1, !isLast);
-            }),
-          ],
-        ),
+          ),
+          Container(
+            padding: const EdgeInsets.fromLTRB(
+              AppTheme.space12,
+              AppTheme.space12,
+              AppTheme.space12,
+              AppTheme.space12,
+            ),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceDark,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white.withAlpha(20), width: 0.8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ...entries.asMap().entries.map((mapped) {
+                  final isLast = mapped.key == entries.length - 1;
+                  return _buildSerieRow(mapped.value, mapped.key + 1, !isLast);
+                }),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
