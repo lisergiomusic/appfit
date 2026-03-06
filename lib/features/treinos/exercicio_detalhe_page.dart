@@ -360,8 +360,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
 
   TextStyle _sectionEyebrowStyle() {
     return TextStyle(
-      color: Colors.white.withAlpha(160),
-      fontSize: 11,
+      color: AppTheme.textSecondary,
+      fontSize: 10,
       fontWeight: FontWeight.w600,
       letterSpacing: 1.0,
     );
@@ -714,14 +714,17 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
               children: [
                 Icon(icon, color: iconColor, size: 18),
                 const SizedBox(width: AppTheme.space10),
-                Text(title, style: _sectionEyebrowStyle()),
+                Text(
+                  title,
+                  style: _sectionEyebrowStyle().copyWith(color: Colors.white),
+                ),
                 Expanded(
                   child: Align(
                     alignment: Alignment.centerRight,
                     child: Text(
                       '${entries.length} ${entries.length == 1 ? 'Série' : 'Séries'}',
                       style: TextStyle(
-                        color: Colors.white.withAlpha(140),
+                        color: AppTheme.textSecondary,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -991,7 +994,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                         Text(
                           instructionsText,
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: AppTheme.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
                             height: 1.5,
