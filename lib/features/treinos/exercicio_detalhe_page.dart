@@ -350,11 +350,20 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   }
 
   TextStyle _microLabelStyle() {
-    return const TextStyle(
-      color: Color.fromARGB(150, 255, 255, 255),
-      fontSize: 10,
+    return TextStyle(
+      color: Colors.white.withAlpha(170),
+      fontSize: 11,
       fontWeight: FontWeight.w600,
-      letterSpacing: 1.25,
+      letterSpacing: 0.8,
+    );
+  }
+
+  TextStyle _sectionEyebrowStyle() {
+    return TextStyle(
+      color: Colors.white.withAlpha(160),
+      fontSize: 11,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 1.0,
     );
   }
 
@@ -365,19 +374,19 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     ),
   }) {
     final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10),
-      borderSide: BorderSide(color: Colors.white.withAlpha(35), width: 0.8),
+      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+      borderSide: BorderSide(color: Colors.white.withAlpha(40), width: 0.9),
     );
 
     return InputDecoration(
       isDense: true,
       contentPadding: contentPadding,
       filled: true,
-      fillColor: Colors.white.withAlpha(14),
+      fillColor: Colors.black.withAlpha(28),
       border: border,
       enabledBorder: border,
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         borderSide: const BorderSide(color: Color(0xFFFF6D00), width: 1.1),
       ),
     );
@@ -407,10 +416,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     final borderRadius = BorderRadius.circular(14);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: AppTheme.space4,
-        horizontal: 0,
-      ),
+      padding: EdgeInsets.only(bottom: showDivider ? AppTheme.space8 : 0),
       child: ClipRRect(
         borderRadius: borderRadius,
         child: Dismissible(
@@ -446,35 +452,23 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
           ),
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.white.withAlpha(12), Colors.white.withAlpha(8)],
-              ),
-              border: Border.all(color: Colors.white.withAlpha(20), width: 0.8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(40),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                  spreadRadius: 0,
-                ),
-              ],
+              color: AppTheme.surfaceDark.withAlpha(170),
+              borderRadius: borderRadius,
+              border: Border.all(color: Colors.white.withAlpha(18), width: 0.9),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                    vertical: AppTheme.space8,
+                    vertical: AppTheme.space12,
                     horizontal: AppTheme.space12,
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        width: 44,
+                        width: 48,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
@@ -485,8 +479,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: _getSerieNumberColor(serie.tipo),
-                                fontSize: 17,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 19,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ],
@@ -542,8 +536,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
                                         color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w400,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                       cursorColor: AppTheme.primary,
                                       decoration: _editableFieldDecoration(),
@@ -613,8 +607,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
                                         color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w400,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                       cursorColor: AppTheme.primary,
                                       decoration: _editableFieldDecoration(),
@@ -674,32 +668,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
                                         color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w400,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                       cursorColor: AppTheme.primary,
-                                      decoration: _editableFieldDecoration()
-                                          .copyWith(
-                                            prefixIcon: Padding(
-                                              padding:
-                                                  const EdgeInsetsDirectional.only(
-                                                    start: 12,
-                                                    end: 1,
-                                                  ),
-                                              child: Icon(
-                                                Icons.timer,
-                                                color: Colors.white.withAlpha(
-                                                  170,
-                                                ),
-                                                size: 16,
-                                              ),
-                                            ),
-                                            prefixIconConstraints:
-                                                const BoxConstraints(
-                                                  minWidth: 0,
-                                                  minHeight: 0,
-                                                ),
-                                          ),
+                                      decoration: _editableFieldDecoration(),
                                     ),
                                   ),
                                 ],
@@ -711,16 +684,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     ],
                   ),
                 ),
-                if (showDivider)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppTheme.space12,
-                    ),
-                    child: Container(
-                      height: 0.5,
-                      color: Colors.white.withAlpha(15),
-                    ),
-                  ),
               ],
             ),
           ),
@@ -740,34 +703,48 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppTheme.space16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppTheme.space16),
-            child: Row(
-              children: [
-                Icon(icon, color: iconColor, size: 18),
-                const SizedBox(width: AppTheme.space10),
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: Colors.white.withAlpha(150),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1.25,
+      padding: const EdgeInsets.only(bottom: AppTheme.space20),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(
+          AppTheme.space12,
+          AppTheme.space12,
+          AppTheme.space12,
+          AppTheme.space12,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white.withAlpha(8),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.white.withAlpha(20), width: 0.8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.space4),
+              child: Row(
+                children: [
+                  Icon(icon, color: iconColor, size: 18),
+                  const SizedBox(width: AppTheme.space10),
+                  Text(title, style: _sectionEyebrowStyle()),
+                  const Spacer(),
+                  Text(
+                    '${entries.length} séries',
+                    style: TextStyle(
+                      color: Colors.white.withAlpha(140),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: AppTheme.space8),
-          ...entries.asMap().entries.map((mapped) {
-            final isLast = mapped.key == entries.length - 1;
-            return _buildSerieRow(mapped.value, mapped.key + 1, !isLast);
-          }),
-        ],
+            const SizedBox(height: AppTheme.space10),
+            ...entries.asMap().entries.map((mapped) {
+              final isLast = mapped.key == entries.length - 1;
+              return _buildSerieRow(mapped.value, mapped.key + 1, !isLast);
+            }),
+          ],
+        ),
       ),
     );
   }
@@ -808,7 +785,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
         : ex.observacao;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppTheme.background,
       body: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics(),
@@ -816,10 +793,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
         slivers: [
           SliverAppBar(
             automaticallyImplyLeading: false,
-            backgroundColor: Colors.black.withValues(alpha: 0.9),
+            backgroundColor: Colors.black,
             surfaceTintColor: Colors.transparent,
             pinned: true,
-            expandedHeight: 130,
+            expandedHeight: 138,
             leadingWidth: 108,
             leading: TextButton.icon(
               onPressed: () => Navigator.pop(context),
@@ -913,23 +890,15 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppTheme.space16,
-                AppTheme.space12,
+                AppTheme.space4,
                 AppTheme.space16,
                 AppTheme.space48,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    muscleGroupsText,
-                    style: TextStyle(
-                      color: Colors.white.withAlpha(150),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.25,
-                    ),
-                  ),
-                  const SizedBox(height: AppTheme.space24),
+                  Text(muscleGroupsText, style: _sectionEyebrowStyle()),
+                  const SizedBox(height: AppTheme.space16),
                   InkWell(
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -943,68 +912,78 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                         ),
                       );
                     },
-                    borderRadius: BorderRadius.circular(24),
-                    child: AspectRatio(
-                      aspectRatio: 16 / 9,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: Colors.white.withAlpha(20),
-                            width: 0.5,
-                          ),
-                          image: DecorationImage(
-                            image: NetworkImage(
-                              ex.imagemUrl ??
-                                  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=280&fit=crop',
-                            ),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        child: Stack(
-                          children: [
-                            Center(
-                              child: Container(
-                                width: 54,
-                                height: 54,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withAlpha(80),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.white.withAlpha(30),
-                                    width: 0.5,
-                                  ),
+                    borderRadius: BorderRadius.circular(22),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(8),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: NetworkImage(
+                                  ex.imagemUrl ??
+                                      'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=280&fit=crop',
                                 ),
-                                child: const Icon(
-                                  Icons.play_arrow,
-                                  color: Colors.white,
-                                  size: 30,
-                                ),
+                                fit: BoxFit.cover,
                               ),
                             ),
-                          ],
+                            child: Stack(
+                              children: [
+                                Center(
+                                  child: Container(
+                                    width: 56,
+                                    height: 56,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withAlpha(88),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white.withAlpha(35),
+                                        width: 0.9,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.play_arrow,
+                                      color: Colors.white,
+                                      size: 30,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: AppTheme.space28),
-                  Text(
-                    'INSTRUÇÕES',
-                    style: TextStyle(
-                      color: Colors.white.withAlpha(150),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.25,
+                  const SizedBox(height: AppTheme.space20),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppTheme.space16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(8),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  ),
-                  const SizedBox(height: AppTheme.space10),
-                  Text(
-                    instructionsText,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      height: 1.45,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('INSTRUÇÕES', style: _sectionEyebrowStyle()),
+                        const SizedBox(height: AppTheme.space10),
+                        Text(
+                          instructionsText,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: AppTheme.space24),
