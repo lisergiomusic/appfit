@@ -719,7 +719,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                   child: Align(
                     alignment: Alignment.centerRight,
                     child: Text(
-                      '${entries.length} ${entries.length == 1 ? 'série' : 'séries'}',
+                      '${entries.length} ${entries.length == 1 ? 'Série' : 'Séries'}',
                       style: TextStyle(
                         color: Colors.white.withAlpha(140),
                         fontSize: 12,
