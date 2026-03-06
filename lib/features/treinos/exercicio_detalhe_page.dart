@@ -352,7 +352,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   TextStyle _microLabelStyle() {
     return TextStyle(
       color: Colors.white.withAlpha(170),
-      fontSize: 11,
+      fontSize: 9,
       fontWeight: FontWeight.w600,
       letterSpacing: 0.8,
     );
@@ -451,7 +451,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
             ),
           ),
           child: Container(
-            decoration: BoxDecoration(borderRadius: borderRadius),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.white.withAlpha(40),
+                  width: 1.0,
+                ),
+              ),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -475,7 +482,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: _getSerieNumberColor(serie.tipo),
-                                fontSize: 19,
+                                fontSize: 15,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -741,11 +748,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
               AppTheme.space12,
               AppTheme.space12,
             ),
-            decoration: BoxDecoration(
-              color: AppTheme.surfaceDark,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withAlpha(20), width: 0.8),
-            ),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(18)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
