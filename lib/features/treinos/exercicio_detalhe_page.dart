@@ -407,7 +407,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     final borderRadius = BorderRadius.circular(14);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppTheme.space4),
+      padding: const EdgeInsets.symmetric(
+        vertical: AppTheme.space4,
+        horizontal: 0,
+      ),
       child: ClipRRect(
         borderRadius: borderRadius,
         child: Dismissible(
@@ -442,13 +445,30 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
             ),
           ),
           child: Container(
-            color: Colors.transparent,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white.withAlpha(12), Colors.white.withAlpha(8)],
+              ),
+              border: Border.all(color: Colors.white.withAlpha(20), width: 0.8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(40),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     vertical: AppTheme.space8,
+                    horizontal: AppTheme.space12,
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -692,10 +712,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                   ),
                 ),
                 if (showDivider)
-                  Container(
-                    margin: const EdgeInsets.only(left: 44, right: 24),
-                    height: 0.5,
-                    color: Colors.white.withAlpha(25),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.space12,
+                    ),
+                    child: Container(
+                      height: 0.5,
+                      color: Colors.white.withAlpha(15),
+                    ),
                   ),
               ],
             ),
