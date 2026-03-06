@@ -964,7 +964,12 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                   const SizedBox(height: AppTheme.space20),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(AppTheme.space16),
+                    padding: const EdgeInsets.fromLTRB(
+                      0,
+                      AppTheme.space16,
+                      AppTheme.space16,
+                      AppTheme.space16,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withAlpha(8),
                       borderRadius: BorderRadius.circular(16),
