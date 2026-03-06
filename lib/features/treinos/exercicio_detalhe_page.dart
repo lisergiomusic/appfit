@@ -967,7 +967,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     padding: const EdgeInsets.fromLTRB(
                       0,
                       AppTheme.space16,
-                      AppTheme.space16,
+                      0,
                       AppTheme.space16,
                     ),
                     decoration: BoxDecoration(
