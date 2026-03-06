@@ -395,9 +395,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   Widget _buildSerieRow(
     MapEntry<int, SerieItem> entry,
     int visualNumber,
-    bool showDivider, {
-    bool showHeader = false,
-  }) {
+    bool showDivider,
+  ) {
     final realIndex = entry.key;
     final serie = entry.value;
     final repsFieldKey = 'reps_$realIndex';
@@ -416,8 +415,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     final dismissKey = '${serie.hashCode}_$realIndex';
     final borderRadius = BorderRadius.circular(14);
 
+    // Inicio dos rows de séries
     return Padding(
-      padding: EdgeInsets.only(bottom: 0),
+      padding: const EdgeInsets.only(bottom: AppTheme.space4),
       child: ClipRRect(
         borderRadius: borderRadius,
         child: Dismissible(
@@ -460,25 +460,20 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                   horizontal: AppTheme.space12,
                 ),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SizedBox(
                       width: 48,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text('SÉRIE', style: _microLabelStyle()),
-                          const SizedBox(height: AppTheme.space12),
-                          Text(
-                            '$visualNumber',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: _getSerieNumberColor(serie.tipo),
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
+                      child: Center(
+                        child: Text(
+                          '$visualNumber',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: _getSerieNumberColor(serie.tipo),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
                           ),
-                        ],
+                        ),
                       ),
                     ),
                     const SizedBox(width: AppTheme.space8),
@@ -490,10 +485,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                if (showHeader) ...[
-                                  Text('REPS', style: _microLabelStyle()),
-                                  const SizedBox(height: AppTheme.space6),
-                                ],
                                 SizedBox(
                                   width: double.infinity,
                                   child: TextFormField(
@@ -548,10 +539,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                if (showHeader) ...[
-                                  Text('CARGA', style: _microLabelStyle()),
-                                  const SizedBox(height: AppTheme.space6),
-                                ],
                                 SizedBox(
                                   width: double.infinity,
                                   child: TextFormField(
@@ -620,10 +607,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                if (showHeader) ...[
-                                  Text('DESCANSO', style: _microLabelStyle()),
-                                  const SizedBox(height: AppTheme.space6),
-                                ],
                                 SizedBox(
                                   width: double.infinity,
                                   child: TextFormField(
@@ -747,15 +730,69 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppTheme.space4,
+                    horizontal: AppTheme.space12,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 48,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text('SÉRIE', style: _microLabelStyle()),
+                            const SizedBox(height: AppTheme.space12),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: AppTheme.space8),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text('REPS', style: _microLabelStyle()),
+                                  const SizedBox(height: AppTheme.space6),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: AppTheme.space8),
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text('CARGA', style: _microLabelStyle()),
+                                  const SizedBox(height: AppTheme.space6),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: AppTheme.space8),
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text('DESCANSO', style: _microLabelStyle()),
+                                  const SizedBox(height: AppTheme.space6),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 ...entries.asMap().entries.map((mapped) {
                   final isLast = mapped.key == entries.length - 1;
-                  final isFirst = mapped.key == 0;
-                  return _buildSerieRow(
-                    mapped.value,
-                    mapped.key + 1,
-                    !isLast,
-                    showHeader: isFirst,
-                  );
+                  return _buildSerieRow(mapped.value, mapped.key + 1, !isLast);
                 }),
               ],
             ),
