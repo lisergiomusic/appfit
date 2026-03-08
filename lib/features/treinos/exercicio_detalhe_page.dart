@@ -373,18 +373,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
       vertical: 8,
     ),
   }) {
-    final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-      borderSide: BorderSide(color: Colors.white.withAlpha(40), width: 0.9),
-    );
-
     return InputDecoration(
       isDense: true,
       contentPadding: contentPadding,
-      filled: true,
-      fillColor: Colors.black.withAlpha(28),
-      border: border,
-      enabledBorder: border,
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         borderSide: const BorderSide(color: Color(0xFFFF6D00), width: 1.1),
@@ -440,15 +431,37 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
             _hapticTriggeredDismissKeys.remove(dismissKey);
             _removerSeriePorReferencia(serie);
           },
-          background: Container(color: Colors.black),
-          secondaryBackground: Container(
-            color: Colors.redAccent,
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: AppTheme.space20),
-            child: const Icon(
-              Icons.delete_outline,
-              color: Colors.white,
-              size: 24,
+          background: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: AppTheme.space4,
+              horizontal: AppTheme.space16,
+            ),
+            child: ClipRRect(
+              borderRadius: borderRadius,
+              child: Container(color: Colors.black),
+            ),
+          ),
+          secondaryBackground: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: AppTheme.space4,
+              horizontal: AppTheme.space16,
+            ),
+            child: ClipRRect(
+              borderRadius: borderRadius,
+              child: Container(
+                color: Colors.redAccent,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: AppTheme.space20),
+                    child: const Icon(
+                      Icons.delete_outline,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
           child: Column(
