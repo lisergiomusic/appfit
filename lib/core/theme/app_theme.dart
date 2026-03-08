@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // --- 1. CORES ---
-  static const Color primary = Color(0xFFF2700D); // Tailwind primary
+  static const Color primary = Color(0xFF30D158); // Atualizado para verde
   static const Color background = Color(0xFF000000); // Tailwind background-dark
   static const Color iosGreen = Color(0xFF34C759);
   static const Color iosAmber = Color(0xFFFFBF00);
