@@ -254,9 +254,8 @@ class _EditorModalState extends State<_EditorModal> {
                         width: double.infinity,
                         constraints: const BoxConstraints(minHeight: 160),
                         decoration: BoxDecoration(
-                          color: const Color(
-                            0xFF1C1C1E,
-                          ), // O mesmo Cinza Sólido do HTML aqui no modal
+                          color: AppTheme
+                              .buttonSurface, // O mesmo Cinza Sólido do HTML aqui no modal
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
                             color: Colors.white.withValues(alpha: 0.15),

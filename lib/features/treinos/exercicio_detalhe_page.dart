@@ -24,6 +24,7 @@ class ExercicioDetalhePage extends StatefulWidget {
 class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   late ExercicioItem ex;
   final Map<String, TextEditingController> _controllers = {};
+  final TextEditingController _instructionsController = TextEditingController();
   final Map<String, String> _lastValues = {};
   final Map<String, bool> _hasUserEdited = {};
   final Set<String> _suppressNextOnChanged = {};
@@ -33,11 +34,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   void initState() {
     super.initState();
     ex = widget.exercicio;
+    _instructionsController.text = ex.observacao;
   }
 
   @override
   void dispose() {
     _disposeControllers();
+    _instructionsController.dispose();
     super.dispose();
   }
 
@@ -841,6 +844,149 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     return MediaQuery.of(context).viewInsets.bottom > 0;
   }
 
+  Future<void> _editarInstrucoes() async {
+    _instructionsController
+      ..text = ex.observacao
+      ..selection = TextSelection.collapsed(offset: ex.observacao.length);
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (modalContext) {
+        final insets = MediaQuery.of(modalContext).viewInsets;
+
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              AppTheme.space16,
+              AppTheme.space12,
+              AppTheme.space16,
+              insets.bottom + AppTheme.space16,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(55),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppTheme.space16),
+                const Text(
+                  'Instruções do exercício',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: AppTheme.space6),
+                Text(
+                  'Opcional: adicione orientações para execução.',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary.withAlpha(180),
+                    fontSize: 13,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: AppTheme.space14),
+                TextField(
+                  controller: _instructionsController,
+                  autofocus: true,
+                  minLines: 4,
+                  maxLines: 8,
+                  textCapitalization: TextCapitalization.sentences,
+                  style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 14,
+                    height: 1.45,
+                  ),
+                  decoration: InputDecoration(
+                    hintText:
+                        'Ex.: mantenha o tronco estável e controle a fase excêntrica.',
+                    hintStyle: TextStyle(
+                      color: AppTheme.textSecondary.withAlpha(135),
+                      fontSize: 13,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white.withAlpha(8),
+                    contentPadding: const EdgeInsets.all(AppTheme.space12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        AppTheme.radiusMedium,
+                      ),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        AppTheme.radiusMedium,
+                      ),
+                      borderSide: const BorderSide(
+                        color: AppTheme.accentMetrics,
+                        width: 1.0,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppTheme.space14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(modalContext),
+                        child: const Text(
+                          'Cancelar',
+                          style: TextStyle(color: AppTheme.textSecondary),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppTheme.space10),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            ex.observacao = _instructionsController.text.trim();
+                          });
+                          widget.onChanged();
+                          Navigator.pop(modalContext);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.accentMetrics,
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusMedium,
+                            ),
+                          ),
+                        ),
+                        child: const Text(
+                          'Salvar',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final exerciseTitle = SliverSafeTitle.safeTitle(
@@ -868,9 +1014,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
               .toUpperCase()
               .replaceAll(RegExp(r'\s*,\s*'), ' • ')
               .replaceAll(RegExp(r'\s+/\s+'), ' • ');
-    final instructionsText = ex.observacao.trim().isEmpty
-        ? 'Foco na profundidade e controle. Mantenha o tronco ereto e os joelhos alinhados com os pés. Empurre com os calcanhares.'
-        : ex.observacao;
+    final instructionsText = ex.observacao.trim();
 
     return GestureDetector(
       onTap: () {
@@ -899,7 +1043,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                 child: Padding(
                   padding: const EdgeInsets.only(left: 12),
                   child: Material(
-                    color: const Color(0xFF1C1C1E),
+                    color: AppTheme.buttonSurface,
                     shape: const CircleBorder(),
                     child: InkWell(
                       onTap: () => Navigator.pop(context),
@@ -1074,17 +1218,96 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('INSTRUÇÕES', style: _sectionEyebrowStyle()),
-                          const SizedBox(height: AppTheme.space10),
-                          Text(
-                            instructionsText,
-                            style: const TextStyle(
-                              color: AppTheme.textPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              height: 1.5,
+                          if (instructionsText.isNotEmpty)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'INSTRUÇÕES',
+                                  style: _sectionEyebrowStyle(),
+                                ),
+                                TextButton(
+                                  onPressed: _editarInstrucoes,
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: AppTheme.accentMetrics,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppTheme.space10,
+                                      vertical: AppTheme.space6,
+                                    ),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: const Text(
+                                    'Editar',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                          if (instructionsText.isNotEmpty)
+                            const SizedBox(height: AppTheme.space10),
+                          if (instructionsText.isEmpty)
+                            Semantics(
+                              button: true,
+                              label: 'Adicionar instruções',
+                              child: InkWell(
+                                onTap: _editarInstrucoes,
+                                borderRadius: BorderRadius.circular(999),
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    minHeight: 44,
+                                  ),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppTheme.space16,
+                                      vertical: AppTheme.space12,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.surfaceDark,
+                                      borderRadius: BorderRadius.circular(999),
+                                      border: Border.all(
+                                        color: Colors.white.withAlpha(58),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Adicionar instruções',
+                                          style: TextStyle(
+                                            color: AppTheme.accentMetrics,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 0.1,
+                                          ),
+                                        ),
+                                        const SizedBox(width: AppTheme.space8),
+                                        Icon(
+                                          CupertinoIcons.add,
+                                          color: AppTheme.accentMetrics,
+                                          size: 15,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          else
+                            Text(
+                              instructionsText,
+                              style: const TextStyle(
+                                color: AppTheme.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                height: 1.5,
+                              ),
+                            ),
                         ],
                       ),
                     ),
