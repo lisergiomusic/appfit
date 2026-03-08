@@ -719,11 +719,12 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   }
 
   Widget _buildSeriesSection({
-    required IconData icon,
-    required Color iconColor,
+    IconData? icon,
+    Color? iconColor,
     required String title,
     required List<MapEntry<int, SerieItem>> entries,
     Color? titleColor,
+    bool showDot = false,
   }) {
     if (entries.isEmpty) {
       return const SizedBox.shrink();
@@ -743,7 +744,18 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(icon, color: iconColor, size: 18),
+                showDot
+                    ? Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: titleColor ?? Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                      )
+                    : (icon != null
+                        ? Icon(icon, color: iconColor, size: 18)
+                        : SizedBox(width: 18)),
                 const SizedBox(width: AppTheme.space10),
                 Text(
                   title,
@@ -1095,11 +1107,12 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     ),
                     const SizedBox(height: AppTheme.space24),
                     _buildSeriesSection(
-                      icon: Icons.local_fire_department,
-                      iconColor: const Color(0xFFFFB300),
+                      icon: null,
+                      iconColor: null,
                       title: 'AQUECIMENTO',
                       entries: warmupEntries,
                       titleColor: const Color(0xFF60A5FA),
+                      showDot: true,
                     ),
                     if (feederEntries.isNotEmpty) ...[
                       _buildSeriesSection(
