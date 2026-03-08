@@ -492,9 +492,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                               child: Align(
                                 alignment: Alignment.centerLeft,
                                 child: Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: AppTheme.space8,
-                                  ),
+                                  padding: const EdgeInsets.only(left: 18),
                                   child: Text(
                                     '$visualNumber',
                                     textAlign: TextAlign.left,
@@ -785,50 +783,46 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        width: 48,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text('SÉRIE', style: _microLabelStyle()),
-                            const SizedBox(height: AppTheme.space12),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: AppTheme.space8),
                       Expanded(
                         child: Row(
                           children: [
                             Expanded(
                               flex: 3,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text('REPS', style: _microLabelStyle()),
-                                  const SizedBox(height: AppTheme.space6),
-                                ],
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: AppTheme.space8,
+                                  ),
+                                  child: Text(
+                                    'SÉRIE',
+                                    style: _microLabelStyle(),
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(width: AppTheme.space8),
                             Expanded(
                               flex: 3,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text('CARGA', style: _microLabelStyle()),
-                                  const SizedBox(height: AppTheme.space6),
-                                ],
+                              child: Center(
+                                child: Text('REPS', style: _microLabelStyle()),
                               ),
                             ),
                             const SizedBox(width: AppTheme.space8),
                             Expanded(
                               flex: 3,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text('DESCANSO', style: _microLabelStyle()),
-                                  const SizedBox(height: AppTheme.space6),
-                                ],
+                              child: Center(
+                                child: Text('CARGA', style: _microLabelStyle()),
+                              ),
+                            ),
+                            const SizedBox(width: AppTheme.space8),
+                            Expanded(
+                              flex: 3,
+                              child: Center(
+                                child: Text(
+                                  'DESCANSO',
+                                  style: _microLabelStyle(),
+                                ),
                               ),
                             ),
                           ],
