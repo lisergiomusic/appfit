@@ -759,21 +759,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                 const SizedBox(width: AppTheme.space10),
                 Text(
                   title,
-                  style: _sectionEyebrowStyle().copyWith(
+                  style: TextStyle(
                     color: titleColor ?? Colors.white,
-                  ),
-                ),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      '${entries.length} ${entries.length == 1 ? 'Série' : 'Séries'}',
-                      style: TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -827,7 +816,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                             Expanded(
                               flex: 3,
                               child: Center(
-                                child: Text('CARGA', style: _microLabelStyle()),
+                                child: Text('PESO', style: _microLabelStyle()),
                               ),
                             ),
                             const SizedBox(width: AppTheme.space8),
