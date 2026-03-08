@@ -723,6 +723,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     required Color iconColor,
     required String title,
     required List<MapEntry<int, SerieItem>> entries,
+    Color? titleColor,
   }) {
     if (entries.isEmpty) {
       return const SizedBox.shrink();
@@ -746,7 +747,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                 const SizedBox(width: AppTheme.space10),
                 Text(
                   title,
-                  style: _sectionEyebrowStyle().copyWith(color: Colors.white),
+                  style: _sectionEyebrowStyle().copyWith(color: titleColor ?? Colors.white),
                 ),
                 Expanded(
                   child: Align(
@@ -1098,6 +1099,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                       iconColor: const Color(0xFFFFB300),
                       title: 'AQUECIMENTO',
                       entries: warmupEntries,
+                      titleColor: const Color(0xFF60A5FA),
                     ),
                     if (feederEntries.isNotEmpty) ...[
                       _buildSeriesSection(
