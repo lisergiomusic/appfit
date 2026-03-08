@@ -746,20 +746,22 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
               children: [
                 showDot
                     ? Container(
-                        width: 10,
-                        height: 10,
+                        width: 7,
+                        height: 7,
                         decoration: BoxDecoration(
                           color: titleColor ?? Colors.white,
                           shape: BoxShape.circle,
                         ),
                       )
                     : (icon != null
-                        ? Icon(icon, color: iconColor, size: 18)
-                        : SizedBox(width: 18)),
+                          ? Icon(icon, color: iconColor, size: 18)
+                          : SizedBox(width: 18)),
                 const SizedBox(width: AppTheme.space10),
                 Text(
                   title,
-                  style: _sectionEyebrowStyle().copyWith(color: titleColor ?? Colors.white),
+                  style: _sectionEyebrowStyle().copyWith(
+                    color: titleColor ?? Colors.white,
+                  ),
                 ),
                 Expanded(
                   child: Align(
@@ -1116,18 +1118,22 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     ),
                     if (feederEntries.isNotEmpty) ...[
                       _buildSeriesSection(
-                        icon: Icons.flash_on,
-                        iconColor: Colors.blueAccent,
+                        icon: null,
+                        iconColor: null,
                         title: 'FEEDER',
                         entries: feederEntries,
+                        titleColor: const Color(0xFFFF6B00),
+                        showDot: true,
                       ),
                     ],
                     if (workEntries.isNotEmpty) ...[
                       _buildSeriesSection(
-                        icon: Icons.label,
-                        iconColor: Colors.white,
+                        icon: null,
+                        iconColor: null,
                         title: 'SÉRIES DE TRABALHO',
                         entries: workEntries,
+                        titleColor: const Color(0xFF0df259),
+                        showDot: true,
                       ),
                     ],
                     const SizedBox(height: AppTheme.space40),
