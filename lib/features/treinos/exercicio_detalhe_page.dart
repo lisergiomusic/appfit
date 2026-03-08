@@ -726,7 +726,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
               AppTheme.space12,
               AppTheme.space12,
             ),
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(18)),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceDark,
+              borderRadius: BorderRadius.circular(18),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

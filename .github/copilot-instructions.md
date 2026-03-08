@@ -1,51 +1,43 @@
-# Copilot / AI Agent Instructions for AppFit
+# Project Guidelines
 
-Brief: This Flutter app (AppFit) is a feature-organized mobile/web/desktop app using Firebase (Auth + Firestore). Agents should focus on feature pages under `lib/features`, shared services under `lib/core/services`, and theme/config under `lib/core`.
+## Architecture
+- App entry and auth routing live in `lib/main.dart`. App startup initializes Firebase, then routes by `usuarios/{uid}.tipoUsuario`.
+- Use the feature-first structure in `lib/features/<feature>/...` for UI and feature logic.
+- Keep shared backend access in `lib/core/services` (example: `lib/core/services/rotina_service.dart`).
+- Keep design tokens and theme behavior in `lib/core/theme/app_theme.dart`.
+- Do not edit generated platform/plugin files under `linux/flutter/`, `macos/Flutter/`, `windows/flutter/`, or `build/`.
 
-- Project entry: [lib/main.dart](lib/main.dart#L1) — initializes Firebase and routes users by `tipoUsuario` in Firestore.
-- Firebase config: [lib/core/config/firebase_options.dart](lib/core/config/firebase_options.dart#L1) and Android `android/app/google-services.json` (exists in repo). Auth + Firestore are primary integrations.
-- Feature structure: `lib/features/<feature>/...` (e.g., Treinos pages in `lib/features/treinos/`). UI is mostly StatefulWidgets + Navigator-based routing.
-- Services: shared backend code lives in `lib/core/services` (e.g., [rotina_service.dart](lib/core/services/rotina_service.dart#L1)). Firestore collection names observed: `usuarios`, `rotinas`.
-- Theming and design tokens: [lib/core/theme/app_theme.dart](lib/core/theme/app_theme.dart#L1) — use these colors/styles for consistent UI changes.
+## Build And Test
+- Install dependencies: `flutter pub get`
+- Static analysis: `flutter analyze`
+- Tests: `flutter test`
+- Run Android: `flutter run -d android`
+- Run iOS (macOS/Xcode required): `flutter run -d ios`
+- Build Android artifacts: `flutter build apk` and `flutter build appbundle`
 
-Build / run notes (explicit commands):
-- Install deps: `flutter pub get`
-- Run on connected Android device: `flutter run -d android`
-- Run on Linux desktop (repo includes linux runner): `flutter run -d linux`
-- Build Android APK / appbundle: `flutter build apk` or `flutter build appbundle`
-- iOS: requires Xcode/macOS; Android uses Gradle wrapper in `android/` when building.
+## Firebase And Platform Notes
+- Firebase config is defined in `lib/core/config/firebase_options.dart` and Android `android/app/google-services.json`.
+- `firebase_options.dart` currently supports `web`, `android`, and `ios` only. `linux`, `macos`, and `windows` throw `UnsupportedError`.
+- Primary Firestore collections: `usuarios` and `rotinas`. Keep collection names unchanged unless explicitly requested.
 
-Codebase conventions & patterns (concrete):
-- No heavy state management library: code uses StatefulWidgets and small service classes. Modify existing patterns rather than introducing global state managers unless approved.
-- Navigation: uses `Navigator.push(MaterialPageRoute(...))` and passes parameters via constructors (e.g., `LoginPage(userType: 'aluno')`).
-- Data modeling: pages construct JSON-like Maps before sending to services (see `lib/features/treinos/criar_rotina_page.dart` which builds `sessoesJson` then calls `RotinaService().criarRotina(...)`).
-- Error handling: pages surface errors via `ScaffoldMessenger.of(context).showSnackBar(...)` — follow this UX for user-visible errors.
+## Code Conventions
+- Follow existing state management style: `StatefulWidget` + local controllers/services. Do not introduce a global state framework without explicit request.
+- Follow existing navigation pattern: `Navigator.push(MaterialPageRoute(...))` with constructor parameters.
+- Build Firestore payloads in feature pages as `Map<String, dynamic>`, then pass to services.
+- Wrap Firebase/Firestore mutations in `try/catch` and surface user-facing failures with `ScaffoldMessenger.of(context).showSnackBar(...)`.
+- Preserve role-based flow and parameter passing (`userType`, `uid`) when changing auth, login, or dashboard transitions.
 
-Testing & linting:
-- Lints: `analysis_options.yaml` and `flutter_lints` are enabled. Keep code style consistent with existing files.
-- There is a basic widget test at `test/widget_test.dart` — run `flutter test` to execute.
+## UI And Theme Conventions
+- Reuse `AppTheme` tokens for color, spacing, radius, and typography.
+- Prefer spacing constants (for example `space8`, `space12`, `space16`, `space24`) over hard-coded numbers.
+- Keep visual hierarchy clear and compact: heading, section label, content, helper text.
+- Avoid introducing new color systems, font families, or shadow styles outside `AppTheme` unless explicitly requested.
 
-Important integration points to check before changes:
-- Firebase auth flows: `FirebaseAuth.instance.authStateChanges()` in [lib/main.dart](lib/main.dart#L1) — changing auth behavior affects app routing.
-- Firestore reads/writes: `lib/core/services/rotina_service.dart` and other service files. Keep collection naming (`usuarios`, `rotinas`) consistent.
-- Platform entries: native/plugin registrants are generated under `linux/`, `macos/`, `windows/` — avoid editing generated files.
-
-When editing:
-- Preserve theming tokens in `lib/core/theme/app_theme.dart` to avoid visual regressions.
-- Prefer small, localized changes in feature folders. When you must refactor cross-cutting concerns (auth, services, theme), document the change in the PR description.
-
-UI hierarchy + spacing defaults (Apple-inspired, cross-platform):
-- Prioritize clear visual hierarchy: `title -> section label -> value/content -> helper text` with progressively lighter emphasis.
-- Use spacing tokens from `AppTheme` (e.g., `space4/8/12/16/24/32`) instead of hard-coded numeric gaps whenever possible.
-- Keep a consistent vertical rhythm in screens: prefer predictable steps (`8, 12, 16, 24, 32`) and avoid arbitrary jumps.
-- In dense list rows/forms, use subtle separators and avoid combining strong separators with large external gaps.
-- Avoid introducing new colors, typography families, or custom shadows outside the existing theme tokens.
-- For iOS-like readability, keep layouts compact-but-breathable: reduce visual noise, emphasize content blocks, and maintain alignment consistency across columns.
-
-Examples to reference when implementing features or fixes:
-- Feature-to-service call: `lib/features/treinos/criar_rotina_page.dart` -> `lib/core/services/rotina_service.dart`.
-- User gating by role: [lib/main.dart](lib/main.dart#L1) reads `tipoUsuario` from `usuarios` collection and constructs `DashboardPage(userType: tipo)`.
-
-If anything is unclear or you need more environment details (API keys, CI, or emulator setup), ask for access or permission before changing secrets or platform configs.
-
-Please review and tell me which sections need more detail or examples.
+## Reference Files
+- `lib/main.dart`: Firebase initialization and auth gate.
+- `lib/core/config/firebase_options.dart`: platform support and Firebase setup.
+- `lib/core/services/rotina_service.dart`: Firestore read/write pattern.
+- `lib/core/theme/app_theme.dart`: tokens and global styling.
+- `lib/features/auth/login_page.dart`: auth form, validation, SnackBar error flow.
+- `lib/features/treinos/treinos_page.dart`: list + StreamBuilder + navigation pattern.
+- `test/widget_test.dart`: placeholder test; expand with real app behavior when adding features.
