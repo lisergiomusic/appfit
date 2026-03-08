@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/orange_glass_action_button.dart';
@@ -272,17 +273,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
         );
         widget.onChanged();
       });
-    }
-  }
-
-  Color _getSerieNumberColor(TipoSerie tipoSerie) {
-    switch (tipoSerie) {
-      case TipoSerie.trabalho:
-        return AppTheme.primary;
-      case TipoSerie.aquecimento:
-        return AppTheme.iosAmber;
-      case TipoSerie.feeder:
-        return Colors.blueAccent;
     }
   }
 
@@ -903,40 +893,42 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
               surfaceTintColor: Colors.transparent,
               pinned: true,
               expandedHeight: 138,
-              leadingWidth: 108,
-              leading: TextButton.icon(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(
-                  Icons.chevron_left,
-                  color: AppTheme.primary,
-                  size: 18,
-                ),
-                label: const Text(
-                  'Voltar',
-                  style: TextStyle(
-                    color: AppTheme.primary,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
+              leadingWidth: 60,
+              leading: Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: Material(
+                    color: const Color(0xFF1C1C1E),
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: () => Navigator.pop(context),
+                      customBorder: const CircleBorder(),
+                      child: const SizedBox(
+                        width: 36,
+                        height: 36,
+                        child: Icon(
+                          CupertinoIcons.back,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppTheme.primary,
-                  minimumSize: const Size(44, 44),
-                  padding: const EdgeInsets.only(left: 2, right: 8),
                 ),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   style: TextButton.styleFrom(
-                    foregroundColor: AppTheme.primary,
+                    foregroundColor: AppTheme.accentMetrics,
                     minimumSize: const Size(44, 44),
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                   ),
                   child: const Text(
                     'Concluir',
                     style: TextStyle(
-                      color: AppTheme.primary,
+                      color: AppTheme.accentMetrics,
                       fontSize: 17,
                       fontWeight: FontWeight.w600,
                     ),

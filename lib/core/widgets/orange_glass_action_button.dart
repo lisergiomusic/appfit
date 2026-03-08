@@ -67,18 +67,18 @@ class _OrangeGlassActionButtonState extends State<OrangeGlassActionButton> {
           splashColor: Colors.white.withValues(alpha: 0.16),
           highlightColor: Colors.black.withValues(alpha: 0.06),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.max,
               children: [
-                Icon(widget.icon, color: Colors.white, size: 20),
+                Icon(widget.icon, color: Colors.black, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   widget.label,
                   style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w900,
                     fontSize: 15,
                     letterSpacing: 0.2,
                   ),

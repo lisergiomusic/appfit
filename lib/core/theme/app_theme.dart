@@ -14,6 +14,7 @@ class AppTheme {
   static const Color surfaceLight = Color(0xFF2C2C2E);
   static const Color textPrimary = Colors.white;
   static const Color textSecondary = Color.fromARGB(160, 255, 255, 255);
+  static const Color accentMetrics = Color(0xFFFF9F0A);
   static const Color success = Color(0xFF4CAF50);
   static const Color error = Colors.redAccent;
 
