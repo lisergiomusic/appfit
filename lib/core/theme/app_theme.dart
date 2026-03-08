@@ -26,6 +26,7 @@ class AppTheme {
   // --- 2. ESPAÇAMENTOS GLOBAIS (Novo Padrão Compacto) ---
   static const double paddingScreen = 20.0;
   static const double paddingCard = 16.0;
+  static const double space0 = 0;
   static const double space4 = 4.0;
   static const double space6 = 6.0;
   static const double space8 = 8.0;

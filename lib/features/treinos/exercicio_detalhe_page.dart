@@ -469,8 +469,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                           vertical: AppTheme.space10,
                         ),
                         decoration: BoxDecoration(
-                          color: AppTheme.surfaceDark.withAlpha(180),
-                          borderRadius: BorderRadius.circular(10),
+                          color: AppTheme.surfaceDark,
+                          borderRadius: BorderRadius.circular(18),
                         ),
                         child: Row(
                           children: [
