@@ -351,7 +351,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
 
   TextStyle _microLabelStyle() {
     return TextStyle(
-      color: Colors.white.withAlpha(170),
+      color: Color(0xFF94A3B8),
       fontSize: 9,
       fontWeight: FontWeight.w600,
       letterSpacing: 0.8,
@@ -499,7 +499,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                     '$visualNumber',
                                     textAlign: TextAlign.left,
                                     style: TextStyle(
-                                      color: _getSerieNumberColor(serie.tipo),
+                                      color: _microLabelStyle().color,
                                       fontSize: 14,
                                       fontWeight: FontWeight.w700,
                                     ),
