@@ -25,8 +25,8 @@ class ExercicioDetalhePage extends StatefulWidget {
 
 class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     with TickerProviderStateMixin {
-  late ExercicioItem ex;
-  late ExercicioDetalheController controller;
+  late final ExercicioItem ex;
+  late final ExercicioDetalheController controller;
   final Map<TipoSerie, GlobalKey<AnimatedListState>> _animatedListKeys = {
     TipoSerie.aquecimento: GlobalKey<AnimatedListState>(),
     TipoSerie.feeder: GlobalKey<AnimatedListState>(),
@@ -47,6 +47,24 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   final Set<String> _suppressNextOnChanged = {};
   final Set<String> _hapticTriggeredDismissKeys = {};
   bool _isEditingInstructions = false;
+  final Map<int, AnimationController> _flashControllers = {};
+
+  // Nova animação de flash
+  void _playFlashAnimation(int serieHash) {
+    _flashControllers[serieHash]?.dispose();
+    final flashController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _flashControllers[serieHash] = flashController;
+
+    flashController.forward().then((_) {
+      if (mounted) {
+        flashController.dispose();
+        _flashControllers.remove(serieHash);
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -113,6 +131,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   void dispose() {
     _disposeControllers();
     _disposeCardAnimationControllers();
+    _disposeFlashControllers();
     _instructionsFocusNode.removeListener(_onInstructionsFocusChange);
     _instructionsController.removeListener(_onInstructionsChanged);
     _instructionsFocusNode.dispose();
@@ -120,6 +139,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     _undoSnackTimer?.cancel();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _disposeFlashControllers() {
+    for (final ctrl in _flashControllers.values) {
+      ctrl.dispose();
+    }
+    _flashControllers.clear();
   }
 
   void _disposeCardAnimationControllers() {
@@ -179,6 +205,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     required TextEditingController controller,
     required void Function(String) onRestore,
     void Function(String)? onCommitEdited,
+    required int serieHash,
   }) {
     final hasEdited = _hasUserEdited[fieldKey] ?? false;
     if (!hasEdited) {
@@ -190,6 +217,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       final committed = controller.text.isEmpty ? '' : controller.text;
       onCommitEdited(committed);
       widget.onChanged();
+      _playFlashAnimation(serieHash);
     }
     _lastValues.remove(fieldKey);
     _hasUserEdited.remove(fieldKey);
@@ -201,10 +229,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     required String value,
     required String emptyFallback,
     required void Function(String) onSave,
+    required int serieHash,
   }) {
     if (_suppressNextOnChanged.contains(fieldKey)) {
-      // Ignora apenas a limpeza programática; se já houver entrada do usuário,
-      // processa normalmente para não perder a primeira digitação.
       if (value.isEmpty) {
         _suppressNextOnChanged.remove(fieldKey);
         return;
@@ -219,6 +246,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     }
     onSave(nextValue);
     widget.onChanged();
+    _playFlashAnimation(serieHash);
   }
 
   String _extractDigits(String value) {
@@ -578,7 +606,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   InputDecoration _editableFieldDecoration({
     EdgeInsetsGeometry contentPadding = const EdgeInsets.symmetric(
       horizontal: AppTheme.space12,
-      vertical: 8,
+      vertical: AppTheme.space10,
     ),
   }) {
     return InputDecoration(
@@ -622,7 +650,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     final rowKey = _rowKeys.putIfAbsent(serie.hashCode, () => GlobalKey());
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppTheme.space4),
+      padding: const EdgeInsets.only(bottom: AppTheme.space8),
       child: ClipRRect(
         key: rowKey,
         borderRadius: borderRadius,
@@ -792,12 +820,16 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                               const AlwaysStoppedAnimation(0.0),
                           _rippleControllers[serie.hashCode] ??
                               const AlwaysStoppedAnimation(0.0),
+                          _flashControllers[serie.hashCode] ??
+                              const AlwaysStoppedAnimation(0.0),
                         ]),
                         builder: (context, child) {
                           final swipeCtrl =
                               _swipeHintControllers[serie.hashCode];
                           final rippleValue =
                               _rippleControllers[serie.hashCode]?.value ?? 0.0;
+                          final flashCtrl = _flashControllers[serie.hashCode];
+
                           final dx = swipeCtrl != null
                               ? _swipeHintTween.animate(swipeCtrl).value
                               : 0.0;
@@ -808,6 +840,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                               (Curves.easeInOutCubic.transform(rippleValue) *
                                       38)
                                   .round();
+
+                          final flashColor = flashCtrl != null
+                              ? ColorTween(
+                                  begin: AppTheme.accentMetrics.withAlpha(50),
+                                  end: AppTheme.surfaceDark,
+                                ).animate(flashCtrl).value
+                              : AppTheme.surfaceDark;
 
                           return Stack(
                             clipBehavior: Clip.none,
@@ -853,7 +892,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                         vertical: AppTheme.space10,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: AppTheme.surfaceDark,
+                                        color: flashColor,
                                         borderRadius: BorderRadius.circular(18),
                                         border: Border.all(
                                           color: Colors.white.withAlpha(14),
@@ -934,6 +973,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                         value: val,
                                         emptyFallback: '0',
                                         onSave: (saved) => serie.alvo = saved,
+                                        serieHash: serie.hashCode,
                                       );
                                     },
                                     onFieldSubmitted: (_) {
@@ -942,6 +982,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                         controller: repsController,
                                         onRestore: (restored) =>
                                             serie.alvo = restored,
+                                        serieHash: serie.hashCode,
                                       );
                                     },
                                     onTapOutside: (_) {
@@ -950,13 +991,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                         controller: repsController,
                                         onRestore: (restored) =>
                                             serie.alvo = restored,
+                                        serieHash: serie.hashCode,
                                       );
                                     },
                                     decoration: _editableFieldDecoration(
                                       contentPadding:
                                           const EdgeInsets.symmetric(
-                                            horizontal: AppTheme.space8,
-                                            vertical: 6,
+                                            horizontal: AppTheme.space12,
+                                            vertical: AppTheme.space8,
                                           ),
                                     ),
                                   ),
@@ -992,6 +1034,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                         value: val,
                                         emptyFallback: '-',
                                         onSave: (saved) => serie.carga = saved,
+                                        serieHash: serie.hashCode,
                                       );
                                     },
                                     onFieldSubmitted: (_) {
@@ -1005,6 +1048,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                               ? '-'
                                               : committed;
                                         },
+                                        serieHash: serie.hashCode,
                                       );
                                     },
                                     onTapOutside: (_) {
@@ -1018,13 +1062,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                               ? '-'
                                               : committed;
                                         },
+                                        serieHash: serie.hashCode,
                                       );
                                     },
                                     decoration: _editableFieldDecoration(
                                       contentPadding:
                                           const EdgeInsets.symmetric(
-                                            horizontal: AppTheme.space8,
-                                            vertical: 6,
+                                            horizontal: AppTheme.space12,
+                                            vertical: AppTheme.space8,
                                           ),
                                     ),
                                   ),
@@ -1062,6 +1107,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                         emptyFallback: '0',
                                         onSave: (saved) =>
                                             serie.descanso = saved,
+                                        serieHash: serie.hashCode,
                                       );
                                     },
                                     onFieldSubmitted: (_) {
@@ -1070,6 +1116,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                         controller: descansoController,
                                         onRestore: (restored) =>
                                             serie.descanso = restored,
+                                        serieHash: serie.hashCode,
                                       );
                                     },
                                     onTapOutside: (_) {
@@ -1078,13 +1125,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                         controller: descansoController,
                                         onRestore: (restored) =>
                                             serie.descanso = restored,
+                                        serieHash: serie.hashCode,
                                       );
                                     },
                                     decoration: _editableFieldDecoration(
                                       contentPadding:
                                           const EdgeInsets.symmetric(
-                                            horizontal: AppTheme.space8,
-                                            vertical: 6,
+                                            horizontal: AppTheme.space12,
+                                            vertical: AppTheme.space8,
                                           ),
                                     ),
                                   ),
@@ -1214,14 +1262,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                       )
                     : (icon != null
                           ? Icon(icon, color: iconColor, size: 18)
-                          : SizedBox(width: 18)),
+                          : const SizedBox(width: 18)),
                 const SizedBox(width: AppTheme.space10),
                 Text(
                   title,
                   style: TextStyle(
                     color: titleColor ?? Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -1399,7 +1447,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
           Center(
             child: OrangeGlassActionButton(
               label: 'Adicionar Série',
-              onTap: _adicionarSerie,
+              onTap: () => _adicionarSerie(),
               bottomMargin: 0,
             ),
           ),
@@ -1525,14 +1573,12 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           // Fade + slight upward slide
                           final offsetAnimation =
                               Tween<Offset>(
-                                begin: const Offset(0, 0.08),
-                                end: Offset.zero,
-                              ).animate(
-                                CurvedAnimation(
-                                  parent: animation,
-                                  curve: Curves.easeOutCubic,
-                                ),
-                              );
+                                    begin: const Offset(0, 0.15),
+                                    end: Offset.zero,
+                                  )
+                                  .chain(CurveTween(curve: Curves.easeOutCubic))
+                                  .animate(animation);
+
                           return FadeTransition(
                             opacity: animation,
                             child: SlideTransition(
@@ -1783,11 +1829,20 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         ],
                         const SizedBox(height: AppTheme.space12),
                         Center(
-                          child: OrangeGlassActionButton(
-                            label: 'Adicionar Série',
-                            onTap: _adicionarSerie,
-                            bottomMargin: 0,
-                          ),
+                          child: _isEditingInstructions
+                              ? OrangeGlassActionButton(
+                                  label: 'Salvar Instruções',
+                                  onTap: () {
+                                    _instructionsFocusNode.unfocus();
+                                    _saveInstructions();
+                                  },
+                                  bottomMargin: 0,
+                                )
+                              : OrangeGlassActionButton(
+                                  label: 'Adicionar Série',
+                                  onTap: _adicionarSerie,
+                                  bottomMargin: 0,
+                                ),
                         ),
                       ],
                     ],
