@@ -57,7 +57,7 @@
 
 ### ♿ Acessibilidade
 
-- [ ] **Semantics incompletos** em campos editáveis de séries
+ - [x] **Semantics incompletos** em campos editáveis de séries
   - Faltam labels para reps/carga/descanso
   - Faltam hints de interação ("Deslize para remover")
   
@@ -130,7 +130,7 @@
 - [ ] Testes unitários dos formatters
 
 ### P2 - Nice to Have (Backlog)
-- [ ] Extrair lógica para controller/ViewModel
+- [x] Extrair lógica para controller/ViewModel
 - [ ] Drag to reorder séries
 - [ ] Empty state ilustrado
 - [ ] Contador de caracteres em instruções
