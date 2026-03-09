@@ -1297,6 +1297,81 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     widget.onChanged();
   }
 
+  Widget _buildEmptySeriesState() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppTheme.space48),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Ilustração (Ícone estilizado)
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppTheme.primary.withAlpha(30),
+                  AppTheme.accentMetrics.withAlpha(20),
+                ],
+              ),
+              border: Border.all(
+                color: AppTheme.primary.withAlpha(50),
+                width: 2,
+              ),
+            ),
+            child: const Icon(
+              Icons.fitness_center_rounded,
+              size: 50,
+              color: AppTheme.primary,
+            ),
+          ),
+          const SizedBox(height: AppTheme.space24),
+          // Texto motivacional
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
+            child: Column(
+              children: [
+                const Text(
+                  'Prescreva o exercício',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: AppTheme.space12),
+                Text(
+                  'Defina as séries, repetições e cargas para criar um treino efetivo para seu aluno.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppTheme.space32),
+          // Botão de ação
+          Center(
+            child: OrangeGlassActionButton(
+              label: 'Adicionar Série',
+              onTap: _adicionarSerie,
+              bottomMargin: 0,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final exerciseTitle = SliverSafeTitle.safeTitle(
@@ -1638,42 +1713,47 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         ],
                       ),
                       const SizedBox(height: AppTheme.space24),
-                      _buildSeriesSection(
-                        icon: null,
-                        iconColor: null,
-                        title: 'AQUECIMENTO',
-                        entries: warmupEntries,
-                        titleColor: AppTheme.iosBlue,
-                        showDot: true,
-                      ),
-                      if (feederEntries.isNotEmpty) ...[
+                      // Condicional: mostrar estado vazio ou séries
+                      if (ex.series.isEmpty)
+                        _buildEmptySeriesState()
+                      else ...[
                         _buildSeriesSection(
                           icon: null,
                           iconColor: null,
-                          title: 'FEEDER',
-                          entries: feederEntries,
-                          titleColor: AppTheme.accentMetrics,
+                          title: 'AQUECIMENTO',
+                          entries: warmupEntries,
+                          titleColor: AppTheme.iosBlue,
                           showDot: true,
                         ),
-                      ],
-                      if (workEntries.isNotEmpty) ...[
-                        _buildSeriesSection(
-                          icon: null,
-                          iconColor: null,
-                          title: 'SÉRIES DE TRABALHO',
-                          entries: workEntries,
-                          titleColor: AppTheme.primary,
-                          showDot: true,
+                        if (feederEntries.isNotEmpty) ...[
+                          _buildSeriesSection(
+                            icon: null,
+                            iconColor: null,
+                            title: 'FEEDER',
+                            entries: feederEntries,
+                            titleColor: AppTheme.accentMetrics,
+                            showDot: true,
+                          ),
+                        ],
+                        if (workEntries.isNotEmpty) ...[
+                          _buildSeriesSection(
+                            icon: null,
+                            iconColor: null,
+                            title: 'SÉRIES DE TRABALHO',
+                            entries: workEntries,
+                            titleColor: AppTheme.primary,
+                            showDot: true,
+                          ),
+                        ],
+                        const SizedBox(height: AppTheme.space12),
+                        Center(
+                          child: OrangeGlassActionButton(
+                            label: 'Adicionar Série',
+                            onTap: _adicionarSerie,
+                            bottomMargin: 0,
+                          ),
                         ),
                       ],
-                      const SizedBox(height: AppTheme.space12),
-                      Center(
-                        child: OrangeGlassActionButton(
-                          label: 'Adicionar Série',
-                          onTap: _adicionarSerie,
-                          bottomMargin: 0,
-                        ),
-                      ),
                     ],
                   ),
                 ),
