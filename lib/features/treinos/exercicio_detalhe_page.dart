@@ -41,6 +41,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   final Map<String, TextEditingController> _controllers = {};
   final TextEditingController _instructionsController = TextEditingController();
   final FocusNode _instructionsFocusNode = FocusNode();
+  static const int _instructionsMaxChars = 250;
   final Map<String, String> _lastValues = {};
   final Map<String, bool> _hasUserEdited = {};
   final Set<String> _suppressNextOnChanged = {};
@@ -53,6 +54,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     ex = widget.exercicio;
     controller = ExercicioDetalheController(ex);
     _instructionsController.text = ex.observacao;
+    _instructionsController.addListener(_onInstructionsChanged);
     _instructionsFocusNode.addListener(_onInstructionsFocusChange);
   }
 
@@ -103,11 +105,16 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     });
   }
 
+  void _onInstructionsChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
     _disposeControllers();
     _disposeHighlightControllers();
     _instructionsFocusNode.removeListener(_onInstructionsFocusChange);
+    _instructionsController.removeListener(_onInstructionsChanged);
     _instructionsFocusNode.dispose();
     _instructionsController.dispose();
     _undoSnackTimer?.cancel();
@@ -1547,59 +1554,85 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                             label: 'Instruções do exercício',
                             textField: true,
                             hint: 'Toque para adicionar instruções de execução',
-                            child: TextField(
-                              controller: _instructionsController,
-                              focusNode: _instructionsFocusNode,
-                              minLines: 3,
-                              maxLines: 8,
-                              textCapitalization: TextCapitalization.sentences,
-                              onTapOutside: (_) {
-                                FocusScope.of(context).unfocus();
-                                _saveInstructions();
-                              },
-                              onSubmitted: (_) => _saveInstructions(),
-                              style: const TextStyle(
-                                color: AppTheme.textPrimary,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: _isEditingInstructions
-                                    ? null
-                                    : 'Toque para adicionar instruções de execução...',
-                                hintStyle: TextStyle(
-                                  color: AppTheme.textSecondary.withAlpha(120),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                filled: true,
-                                fillColor: AppTheme.surfaceDark,
-                                contentPadding: const EdgeInsets.all(
-                                  AppTheme.space16,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide(
-                                    color: Colors.white.withAlpha(28),
-                                    width: 1,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                TextField(
+                                  controller: _instructionsController,
+                                  focusNode: _instructionsFocusNode,
+                                  minLines: 3,
+                                  maxLines: 8,
+                                  textCapitalization:
+                                      TextCapitalization.sentences,
+                                  onTapOutside: (_) {
+                                    FocusScope.of(context).unfocus();
+                                    _saveInstructions();
+                                  },
+                                  onSubmitted: (_) => _saveInstructions(),
+                                  style: const TextStyle(
+                                    color: AppTheme.textPrimary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    height: 1.5,
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: _isEditingInstructions
+                                        ? null
+                                        : 'Toque para adicionar instruções de execução...',
+                                    hintStyle: TextStyle(
+                                      color: AppTheme.textSecondary.withAlpha(
+                                        120,
+                                      ),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                    filled: true,
+                                    fillColor: AppTheme.surfaceDark,
+                                    contentPadding: const EdgeInsets.all(
+                                      AppTheme.space16,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: BorderSide(
+                                        color: Colors.white.withAlpha(28),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: BorderSide(
+                                        color: Colors.white.withAlpha(28),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: const BorderSide(
+                                        color: AppTheme.accentMetrics,
+                                        width: 1.5,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide(
-                                    color: Colors.white.withAlpha(28),
-                                    width: 1,
+                                if (_isEditingInstructions)
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: 6,
+                                      right: 6,
+                                    ),
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                        '${_instructionsController.text.length}/$_instructionsMaxChars',
+                                        style: TextStyle(
+                                          color: AppTheme.textSecondary
+                                              .withOpacity(0.62),
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(
-                                    color: AppTheme.accentMetrics,
-                                    width: 1.5,
-                                  ),
-                                ),
-                              ),
+                              ],
                             ),
                           ),
                         ],
