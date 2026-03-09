@@ -818,7 +818,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                   style: TextStyle(
                     color: titleColor ?? Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 11,
+                    fontSize: 10,
                   ),
                 ),
               ],
