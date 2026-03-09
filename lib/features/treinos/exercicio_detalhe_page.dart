@@ -273,7 +273,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                         onTap: () =>
                             Navigator.pop(context, TipoSerie.aquecimento),
                         showDivider: true,
-                        subtitle: 'Preparação leve e articular.',
+                        subtitle: 'Prepara articulações e ativa músculos.',
                       ),
                       _buildModalOption(
                         title: 'Feeder Set',
@@ -281,7 +281,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                         color: Colors.blueAccent,
                         onTap: () => Navigator.pop(context, TipoSerie.feeder),
                         showDivider: true,
-                        subtitle: 'Aproximação sem gerar fadiga.',
+                        subtitle: 'Aproximação progressiva sem fadiga.',
                       ),
                       _buildModalOption(
                         title: 'Série de Trabalho',
@@ -289,7 +289,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                         color: Colors.white,
                         onTap: () => Navigator.pop(context, TipoSerie.trabalho),
                         showDivider: false,
-                        subtitle: 'Série principal até a falha.',
+                        subtitle: 'Série efetiva próxima à falha muscular.',
                       ),
                     ],
                   ),
@@ -396,8 +396,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
 
   TextStyle _microLabelStyle() {
     return TextStyle(
-      color: Color(0xFF94A3B8),
-      fontSize: 9,
+      color: AppTheme.silverGrey,
+      fontSize: 10,
       fontWeight: FontWeight.w600,
       letterSpacing: 0.8,
     );
@@ -423,7 +423,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
       contentPadding: contentPadding,
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        borderSide: const BorderSide(color: Color(0xFFFF6D00), width: 1.1),
+        borderSide: const BorderSide(color: AppTheme.accentMetrics, width: 1.1),
       ),
     );
   }
@@ -943,7 +943,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF0A0A0A),
+        backgroundColor: AppTheme.background,
         extendBody: false,
         body: SafeArea(
           bottom: true,
@@ -954,7 +954,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
             slivers: [
               SliverAppBar(
                 automaticallyImplyLeading: false,
-                backgroundColor: const Color(0xFF0A0A0A),
+                backgroundColor: AppTheme.background,
                 surfaceTintColor: Colors.transparent,
                 pinned: true,
                 expandedHeight: 138,
@@ -970,11 +970,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                         onTap: () => Navigator.pop(context),
                         customBorder: const CircleBorder(),
                         child: const SizedBox(
-                          width: 36,
-                          height: 36,
+                          width: 40,
+                          height: 40,
                           child: Icon(
                             CupertinoIcons.back,
-                            color: Colors.white,
+                            color: AppTheme.textPrimary,
                             size: 18,
                           ),
                         ),
@@ -1010,7 +1010,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
 
                     return FlexibleSpaceBar(
                       centerTitle: true,
-                      titlePadding: const EdgeInsets.only(bottom: 16),
+                      titlePadding: const EdgeInsets.only(bottom: 18),
                       title: SliverSafeTitle(
                         title: exerciseTitle,
                         isVisible: isCollapsed,
@@ -1062,12 +1062,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     children: [
                       Text(muscleGroupsText, style: _sectionEyebrowStyle()),
                       const SizedBox(height: AppTheme.space16),
-                      InkWell(
+                      _ExerciseVideoCard(
+                        imageUrl: ex.imagemUrl,
+                        exerciseTitle: exerciseTitle,
                         onTap: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                'Abrindo vídeo explicativo de $exerciseTitle...',
+                                'Assistindo vídeo de $exerciseTitle',
                               ),
                               backgroundColor: AppTheme.primary,
                               behavior: SnackBarBehavior.floating,
@@ -1075,61 +1077,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                             ),
                           );
                         },
-                        borderRadius: BorderRadius.circular(22),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(8),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withAlpha(80),
-                                blurRadius: 24,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: AspectRatio(
-                              aspectRatio: 16 / 9,
-                              child: Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                      ex.imagemUrl ??
-                                          'https://lh3.googleusercontent.com/aida-public/AB6AXuAXzEmkEB7BMnRUWQ6iIDF5Oc_gVzBjCjxHaac9LYJyL8KxdAi-mTOKK2v2nO9Vt3-DXPcDcoSM3RkTh-iDX0q8oShyD0TllFVTVsQBP3fKU0HPHHtOlkO5uRRx_yIiMes1tmlEr6VkkMyvhy-LTIzYuWYuJaLsSzeba5FPnNX9_RQjcusWmbIyWrBVLVSmLZjDaMcPJMKiSSY6S-RSZFaAzRzHQdDbWnPbv1aUP1akkwSiPE9Rriwmdn8VrF3w0ZIWei1Cxfd7B2Ut',
-                                    ),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                child: Stack(
-                                  children: [
-                                    Center(
-                                      child: Container(
-                                        width: 56,
-                                        height: 56,
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withAlpha(88),
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Colors.white.withAlpha(35),
-                                            width: 0.9,
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.play_arrow,
-                                          color: Colors.white,
-                                          size: 30,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
                       ),
                       const SizedBox(height: AppTheme.space20),
                       Column(
@@ -1195,8 +1142,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                               height: 1.5,
                             ),
                             decoration: InputDecoration(
-                              hintText:
-                                  'Toque para adicionar instruções de execução...',
+                              hintText: _isEditingInstructions
+                                  ? null
+                                  : 'Toque para adicionar instruções de execução...',
                               hintStyle: TextStyle(
                                 color: AppTheme.textSecondary.withAlpha(120),
                                 fontSize: 14,
@@ -1235,7 +1183,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                         iconColor: null,
                         title: 'AQUECIMENTO',
                         entries: warmupEntries,
-                        titleColor: const Color(0xFF60A5FA),
+                        titleColor: AppTheme.iosBlue,
                         showDot: true,
                       ),
                       if (feederEntries.isNotEmpty) ...[
@@ -1244,7 +1192,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                           iconColor: null,
                           title: 'FEEDER',
                           entries: feederEntries,
-                          titleColor: const Color(0xFFFF6B00),
+                          titleColor: AppTheme.accentMetrics,
                           showDot: true,
                         ),
                       ],
@@ -1254,11 +1202,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                           iconColor: null,
                           title: 'SÉRIES DE TRABALHO',
                           entries: workEntries,
-                          titleColor: const Color(0xFF0df259),
+                          titleColor: AppTheme.primary,
                           showDot: true,
                         ),
                       ],
-                      const SizedBox(height: AppTheme.space24),
+                      const SizedBox(height: AppTheme.space12),
                       Center(
                         child: OrangeGlassActionButton(
                           label: 'Adicionar Série',
@@ -1270,8 +1218,82 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                   ),
                 ),
               ),
-              SliverPadding(padding: EdgeInsets.only(bottom: 48)),
+              SliverPadding(padding: EdgeInsets.only(bottom: AppTheme.space16)),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExerciseVideoCard extends StatelessWidget {
+  final String? imageUrl;
+  final String exerciseTitle;
+  final VoidCallback onTap;
+
+  const _ExerciseVideoCard({
+    required this.imageUrl,
+    required this.exerciseTitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(22),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withAlpha(8),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(80),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage(
+                    imageUrl ??
+                        'https://lh3.googleusercontent.com/aida-public/AB6AXuAXzEmkEB7BMnRUWQ6iIDF5Oc_gVzBjCjxHaac9LYJyL8KxdAi-mTOKK2v2nO9Vt3-DXPcDcoSM3RkTh-iDX0q8oShyD0TllFVTVsQBP3fKU0HPHHtOlkO5uRRx_yIiMes1tmlEr6VkkMyvhy-LTIzYuWYuJaLsSzeba5FPnNX9_RQjcusWmbIyWrBVLVSmLZjDaMcPJMKiSSY6S-RSZFaAzRzHQdDbWnPbv1aUP1akkwSiPE9Rriwmdn8VrF3w0ZIWei1Cxfd7B2Ut',
+                  ),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withAlpha(88),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withAlpha(35),
+                          width: 0.9,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
