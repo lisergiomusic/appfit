@@ -264,8 +264,8 @@ class _EditorModalState extends State<_EditorModal> {
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.3),
-                              blurRadius: 24,
-                              offset: const Offset(0, 10),
+                              blurRadius: 12,
+                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),

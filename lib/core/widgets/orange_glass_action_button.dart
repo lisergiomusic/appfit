@@ -30,17 +30,17 @@ class _OrangeGlassActionButtonState extends State<OrangeGlassActionButton> {
         ? <BoxShadow>[
             BoxShadow(
               color: AppTheme.primary.withValues(alpha: 0.38),
-              blurRadius: 18,
+              blurRadius: 12,
               spreadRadius: 0.6,
-              offset: const Offset(0, 4),
+              offset: const Offset(0, 2),
             ),
           ]
         : <BoxShadow>[
             BoxShadow(
               color: AppTheme.primary.withValues(alpha: 0.34),
-              blurRadius: 22,
+              blurRadius: 12,
               spreadRadius: 0.4,
-              offset: const Offset(0, 6),
+              offset: const Offset(0, 2),
             ),
           ];
 

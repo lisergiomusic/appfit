@@ -652,8 +652,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.28),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
             ),
             BoxShadow(
               color: Colors.white.withValues(alpha: 0.03),
