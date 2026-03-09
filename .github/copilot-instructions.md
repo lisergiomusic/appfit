@@ -27,6 +27,9 @@
 - Wrap Firebase/Firestore mutations in `try/catch` and surface user-facing failures with `ScaffoldMessenger.of(context).showSnackBar(...)`.
 - Preserve role-based flow and parameter passing (`userType`, `uid`) when changing auth, login, or dashboard transitions.
 
+## Regras do Copilot
+- Nunca faça commits sem a permissão explícita do usuário. Sempre pergunte antes de criar commits ou pushes envolvendo o repositório.
+
 ## UI And Theme Conventions
 - Reuse `AppTheme` tokens for color, spacing, radius, and typography.
 - Prefer spacing constants (for example `space8`, `space12`, `space16`, `space24`) over hard-coded numbers.

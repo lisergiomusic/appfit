@@ -71,7 +71,7 @@
 
 - [x] **Feedback visual ausente** ao adicionar série (scroll automático + subtle highlight)
 
-- [ ] **Contador de caracteres** opcional para campo de instruções
+ - [x] **Contador de caracteres** opcional para campo de instruções
   - Útil se houver limite de caracteres
 
 - [ ] **Loading state** para imagem do vídeo ausente
@@ -133,7 +133,7 @@
 - [x] Extrair lógica para controller/ViewModel
 - [ ] Drag to reorder séries
 - [ ] Empty state ilustrado
-- [ ] Contador de caracteres em instruções
+ - [x] Contador de caracteres em instruções
 - [x] Smooth scroll ao adicionar série
 
 ---
