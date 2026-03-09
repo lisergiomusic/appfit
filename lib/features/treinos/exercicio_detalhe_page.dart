@@ -1243,7 +1243,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                     final mapped = entries[index];
                     final serie = mapped.value;
                     final isLast = index == entries.length - 1;
-                    final realIndex = ex.series.indexOf(serie);
+                    final realIndex = mapped.key;
                     return SizeTransition(
                       sizeFactor: animation,
                       child: _buildSerieRow(

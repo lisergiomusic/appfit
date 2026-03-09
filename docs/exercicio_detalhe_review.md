@@ -36,6 +36,7 @@
   - **Localização:** Linha ~1006 (itemBuilder)
   - **Impacto:** O(n) por item = O(n²) total
   - **Solução:** Passar `realIndex` via closure ou computar uma vez
+  - [x] Implementação: usei `mapped.key` (índice real) no `itemBuilder` para evitar `indexOf`
 
 ### 📝 Code Quality
 
@@ -117,10 +118,10 @@
 
 ## 🎯 Priorização
 
--### P0 - Crítico (Deve ser feito antes de release)
+### P0 - Crítico (Deve ser feito antes de release)
 - [x] Corrigir edge case `entries.first` no AnimatedList
 - [x] Resolver warnings do analyzer (curly braces, interpolations)
-- [ ] Fix performance O(n²) no indexOf dentro do AnimatedList
+- [x] Fix performance O(n²) no indexOf dentro do AnimatedList
 
 ### P1 - Importante (Próxima iteração)
 - [ ] Adicionar Semantics completos nos campos de série
