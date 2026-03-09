@@ -80,7 +80,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   void _startEditingField(String fieldKey, TextEditingController controller) {
     _lastValues[fieldKey] = controller.text;
     _hasUserEdited[fieldKey] = false;
-    _setControllerText(fieldKey, controller, '');
+    controller.selection = TextSelection.collapsed(
+      offset: controller.text.length,
+    );
   }
 
   void _restorePreviousIfNoChange({
