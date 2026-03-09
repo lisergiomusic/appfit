@@ -1162,14 +1162,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 borderSide: BorderSide(
-                                  color: Colors.white.withAlpha(12),
+                                  color: Colors.white.withAlpha(20),
                                   width: 1,
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 borderSide: BorderSide(
-                                  color: Colors.white.withAlpha(12),
+                                  color: Colors.white.withAlpha(20),
                                   width: 1,
                                 ),
                               ),
