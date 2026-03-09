@@ -23,6 +23,11 @@ class ExercicioDetalhePage extends StatefulWidget {
 
 class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   late ExercicioItem ex;
+  final Map<TipoSerie, GlobalKey<AnimatedListState>> _animatedListKeys = {
+    TipoSerie.aquecimento: GlobalKey<AnimatedListState>(),
+    TipoSerie.feeder: GlobalKey<AnimatedListState>(),
+    TipoSerie.trabalho: GlobalKey<AnimatedListState>(),
+  };
   final Map<String, TextEditingController> _controllers = {};
   final TextEditingController _instructionsController = TextEditingController();
   final FocusNode _instructionsFocusNode = FocusNode();
@@ -169,8 +174,29 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
 
   void _removerSerie(int realIndex) {
     final serieRemovida = ex.series[realIndex];
-    final indexRemovido = realIndex;
+    final tipo = serieRemovida.tipo;
+    final sectionIndex = ex.series
+        .where((s) => s.tipo == tipo)
+        .toList()
+        .indexOf(serieRemovida);
 
+    // Animate removal
+    _animatedListKeys[tipo]?.currentState?.removeItem(
+      sectionIndex,
+      (context, animation) => SizeTransition(
+        sizeFactor: animation,
+        child: _buildSerieRowForAnimated(
+          serieRemovida,
+          realIndex,
+          sectionIndex + 1,
+          true,
+          animation,
+        ),
+      ),
+      duration: const Duration(milliseconds: 300),
+    );
+
+    // Remove from model
     setState(() {
       ex.series.removeAt(realIndex);
       _clearEditingState();
@@ -198,9 +224,25 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
               label: 'Desfazer',
               textColor: AppTheme.accentMetrics,
               onPressed: () {
+                // Re-insert at the original place and animate back
+                final insertSectionIndex = sectionIndex;
                 setState(() {
-                  ex.series.insert(indexRemovido, serieRemovida);
-                  _clearEditingState();
+                  // Recompute insertion position in master list
+                  // Find the real insertion index by locating the first item of that tipo after
+                  final all = ex.series;
+                  int insertAt = all.indexWhere((s) => s.tipo == tipo);
+                  if (insertAt == -1) insertAt = all.length;
+                  // Adjust to place at previous logical position within section
+                  // We'll append within section for simplicity
+                  ex.series.insert(insertAt, serieRemovida);
+                });
+
+                // Animate insertion in section list
+                Future.microtask(() {
+                  _animatedListKeys[tipo]?.currentState?.insertItem(
+                    insertSectionIndex,
+                    duration: const Duration(milliseconds: 300),
+                  );
                 });
               },
             ),
@@ -303,31 +345,55 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     );
 
     if (tipoEscolhido != null) {
-      setState(() {
-        String alvoToClone = '10';
-        String cargaToClone = '-';
-        String descansoToClone = '60s';
+      String alvoToClone = '10';
+      String cargaToClone = '-';
+      String descansoToClone = '60s';
 
-        if (ex.series.isNotEmpty) {
-          final ultimaSerie = ex.series.lastWhere(
-            (s) => s.tipo == tipoEscolhido,
-            orElse: () => ex.series.last,
-          );
-          alvoToClone = ultimaSerie.alvo;
-          cargaToClone = ultimaSerie.carga;
-          descansoToClone = ultimaSerie.descanso;
-        }
-
-        ex.series.add(
-          SerieItem(
-            tipo: tipoEscolhido,
-            alvo: alvoToClone,
-            carga: cargaToClone,
-            descanso: descansoToClone,
-          ),
+      if (ex.series.isNotEmpty) {
+        final ultimaSerie = ex.series.lastWhere(
+          (s) => s.tipo == tipoEscolhido,
+          orElse: () => ex.series.last,
         );
-        widget.onChanged();
+        alvoToClone = ultimaSerie.alvo;
+        cargaToClone = ultimaSerie.carga;
+        descansoToClone = ultimaSerie.descanso;
+      }
+
+      final newSerie = SerieItem(
+        tipo: tipoEscolhido,
+        alvo: alvoToClone,
+        carga: cargaToClone,
+        descanso: descansoToClone,
+      );
+
+      // Determine section insert index (append to that section)
+      final sectionList = ex.series
+          .where((s) => s.tipo == tipoEscolhido)
+          .toList();
+      final insertSectionIndex = sectionList.length;
+
+      // Determine real index to insert into master list: after last of same tipo or at end
+      int insertRealIndex = ex.series.lastIndexWhere(
+        (s) => s.tipo == tipoEscolhido,
+      );
+      if (insertRealIndex == -1)
+        insertRealIndex = ex.series.length;
+      else
+        insertRealIndex = insertRealIndex + 1;
+
+      setState(() {
+        ex.series.insert(insertRealIndex, newSerie);
       });
+
+      // Animate insertion in section
+      Future.microtask(() {
+        _animatedListKeys[tipoEscolhido]?.currentState?.insertItem(
+          insertSectionIndex,
+          duration: const Duration(milliseconds: 300),
+        );
+      });
+
+      widget.onChanged();
     }
   }
 
@@ -429,23 +495,27 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   }
 
   Widget _buildSerieRow(
-    MapEntry<int, SerieItem> entry,
+    SerieItem serie,
+    int realIndex,
     int visualNumber,
     bool showDivider,
   ) {
-    final realIndex = entry.key;
-    final serie = entry.value;
     final repsFieldKey = 'reps_$realIndex';
     final cargaFieldKey = 'carga_$realIndex';
     final descansoFieldKey = 'descanso_$realIndex';
+    // Use stable keys per serie instance (hashCode) to keep controllers
+    final stableId = serie.hashCode;
+    final repsFieldStableKey = 'reps_${stableId}';
+    final cargaFieldStableKey = 'carga_${stableId}';
+    final descansoFieldStableKey = 'descanso_${stableId}';
 
-    final repsController = _getController(repsFieldKey, serie.alvo);
+    final repsController = _getController(repsFieldStableKey, serie.alvo);
     final cargaController = _getController(
-      cargaFieldKey,
+      cargaFieldStableKey,
       _formatCargaInputValue(serie.carga),
     );
     final descansoController = _getController(
-      descansoFieldKey,
+      descansoFieldStableKey,
       _formatDescansoInputValue(serie.descanso),
     );
     final dismissKey = '${serie.hashCode}_$realIndex';
@@ -774,6 +844,19 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     );
   }
 
+  Widget _buildSerieRowForAnimated(
+    SerieItem serie,
+    int realIndex,
+    int visualNumber,
+    bool showDivider,
+    Animation<double> animation,
+  ) {
+    return FadeTransition(
+      opacity: animation,
+      child: _buildSerieRow(serie, realIndex, visualNumber, showDivider),
+    );
+  }
+
   Widget _buildSeriesSection({
     IconData? icon,
     Color? iconColor,
@@ -891,10 +974,28 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     ],
                   ),
                 ),
-                ...entries.asMap().entries.map((mapped) {
-                  final isLast = mapped.key == entries.length - 1;
-                  return _buildSerieRow(mapped.value, mapped.key + 1, !isLast);
-                }),
+                // Animated list per section for smooth insert/remove
+                AnimatedList(
+                  key: _animatedListKeys[entries.first.value.tipo],
+                  initialItemCount: entries.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index, animation) {
+                    final mapped = entries[index];
+                    final serie = mapped.value;
+                    final isLast = index == entries.length - 1;
+                    final realIndex = ex.series.indexOf(serie);
+                    return SizeTransition(
+                      sizeFactor: animation,
+                      child: _buildSerieRow(
+                        serie,
+                        realIndex,
+                        index + 1,
+                        !isLast,
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
