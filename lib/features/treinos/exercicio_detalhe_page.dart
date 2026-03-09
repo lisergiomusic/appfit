@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
+import 'dart:async';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/orange_glass_action_button.dart';
@@ -21,13 +22,20 @@ class ExercicioDetalhePage extends StatefulWidget {
   State<ExercicioDetalhePage> createState() => _ExercicioDetalhePageState();
 }
 
-class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
+class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
+    with TickerProviderStateMixin {
   late ExercicioItem ex;
   final Map<TipoSerie, GlobalKey<AnimatedListState>> _animatedListKeys = {
     TipoSerie.aquecimento: GlobalKey<AnimatedListState>(),
     TipoSerie.feeder: GlobalKey<AnimatedListState>(),
     TipoSerie.trabalho: GlobalKey<AnimatedListState>(),
   };
+  final ScrollController _scrollController = ScrollController();
+  final Map<int, GlobalKey> _rowKeys = {};
+  final Map<int, AnimationController> _highlightControllers = {};
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _activeSnackBar;
+  Timer? _undoSnackTimer;
+  bool _isAnimatingSeriesMutation = false;
   final Map<String, TextEditingController> _controllers = {};
   final TextEditingController _instructionsController = TextEditingController();
   final FocusNode _instructionsFocusNode = FocusNode();
@@ -54,10 +62,20 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   @override
   void dispose() {
     _disposeControllers();
+    _disposeHighlightControllers();
     _instructionsFocusNode.removeListener(_onInstructionsFocusChange);
     _instructionsFocusNode.dispose();
     _instructionsController.dispose();
+    _undoSnackTimer?.cancel();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _disposeHighlightControllers() {
+    for (var controller in _highlightControllers.values) {
+      controller.dispose();
+    }
+    _highlightControllers.clear();
   }
 
   void _disposeControllers() {
@@ -172,88 +190,196 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     return '${digits}s';
   }
 
+  void _startHighlightGlow(int serieHash) {
+    // Remove controller anterior se existir
+    _highlightControllers[serieHash]?.dispose();
+
+    // Cria novo controller com duração de 900ms por pulso (mais lento = mais visível)
+    final controller = AnimationController(
+      duration: const Duration(milliseconds: 900),
+      vsync: this,
+    );
+
+    // Adiciona listener para forçar rebuild quando a animação mudar
+    controller.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+
+    setState(() {
+      _highlightControllers[serieHash] = controller;
+    });
+
+    // Aguarda o próximo frame para garantir que o AnimatedBuilder reconheceu o controller
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      // 2 pulsos suaves (0→1→0, pausa, 0→1→0)
+      controller.forward().then((_) {
+        controller.reverse().then((_) {
+          Future.delayed(const Duration(milliseconds: 150), () {
+            if (mounted && _highlightControllers.containsKey(serieHash)) {
+              controller.forward().then((_) {
+                controller.reverse().then((_) {
+                  // Remove após completar
+                  if (mounted) {
+                    Future.delayed(const Duration(milliseconds: 200), () {
+                      controller.dispose();
+                      if (mounted) {
+                        setState(() => _highlightControllers.remove(serieHash));
+                      }
+                    });
+                  }
+                });
+              });
+            }
+          });
+        });
+      });
+    });
+  }
+
   void _removerSerie(int realIndex) {
+    if (realIndex < 0 || realIndex >= ex.series.length) {
+      return;
+    }
+
     final serieRemovida = ex.series[realIndex];
     final tipo = serieRemovida.tipo;
     final sectionIndex = ex.series
         .where((s) => s.tipo == tipo)
         .toList()
         .indexOf(serieRemovida);
-
-    // Animate removal
-    _animatedListKeys[tipo]?.currentState?.removeItem(
-      sectionIndex,
-      (context, animation) => SizeTransition(
-        sizeFactor: animation,
-        child: _buildSerieRowForAnimated(
-          serieRemovida,
-          realIndex,
-          sectionIndex + 1,
-          true,
-          animation,
-        ),
-      ),
-      duration: const Duration(milliseconds: 300),
-    );
-
-    // Remove from model
+    // Remove from model first, then animate removal using the captured item
     setState(() {
       ex.series.removeAt(realIndex);
       _clearEditingState();
     });
 
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-          SnackBar(
-            content: const Text(
-              'Série removida',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+    // Animate only one list mutation at a time to avoid rapid-delete crashes.
+    if (!_isAnimatingSeriesMutation) {
+      _isAnimatingSeriesMutation = true;
+      try {
+        final listState = _animatedListKeys[tipo]?.currentState;
+        if (listState != null) {
+          final sectionCountBefore =
+              ex.series.where((s) => s.tipo == tipo).length + 1;
+          if (sectionIndex >= 0 && sectionIndex < sectionCountBefore) {
+            listState.removeItem(
+              sectionIndex,
+              (context, animation) => SizeTransition(
+                sizeFactor: animation,
+                child: _buildRemovedSerieRow(
+                  serieRemovida,
+                  sectionIndex + 1,
+                  animation,
+                ),
               ),
-            ),
-            backgroundColor: AppTheme.surfaceDark,
-            behavior: SnackBarBehavior.fixed,
-            duration: const Duration(seconds: 4),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            action: SnackBarAction(
-              label: 'Desfazer',
-              textColor: AppTheme.accentMetrics,
-              onPressed: () {
-                // Re-insert at the original place and animate back
-                final insertSectionIndex = sectionIndex;
-                setState(() {
-                  // Recompute insertion position in master list
-                  // Find the real insertion index by locating the first item of that tipo after
-                  final all = ex.series;
-                  int insertAt = all.indexWhere((s) => s.tipo == tipo);
-                  if (insertAt == -1) insertAt = all.length;
-                  // Adjust to place at previous logical position within section
-                  // We'll append within section for simplicity
-                  ex.series.insert(insertAt, serieRemovida);
-                });
-
-                // Animate insertion in section list
-                Future.microtask(() {
-                  _animatedListKeys[tipo]?.currentState?.insertItem(
-                    insertSectionIndex,
-                    duration: const Duration(milliseconds: 300),
-                  );
-                });
-              },
-            ),
-          ),
-        )
-        .closed
-        .then((reason) {
-          if (reason != SnackBarClosedReason.action) {
-            widget.onChanged();
+              duration: const Duration(milliseconds: 300),
+            );
           }
+        }
+      } catch (_) {
+        // Ignore animation errors to avoid crashing the app
+      } finally {
+        Future.delayed(const Duration(milliseconds: 340), () {
+          _isAnimatingSeriesMutation = false;
         });
+      }
+    }
+
+    // Close previous undo snack deterministically
+    _undoSnackTimer?.cancel();
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      messenger.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+    } catch (_) {}
+
+    bool undoPressed = false;
+    final snackController = messenger.showSnackBar(
+      SnackBar(
+        content: const Text(
+          'Série removida',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        backgroundColor: AppTheme.surfaceDark,
+        behavior: SnackBarBehavior.fixed,
+        duration: const Duration(seconds: 4),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        action: SnackBarAction(
+          label: 'Desfazer',
+          textColor: AppTheme.accentMetrics,
+          onPressed: () {
+            undoPressed = true;
+            _undoSnackTimer?.cancel();
+            try {
+              messenger.removeCurrentSnackBar(
+                reason: SnackBarClosedReason.action,
+              );
+            } catch (_) {}
+            _activeSnackBar = null;
+
+            // Re-insert at the original place and animate back
+            final insertSectionIndex = sectionIndex;
+            setState(() {
+              final all = ex.series;
+              int insertAt = all.indexWhere((s) => s.tipo == tipo);
+              if (insertAt == -1) insertAt = all.length;
+              ex.series.insert(insertAt, serieRemovida);
+            });
+
+            Future.microtask(() {
+              // If another animation is running, skip insert animation to avoid conflicts.
+              if (_isAnimatingSeriesMutation) {
+                return;
+              }
+              try {
+                _isAnimatingSeriesMutation = true;
+                _animatedListKeys[tipo]?.currentState?.insertItem(
+                  insertSectionIndex,
+                  duration: const Duration(milliseconds: 300),
+                );
+              } catch (_) {
+              } finally {
+                Future.delayed(const Duration(milliseconds: 340), () {
+                  _isAnimatingSeriesMutation = false;
+                });
+              }
+            });
+
+            widget.onChanged();
+          },
+        ),
+      ),
+    );
+    _activeSnackBar = snackController;
+
+    snackController.closed.then((_) {
+      if (identical(_activeSnackBar, snackController)) {
+        _activeSnackBar = null;
+      }
+    });
+
+    // Force close even when accessibility keeps action snackbars visible.
+    _undoSnackTimer = Timer(const Duration(seconds: 4), () {
+      if (!mounted) {
+        return;
+      }
+      try {
+        snackController.close();
+      } catch (_) {}
+      if (identical(_activeSnackBar, snackController)) {
+        _activeSnackBar = null;
+      }
+      if (!undoPressed) {
+        widget.onChanged();
+      }
+    });
   }
 
   void _removerSeriePorReferencia(SerieItem serie) {
@@ -376,10 +502,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
       int insertRealIndex = ex.series.lastIndexWhere(
         (s) => s.tipo == tipoEscolhido,
       );
-      if (insertRealIndex == -1)
+      if (insertRealIndex == -1) {
         insertRealIndex = ex.series.length;
-      else
+      } else {
         insertRealIndex = insertRealIndex + 1;
+      }
 
       setState(() {
         ex.series.insert(insertRealIndex, newSerie);
@@ -391,6 +518,31 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
           insertSectionIndex,
           duration: const Duration(milliseconds: 300),
         );
+      });
+
+      // Visual feedback: scroll to new item and highlight briefly
+      final int newHash = newSerie.hashCode;
+      // Aguarda a animação de inserção terminar (300ms) antes de iniciar scroll e glow
+      Future.delayed(const Duration(milliseconds: 350), () async {
+        final key = _rowKeys[newHash];
+        if (key != null && key.currentContext != null) {
+          await Scrollable.ensureVisible(
+            key.currentContext!,
+            duration: const Duration(milliseconds: 300),
+            alignment: 0.12,
+            curve: Curves.easeOutCubic,
+          );
+        } else {
+          // Fallback: small scroll to bottom
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+          );
+        }
+
+        // Glow animation sequence (2 smooth pulses)
+        _startHighlightGlow(newHash);
       });
 
       widget.onChanged();
@@ -505,9 +657,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     final descansoFieldKey = 'descanso_$realIndex';
     // Use stable keys per serie instance (hashCode) to keep controllers
     final stableId = serie.hashCode;
-    final repsFieldStableKey = 'reps_${stableId}';
-    final cargaFieldStableKey = 'carga_${stableId}';
-    final descansoFieldStableKey = 'descanso_${stableId}';
+    final repsFieldStableKey = 'reps_$stableId';
+    final cargaFieldStableKey = 'carga_$stableId';
+    final descansoFieldStableKey = 'descanso_$stableId';
 
     final repsController = _getController(repsFieldStableKey, serie.alvo);
     final cargaController = _getController(
@@ -518,13 +670,16 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
       descansoFieldStableKey,
       _formatDescansoInputValue(serie.descanso),
     );
-    final dismissKey = '${serie.hashCode}_$realIndex';
+    final dismissKey = '${serie.hashCode}';
     final borderRadius = BorderRadius.circular(14);
 
     // Inicio dos rows de séries
+    final rowKey = _rowKeys.putIfAbsent(serie.hashCode, () => GlobalKey());
+
     return Padding(
       padding: const EdgeInsets.only(bottom: AppTheme.space4),
       child: ClipRRect(
+        key: rowKey,
         borderRadius: borderRadius,
         child: Dismissible(
           key: ValueKey(dismissKey),
@@ -532,6 +687,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
           movementDuration: const Duration(milliseconds: 300),
           resizeDuration: const Duration(milliseconds: 300),
           dismissThresholds: const {DismissDirection.endToStart: 0.45},
+          confirmDismiss: (_) async {
+            // Prevent concurrent deletes while undo snackbar is active.
+            if (_activeSnackBar != null) {
+              return false;
+            }
+            return true;
+          },
           onUpdate: (details) {
             final reachedThreshold = details.progress >= 0.45;
             if (reachedThreshold &&
@@ -591,26 +753,62 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppTheme.space12,
-                          vertical: AppTheme.space10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.surfaceDark,
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: Colors.white.withAlpha(14),
-                            width: 1,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withAlpha(60),
-                              blurRadius: 12,
-                              offset: const Offset(0, 2),
+                      child: AnimatedBuilder(
+                        animation:
+                            _highlightControllers[serie.hashCode] ??
+                            const AlwaysStoppedAnimation(0.0),
+                        builder: (context, child) {
+                          final highlightValue =
+                              _highlightControllers[serie.hashCode]?.value ??
+                              0.0;
+
+                          // Curva suave easeInOutCubic
+                          final eased = Curves.easeInOutCubic.transform(
+                            highlightValue,
+                          );
+
+                          // Scale sutil: 1.0 → 1.02 (efeito de "lift")
+                          final scale = 1.0 + (eased * 0.02);
+
+                          // Accent shadow sutil (não um glow agressivo)
+                          final accentShadowOpacity = (eased * 40).toInt();
+
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeOutCubic,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppTheme.space12,
+                              vertical: AppTheme.space10,
                             ),
-                          ],
-                        ),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceDark,
+                              borderRadius: BorderRadius.circular(18),
+                              // Borda sempre branca sutil (sem mudança)
+                              border: Border.all(
+                                color: Colors.white.withAlpha(14),
+                                width: 1,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withAlpha(60),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 2),
+                                ),
+                                // Accent shadow muito sutil (apenas quando visível)
+                                if (eased > 0.1)
+                                  BoxShadow(
+                                    color: AppTheme.accentMetrics.withAlpha(
+                                      accentShadowOpacity,
+                                    ),
+                                    blurRadius: 16,
+                                    spreadRadius: 1,
+                                    offset: const Offset(0, 2),
+                                  ),
+                              ],
+                            ),
+                            child: Transform.scale(scale: scale, child: child),
+                          );
+                        },
                         child: Row(
                           children: [
                             Expanded(
@@ -844,16 +1042,75 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     );
   }
 
-  Widget _buildSerieRowForAnimated(
+  Widget _buildRemovedSerieRow(
     SerieItem serie,
-    int realIndex,
     int visualNumber,
-    bool showDivider,
     Animation<double> animation,
   ) {
     return FadeTransition(
       opacity: animation,
-      child: _buildSerieRow(serie, realIndex, visualNumber, showDivider),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: AppTheme.space4),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppTheme.space12,
+            vertical: AppTheme.space10,
+          ),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceDark,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: Colors.white.withAlpha(14), width: 1),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 18),
+                  child: Text(
+                    '$visualNumber',
+                    style: TextStyle(
+                      color: _microLabelStyle().color,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppTheme.space8),
+              Expanded(
+                flex: 3,
+                child: Center(
+                  child: Text(
+                    serie.alvo,
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppTheme.space8),
+              Expanded(
+                flex: 3,
+                child: Center(
+                  child: Text(
+                    _formatCargaInputValue(serie.carga),
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppTheme.space8),
+              Expanded(
+                flex: 3,
+                child: Center(
+                  child: Text(
+                    _formatDescansoInputValue(serie.descanso),
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -976,7 +1233,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                 ),
                 // Animated list per section for smooth insert/remove
                 AnimatedList(
-                  key: _animatedListKeys[entries.first.value.tipo],
+                  key: entries.isNotEmpty
+                      ? _animatedListKeys[entries.first.value.tipo]
+                      : null,
                   initialItemCount: entries.length,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -1120,14 +1379,45 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                     return FlexibleSpaceBar(
                       centerTitle: true,
                       titlePadding: const EdgeInsets.only(bottom: 18),
-                      title: SliverSafeTitle(
-                        title: exerciseTitle,
-                        isVisible: isCollapsed,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      title: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 220),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        transitionBuilder: (child, animation) {
+                          // Fade + slight upward slide
+                          final offsetAnimation =
+                              Tween<Offset>(
+                                begin: const Offset(0, 0.08),
+                                end: Offset.zero,
+                              ).animate(
+                                CurvedAnimation(
+                                  parent: animation,
+                                  curve: Curves.easeOutCubic,
+                                ),
+                              );
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: offsetAnimation,
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: isCollapsed
+                            ? SliverSafeTitle(
+                                key: const ValueKey('collapsed_title'),
+                                title: exerciseTitle,
+                                isVisible: true,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              )
+                            : const SizedBox(
+                                key: ValueKey('empty_title'),
+                                height: 0,
+                              ),
                       ),
                       background: Align(
                         alignment: Alignment.bottomLeft,
@@ -1387,7 +1677,7 @@ class _ExerciseVideoCard extends StatelessWidget {
                       imageUrl ??
                           'https://lh3.googleusercontent.com/aida-public/AB6AXuAXzEmkEB7BMnRUWQ6iIDF5Oc_gVzBjCjxHaac9LYJyL8KxdAi-mTOKK2v2nO9Vt3-DXPcDcoSM3RkTh-iDX0q8oShyD0TllFVTVsQBP3fKU0HPHHtOlkO5uRRx_yIiMes1tmlEr6VkkMyvhy-LTIzYuWYuJaLsSzeba5FPnNX9_RQjcusWmbIyWrBVLVSmLZjDaMcPJMKiSSY6S-RSZFaAzRzHQdDbWnPbv1aUP1akkwSiPE9Rriwmdn8VrF3w0ZIWei1Cxfd7B2Ut',
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
+                      errorBuilder: (context, error, stackTrace) => Container(
                         color: AppTheme.surfaceDark,
                         child: Center(
                           child: Icon(

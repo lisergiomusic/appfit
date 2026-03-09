@@ -28,6 +28,7 @@
 - [x] **Crash 'Dismissible' durante remoção**: Corrigido com ghost row (`_buildRemovedSerieRow()`) e lock de mutações
 
 - [ ] **Edge case no AnimatedList**: `entries.first.value.tipo` pode lançar exception se lista estiver vazia
+ - [x] **Edge case no AnimatedList**: `entries.first.value.tipo` pode lançar exception se lista estiver vazia
   - **Localização:** Linha ~987 (`_buildSeriesSection`)
   - **Solução:** Adicionar guard clause ou usar tipo como parâmetro direto
 
@@ -39,9 +40,9 @@
 ### 📝 Code Quality
 
 - [ ] **Warnings do analyzer** (18 issues):
-  - [ ] `if` sem chaves (linhas 383, 385)
-  - [ ] Interpolações desnecessárias `${}` (linhas 511, 512, 513)
-  - [ ] Underscores múltiplos desnecessários (linha 1421)
+  - [x] `if` sem chaves (linhas 383, 385)
+  - [x] Interpolações desnecessárias `${}` (linhas 511, 512, 513)
+  - [x] Underscores múltiplos desnecessários (linha 1421)
 
 - [ ] **Código duplicado**: Lógica repetida 3x nos campos de série (reps/carga/descanso)
   - **Localização:** Linhas 660-840
@@ -116,9 +117,9 @@
 
 ## 🎯 Priorização
 
-### P0 - Crítico (Deve ser feito antes de release)
-- [ ] Corrigir edge case `entries.first` no AnimatedList
-- [ ] Resolver warnings do analyzer (curly braces, interpolations)
+-### P0 - Crítico (Deve ser feito antes de release)
+- [x] Corrigir edge case `entries.first` no AnimatedList
+- [x] Resolver warnings do analyzer (curly braces, interpolations)
 - [ ] Fix performance O(n²) no indexOf dentro do AnimatedList
 
 ### P1 - Importante (Próxima iteração)
