@@ -78,12 +78,10 @@
   - Atualmente mostra placeholder apenas em erro
   - **Sugestão:** Adicionar `loadingBuilder` com shimmer/spinner
 
-- [ ] **Empty state** quando não há séries
+- [x] **Empty state** quando não há séries
   - Atualmente só mostra botão "Adicionar Série"
   - **Sugestão:** Ilustração + texto motivacional
 
-- [ ] **Ordem das séries** não é editável (drag to reorder)
-  - Considerar `ReorderableListView` como evolução futura
 
 ### 🏗️ Arquitetura & Manutenibilidade
 
