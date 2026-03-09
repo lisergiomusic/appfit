@@ -4,15 +4,17 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   // --- 1. CORES ---
   static const Color primary = Color(0xFF30D158); // Atualizado para verde
-  static const Color background = Color(0xFF000000); // Tailwind background-dark
+  static const Color background = Color(0xFF121212); // Google Material Dark
   static const Color iosGreen = Color(0xFF34C759);
   static const Color iosAmber = Color(0xFFFFBF00);
   static const Color iosBlue = Color(0xFF007AFF);
   static const Color silverGrey = Color.fromRGBO(255, 255, 255, 0.5);
 
-  static const Color surfaceDark = Color(0xFF1C1C1E);
+  static const Color surfaceDark = Color(
+    0xFF1E1E1E,
+  ); // Google Material Dark elevated surface
   static const Color surfaceLight = Color(0xFF2C2C2E);
-  static const Color buttonSurface = Color(0xFF1C1C1E);
+  static const Color buttonSurface = Color(0xFF1E1E1E);
   static const Color textPrimary = Colors.white;
   static const Color textSecondary = Color.fromARGB(160, 255, 255, 255);
   static const Color accentMetrics = Color(0xFFFF9F0A);

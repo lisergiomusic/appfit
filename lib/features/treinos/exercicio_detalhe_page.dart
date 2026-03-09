@@ -535,9 +535,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withAlpha(70),
-                              blurRadius: 16,
-                              offset: const Offset(0, 4),
+                              color: Colors.black.withAlpha(60),
+                              blurRadius: 12,
+                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),
@@ -802,8 +802,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
               children: [
                 showDot
                     ? Container(
-                        width: 7,
-                        height: 7,
+                        width: 6,
+                        height: 6,
                         decoration: BoxDecoration(
                           color: titleColor ?? Colors.white,
                           shape: BoxShape.circle,
@@ -987,19 +987,23 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                   ),
                 ),
                 actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppTheme.accentMetrics,
-                      minimumSize: const Size(44, 44),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                    ),
-                    child: const Text(
-                      'Concluir',
-                      style: TextStyle(
-                        color: AppTheme.accentMetrics,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
+                  Semantics(
+                    label: 'Concluir',
+                    button: true,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppTheme.accentMetrics,
+                        minimumSize: const Size(44, 44),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      child: const Text(
+                        'Concluir',
+                        style: TextStyle(
+                          color: AppTheme.accentMetrics,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
@@ -1128,56 +1132,61 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                             ],
                           ),
                           const SizedBox(height: AppTheme.space10),
-                          TextField(
-                            controller: _instructionsController,
-                            focusNode: _instructionsFocusNode,
-                            minLines: 3,
-                            maxLines: 8,
-                            textCapitalization: TextCapitalization.sentences,
-                            onTapOutside: (_) {
-                              FocusScope.of(context).unfocus();
-                              _saveInstructions();
-                            },
-                            onSubmitted: (_) => _saveInstructions(),
-                            style: const TextStyle(
-                              color: AppTheme.textPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              height: 1.5,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: _isEditingInstructions
-                                  ? null
-                                  : 'Toque para adicionar instruções de execução...',
-                              hintStyle: TextStyle(
-                                color: AppTheme.textSecondary.withAlpha(120),
+                          Semantics(
+                            label: 'Instruções do exercício',
+                            textField: true,
+                            hint: 'Toque para adicionar instruções de execução',
+                            child: TextField(
+                              controller: _instructionsController,
+                              focusNode: _instructionsFocusNode,
+                              minLines: 3,
+                              maxLines: 8,
+                              textCapitalization: TextCapitalization.sentences,
+                              onTapOutside: (_) {
+                                FocusScope.of(context).unfocus();
+                                _saveInstructions();
+                              },
+                              onSubmitted: (_) => _saveInstructions(),
+                              style: const TextStyle(
+                                color: AppTheme.textPrimary,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
+                                height: 1.5,
                               ),
-                              filled: true,
-                              fillColor: AppTheme.surfaceDark,
-                              contentPadding: const EdgeInsets.all(
-                                AppTheme.space16,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide(
-                                  color: Colors.white.withAlpha(20),
-                                  width: 1,
+                              decoration: InputDecoration(
+                                hintText: _isEditingInstructions
+                                    ? null
+                                    : 'Toque para adicionar instruções de execução...',
+                                hintStyle: TextStyle(
+                                  color: AppTheme.textSecondary.withAlpha(120),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
                                 ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide(
-                                  color: Colors.white.withAlpha(20),
-                                  width: 1,
+                                filled: true,
+                                fillColor: AppTheme.surfaceDark,
+                                contentPadding: const EdgeInsets.all(
+                                  AppTheme.space16,
                                 ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: AppTheme.accentMetrics,
-                                  width: 1.5,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(
+                                    color: Colors.white.withAlpha(20),
+                                    width: 1,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(
+                                    color: Colors.white.withAlpha(20),
+                                    width: 1,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(
+                                    color: AppTheme.accentMetrics,
+                                    width: 1.5,
+                                  ),
                                 ),
                               ),
                             ),
@@ -1247,39 +1256,47 @@ class _ExerciseVideoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(22),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white.withAlpha(8),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withAlpha(25), width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(80),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: AspectRatio(
-            aspectRatio: 16 / 9,
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(
-                    imageUrl ??
-                        'https://lh3.googleusercontent.com/aida-public/AB6AXuAXzEmkEB7BMnRUWQ6iIDF5Oc_gVzBjCjxHaac9LYJyL8KxdAi-mTOKK2v2nO9Vt3-DXPcDcoSM3RkTh-iDX0q8oShyD0TllFVTVsQBP3fKU0HPHHtOlkO5uRRx_yIiMes1tmlEr6VkkMyvhy-LTIzYuWYuJaLsSzeba5FPnNX9_RQjcusWmbIyWrBVLVSmLZjDaMcPJMKiSSY6S-RSZFaAzRzHQdDbWnPbv1aUP1akkwSiPE9Rriwmdn8VrF3w0ZIWei1Cxfd7B2Ut',
-                  ),
-                  fit: BoxFit.cover,
-                ),
+    return Semantics(
+      label: 'Assistir vídeo de $exerciseTitle',
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withAlpha(8),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withAlpha(25), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(80),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
               ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: AspectRatio(
+              aspectRatio: 16 / 9,
               child: Stack(
                 children: [
+                  Positioned.fill(
+                    child: Image.network(
+                      imageUrl ??
+                          'https://lh3.googleusercontent.com/aida-public/AB6AXuAXzEmkEB7BMnRUWQ6iIDF5Oc_gVzBjCjxHaac9LYJyL8KxdAi-mTOKK2v2nO9Vt3-DXPcDcoSM3RkTh-iDX0q8oShyD0TllFVTVsQBP3fKU0HPHHtOlkO5uRRx_yIiMes1tmlEr6VkkMyvhy-LTIzYuWYuJaLsSzeba5FPnNX9_RQjcusWmbIyWrBVLVSmLZjDaMcPJMKiSSY6S-RSZFaAzRzHQdDbWnPbv1aUP1akkwSiPE9Rriwmdn8VrF3w0ZIWei1Cxfd7B2Ut',
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: AppTheme.surfaceDark,
+                        child: Center(
+                          child: Icon(
+                            Icons.videocam_off,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   Center(
                     child: Container(
                       width: 48,
