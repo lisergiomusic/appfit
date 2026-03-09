@@ -1231,19 +1231,30 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                   style: TextButton.styleFrom(
                                     foregroundColor: AppTheme.accentMetrics,
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: AppTheme.space10,
+                                      horizontal: AppTheme.space0,
                                       vertical: AppTheme.space6,
                                     ),
                                     minimumSize: Size.zero,
                                     tapTargetSize:
                                         MaterialTapTargetSize.shrinkWrap,
                                   ),
-                                  child: const Text(
-                                    'Editar',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'Editar',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      SizedBox(width: AppTheme.space4),
+                                      Icon(
+                                        Icons.edit_outlined,
+                                        size: 14,
+                                        color: AppTheme.accentMetrics,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -1263,8 +1274,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                   ),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: AppTheme.space16,
-                                      vertical: AppTheme.space12,
+                                      horizontal: AppTheme.space14,
+                                      vertical: AppTheme.space10,
                                     ),
                                     decoration: BoxDecoration(
                                       color: AppTheme.surfaceDark,
