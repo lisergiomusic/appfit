@@ -34,7 +34,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   };
   final ScrollController _scrollController = ScrollController();
   final Map<int, GlobalKey> _rowKeys = {};
-  final Map<int, AnimationController> _highlightControllers = {};
+  final Map<int, AnimationController> _swipeHintControllers = {};
+  final Map<int, AnimationController> _rippleControllers = {};
   ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _activeSnackBar;
   Timer? _undoSnackTimer;
   bool _isAnimatingSeriesMutation = false;
@@ -112,7 +113,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   @override
   void dispose() {
     _disposeControllers();
-    _disposeHighlightControllers();
+    _disposeCardAnimationControllers();
     _instructionsFocusNode.removeListener(_onInstructionsFocusChange);
     _instructionsController.removeListener(_onInstructionsChanged);
     _instructionsFocusNode.dispose();
@@ -122,11 +123,15 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     super.dispose();
   }
 
-  void _disposeHighlightControllers() {
-    for (var controller in _highlightControllers.values) {
-      controller.dispose();
+  void _disposeCardAnimationControllers() {
+    for (final ctrl in _swipeHintControllers.values) {
+      ctrl.dispose();
     }
-    _highlightControllers.clear();
+    _swipeHintControllers.clear();
+    for (final ctrl in _rippleControllers.values) {
+      ctrl.dispose();
+    }
+    _rippleControllers.clear();
   }
 
   void _disposeControllers() {
@@ -241,52 +246,98 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     return '${digits}s';
   }
 
-  void _startHighlightGlow(int serieHash) {
-    // Remove controller anterior se existir
-    _highlightControllers[serieHash]?.dispose();
+  // Sequência: slide left → hold (mínima) → slide back (suave)
+  static final _swipeHintTween = TweenSequence<double>([
+    TweenSequenceItem(
+      tween: Tween(
+        begin: 0.0,
+        end: -72.0,
+      ).chain(CurveTween(curve: Curves.easeInOutCubicEmphasized)),
+      weight: 32,
+    ),
+    TweenSequenceItem(tween: ConstantTween<double>(-72.0), weight: 1), // pausa mínima
+    TweenSequenceItem(
+      tween: Tween(
+        begin: -72.0,
+        end: 0.0,
+      ).chain(CurveTween(curve: Curves.easeInOutCubicEmphasized)),
+      weight: 67,
+    ),
+  ]);
 
-    // Cria novo controller com duração de 900ms por pulso (mais lento = mais visível)
-    final controller = AnimationController(
-      duration: const Duration(milliseconds: 900),
-      vsync: this,
-    );
+  // Quanto do fundo vermelho fica visível (espelha o swipe)
+  static final _swipeHintBgTween = TweenSequence<double>([
+    TweenSequenceItem(
+      tween: Tween(
+        begin: 0.0,
+        end: 72.0,
+      ).chain(CurveTween(curve: Curves.easeInOutCubicEmphasized)),
+      weight: 32,
+    ),
+    TweenSequenceItem(tween: ConstantTween<double>(72.0), weight: 1),
+    TweenSequenceItem(
+      tween: Tween(
+        begin: 72.0,
+        end: 0.0,
+      ).chain(CurveTween(curve: Curves.easeInOutCubicEmphasized)),
+      weight: 67,
+    ),
+  ]);
 
-    // Adiciona listener para forçar rebuild quando a animação mudar
-    controller.addListener(() {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+  void _startSwipeHintAndRipple(int serieHash) {
+    _swipeHintControllers[serieHash]?.dispose();
+    _rippleControllers[serieHash]?.dispose();
+
+    final swipeCtrl =
+        AnimationController(
+          duration: const Duration(milliseconds: 1800),
+          vsync: this,
+        )..addListener(() {
+          if (mounted) setState(() {});
+        });
+
+    final rippleCtrl =
+        AnimationController(
+          duration: const Duration(milliseconds: 150),
+          vsync: this,
+        )..addListener(() {
+          if (mounted) setState(() {});
+        });
 
     setState(() {
-      _highlightControllers[serieHash] = controller;
+      _swipeHintControllers[serieHash] = swipeCtrl;
+      _rippleControllers[serieHash] = rippleCtrl;
     });
 
-    // Aguarda o próximo frame para garantir que o AnimatedBuilder reconheceu o controller
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-
-      // 2 pulsos suaves (0→1→0, pausa, 0→1→0)
-      controller.forward().then((_) {
-        controller.reverse().then((_) {
-          Future.delayed(const Duration(milliseconds: 150), () {
-            if (mounted && _highlightControllers.containsKey(serieHash)) {
-              controller.forward().then((_) {
-                controller.reverse().then((_) {
-                  // Remove após completar
-                  if (mounted) {
-                    Future.delayed(const Duration(milliseconds: 200), () {
-                      controller.dispose();
-                      if (mounted) {
-                        setState(() => _highlightControllers.remove(serieHash));
-                      }
-                    });
-                  }
-                });
-              });
-            }
-          });
-        });
+      swipeCtrl.forward().then((_) {
+        if (!mounted) return;
+        swipeCtrl.dispose();
+        if (mounted) setState(() => _swipeHintControllers.remove(serieHash));
+        // M3 state layer: fade in rápido → fade out lento
+        rippleCtrl
+            .animateTo(
+              1.0,
+              duration: const Duration(milliseconds: 130),
+              curve: Curves.easeOut,
+            )
+            .then((_) {
+              if (!mounted) return;
+              rippleCtrl
+                  .animateTo(
+                    0.0,
+                    duration: const Duration(milliseconds: 480),
+                    curve: Curves.easeIn,
+                  )
+                  .then((_) {
+                    if (!mounted) return;
+                    rippleCtrl.dispose();
+                    if (mounted) {
+                      setState(() => _rippleControllers.remove(serieHash));
+                    }
+                  });
+            });
       });
     });
   }
@@ -580,8 +631,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
           );
         }
 
-        // Glow animation sequence (2 smooth pulses)
-        _startHighlightGlow(newHash);
+        // Swipe hint → M3 state layer highlight
+        _startSwipeHintAndRipple(newHash);
       });
 
       widget.onChanged();
@@ -798,59 +849,106 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   children: [
                     Expanded(
                       child: AnimatedBuilder(
-                        animation:
-                            _highlightControllers[serie.hashCode] ??
-                            const AlwaysStoppedAnimation(0.0),
+                        animation: Listenable.merge([
+                          _swipeHintControllers[serie.hashCode] ??
+                              const AlwaysStoppedAnimation(0.0),
+                          _rippleControllers[serie.hashCode] ??
+                              const AlwaysStoppedAnimation(0.0),
+                        ]),
                         builder: (context, child) {
-                          final highlightValue =
-                              _highlightControllers[serie.hashCode]?.value ??
-                              0.0;
+                          final swipeCtrl =
+                              _swipeHintControllers[serie.hashCode];
+                          final rippleValue =
+                              _rippleControllers[serie.hashCode]?.value ?? 0.0;
+                          final dx = swipeCtrl != null
+                              ? _swipeHintTween.animate(swipeCtrl).value
+                              : 0.0;
+                          final bgWidth = swipeCtrl != null
+                              ? _swipeHintBgTween.animate(swipeCtrl).value
+                              : 0.0;
+                          final overlayAlpha =
+                              (Curves.easeInOutCubic.transform(rippleValue) *
+                                      38)
+                                  .round();
 
-                          // Curva suave easeInOutCubic
-                          final eased = Curves.easeInOutCubic.transform(
-                            highlightValue,
-                          );
-
-                          // Scale sutil: 1.0 → 1.02 (efeito de "lift")
-                          final scale = 1.0 + (eased * 0.02);
-
-                          // Accent shadow sutil (não um glow agressivo)
-                          final accentShadowOpacity = (eased * 40).toInt();
-
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 250),
-                            curve: Curves.easeOutCubic,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppTheme.space12,
-                              vertical: AppTheme.space10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppTheme.surfaceDark,
-                              borderRadius: BorderRadius.circular(18),
-                              // Borda sempre branca sutil (sem mudança)
-                              border: Border.all(
-                                color: Colors.white.withAlpha(14),
-                                width: 1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withAlpha(60),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 2),
-                                ),
-                                // Accent shadow muito sutil (apenas quando visível)
-                                if (eased > 0.1)
-                                  BoxShadow(
-                                    color: AppTheme.accentMetrics.withAlpha(
-                                      accentShadowOpacity,
+                          return Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              // Fundo vermelho com ícone (revelado pelo slide)
+                              if (bgWidth > 0)
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  bottom: 0,
+                                  width: bgWidth,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(18),
+                                    child: Container(
+                                      color: Colors.redAccent,
+                                      alignment: Alignment.centerRight,
+                                      padding: const EdgeInsets.only(
+                                        right: AppTheme.space16,
+                                      ),
+                                      child: Opacity(
+                                        opacity: (bgWidth / 72.0).clamp(
+                                          0.0,
+                                          1.0,
+                                        ),
+                                        child: const Icon(
+                                          Icons.delete_outline,
+                                          color: Colors.white,
+                                          size: 22,
+                                        ),
+                                      ),
                                     ),
-                                    blurRadius: 16,
-                                    spreadRadius: 1,
-                                    offset: const Offset(0, 2),
                                   ),
-                              ],
-                            ),
-                            child: Transform.scale(scale: scale, child: child),
+                                ),
+                              // Card com translação
+                              Transform.translate(
+                                offset: Offset(dx, 0),
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppTheme.space12,
+                                        vertical: AppTheme.space10,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.surfaceDark,
+                                        borderRadius: BorderRadius.circular(18),
+                                        border: Border.all(
+                                          color: Colors.white.withAlpha(14),
+                                          width: 1,
+                                        ),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: Colors.black38,
+                                            blurRadius: 12,
+                                            offset: Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: child,
+                                    ),
+                                    if (overlayAlpha > 0)
+                                      Positioned.fill(
+                                        child: IgnorePointer(
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              18,
+                                            ),
+                                            child: Container(
+                                              color: AppTheme.accentMetrics
+                                                  .withAlpha(overlayAlpha),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           );
                         },
                         child: Row(
@@ -1701,7 +1799,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                         '${_instructionsController.text.length}/$_instructionsMaxChars',
                                         style: TextStyle(
                                           color: AppTheme.textSecondary
-                                              .withOpacity(0.62),
+                                              .withValues(alpha: 0.62),
                                           fontSize: 12,
                                         ),
                                       ),
