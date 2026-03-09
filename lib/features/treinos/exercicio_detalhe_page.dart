@@ -529,6 +529,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                         decoration: BoxDecoration(
                           color: AppTheme.surfaceDark,
                           borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: Colors.white.withAlpha(10),
+                            width: 1,
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withAlpha(70),
@@ -1078,7 +1082,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                           );
                         },
                       ),
-                      const SizedBox(height: AppTheme.space20),
+                      const SizedBox(height: AppTheme.space24),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1157,12 +1161,15 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide.none,
+                                borderSide: BorderSide(
+                                  color: Colors.white.withAlpha(12),
+                                  width: 1,
+                                ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 borderSide: BorderSide(
-                                  color: Colors.white.withAlpha(0),
+                                  color: Colors.white.withAlpha(12),
                                   width: 1,
                                 ),
                               ),
@@ -1247,6 +1254,7 @@ class _ExerciseVideoCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withAlpha(8),
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withAlpha(25), width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withAlpha(80),
@@ -1274,10 +1282,10 @@ class _ExerciseVideoCard extends StatelessWidget {
                 children: [
                   Center(
                     child: Container(
-                      width: 56,
-                      height: 56,
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
-                        color: Colors.black.withAlpha(88),
+                        color: Colors.black.withAlpha(64),
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: Colors.white.withAlpha(35),
@@ -1287,7 +1295,7 @@ class _ExerciseVideoCard extends StatelessWidget {
                       child: const Icon(
                         Icons.play_arrow,
                         color: Colors.white,
-                        size: 30,
+                        size: 26,
                       ),
                     ),
                   ),
