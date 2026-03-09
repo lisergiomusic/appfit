@@ -7,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/orange_glass_action_button.dart';
 import '../../core/widgets/sliver_safe_title.dart';
 import 'models/exercicio_model.dart';
+import 'exercicio_detalhe_controller.dart';
 
 class ExercicioDetalhePage extends StatefulWidget {
   final ExercicioItem exercicio;
@@ -25,6 +26,7 @@ class ExercicioDetalhePage extends StatefulWidget {
 class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     with TickerProviderStateMixin {
   late ExercicioItem ex;
+  late ExercicioDetalheController controller;
   final Map<TipoSerie, GlobalKey<AnimatedListState>> _animatedListKeys = {
     TipoSerie.aquecimento: GlobalKey<AnimatedListState>(),
     TipoSerie.feeder: GlobalKey<AnimatedListState>(),
@@ -49,6 +51,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   void initState() {
     super.initState();
     ex = widget.exercicio;
+    controller = ExercicioDetalheController(ex);
     _instructionsController.text = ex.observacao;
     _instructionsFocusNode.addListener(_onInstructionsFocusChange);
   }
@@ -288,13 +291,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
 
     final serieRemovida = ex.series[realIndex];
     final tipo = serieRemovida.tipo;
-    final sectionIndex = ex.series
-        .where((s) => s.tipo == tipo)
-        .toList()
-        .indexOf(serieRemovida);
+    final sectionIndex = controller.sectionIndexOf(serieRemovida);
     // Remove from model first, then animate removal using the captured item
     setState(() {
-      ex.series.removeAt(realIndex);
+      controller.removeAt(realIndex);
       _clearEditingState();
     });
 
@@ -371,7 +371,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
               final all = ex.series;
               int insertAt = all.indexWhere((s) => s.tipo == tipo);
               if (insertAt == -1) insertAt = all.length;
-              ex.series.insert(insertAt, serieRemovida);
+              controller.insertAt(insertAt, serieRemovida);
             });
 
             Future.microtask(() {
@@ -534,23 +534,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       );
 
       // Determine section insert index (append to that section)
-      final sectionList = ex.series
-          .where((s) => s.tipo == tipoEscolhido)
-          .toList();
+      final sectionList = controller.entriesForTipo(tipoEscolhido);
       final insertSectionIndex = sectionList.length;
 
       // Determine real index to insert into master list: after last of same tipo or at end
-      int insertRealIndex = ex.series.lastIndexWhere(
-        (s) => s.tipo == tipoEscolhido,
-      );
-      if (insertRealIndex == -1) {
-        insertRealIndex = ex.series.length;
-      } else {
-        insertRealIndex = insertRealIndex + 1;
-      }
+      final insertRealIndex = controller.computeInsertRealIndex(tipoEscolhido);
 
       setState(() {
-        ex.series.insert(insertRealIndex, newSerie);
+        controller.insertAt(insertRealIndex, newSerie);
       });
 
       // Animate insertion in section

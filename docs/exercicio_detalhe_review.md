@@ -45,7 +45,7 @@
   - [x] Interpolações desnecessárias `${}` (linhas 511, 512, 513)
   - [x] Underscores múltiplos desnecessários (linha 1421)
 
-- [ ] **Código duplicado**: Lógica repetida 3x nos campos de série (reps/carga/descanso)
+ - [x] **Código duplicado**: Lógica repetida 3x nos campos de série (reps/carga/descanso)
   - **Localização:** Linhas 660-840
   - **Sugestão:** Extrair para `_buildEditableSerieField()` helper
 
@@ -124,8 +124,8 @@
 - [x] Fix performance O(n²) no indexOf dentro do AnimatedList
 
 ### P1 - Importante (Próxima iteração)
-- [ ] Adicionar Semantics completos nos campos de série
-- [ ] Extrair código duplicado dos TextFormFields
+ - [x] Adicionar Semantics completos nos campos de série
+ - [x] Extrair código duplicado dos TextFormFields
 - [ ] Adicionar loading state na imagem do vídeo
 - [ ] Testes unitários dos formatters
 
