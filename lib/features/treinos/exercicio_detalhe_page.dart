@@ -530,7 +530,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                           color: AppTheme.surfaceDark,
                           borderRadius: BorderRadius.circular(18),
                           border: Border.all(
-                            color: Colors.white.withAlpha(10),
+                            color: Colors.white.withAlpha(14),
                             width: 1,
                           ),
                           boxShadow: [
@@ -1170,14 +1170,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
                                   borderSide: BorderSide(
-                                    color: Colors.white.withAlpha(20),
+                                    color: Colors.white.withAlpha(28),
                                     width: 1,
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
                                   borderSide: BorderSide(
-                                    color: Colors.white.withAlpha(20),
+                                    color: Colors.white.withAlpha(28),
                                     width: 1,
                                   ),
                                 ),
@@ -1266,7 +1266,7 @@ class _ExerciseVideoCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white.withAlpha(8),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withAlpha(25), width: 1),
+            border: Border.all(color: Colors.white.withAlpha(28), width: 1),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withAlpha(80),
@@ -1305,7 +1305,7 @@ class _ExerciseVideoCard extends StatelessWidget {
                         color: Colors.black.withAlpha(64),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Colors.white.withAlpha(35),
+                          color: Colors.white.withAlpha(38),
                           width: 0.9,
                         ),
                       ),
