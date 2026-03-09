@@ -25,21 +25,32 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   late ExercicioItem ex;
   final Map<String, TextEditingController> _controllers = {};
   final TextEditingController _instructionsController = TextEditingController();
+  final FocusNode _instructionsFocusNode = FocusNode();
   final Map<String, String> _lastValues = {};
   final Map<String, bool> _hasUserEdited = {};
   final Set<String> _suppressNextOnChanged = {};
   final Set<String> _hapticTriggeredDismissKeys = {};
+  bool _isEditingInstructions = false;
 
   @override
   void initState() {
     super.initState();
     ex = widget.exercicio;
     _instructionsController.text = ex.observacao;
+    _instructionsFocusNode.addListener(_onInstructionsFocusChange);
+  }
+
+  void _onInstructionsFocusChange() {
+    setState(() {
+      _isEditingInstructions = _instructionsFocusNode.hasFocus;
+    });
   }
 
   @override
   void dispose() {
     _disposeControllers();
+    _instructionsFocusNode.removeListener(_onInstructionsFocusChange);
+    _instructionsFocusNode.dispose();
     _instructionsController.dispose();
     super.dispose();
   }
@@ -157,11 +168,50 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
   }
 
   void _removerSerie(int realIndex) {
+    final serieRemovida = ex.series[realIndex];
+    final indexRemovido = realIndex;
+
     setState(() {
       ex.series.removeAt(realIndex);
       _clearEditingState();
-      widget.onChanged();
     });
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Série removida',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            backgroundColor: AppTheme.surfaceDark,
+            behavior: SnackBarBehavior.fixed,
+            duration: const Duration(seconds: 4),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            action: SnackBarAction(
+              label: 'Desfazer',
+              textColor: AppTheme.accentMetrics,
+              onPressed: () {
+                setState(() {
+                  ex.series.insert(indexRemovido, serieRemovida);
+                  _clearEditingState();
+                });
+              },
+            ),
+          ),
+        )
+        .closed
+        .then((reason) {
+          if (reason != SnackBarClosedReason.action) {
+            widget.onChanged();
+          }
+        });
   }
 
   void _removerSeriePorReferencia(SerieItem serie) {
@@ -479,6 +529,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                         decoration: BoxDecoration(
                           color: AppTheme.surfaceDark,
                           borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(70),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: Row(
                           children: [
@@ -842,151 +899,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
     );
   }
 
-  bool _isKeyboardVisible() {
-    return MediaQuery.of(context).viewInsets.bottom > 0;
-  }
-
-  Future<void> _editarInstrucoes() async {
-    _instructionsController
-      ..text = ex.observacao
-      ..selection = TextSelection.collapsed(offset: ex.observacao.length);
-
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppTheme.surfaceDark,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (modalContext) {
-        final insets = MediaQuery.of(modalContext).viewInsets;
-
-        return SafeArea(
-          top: false,
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(
-              AppTheme.space16,
-              AppTheme.space12,
-              AppTheme.space16,
-              insets.bottom + AppTheme.space16,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(55),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppTheme.space16),
-                const Text(
-                  'Instruções do exercício',
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: AppTheme.space6),
-                Text(
-                  'Opcional: adicione orientações para execução.',
-                  style: TextStyle(
-                    color: AppTheme.textSecondary.withAlpha(180),
-                    fontSize: 13,
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: AppTheme.space14),
-                TextField(
-                  controller: _instructionsController,
-                  autofocus: true,
-                  minLines: 4,
-                  maxLines: 8,
-                  textCapitalization: TextCapitalization.sentences,
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 14,
-                    height: 1.45,
-                  ),
-                  decoration: InputDecoration(
-                    hintText:
-                        'Ex.: mantenha o tronco estável e controle a fase excêntrica.',
-                    hintStyle: TextStyle(
-                      color: AppTheme.textSecondary.withAlpha(135),
-                      fontSize: 13,
-                    ),
-                    filled: true,
-                    fillColor: Colors.white.withAlpha(8),
-                    contentPadding: const EdgeInsets.all(AppTheme.space12),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppTheme.radiusMedium,
-                      ),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppTheme.radiusMedium,
-                      ),
-                      borderSide: const BorderSide(
-                        color: AppTheme.accentMetrics,
-                        width: 1.0,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppTheme.space14),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () => Navigator.pop(modalContext),
-                        child: const Text(
-                          'Cancelar',
-                          style: TextStyle(color: AppTheme.textSecondary),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppTheme.space10),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            ex.observacao = _instructionsController.text.trim();
-                          });
-                          widget.onChanged();
-                          Navigator.pop(modalContext);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.accentMetrics,
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusMedium,
-                            ),
-                          ),
-                        ),
-                        child: const Text(
-                          'Salvar',
-                          style: TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+  void _saveInstructions() {
+    setState(() {
+      ex.observacao = _instructionsController.text.trim();
+    });
+    widget.onChanged();
   }
 
   @override
@@ -1016,7 +933,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
               .toUpperCase()
               .replaceAll(RegExp(r'\s*,\s*'), ' • ')
               .replaceAll(RegExp(r'\s+/\s+'), ' • ');
-    final instructionsText = ex.observacao.trim();
 
     return GestureDetector(
       onTap: () {
@@ -1027,209 +943,208 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppTheme.background,
-        body: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: BouncingScrollPhysics(),
-          ),
-          slivers: [
-            SliverAppBar(
-              automaticallyImplyLeading: false,
-              backgroundColor: Colors.black,
-              surfaceTintColor: Colors.transparent,
-              pinned: true,
-              expandedHeight: 138,
-              leadingWidth: 60,
-              leading: Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 12),
-                  child: Material(
-                    color: AppTheme.buttonSurface,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      onTap: () => Navigator.pop(context),
-                      customBorder: const CircleBorder(),
-                      child: const SizedBox(
-                        width: 36,
-                        height: 36,
-                        child: Icon(
-                          CupertinoIcons.back,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppTheme.accentMetrics,
-                    minimumSize: const Size(44, 44),
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                  ),
-                  child: const Text(
-                    'Concluir',
-                    style: TextStyle(
-                      color: AppTheme.accentMetrics,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-              ],
-              flexibleSpace: LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-                  final double collapsedHeight =
-                      MediaQuery.of(context).padding.top + kToolbarHeight;
-                  final bool isCollapsed =
-                      constraints.biggest.height <= collapsedHeight + 20;
-
-                  return FlexibleSpaceBar(
-                    centerTitle: true,
-                    titlePadding: const EdgeInsets.only(bottom: 16),
-                    title: SliverSafeTitle(
-                      title: exerciseTitle,
-                      isVisible: isCollapsed,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    background: Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: AppTheme.space16,
-                          right: AppTheme.space16,
-                          bottom: 10,
-                        ),
-                        child: AnimatedOpacity(
-                          duration: const Duration(milliseconds: 200),
-                          opacity: isCollapsed ? 0.0 : 1.0,
-                          child: Text(
-                            exerciseTitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 34,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                              height: 1.14,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+        backgroundColor: const Color(0xFF0A0A0A),
+        extendBody: false,
+        body: SafeArea(
+          bottom: true,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
             ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppTheme.space16,
-                  AppTheme.space4,
-                  AppTheme.space16,
-                  AppTheme.space48,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(muscleGroupsText, style: _sectionEyebrowStyle()),
-                    const SizedBox(height: AppTheme.space16),
-                    InkWell(
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Abrindo vídeo explicativo de $exerciseTitle...',
-                            ),
-                            backgroundColor: AppTheme.primary,
-                            behavior: SnackBarBehavior.floating,
-                            duration: const Duration(seconds: 2),
+            slivers: [
+              SliverAppBar(
+                automaticallyImplyLeading: false,
+                backgroundColor: const Color(0xFF0A0A0A),
+                surfaceTintColor: Colors.transparent,
+                pinned: true,
+                expandedHeight: 138,
+                leadingWidth: 60,
+                leading: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 12),
+                    child: Material(
+                      color: AppTheme.buttonSurface,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        onTap: () => Navigator.pop(context),
+                        customBorder: const CircleBorder(),
+                        child: const SizedBox(
+                          width: 36,
+                          height: 36,
+                          child: Icon(
+                            CupertinoIcons.back,
+                            color: Colors.white,
+                            size: 18,
                           ),
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(22),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(8),
-                          borderRadius: BorderRadius.circular(16),
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: AspectRatio(
-                            aspectRatio: 16 / 9,
-                            child: Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  image: NetworkImage(
-                                    ex.imagemUrl ??
-                                        'https://lh3.googleusercontent.com/aida-public/AB6AXuAXzEmkEB7BMnRUWQ6iIDF5Oc_gVzBjCjxHaac9LYJyL8KxdAi-mTOKK2v2nO9Vt3-DXPcDcoSM3RkTh-iDX0q8oShyD0TllFVTVsQBP3fKU0HPHHtOlkO5uRRx_yIiMes1tmlEr6VkkMyvhy-LTIzYuWYuJaLsSzeba5FPnNX9_RQjcusWmbIyWrBVLVSmLZjDaMcPJMKiSSY6S-RSZFaAzRzHQdDbWnPbv1aUP1akkwSiPE9Rriwmdn8VrF3w0ZIWei1Cxfd7B2Ut',
-                                  ),
-                                  fit: BoxFit.cover,
-                                ),
+                      ),
+                    ),
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppTheme.accentMetrics,
+                      minimumSize: const Size(44, 44),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    child: const Text(
+                      'Concluir',
+                      style: TextStyle(
+                        color: AppTheme.accentMetrics,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                ],
+                flexibleSpace: LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    final double collapsedHeight =
+                        MediaQuery.of(context).padding.top + kToolbarHeight;
+                    final bool isCollapsed =
+                        constraints.biggest.height <= collapsedHeight + 20;
+
+                    return FlexibleSpaceBar(
+                      centerTitle: true,
+                      titlePadding: const EdgeInsets.only(bottom: 16),
+                      title: SliverSafeTitle(
+                        title: exerciseTitle,
+                        isVisible: isCollapsed,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      background: Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            left: AppTheme.space16,
+                            right: AppTheme.space16,
+                            bottom: 10,
+                          ),
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 200),
+                            opacity: isCollapsed ? 0.0 : 1.0,
+                            child: Text(
+                              exerciseTitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 34,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                height: 1.14,
                               ),
-                              child: Stack(
-                                children: [
-                                  Center(
-                                    child: Container(
-                                      width: 56,
-                                      height: 56,
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withAlpha(88),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Colors.white.withAlpha(35),
-                                          width: 0.9,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppTheme.space16,
+                    AppTheme.space4,
+                    AppTheme.space16,
+                    AppTheme.space48,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(muscleGroupsText, style: _sectionEyebrowStyle()),
+                      const SizedBox(height: AppTheme.space16),
+                      InkWell(
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Abrindo vídeo explicativo de $exerciseTitle...',
+                              ),
+                              backgroundColor: AppTheme.primary,
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(22),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(8),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(80),
+                                blurRadius: 24,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: AspectRatio(
+                              aspectRatio: 16 / 9,
+                              child: Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: NetworkImage(
+                                      ex.imagemUrl ??
+                                          'https://lh3.googleusercontent.com/aida-public/AB6AXuAXzEmkEB7BMnRUWQ6iIDF5Oc_gVzBjCjxHaac9LYJyL8KxdAi-mTOKK2v2nO9Vt3-DXPcDcoSM3RkTh-iDX0q8oShyD0TllFVTVsQBP3fKU0HPHHtOlkO5uRRx_yIiMes1tmlEr6VkkMyvhy-LTIzYuWYuJaLsSzeba5FPnNX9_RQjcusWmbIyWrBVLVSmLZjDaMcPJMKiSSY6S-RSZFaAzRzHQdDbWnPbv1aUP1akkwSiPE9Rriwmdn8VrF3w0ZIWei1Cxfd7B2Ut',
+                                    ),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                child: Stack(
+                                  children: [
+                                    Center(
+                                      child: Container(
+                                        width: 56,
+                                        height: 56,
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withAlpha(88),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white.withAlpha(35),
+                                            width: 0.9,
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          Icons.play_arrow,
+                                          color: Colors.white,
+                                          size: 30,
                                         ),
                                       ),
-                                      child: const Icon(
-                                        Icons.play_arrow,
-                                        color: Colors.white,
-                                        size: 30,
-                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: AppTheme.space20),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.fromLTRB(
-                        0,
-                        AppTheme.space16,
-                        0,
-                        AppTheme.space16,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
+                      const SizedBox(height: AppTheme.space20),
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (instructionsText.isNotEmpty)
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'INSTRUÇÕES',
-                                  style: _sectionEyebrowStyle(),
-                                ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('INSTRUÇÕES', style: _sectionEyebrowStyle()),
+                              if (_isEditingInstructions)
                                 TextButton(
-                                  onPressed: _editarInstrucoes,
+                                  onPressed: () {
+                                    _instructionsFocusNode.unfocus();
+                                    _saveInstructions();
+                                  },
                                   style: TextButton.styleFrom(
                                     foregroundColor: AppTheme.accentMetrics,
                                     padding: const EdgeInsets.symmetric(
@@ -1244,131 +1159,119 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                        'Editar',
+                                        'Concluir',
                                         style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                       SizedBox(width: AppTheme.space4),
                                       Icon(
-                                        Icons.edit_outlined,
+                                        Icons.check,
                                         size: 14,
                                         color: AppTheme.accentMetrics,
                                       ),
                                     ],
                                   ),
                                 ),
-                              ],
+                            ],
+                          ),
+                          const SizedBox(height: AppTheme.space10),
+                          TextField(
+                            controller: _instructionsController,
+                            focusNode: _instructionsFocusNode,
+                            minLines: 3,
+                            maxLines: 8,
+                            textCapitalization: TextCapitalization.sentences,
+                            onTapOutside: (_) {
+                              FocusScope.of(context).unfocus();
+                              _saveInstructions();
+                            },
+                            onSubmitted: (_) => _saveInstructions(),
+                            style: const TextStyle(
+                              color: AppTheme.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              height: 1.5,
                             ),
-                          if (instructionsText.isNotEmpty)
-                            const SizedBox(height: AppTheme.space10),
-                          if (instructionsText.isEmpty)
-                            Semantics(
-                              button: true,
-                              label: 'Adicionar instruções',
-                              child: InkWell(
-                                onTap: _editarInstrucoes,
-                                borderRadius: BorderRadius.circular(999),
-                                child: ConstrainedBox(
-                                  constraints: const BoxConstraints(
-                                    minHeight: 44,
-                                  ),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: AppTheme.space14,
-                                      vertical: AppTheme.space10,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.surfaceDark,
-                                      borderRadius: BorderRadius.circular(999),
-                                      border: Border.all(
-                                        color: Colors.white.withAlpha(58),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          'Adicionar instruções',
-                                          style: TextStyle(
-                                            color: AppTheme.accentMetrics,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            letterSpacing: 0.1,
-                                          ),
-                                        ),
-                                        const SizedBox(width: AppTheme.space8),
-                                        Icon(
-                                          CupertinoIcons.add,
-                                          color: AppTheme.accentMetrics,
-                                          size: 15,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            )
-                          else
-                            Text(
-                              instructionsText,
-                              style: const TextStyle(
-                                color: AppTheme.textPrimary,
+                            decoration: InputDecoration(
+                              hintText:
+                                  'Toque para adicionar instruções de execução...',
+                              hintStyle: TextStyle(
+                                color: AppTheme.textSecondary.withAlpha(120),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
-                                height: 1.5,
+                              ),
+                              filled: true,
+                              fillColor: AppTheme.surfaceDark,
+                              contentPadding: const EdgeInsets.all(
+                                AppTheme.space16,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide(
+                                  color: Colors.white.withAlpha(0),
+                                  width: 1,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: const BorderSide(
+                                  color: AppTheme.accentMetrics,
+                                  width: 1.5,
+                                ),
                               ),
                             ),
+                          ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: AppTheme.space24),
-                    _buildSeriesSection(
-                      icon: null,
-                      iconColor: null,
-                      title: 'AQUECIMENTO',
-                      entries: warmupEntries,
-                      titleColor: const Color(0xFF60A5FA),
-                      showDot: true,
-                    ),
-                    if (feederEntries.isNotEmpty) ...[
+                      const SizedBox(height: AppTheme.space24),
                       _buildSeriesSection(
                         icon: null,
                         iconColor: null,
-                        title: 'FEEDER',
-                        entries: feederEntries,
-                        titleColor: const Color(0xFFFF6B00),
+                        title: 'AQUECIMENTO',
+                        entries: warmupEntries,
+                        titleColor: const Color(0xFF60A5FA),
                         showDot: true,
                       ),
-                    ],
-                    if (workEntries.isNotEmpty) ...[
-                      _buildSeriesSection(
-                        icon: null,
-                        iconColor: null,
-                        title: 'SÉRIES DE TRABALHO',
-                        entries: workEntries,
-                        titleColor: const Color(0xFF0df259),
-                        showDot: true,
+                      if (feederEntries.isNotEmpty) ...[
+                        _buildSeriesSection(
+                          icon: null,
+                          iconColor: null,
+                          title: 'FEEDER',
+                          entries: feederEntries,
+                          titleColor: const Color(0xFFFF6B00),
+                          showDot: true,
+                        ),
+                      ],
+                      if (workEntries.isNotEmpty) ...[
+                        _buildSeriesSection(
+                          icon: null,
+                          iconColor: null,
+                          title: 'SÉRIES DE TRABALHO',
+                          entries: workEntries,
+                          titleColor: const Color(0xFF0df259),
+                          showDot: true,
+                        ),
+                      ],
+                      const SizedBox(height: AppTheme.space24),
+                      Center(
+                        child: OrangeGlassActionButton(
+                          label: 'Adicionar Série',
+                          onTap: _adicionarSerie,
+                          bottomMargin: 0,
+                        ),
                       ),
                     ],
-                    const SizedBox(height: AppTheme.space40),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: AnimatedScale(
-          scale: _isKeyboardVisible() ? 0.0 : 1.0,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
-          child: OrangeGlassActionButton(
-            label: 'Adicionar Série',
-            onTap: _adicionarSerie,
-            bottomMargin: 24,
+              SliverPadding(padding: EdgeInsets.only(bottom: 48)),
+            ],
           ),
         ),
       ),
