@@ -3,7 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // --- 1. CORES ---
-  static const Color primary = Color(0xFF30D158); // Atualizado para verde
+  static const Color primary = Color(
+    0xFF30D158,
+  ); // Verde para interações principais
+  static const Color accentGreen = Color(0xFFFF9F0A); // Laranja para detalhes
   static const Color background = Color(0xFF121212); // Google Material Dark
   static const Color iosGreen = Color(0xFF34C759);
   static const Color iosAmber = Color(0xFFFFBF00);
@@ -17,7 +20,9 @@ class AppTheme {
   static const Color buttonSurface = Color(0xFF1E1E1E);
   static const Color textPrimary = Colors.white;
   static const Color textSecondary = Color.fromARGB(160, 255, 255, 255);
-  static const Color accentMetrics = Color(0xFFFF9F0A);
+  static const Color accentMetrics = Color(
+    0xFFFF9F0A,
+  ); // Mantido por compatibilidade, mas use `primary`
   static const Color success = Color(0xFF4CAF50);
   static const Color error = Colors.redAccent;
 
@@ -27,7 +32,22 @@ class AppTheme {
   static Color get glassPill =>
       const Color(0x1AFFFFFF); // rgba(255,255,255,0.1)
 
-  // --- 2. ESPAÇAMENTOS GLOBAIS (Novo Padrão Compacto) ---
+  // --- 2. ESTILOS DE TEXTO ---
+  static const TextStyle eyebrowTextStyle = TextStyle(
+    color: AppTheme.textSecondary,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 1.0,
+  );
+
+  static const TextStyle microLabelTextStyle = TextStyle(
+    color: AppTheme.silverGrey,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.8,
+  );
+
+  // --- 3. ESPAÇAMENTOS GLOBAIS (Novo Padrão Compacto) ---
   static const double paddingScreen = 20.0;
   static const double paddingCard = 16.0;
   static const double space0 = 0;
@@ -46,13 +66,13 @@ class AppTheme {
   static const double space40 = 40.0;
   static const double space48 = 48.0;
 
-  // --- 3. ARREDONDAMENTOS (Radii) ---
+  // --- 4. ARREDONDAMENTOS (Radii) ---
   static const double radiusSmall = 8.0;
   static const double radiusMedium = 12.0;
   static const double radiusLarge = 16.0;
   static const double radiusFull = 9999.0;
 
-  // --- 4. TEMA GLOBAL DO FLUTTER ---
+  // --- 5. TEMA GLOBAL DO FLUTTER ---
   static ThemeData get themeData {
     return ThemeData(
       useMaterial3: false,

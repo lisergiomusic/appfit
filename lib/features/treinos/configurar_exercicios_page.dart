@@ -89,74 +89,12 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
   String get _totalSeriesText {
     if (_totalSeries == 0) {
-      return 'Nenhuma série adicionada';
+      return 'Nenhuma série';
     } else if (_totalSeries == 1) {
-      return 'Total de 1 série';
+      return '1 série';
     } else {
-      return 'Total de $_totalSeries séries';
+      return '$_totalSeries séries';
     }
-  }
-
-  Widget _buildTechnicalMuscleLabels() {
-    if (_gruposMuscularesUnicos.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    final technicalOrange = AppTheme.primary;
-
-    return SizedBox(
-      height: 26,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        clipBehavior: Clip.none,
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 1),
-          child: Row(
-            children: [
-              for (var i = 0; i < _gruposMuscularesUnicos.length; i++) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0D0D0D),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(
-                      color: technicalOrange.withAlpha(165),
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    _gruposMuscularesUnicos[i].toUpperCase(),
-                    style: TextStyle(
-                      color: technicalOrange.withAlpha(232),
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.5,
-                      height: 1.0,
-                    ),
-                  ),
-                ),
-                if (i < _gruposMuscularesUnicos.length - 1)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Text(
-                      '•',
-                      style: TextStyle(
-                        color: Colors.white.withAlpha(78),
-                        fontSize: 9,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   List<String> get _gruposMuscularesUnicos {
@@ -276,7 +214,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         slivers: [
           SliverAppBar(
             automaticallyImplyLeading: false,
-            backgroundColor: AppTheme.background.withValues(alpha: 0.9),
+            backgroundColor: AppTheme.background.withAlpha(230),
             surfaceTintColor: Colors.transparent,
             pinned: true,
             expandedHeight: 140.0,
@@ -285,12 +223,12 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                 ? const SizedBox.shrink()
                 : TextButton.icon(
                     onPressed: _onBackPressed,
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.chevron_left,
                       color: AppTheme.primary,
                       size: 28,
                     ),
-                    label: Text(
+                    label: const Text(
                       'Voltar',
                       style: TextStyle(
                         color: AppTheme.primary,
@@ -317,7 +255,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       minimumSize: const Size(44, 44),
                       tapTargetSize: MaterialTapTargetSize.padded,
                     ),
-                    child: Text(
+                    child: const Text(
                       'Concluir',
                       style: TextStyle(
                         color: AppTheme.primary,
@@ -352,78 +290,65 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     child: Padding(
                       padding: const EdgeInsets.only(
                         left: 24,
-                        bottom: 8,
+                        bottom: 16,
                         right: 24,
                       ),
                       child: AnimatedOpacity(
                         duration: const Duration(milliseconds: 200),
                         opacity: isCollapsed ? 0.0 : 1.0,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                  child: _isEditingTitle
-                                      ? TextField(
-                                          controller: _nomeTreinoController,
-                                          focusNode: _titleFocusNode,
-                                          maxLines: 1,
-                                          minLines: 1,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 40,
-                                            letterSpacing: -0.5,
-                                          ),
-                                          decoration: const InputDecoration(
-                                            border: InputBorder.none,
-                                            isDense: true,
-                                            contentPadding: EdgeInsets.zero,
-                                          ),
-                                          cursorColor: AppTheme.primary,
-                                          textCapitalization:
-                                              TextCapitalization.words,
-                                          onSubmitted: (_) =>
-                                              _toggleEditTitle(),
-                                        )
-                                      : GestureDetector(
-                                          onTap: _toggleEditTitle,
-                                          child: Text(
-                                            safeTreinoTitle,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 40,
-                                              letterSpacing: -0.5,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
+                            Expanded(
+                              child: _isEditingTitle
+                                  ? TextField(
+                                      controller: _nomeTreinoController,
+                                      focusNode: _titleFocusNode,
+                                      maxLines: 1,
+                                      minLines: 1,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 40,
+                                        letterSpacing: -0.5,
+                                      ),
+                                      decoration: const InputDecoration(
+                                        border: InputBorder.none,
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.zero,
+                                      ),
+                                      cursorColor: AppTheme.primary,
+                                      textCapitalization:
+                                          TextCapitalization.words,
+                                      onSubmitted: (_) => _toggleEditTitle(),
+                                    )
+                                  : GestureDetector(
+                                      onTap: _toggleEditTitle,
+                                      child: Text(
+                                        safeTreinoTitle,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 40,
+                                          letterSpacing: -0.5,
                                         ),
-                                ),
-                                const SizedBox(width: 8),
-                                GestureDetector(
-                                  onTap: _toggleEditTitle,
-                                  child: Icon(
-                                    _isEditingTitle
-                                        ? Icons.check_circle_outline_rounded
-                                        : Icons.edit_note,
-                                    color: _isEditingTitle
-                                        ? AppTheme.primary
-                                        : Colors.white.withValues(alpha: 0.2),
-                                    size: 36,
-                                  ),
-                                ),
-                              ],
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
                             ),
-                            const SizedBox(height: 6),
-                            AnimatedOpacity(
-                              duration: const Duration(milliseconds: 200),
-                              opacity: _isEditingTitle ? 0.3 : 1.0,
-                              child: _buildTechnicalMuscleLabels(),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: _toggleEditTitle,
+                              child: Icon(
+                                _isEditingTitle
+                                    ? Icons.check_circle_outline_rounded
+                                    : Icons.edit_note,
+                                color: _isEditingTitle
+                                    ? AppTheme.primary
+                                    : Colors.white.withAlpha(80),
+                                size: 36,
+                              ),
                             ),
                           ],
                         ),
@@ -434,121 +359,80 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
               },
             ),
           ),
-
           SliverOpacity(
             opacity: _isEditingTitle ? 0.3 : 1.0,
             sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 4, 24, 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${_exerciciosLocais.length} ${_exerciciosLocais.length == 1 ? 'exercício prescrito' : 'exercícios prescritos'}',
-                          style: TextStyle(
-                            color: AppTheme.textSecondary.withAlpha(180),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primary.withAlpha(15),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            _totalSeriesText,
-                            style: const TextStyle(
-                              color: AppTheme.primary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600, // Bold suave
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                      ],
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const NoteSection(),
+                    const SizedBox(height: 24),
+                    Text(
+                      '${_exerciciosLocais.length} ${_exerciciosLocais.length == 1 ? 'EXERCÍCIO' : 'EXERCÍCIOS'}',
+                      style: AppTheme.eyebrowTextStyle,
                     ),
-                  ),
-
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
-                    child: const NoteSection(),
-                  ),
-
-                  if (_exerciciosLocais.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: 100,
-                      ), // Empurra suavemente para o centro da tela
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 88,
-                              height: 88,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(
-                                  alpha: 0.05,
-                                ), // Fundo circular escuro/translúcido
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons
-                                      .assignment_outlined, // Ícone de prancheta
-                                  size: 40,
-                                  color: AppTheme.primary, // Laranja vibrante
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            const Text(
-                              'Nenhum exercício adicionado',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: -0.3,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 40,
-                              ),
-                              child: Text(
-                                'Comece a montar o treino do seu aluno\nadicionando o primeiro exercício abaixo.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary,
-                                  fontSize: 14,
-                                  height:
-                                      1.4, // Line-height elegante para leitura
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-
+          if (_exerciciosLocais.isEmpty)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 88,
+                      height: 88,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(10),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.fitness_center_outlined,
+                          size: 40,
+                          color: AppTheme.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Nenhum exercício adicionado',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 40),
+                      child: Text(
+                        'Comece a montar o treino adicionando\no primeiro exercício abaixo.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 14,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 80), // Space for FAB
+                  ],
+                ),
+              ),
+            ),
           if (_exerciciosLocais.isNotEmpty)
             SliverOpacity(
               opacity: _isEditingTitle ? 0.3 : 1.0,
               sliver: SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 sliver: SliverReorderableList(
                   itemCount: _exerciciosLocais.length,
                   onReorder: _onReorder,
@@ -573,20 +457,20 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     );
   }
 
-  // CARD DE EXERCÍCIO ORIGINAL COM GLASSMorphism PREMIUM
   Widget _buildExercicioCard(int exIndex) {
     final ex = _exerciciosLocais[exIndex];
+    final hasMuscleGroup = ex.grupoMuscular.trim().isNotEmpty;
 
     return Dismissible(
       key: ValueKey('${ex.nome}_$exIndex'),
       direction: DismissDirection.endToStart,
       background: Container(
-        margin: const EdgeInsets.only(bottom: 16),
+        margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.only(right: 24),
         alignment: Alignment.centerRight,
         decoration: BoxDecoration(
           color: Colors.redAccent.withAlpha(200),
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(18),
         ),
         child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
       ),
@@ -640,33 +524,16 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         });
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 14),
-        decoration: BoxDecoration(
-          color: AppTheme
-              .glassCard, // Supondo que você tenha AppTheme.glassCard (preto translúcido)
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
-            width: 0.35,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.28),
-              blurRadius: 12,
-              offset: const Offset(0, 2),
-            ),
-            BoxShadow(
-              color: Colors.white.withValues(alpha: 0.03),
-              blurRadius: 1,
-              offset: const Offset(0, -0.5),
-            ),
-          ],
-        ),
+        key: ValueKey(ex.nome),
+        margin: const EdgeInsets.only(bottom: 12),
         child: Material(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(24),
+          color: AppTheme.surfaceDark,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: BorderSide(color: Colors.white.withAlpha(14), width: 1),
+          ),
           child: InkWell(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(18),
             onTap: () async {
               await Navigator.push(
                 context,
@@ -680,53 +547,79 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
               setState(() {});
             },
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.space12,
+                vertical: AppTheme.space10,
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   ReorderableDragStartListener(
                     index: exIndex,
-                    child: Icon(
-                      Icons.drag_indicator,
-                      color: Colors.white.withValues(alpha: 0.42),
-                      size: 28,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Icon(
+                        Icons.drag_indicator,
+                        color: Colors.white.withAlpha(100),
+                        size: 24,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        if (hasMuscleGroup) ...[
+                          Text(
+                            ex.grupoMuscular.toUpperCase(),
+                            style: AppTheme.eyebrowTextStyle.copyWith(
+                              color: AppTheme.primary.withAlpha(200),
+                              letterSpacing: 0.8,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                        ],
                         Text(
                           ex.nome,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16.5,
-                            letterSpacing: -0.3,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          '${ex.series.length} SÉRIES',
                           style: TextStyle(
-                            color: AppTheme.primary.withAlpha(220),
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.7,
-                            height: 1.2,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            height: hasMuscleGroup ? 1.1 : 1.3,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Icon(
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withAlpha(20),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                    ),
+                    child: Text(
+                      '${ex.series.length} SÉRIES',
+                      style: const TextStyle(
+                        color: AppTheme.primary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(
                     Icons.chevron_right,
-                    color: Colors.white.withValues(alpha: 0.42),
-                    size: 28,
+                    color: AppTheme.textSecondary,
+                    size: 24,
                   ),
                 ],
               ),
