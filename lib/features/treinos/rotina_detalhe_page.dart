@@ -1,3 +1,5 @@
+import 'package:appfit/core/widgets/sliver_safe_title.dart';
+import 'package:flutter/cupertino.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -638,9 +640,12 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     final bool isTemplate =
         widget.rotinaData != null && widget.rotinaData!['alunoId'] == null;
 
-    return WillPopScope(
-      onWillPop: () async {
-        if (!_foiModificado) return true;
+    return PopScope(
+      canPop: !_foiModificado,
+      onPopInvoked: (didPop) async {
+        if (didPop) {
+          return;
+        }
         final sair = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
@@ -677,95 +682,193 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             ],
           ),
         );
-        return sair ?? false;
+        if (sair == true) {
+          if (mounted) {
+            Navigator.pop(context);
+          }
+        }
       },
       child: Scaffold(
         backgroundColor: AppTheme.background,
-        // --- NOVO APPLE LARGE TITLE COM CUSTOM SCROLL VIEW ---
         body: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(
             parent: BouncingScrollPhysics(),
           ),
           slivers: [
-            SliverAppBar.large(
+            SliverAppBar(
+              automaticallyImplyLeading: false,
               backgroundColor: AppTheme.background,
               surfaceTintColor: Colors.transparent,
               pinned: true,
+              expandedHeight: 138,
               leadingWidth: 60,
-              leading: IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_ios_new,
-                  size: 20,
-                  color: AppTheme.primary,
-                ),
-                onPressed: () {
-                  if (!_foiModificado) {
-                    Navigator.pop(context);
-                  } else {
-                    showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        backgroundColor: AppTheme.surfaceDark,
-                        title: const Text(
-                          'Descartar alterações?',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        content: const Text(
-                          'Você fez mudanças nesta rotina. Se voltar agora, elas não serão salvas no banco de dados.',
-                          style: TextStyle(color: AppTheme.textSecondary),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text(
-                              'Ficar',
-                              style: TextStyle(color: AppTheme.textSecondary),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context, true);
-                              Navigator.pop(context);
-                            },
-                            child: const Text(
-                              'Descartar',
-                              style: TextStyle(
-                                color: Colors.redAccent,
-                                fontWeight: FontWeight.bold,
+              leading: Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: Material(
+                    color: AppTheme.buttonSurface,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: () {
+                        if (!_foiModificado) {
+                          Navigator.pop(context);
+                        } else {
+                          showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              backgroundColor: AppTheme.surfaceDark,
+                              title: const Text(
+                                'Descartar alterações?',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
+                              content: const Text(
+                                'Você fez mudanças nesta rotina. Se voltar agora, elas não serão salvas no banco de dados.',
+                                style: TextStyle(color: AppTheme.textSecondary),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text(
+                                    'Ficar',
+                                    style: TextStyle(
+                                        color: AppTheme.textSecondary),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context, true);
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text(
+                                    'Descartar',
+                                    style: TextStyle(
+                                      color: Colors.redAccent,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                          );
+                        }
+                      },
+                      customBorder: const CircleBorder(),
+                      child: const SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: Icon(
+                          CupertinoIcons.back,
+                          color: AppTheme.textPrimary,
+                          size: 18,
+                        ),
                       ),
-                    );
-                  }
-                },
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => _exibirModalInfo(context),
-                  child: const Text(
-                    'Editar',
-                    style: TextStyle(
-                      color: AppTheme.primary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-              ],
-              title: Text(
-                _nome.isEmpty ? 'Nova Rotina' : _nome,
-                style: const TextStyle(
-                  fontFamily: '.SF UI Display',
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.2,
+              ),
+              actions: [
+                Semantics(
+                  label: 'Editar',
+                  button: true,
+                  child: TextButton(
+                    onPressed: () => _exibirModalInfo(context),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppTheme.accentMetrics,
+                      minimumSize: const Size(44, 44),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    child: const Text(
+                      'Editar',
+                      style: TextStyle(
+                        color: AppTheme.accentMetrics,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ),
+                const SizedBox(width: 4),
+              ],
+              flexibleSpace: LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  final double collapsedHeight =
+                      MediaQuery.of(context).padding.top + kToolbarHeight;
+                  final bool isCollapsed =
+                      constraints.biggest.height <= collapsedHeight + 20;
+                  final String title = _nome.isEmpty ? 'Nova Rotina' : _nome;
+
+                  return FlexibleSpaceBar(
+                    centerTitle: true,
+                    titlePadding: const EdgeInsets.only(bottom: 18),
+                    title: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 220),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      transitionBuilder: (child, animation) {
+                        // Fade + slight upward slide
+                        final offsetAnimation = Tween<Offset>(
+                          begin: const Offset(0, 0.15),
+                          end: Offset.zero,
+                        )
+                            .chain(CurveTween(curve: Curves.easeOutCubic))
+                            .animate(animation);
+
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: offsetAnimation,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: isCollapsed
+                          ? SliverSafeTitle(
+                              key: const ValueKey('collapsed_title'),
+                              title: title,
+                              isVisible: true,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            )
+                          : const SizedBox(
+                              key: ValueKey('empty_title'),
+                              height: 0,
+                            ),
+                    ),
+                    background: Align(
+                      alignment: Alignment.bottomLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: AppTheme.space16,
+                          right: AppTheme.space16,
+                          bottom: 10,
+                        ),
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 200),
+                          opacity: isCollapsed ? 0.0 : 1.0,
+                          child: Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 34,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                              height: 1.14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
 
