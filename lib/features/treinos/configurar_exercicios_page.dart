@@ -1,3 +1,4 @@
+import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_theme.dart';
@@ -86,26 +87,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
   int get _totalSeries =>
       _exerciciosLocais.fold(0, (sum, ex) => sum + ex.series.length);
-
-  String get _totalSeriesText {
-    if (_totalSeries == 0) {
-      return 'Nenhuma série';
-    } else if (_totalSeries == 1) {
-      return '1 série';
-    } else {
-      return '$_totalSeries séries';
-    }
-  }
-
-  List<String> get _gruposMuscularesUnicos {
-    final grupos = _exerciciosLocais
-        .map((ex) => ex.grupoMuscular)
-        .where((g) => g.trim().isNotEmpty)
-        .toSet()
-        .toList();
-    grupos.sort();
-    return grupos;
-  }
 
   void _onReorder(int oldIndex, int newIndex) {
     setState(() {
@@ -212,37 +193,11 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           parent: BouncingScrollPhysics(),
         ),
         slivers: [
-          SliverAppBar(
-            automaticallyImplyLeading: false,
-            backgroundColor: AppTheme.background.withAlpha(230),
-            surfaceTintColor: Colors.transparent,
-            pinned: true,
-            expandedHeight: 140.0,
-            leadingWidth: _isEditingTitle ? 0 : 100,
-            leading: _isEditingTitle
-                ? const SizedBox.shrink()
-                : TextButton.icon(
-                    onPressed: _onBackPressed,
-                    icon: const Icon(
-                      Icons.chevron_left,
-                      color: AppTheme.primary,
-                      size: 28,
-                    ),
-                    label: const Text(
-                      'Voltar',
-                      style: TextStyle(
-                        color: AppTheme.primary,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppTheme.primary,
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      minimumSize: const Size(44, 44),
-                      tapTargetSize: MaterialTapTargetSize.padded,
-                    ),
-                  ),
+          AppFitSliverAppBar(
+            title: safeTreinoTitle,
+            expandedHeight: 140,
+            onBackPressed: _onBackPressed,
+            leading: _isEditingTitle ? const SizedBox.shrink() : null,
             actions: [
               if (!_isEditingTitle)
                 Padding(
@@ -266,97 +221,70 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   ),
                 ),
             ],
-            flexibleSpace: LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints constraints) {
-                final double collapsedHeight =
-                    MediaQuery.of(context).padding.top + kToolbarHeight;
-                final bool isCollapsed =
-                    constraints.biggest.height <= collapsedHeight + 20;
-
-                return FlexibleSpaceBar(
-                  centerTitle: true,
-                  titlePadding: const EdgeInsets.only(bottom: 16),
-                  title: SliverSafeTitle(
-                    title: safeTreinoTitle,
-                    isVisible: isCollapsed,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  background: Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        left: 24,
-                        bottom: 16,
-                        right: 24,
-                      ),
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 200),
-                        opacity: isCollapsed ? 0.0 : 1.0,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: _isEditingTitle
-                                  ? TextField(
-                                      controller: _nomeTreinoController,
-                                      focusNode: _titleFocusNode,
-                                      maxLines: 1,
-                                      minLines: 1,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 40,
-                                        letterSpacing: -0.5,
-                                      ),
-                                      decoration: const InputDecoration(
-                                        border: InputBorder.none,
-                                        isDense: true,
-                                        contentPadding: EdgeInsets.zero,
-                                      ),
-                                      cursorColor: AppTheme.primary,
-                                      textCapitalization:
-                                          TextCapitalization.words,
-                                      onSubmitted: (_) => _toggleEditTitle(),
-                                    )
-                                  : GestureDetector(
-                                      onTap: _toggleEditTitle,
-                                      child: Text(
-                                        safeTreinoTitle,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 40,
-                                          letterSpacing: -0.5,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                            ),
-                            const SizedBox(width: 8),
-                            GestureDetector(
+            background: Align(
+              alignment: Alignment.bottomLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: 24,
+                  bottom: 16,
+                  right: 24,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: _isEditingTitle
+                          ? TextField(
+                              controller: _nomeTreinoController,
+                              focusNode: _titleFocusNode,
+                              maxLines: 1,
+                              minLines: 1,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 40,
+                                letterSpacing: -0.5,
+                              ),
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              cursorColor: AppTheme.primary,
+                              textCapitalization: TextCapitalization.words,
+                              onSubmitted: (_) => _toggleEditTitle(),
+                            )
+                          : GestureDetector(
                               onTap: _toggleEditTitle,
-                              child: Icon(
-                                _isEditingTitle
-                                    ? Icons.check_circle_outline_rounded
-                                    : Icons.edit_note,
-                                color: _isEditingTitle
-                                    ? AppTheme.primary
-                                    : Colors.white.withAlpha(80),
-                                size: 36,
+                              child: Text(
+                                safeTreinoTitle,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 40,
+                                  letterSpacing: -0.5,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          ],
-                        ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: _toggleEditTitle,
+                      child: Icon(
+                        _isEditingTitle
+                            ? Icons.check_circle_outline_rounded
+                            : Icons.edit_note,
+                        color: _isEditingTitle
+                            ? AppTheme.primary
+                            : Colors.white.withAlpha(80),
+                        size: 36,
                       ),
                     ),
-                  ),
-                );
-              },
+                  ],
+                ),
+              ),
             ),
           ),
           SliverOpacity(

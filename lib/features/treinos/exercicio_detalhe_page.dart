@@ -1,3 +1,4 @@
+import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
@@ -1502,36 +1503,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
               parent: BouncingScrollPhysics(),
             ),
             slivers: [
-              SliverAppBar(
-                automaticallyImplyLeading: false,
-                backgroundColor: AppTheme.background,
-                surfaceTintColor: Colors.transparent,
-                pinned: true,
-                expandedHeight: 138,
-                leadingWidth: 60,
-                leading: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 12),
-                    child: Material(
-                      color: AppTheme.buttonSurface,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        onTap: () => Navigator.pop(context),
-                        customBorder: const CircleBorder(),
-                        child: const SizedBox(
-                          width: 40,
-                          height: 40,
-                          child: Icon(
-                            CupertinoIcons.back,
-                            color: AppTheme.textPrimary,
-                            size: 18,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+              AppFitSliverAppBar(
+                title: exerciseTitle,
                 actions: [
                   Semantics(
                     label: 'Concluir',
@@ -1539,14 +1512,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                     child: TextButton(
                       onPressed: () => Navigator.pop(context),
                       style: TextButton.styleFrom(
-                        foregroundColor: AppTheme.accentMetrics,
+                        foregroundColor: AppTheme.primary,
                         minimumSize: const Size(44, 44),
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                       ),
                       child: const Text(
                         'Concluir',
                         style: TextStyle(
-                          color: AppTheme.accentMetrics,
+                          color: AppTheme.primary,
                           fontSize: 17,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1555,81 +1528,26 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   ),
                   const SizedBox(width: 4),
                 ],
-                flexibleSpace: LayoutBuilder(
-                  builder: (BuildContext context, BoxConstraints constraints) {
-                    final double collapsedHeight =
-                        MediaQuery.of(context).padding.top + kToolbarHeight;
-                    final bool isCollapsed =
-                        constraints.biggest.height <= collapsedHeight + 20;
-
-                    return FlexibleSpaceBar(
-                      centerTitle: true,
-                      titlePadding: const EdgeInsets.only(bottom: 18),
-                      title: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 220),
-                        switchInCurve: Curves.easeOutCubic,
-                        switchOutCurve: Curves.easeInCubic,
-                        transitionBuilder: (child, animation) {
-                          // Fade + slight upward slide
-                          final offsetAnimation =
-                              Tween<Offset>(
-                                    begin: const Offset(0, 0.15),
-                                    end: Offset.zero,
-                                  )
-                                  .chain(CurveTween(curve: Curves.easeOutCubic))
-                                  .animate(animation);
-
-                          return FadeTransition(
-                            opacity: animation,
-                            child: SlideTransition(
-                              position: offsetAnimation,
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: isCollapsed
-                            ? SliverSafeTitle(
-                                key: const ValueKey('collapsed_title'),
-                                title: exerciseTitle,
-                                isVisible: true,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              )
-                            : const SizedBox(
-                                key: ValueKey('empty_title'),
-                                height: 0,
-                              ),
+                background: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: AppTheme.space16,
+                      right: AppTheme.space16,
+                      bottom: 10,
+                    ),
+                    child: Text(
+                      exerciseTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 34,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        height: 1.14,
                       ),
-                      background: Align(
-                        alignment: Alignment.bottomLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            left: AppTheme.space16,
-                            right: AppTheme.space16,
-                            bottom: 10,
-                          ),
-                          child: AnimatedOpacity(
-                            duration: const Duration(milliseconds: 200),
-                            opacity: isCollapsed ? 0.0 : 1.0,
-                            child: Text(
-                              exerciseTitle,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 34,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                                height: 1.14,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
               ),
               SliverToBoxAdapter(
@@ -1676,8 +1594,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                     _saveInstructions();
                                   },
                                   style: TextButton.styleFrom(
-                                    foregroundColor: AppTheme.accentMetrics,
-                                    padding: const EdgeInsets.symmetric(
+                                                          foregroundColor: AppTheme.primary,                                    padding: const EdgeInsets.symmetric(
                                       horizontal: AppTheme.space0,
                                       vertical: AppTheme.space6,
                                     ),
