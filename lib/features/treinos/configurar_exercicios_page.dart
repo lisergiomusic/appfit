@@ -363,10 +363,23 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   itemCount: _exerciciosLocais.length,
                   onReorder: _onReorder,
                   proxyDecorator: (child, index, animation) {
-                    return Material(
-                      elevation: 0,
-                      color: Colors.transparent,
-                      child: child,
+                    final curvedAnimation = CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeInOut,
+                    );
+
+                    return ScaleTransition(
+                      scale: Tween<double>(begin: 1.0, end: 1.02)
+                          .animate(curvedAnimation),
+                      child: Material(
+                        elevation: 6.0,
+                        color: AppTheme.surfaceDark,
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusLarge),
+                        ),
+                        child: child,
+                      ),
                     );
                   },
                   itemBuilder: (context, index) => _buildExercicioCard(index),
@@ -404,7 +417,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       key: ValueKey('${ex.nome}_$exIndex'),
       direction: DismissDirection.endToStart,
       background: Container(
-        margin: const EdgeInsets.only(bottom: AppTheme.space12),
         padding: const EdgeInsets.only(right: 24),
         alignment: Alignment.centerRight,
         decoration: BoxDecoration(
@@ -462,9 +474,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           _hasChanges = true;
         });
       },
-      child: Container(
-        key: ValueKey(ex.nome),
-        margin: const EdgeInsets.only(bottom: AppTheme.space12),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: AppTheme.space12),
         child: Material(
           color: AppTheme.surfaceDark,
           shape: RoundedRectangleBorder(
