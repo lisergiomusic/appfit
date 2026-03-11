@@ -224,11 +224,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             background: Align(
               alignment: Alignment.bottomLeft,
               child: Padding(
-                padding: const EdgeInsets.only(
-                  left: 24,
-                  bottom: 16,
-                  right: 24,
-                ),
+                padding: const EdgeInsets.only(left: 24, bottom: 16, right: 24),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -297,9 +293,20 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   children: [
                     const NoteSection(),
                     const SizedBox(height: 24),
-                    Text(
-                      '${_exerciciosLocais.length} ${_exerciciosLocais.length == 1 ? 'EXERCÍCIO' : 'EXERCÍCIOS'}',
-                      style: AppTheme.eyebrowTextStyle,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${_exerciciosLocais.length} ${_exerciciosLocais.length == 1 ? 'EXERCÍCIO' : 'EXERCÍCIOS'}',
+                          style: AppTheme.textSectionHeaderDark,
+                        ),
+                        Text(
+                          '${_totalSeries} ${_totalSeries == 1 ? 'SÉRIE' : 'SÉRIES'}',
+                          style: AppTheme.textSectionHeaderDark.copyWith(
+                            color: AppTheme.primary,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -359,8 +366,10 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             SliverOpacity(
               opacity: _isEditingTitle ? 0.3 : 1.0,
               sliver: SliverPadding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 sliver: SliverReorderableList(
                   itemCount: _exerciciosLocais.length,
                   onReorder: _onReorder,
@@ -527,11 +536,15 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   ),
                   const SizedBox(width: 12),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: AppTheme.primary.withAlpha(20),
-                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                      borderRadius: BorderRadius.circular(
+                        AppTheme.radiusMedium,
+                      ),
                     ),
                     child: Text(
                       '${ex.series.length} SÉRIES',

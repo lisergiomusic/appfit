@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'models/exercicio_model.dart';
 
 class ExercicioDetalheController {

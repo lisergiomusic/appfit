@@ -47,6 +47,13 @@ class AppTheme {
     letterSpacing: 0.8,
   );
 
+  static TextStyle textSectionHeaderDark = TextStyle(
+    color: Color(0xFF64748b),
+    fontSize: 13,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0.5,
+  );
+
   // --- 3. ESPAÇAMENTOS GLOBAIS (Novo Padrão Compacto) ---
   static const double paddingScreen = 20.0;
   static const double paddingCard = 16.0;
