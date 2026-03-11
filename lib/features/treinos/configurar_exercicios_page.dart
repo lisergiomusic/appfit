@@ -185,21 +185,21 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             actions: [
               if (!_isEditingTitle)
                 Padding(
-                  padding: const EdgeInsets.only(right: 16.0),
-                  child: TextButton(
-                    onPressed: _concluirEdicao,
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppTheme.primary,
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      minimumSize: const Size(44, 44),
-                      tapTargetSize: MaterialTapTargetSize.padded,
-                    ),
-                    child: const Text(
-                      'Concluir',
-                      style: TextStyle(
-                        color: AppTheme.primary,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
+                  padding: const EdgeInsets.only(right: 12.0),
+                  child: Material(
+                    color: AppTheme.buttonSurface,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: _concluirEdicao,
+                      customBorder: const CircleBorder(),
+                      child: const SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: Icon(
+                          Icons.check_rounded,
+                          color: AppTheme.textPrimary,
+                          size: 18,
+                        ),
                       ),
                     ),
                   ),
