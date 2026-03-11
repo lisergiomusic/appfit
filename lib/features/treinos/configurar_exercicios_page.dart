@@ -31,9 +31,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   bool _isEditingTitle = false;
   late FocusNode _titleFocusNode;
 
-  double _fabProtectionSpace(BuildContext context) {
-    return 140 + MediaQuery.of(context).padding.bottom;
-  }
+
 
   @override
   void initState() {
@@ -174,20 +172,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
     return Scaffold(
       backgroundColor: AppTheme.background,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: IgnorePointer(
-        ignoring: !shouldShowFab,
-        child: AnimatedScale(
-          scale: shouldShowFab ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
-          child: OrangeGlassActionButton(
-            label: 'Adicionar Exercício',
-            onTap: _openLibrary,
-            bottomMargin: 8,
-          ),
-        ),
-      ),
       body: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics(),
@@ -362,7 +346,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 80), // Space for FAB
+
                   ],
                 ),
               ),
@@ -390,8 +374,23 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
               ),
             ),
           SliverToBoxAdapter(
-            child: SizedBox(
-              height: shouldShowFab ? _fabProtectionSpace(context) : 0,
+            child: Center(
+              child: IgnorePointer(
+                ignoring: !shouldShowFab,
+                child: AnimatedScale(
+                  scale: shouldShowFab ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOutCubic,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 24.0, bottom: 48.0),
+                    child: OrangeGlassActionButton(
+                      label: 'Adicionar Exercício',
+                      onTap: _openLibrary,
+                      bottomMargin: 0,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ],
