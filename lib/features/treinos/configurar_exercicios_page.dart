@@ -287,7 +287,12 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             opacity: _isEditingTitle ? 0.3 : 1.0,
             sliver: SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                padding: const EdgeInsets.fromLTRB(
+                  AppTheme.paddingScreen,
+                  AppTheme.space24,
+                  AppTheme.paddingScreen,
+                  0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -367,8 +372,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
               opacity: _isEditingTitle ? 0.3 : 1.0,
               sliver: SliverPadding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+                  horizontal: AppTheme.paddingScreen,
+                  vertical: AppTheme.space16,
                 ),
                 sliver: SliverReorderableList(
                   itemCount: _exerciciosLocais.length,
@@ -396,18 +401,16 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
   Widget _buildExercicioCard(int exIndex) {
     final ex = _exerciciosLocais[exIndex];
-    final hasMuscleGroup = ex.grupoMuscular.trim().isNotEmpty;
-
     return Dismissible(
       key: ValueKey('${ex.nome}_$exIndex'),
       direction: DismissDirection.endToStart,
       background: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: AppTheme.space12),
         padding: const EdgeInsets.only(right: 24),
         alignment: Alignment.centerRight,
         decoration: BoxDecoration(
           color: Colors.redAccent.withAlpha(200),
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         ),
         child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
       ),
@@ -417,7 +420,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
               builder: (context) => AlertDialog(
                 backgroundColor: AppTheme.surfaceLight,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
                 ),
                 title: const Text(
                   'Remover exercício?',
@@ -462,15 +465,14 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       },
       child: Container(
         key: ValueKey(ex.nome),
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: AppTheme.space12),
         child: Material(
           color: AppTheme.surfaceDark,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-            side: BorderSide(color: Colors.white.withAlpha(14), width: 1),
+            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
           ),
           child: InkWell(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
             onTap: () async {
               await Navigator.push(
                 context,
@@ -485,82 +487,60 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.space12,
-                vertical: AppTheme.space10,
+                horizontal: AppTheme.paddingCard,
+                vertical: AppTheme.space14,
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Drag handle
                   ReorderableDragStartListener(
                     index: exIndex,
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.only(right: AppTheme.space8),
                       child: Icon(
                         Icons.drag_indicator,
-                        color: Colors.white.withAlpha(100),
+                        color: Colors.white.withAlpha(80),
                         size: 24,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  // Main content
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        if (hasMuscleGroup) ...[
-                          Text(
-                            ex.grupoMuscular.toUpperCase(),
-                            style: AppTheme.eyebrowTextStyle.copyWith(
-                              color: AppTheme.primary.withAlpha(200),
-                              letterSpacing: 0.8,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                        ],
                         Text(
                           ex.nome,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            height: hasMuscleGroup ? 1.1 : 1.3,
+                            fontSize: 17,
+                            height: 1.3,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        const SizedBox(height: AppTheme.space6),
+                        Text(
+                          '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
+                          style: const TextStyle(
+                            color: Color(0xFF94a3b8),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.1,
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primary.withAlpha(20),
-                      borderRadius: BorderRadius.circular(
-                        AppTheme.radiusMedium,
-                      ),
-                    ),
-                    child: Text(
-                      '${ex.series.length} SÉRIES',
-                      style: const TextStyle(
-                        color: AppTheme.primary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
+                  // Seta
+                  const SizedBox(width: AppTheme.space12),
                   const Icon(
                     Icons.chevron_right,
-                    color: AppTheme.textSecondary,
-                    size: 24,
+                    color: Color(0xFF64748b),
+                    size: 28,
                   ),
                 ],
               ),
