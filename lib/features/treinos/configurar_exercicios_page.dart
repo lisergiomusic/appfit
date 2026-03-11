@@ -94,14 +94,18 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   }
 
   Future<void> _openLibrary() async {
-    final String? nome = await Navigator.push<String>(
+    final exercicioSelecionado = await Navigator.push<Map<String, String>>(
       context,
       MaterialPageRoute(builder: (_) => const ExerciciosLibraryPage()),
     );
 
-    if (nome != null && nome.isNotEmpty) {
+    if (exercicioSelecionado != null) {
       setState(() {
-        _exerciciosLocais.add(ExercicioItem(nome: nome, series: []));
+        _exerciciosLocais.add(ExercicioItem(
+          nome: exercicioSelecionado['nome']!,
+          grupoMuscular: exercicioSelecionado['musculo']!,
+          series: [],
+        ));
         _hasChanges = true;
       });
     }
@@ -536,7 +540,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                         ),
                         const SizedBox(height: AppTheme.space6),
                         Text(
-                          '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
+                          '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}${ex.grupoMuscular.isNotEmpty ? ' • ${ex.grupoMuscular}' : ''}',
                           style: const TextStyle(
                             color: Color(0xFF94a3b8),
                             fontSize: 14,

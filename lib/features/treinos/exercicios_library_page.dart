@@ -145,7 +145,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     ),
                     onTap: () {
                       // Retorna o nome do exercício selecionado para a página anterior
-                      Navigator.pop(context, ex['nome']);
+                      Navigator.pop(context, ex);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('${ex['nome']} adicionado ao treino!'),
