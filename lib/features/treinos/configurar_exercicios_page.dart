@@ -31,8 +31,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   bool _isEditingTitle = false;
   late FocusNode _titleFocusNode;
 
-
-
   @override
   void initState() {
     super.initState();
@@ -292,7 +290,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                         Text(
                           '${_totalSeries} ${_totalSeries == 1 ? 'SÉRIE' : 'SÉRIES'}',
                           style: AppTheme.textSectionHeaderDark.copyWith(
-                            color: AppTheme.primary,
+                            color: AppTheme.accentMetrics,
                           ),
                         ),
                       ],
@@ -346,7 +344,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                         ),
                       ),
                     ),
-
                   ],
                 ),
               ),
@@ -369,14 +366,17 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     );
 
                     return ScaleTransition(
-                      scale: Tween<double>(begin: 1.0, end: 1.02)
-                          .animate(curvedAnimation),
+                      scale: Tween<double>(
+                        begin: 1.0,
+                        end: 1.02,
+                      ).animate(curvedAnimation),
                       child: Material(
                         elevation: 6.0,
                         color: AppTheme.surfaceDark,
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppTheme.radiusLarge),
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusLarge,
+                          ),
                         ),
                         child: child,
                       ),
