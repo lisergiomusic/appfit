@@ -51,7 +51,7 @@ class _OrangeGlassActionButtonState extends State<OrangeGlassActionButton> {
       margin: EdgeInsets.only(bottom: widget.bottomMargin),
       decoration: BoxDecoration(
         color: AppTheme.primary,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         boxShadow: glowShadows,
       ),
       child: Material(
@@ -63,9 +63,14 @@ class _OrangeGlassActionButtonState extends State<OrangeGlassActionButton> {
               setState(() => _isPressed = isHighlighted);
             }
           },
-          borderRadius: BorderRadius.circular(999),
+          borderRadius: BorderRadius.circular(18),
           splashColor: Colors.white.withValues(alpha: 0.16),
-          highlightColor: Colors.black.withValues(alpha: 0.06),
+          highlightColor: const Color.fromARGB(
+            255,
+            153,
+            64,
+            64,
+          ).withValues(alpha: 0.06),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
             child: Row(

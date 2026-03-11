@@ -1,7 +1,6 @@
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/cupertino.dart';
 import 'dart:async';
 
 import '../../core/theme/app_theme.dart';
@@ -894,7 +893,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                       ),
                                       decoration: BoxDecoration(
                                         color: flashColor,
-                                        borderRadius: BorderRadius.circular(18),
+                                        borderRadius: BorderRadius.circular(
+                                          AppTheme.radiusLarge,
+                                        ),
                                         border: Border.all(
                                           color: Colors.white.withAlpha(14),
                                           width: 1,
@@ -1594,7 +1595,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                     _saveInstructions();
                                   },
                                   style: TextButton.styleFrom(
-                                                          foregroundColor: AppTheme.primary,                                    padding: const EdgeInsets.symmetric(
+                                    foregroundColor: AppTheme.primary,
+                                    padding: const EdgeInsets.symmetric(
                                       horizontal: AppTheme.space0,
                                       vertical: AppTheme.space6,
                                     ),

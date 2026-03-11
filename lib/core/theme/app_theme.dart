@@ -19,9 +19,8 @@ class AppTheme {
   static const Color accentMetrics = Color(0xFFFF9F0A);
   static const Color success = Color(0xFF4CAF50);
 
-
   // --- 2. ESTILOS DE TEXTO ---
-static const TextStyle microLabelTextStyle = TextStyle(
+  static const TextStyle microLabelTextStyle = TextStyle(
     color: AppTheme.silverGrey,
     fontSize: 10,
     fontWeight: FontWeight.w600,
@@ -57,7 +56,7 @@ static const TextStyle microLabelTextStyle = TextStyle(
   // --- 4. ARREDONDAMENTOS (Radii) ---
   static const double radiusSmall = 8.0;
   static const double radiusMedium = 12.0;
-  static const double radiusLarge = 16.0;
+  static const double radiusLarge = 18.0;
   static const double radiusFull = 9999.0;
 
   // --- 5. TEMA GLOBAL DO FLUTTER ---

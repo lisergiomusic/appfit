@@ -477,9 +477,11 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
       child: Padding(
         padding: const EdgeInsets.only(bottom: AppTheme.space12),
         child: Material(
+          elevation: 1.0,
           color: AppTheme.surfaceDark,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+            side: BorderSide(color: Colors.white.withAlpha(14), width: 1),
           ),
           child: InkWell(
             borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
