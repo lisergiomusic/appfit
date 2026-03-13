@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui';
 import '../../core/theme/app_theme.dart';
 
 class NoteSection extends StatefulWidget {
@@ -10,291 +11,272 @@ class NoteSection extends StatefulWidget {
 }
 
 class _NoteSectionState extends State<NoteSection> {
-  String _notaSalva = '';
-  bool _isEditing = false;
+  String _noteText = '';
 
-  void _abrirEditorModal(BuildContext context) {
-    final RenderBox renderBox = context.findRenderObject() as RenderBox;
-    final offset = renderBox.localToGlobal(Offset.zero);
-
-    final screenWidth = MediaQuery.of(context).size.width;
-    final modalWidth = screenWidth - 48;
-    final leftPosition = 24.0;
-
-    setState(() => _isEditing = true);
-
+  void _openEditModal() {
+    HapticFeedback.lightImpact();
     showGeneralDialog(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.92),
       barrierDismissible: true,
-      barrierLabel: 'Fechar editor',
-      transitionDuration: const Duration(milliseconds: 200),
-      pageBuilder: (dialogContext, animation, secondaryAnimation) {
-        return _EditorModal(
-          initialTop: offset.dy,
-          initialLeft: leftPosition,
-          width: modalWidth,
-          notaInicial: _notaSalva,
-          onSave: (novaNota) {
+      barrierLabel: 'Fechar editor de notas',
+      barrierColor: Colors.black.withAlpha(220),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return _NoteEditorModal(
+          initialText: _noteText,
+          onSave: (newText) {
             setState(() {
-              _notaSalva = novaNota;
+              _noteText = newText;
             });
           },
         );
       },
-    ).then((_) {
-      if (mounted) setState(() => _isEditing = false);
-    });
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final tween = Tween<double>(begin: 0.9, end: 1.0);
+        return ScaleTransition(
+          scale: tween.animate(
+            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+          ),
+          child: FadeTransition(
+            opacity: animation,
+            child: child,
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedOpacity(
-      duration: const Duration(milliseconds: 150),
-      opacity: _isEditing ? 0.0 : 1.0,
-      curve: Curves.easeInOut,
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 250),
-        child: _notaSalva.isNotEmpty
-            ? _buildInlineNote(context)
-            : _buildAddNoteAction(context),
-      ),
-    );
-  }
+    bool isEmpty = _noteText.trim().isEmpty;
 
-  Widget _buildInlineNote(BuildContext context) {
-    return GestureDetector(
-      key: const ValueKey('saved_note_inline'),
-      onTap: () => _abrirEditorModal(context),
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.only(top: 0, bottom: 0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.only(top: 3),
-              child: Icon(
-                Icons.sticky_note_2,
-                size: 14,
-                color: Color(0xFFFF6D00),
-              ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _openEditModal,
+        borderRadius: BorderRadius.circular(20),
+        splashColor: AppTheme.primary.withAlpha(30),
+        highlightColor: AppTheme.primary.withAlpha(20),
+        child: AnimatedSize(
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeInOutCubic,
+          alignment: Alignment.topCenter,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppTheme.space16),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceDark,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withAlpha(15), width: 1),
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                _notaSalva,
-                softWrap: true,
-                style: const TextStyle(
-                  color: Color.fromARGB(160, 255, 255, 255),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  height: 1.45,
-                  letterSpacing: 0.1,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Cabeçalho
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withAlpha(20),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.edit_note_rounded,
+                        color: AppTheme.primary,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: AppTheme.space12),
+                    const Text(
+                      'NOTAS DA SESSÃO',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAddNoteAction(BuildContext context) {
-    return GestureDetector(
-      key: const ValueKey('empty_button_inline'),
-      onTap: () => _abrirEditorModal(context),
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.only(top: 0, bottom: 0),
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.center, // Alinhamento central
-          children: const [
-            Padding(
-              padding: EdgeInsets.only(
-                top: 3,
-              ), // Ajuste fino para mover o ícone um pouco mais para cima
-              child: Icon(
-                Icons.sticky_note_2,
-                size: 14,
-                color: Color(0xFFFF6D00),
-              ),
-            ),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Adicionar observação do treino',
-                softWrap: true,
-                style: TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                const SizedBox(height: AppTheme.space12),
+                // Corpo (texto ou placeholder)
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: isEmpty
+                      ? Text(
+                          'Toque para adicionar instruções, foco excêntrico ou detalhes deste treino...',
+                          key: const ValueKey('empty_note'),
+                          style: TextStyle(
+                            color: AppTheme.textSecondary.withAlpha(140),
+                            fontSize: 14,
+                            fontStyle: FontStyle.italic,
+                            height: 1.4,
+                          ),
+                        )
+                      : Text(
+                          _noteText,
+                          key: const ValueKey('filled_note'),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            height: 1.5,
+                          ),
+                        ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-// === WIDGET DO MODAL DE EDIÇÃO ===
-class _EditorModal extends StatefulWidget {
-  final double initialTop;
-  final double initialLeft;
-  final double width;
-  final String notaInicial;
+class _NoteEditorModal extends StatefulWidget {
+  final String initialText;
   final ValueChanged<String> onSave;
 
-  const _EditorModal({
-    required this.initialTop,
-    required this.initialLeft,
-    required this.width,
-    required this.notaInicial,
-    required this.onSave,
-  });
+  const _NoteEditorModal({required this.initialText, required this.onSave});
 
   @override
-  State<_EditorModal> createState() => _EditorModalState();
+  State<_NoteEditorModal> createState() => _NoteEditorModalState();
 }
 
-class _EditorModalState extends State<_EditorModal> {
-  late TextEditingController _controller;
+class _NoteEditorModalState extends State<_NoteEditorModal> {
+  late final TextEditingController _controller;
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.notaInicial);
+    _controller = TextEditingController(text: widget.initialText);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
-  void _salvarEFechar() {
-    HapticFeedback.lightImpact();
+  void _handleSave() {
     widget.onSave(_controller.text.trim());
-    Navigator.pop(context);
+    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    final viewInsets = MediaQuery.of(context).viewInsets;
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    double topPosition = widget.initialTop;
-    const estimatedHeight = 240.0;
-
-    if (topPosition + estimatedHeight > screenHeight - viewInsets.bottom) {
-      topPosition = screenHeight - viewInsets.bottom - estimatedHeight - 16;
-      if (topPosition < MediaQuery.of(context).padding.top + 16) {
-        topPosition = MediaQuery.of(context).padding.top + 16;
-      }
-    }
-
     return GestureDetector(
-      onTap: () => Navigator.pop(context),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        resizeToAvoidBottomInset: false,
-        body: Stack(
-          children: [
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOut,
-              top: topPosition,
-              left: widget.initialLeft,
-              width: widget.width,
+      onTap: () => Navigator.of(context).pop(),
+      child: Material(
+        color: Colors.transparent,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            // Evita que o teclado sobreponha o modal
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
               child: GestureDetector(
-                onTap: () {},
-                child: Material(
-                  color: Colors.transparent,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.only(left: 4, bottom: 10),
-                              child: Text(
-                                'EDITOR DE OBSERVAÇÕES',
-                                style: TextStyle(
-                                  color: Color(0xFFD4D4D8),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.5,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              right: 4,
-                              bottom: 10,
-                            ),
-                            child: GestureDetector(
-                              onTap: _salvarEFechar,
-                              child: const Icon(
-                                Icons.check_circle,
-                                color: AppTheme.primary,
-                                size: 32,
-                              ),
-                            ),
-                          ),
-                        ],
+                onTap: () {}, // Impede que toques no modal o fechem
+                child: Container(
+                  constraints: const BoxConstraints(
+                    maxHeight: 300,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceLight,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: Colors.white.withAlpha(25),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.4),
+                        blurRadius: 30,
+                        spreadRadius: -10,
                       ),
-                      Container(
-                        width: double.infinity,
-                        constraints: const BoxConstraints(minHeight: 160),
-                        decoration: BoxDecoration(
-                          color: AppTheme
-                              .buttonSurface, // O mesmo Cinza Sólido do HTML aqui no modal
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            width: 0.5,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 2),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 16, 16, 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'EDITOR DE NOTAS',
+                              style: TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                            InkWell(
+                              onTap: _handleSave,
+                              borderRadius: BorderRadius.circular(30),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primary.withAlpha(40),
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(
+                                      Icons.check_rounded,
+                                      color: AppTheme.primary,
+                                      size: 16,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Salvar',
+                                      style: TextStyle(
+                                        color: AppTheme.primary,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ],
                         ),
+                      ),
+                      Flexible(
                         child: TextField(
                           controller: _controller,
+                          focusNode: _focusNode,
                           autofocus: true,
                           maxLines: null,
+                          scrollPadding: const EdgeInsets.all(20.0),
                           keyboardType: TextInputType.multiline,
                           textCapitalization: TextCapitalization.sentences,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 17,
-                            height: 1.4,
+                            fontSize: 16,
+                            height: 1.5,
                           ),
                           cursorColor: AppTheme.primary,
                           decoration: const InputDecoration(
+                            isDense: true,
                             filled: false,
-                            fillColor: Colors.transparent,
                             border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            errorBorder: InputBorder.none,
-                            disabledBorder: InputBorder.none,
-                            hintText: 'Digite uma nota sobre este treino...',
-                            hintStyle: TextStyle(
-                              color: Colors.white54,
-                              fontSize: 16,
-                            ),
-                            contentPadding: EdgeInsets.all(20),
+                            hintText: 'Digite aqui...',
+                            hintStyle: TextStyle(color: AppTheme.textSecondary),
+                            contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 20),
                           ),
                         ),
                       ),
@@ -303,7 +285,7 @@ class _EditorModalState extends State<_EditorModal> {
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
