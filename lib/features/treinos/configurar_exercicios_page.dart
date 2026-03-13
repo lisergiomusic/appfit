@@ -3,32 +3,18 @@ import 'dart:async';
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/orange_glass_action_button.dart';
 import '../../core/widgets/sliver_safe_title.dart';
-import 'exercicios_library_page.dart';
+import 'configurar_treino_controller.dart';
 import 'exercicio_detalhe_page.dart';
+import 'exercicios_library_page.dart';
 import 'models/exercicio_model.dart';
 import 'widgets/sessao_note_widget.dart';
 
-// =================================================================================
-// INÍCIO: MODELO DE DADOS LOCAL
-// =================================================================================
-/// Wrapper para o [ExercicioItem] que garante uma [id] única e estável.
-/// Essencial para o funcionamento correto do [SliverReorderableList], que exige
-/// chaves (`Keys`) que não mudem quando a ordem dos itens é alterada.
-class _ExercicioWrapper {
-  final String id;
-  final ExercicioItem item;
-
-  _ExercicioWrapper(this.item) : id = UniqueKey().toString();
-}
-
-// =================================================================================
-// FIM: MODELO DE DADOS LOCAL
-// =================================================================================
-
-class ConfigurarExerciciosPage extends StatefulWidget {
+class ConfigurarExerciciosPage extends StatelessWidget {
   final String nomeTreino;
   final List<ExercicioItem> exercicios;
 
@@ -39,146 +25,33 @@ class ConfigurarExerciciosPage extends StatefulWidget {
   });
 
   @override
-  State<ConfigurarExerciciosPage> createState() =>
-      _ConfigurarExerciciosPageState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => ConfigurarTreinoController(
+        nomeTreino: nomeTreino,
+        exercicios: exercicios,
+      ),
+      child: _ConfigurarExerciciosView(originalExercicios: exercicios),
+    );
+  }
 }
 
-class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
-  // =================================================================================
-  // INÍCIO: GERENCIAMENTO DE ESTADO
-  // =================================================================================
+class _ConfigurarExerciciosView extends StatefulWidget {
+  final List<ExercicioItem> originalExercicios;
 
-  /// Chave para controlar o [ScaffoldMessenger] e exibir [SnackBar]s.
+  const _ConfigurarExerciciosView({required this.originalExercicios});
+
+  @override
+  State<_ConfigurarExerciciosView> createState() =>
+      _ConfigurarExerciciosViewState();
+}
+
+class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
-  /// Timer para controlar a duração da [SnackBar] de "item removido".
-  Timer? _snackBarTimer;
-
-  /// Cópia local dos exercícios para permitir edição sem afetar o estado original.
-  late List<_ExercicioWrapper> _exerciciosLocais;
-
-  /// Flag para rastrear se houve alguma alteração que precise ser salva.
-  bool _hasChanges = false;
-
-  /// Controlador para o campo de texto do nome do treino.
-  late TextEditingController _nomeTreinoController;
-
-  /// Controla o estado de edição do título do treino.
-  bool _isEditingTitle = false;
-
-  late FocusNode _titleFocusNode;
-
-  @override
-  void initState() {
-    super.initState();
-    _exerciciosLocais = widget.exercicios.isNotEmpty
-        ? widget.exercicios.map((ex) {
-            final item = ExercicioItem(
-              nome: ex.nome,
-              grupoMuscular: ex.grupoMuscular,
-              observacao: ex.observacao,
-              tipoAlvo: ex.tipoAlvo,
-              imagemUrl: ex.imagemUrl,
-              series: ex.series
-                  .map(
-                    (s) => SerieItem(
-                      tipo: s.tipo,
-                      alvo: s.alvo,
-                      carga: s.carga,
-                      descanso: s.descanso,
-                    ),
-                  )
-                  .toList(),
-            );
-            return _ExercicioWrapper(item);
-          }).toList()
-        : [];
-    _nomeTreinoController = TextEditingController(text: widget.nomeTreino);
-    _titleFocusNode = FocusNode();
-  }
-
-  @override
-  void dispose() {
-    _snackBarTimer?.cancel();
-    _nomeTreinoController.dispose();
-    _titleFocusNode.dispose();
-    super.dispose();
-  }
-
-  // =================================================================================
-  // FIM: GERENCIAMENTO DE ESTADO
-  // =================================================================================
-
-  // =================================================================================
-  // INÍCIO: LÓGICA DE UI E NAVEGAÇÃO
-  // =================================================================================
-
-  void _toggleEditTitle() {
-    HapticFeedback.lightImpact();
-    setState(() {
-      _isEditingTitle = !_isEditingTitle;
-      if (_isEditingTitle) {
-        _titleFocusNode.requestFocus();
-      } else {
-        _titleFocusNode.unfocus();
-        if (_nomeTreinoController.text.trim() != widget.nomeTreino) {
-          _hasChanges = true;
-        }
-      }
-    });
-  }
-
-  /// Calcula o número total de séries em todos os exercícios.
-  int get _totalSeries => _exerciciosLocais.fold(
-    0,
-    (sum, wrapper) => sum + wrapper.item.series.length,
-  );
-
-  /// Armazena os IDs dos exercícios recém-adicionados para acionar a animação de "hint".
-  final Set<String> _newExercicios = {};
-
-  void _onReorder(int oldIndex, int newIndex) {
-    setState(() {
-      if (newIndex > oldIndex) newIndex -= 1;
-      final item = _exerciciosLocais.removeAt(oldIndex);
-      _exerciciosLocais.insert(newIndex, item);
-      _hasChanges = true;
-    });
-  }
-
-  /// Abre a biblioteca de exercícios e adiciona o item selecionado à lista local.
-  Future<void> _openLibrary() async {
-    final exercicioSelecionado = await Navigator.push<Map<String, String>>(
-      context,
-      MaterialPageRoute(builder: (_) => const ExerciciosLibraryPage()),
-    );
-
-    if (exercicioSelecionado != null) {
-      setState(() {
-        final newWrapper = _ExercicioWrapper(
-          ExercicioItem(
-            nome: exercicioSelecionado['nome']!,
-            grupoMuscular: exercicioSelecionado['musculo']!,
-            series: [],
-          ),
-        );
-        _exerciciosLocais.add(newWrapper);
-        _newExercicios.add(newWrapper.id);
-        _hasChanges = true;
-      });
-    }
-  }
-
-  /// Finaliza a edição, atualiza a lista de exercícios original e retorna para a tela anterior.
-  void _concluirEdicao() {
-    widget.exercicios.clear();
-    widget.exercicios.addAll(_exerciciosLocais.map((e) => e.item));
-    Navigator.pop(context, _nomeTreinoController.text.trim());
-  }
-
-  /// Intercepta o botão de voltar para confirmar o descarte de alterações não salvas.
-  Future<void> _onBackPressed() async {
-    if (!_hasChanges) {
+  Future<void> _onBackPressed(BuildContext context) async {
+    final controller = context.read<ConfigurarTreinoController>();
+    if (!controller.hasChanges) {
       Navigator.pop(context);
       return;
     }
@@ -221,24 +94,36 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     if (sair == true) Navigator.pop(context);
   }
 
-  // =================================================================================
-  // FIM: LÓGICA DE UI E NAVEGAÇÃO
-  // =================================================================================
+  void _concluirEdicao(BuildContext context) {
+    final controller = context.read<ConfigurarTreinoController>();
+    widget.originalExercicios.clear();
+    widget.originalExercicios.addAll(controller.getFinalExercicios());
+    Navigator.pop(context, controller.nomeTreinoController.text.trim());
+  }
 
-  // =================================================================================
-  // INÍCIO: CONSTRUÇÃO DA INTERFACE (BUILD)
-  // =================================================================================
+  Future<void> _openLibrary(BuildContext context) async {
+    final controller = context.read<ConfigurarTreinoController>();
+    final exercicioSelecionado = await Navigator.push<Map<String, String>>(
+      context,
+      MaterialPageRoute(builder: (_) => const ExerciciosLibraryPage()),
+    );
+
+    if (exercicioSelecionado != null) {
+      controller.addExercicio(exercicioSelecionado);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<ConfigurarTreinoController>();
     final safeTreinoTitle = SliverSafeTitle.safeTitle(
-      _nomeTreinoController.text.isEmpty
-          ? widget.nomeTreino
-          : _nomeTreinoController.text,
+      controller.nomeTreinoController.text.isEmpty
+          ? controller.initialNomeTreino
+          : controller.nomeTreinoController.text,
       fallback: 'Treino',
     );
     final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
-    final shouldShowFab = !_isEditingTitle && !isKeyboardVisible;
+    final shouldShowFab = !controller.isEditingTitle && !isKeyboardVisible;
 
     return ScaffoldMessenger(
       key: _scaffoldMessengerKey,
@@ -249,18 +134,17 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             parent: BouncingScrollPhysics(),
           ),
           slivers: [
-            // ========================================================
-            // INÍCIO: APP BAR EXPANSÍVEL
-            // ========================================================
             AppFitSliverAppBar(
               title: safeTreinoTitle,
-              expandedHeight: _isEditingTitle ? 160 : 140,
-              onBackPressed: _onBackPressed,
-              leading: _isEditingTitle ? const SizedBox.shrink() : null,
+              expandedHeight: controller.isEditingTitle ? 160 : 140,
+              onBackPressed: () => _onBackPressed(context),
+              leading: controller.isEditingTitle
+                  ? const SizedBox.shrink()
+                  : null,
               actions: [
-                if (!_isEditingTitle)
+                if (!controller.isEditingTitle)
                   TextButton(
-                    onPressed: _concluirEdicao,
+                    onPressed: () => _concluirEdicao(context),
                     style: TextButton.styleFrom(
                       foregroundColor: AppTheme.primary,
                       textStyle: const TextStyle(
@@ -281,15 +165,15 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     right: 24,
                   ),
                   child: Row(
-                    crossAxisAlignment: _isEditingTitle
+                    crossAxisAlignment: controller.isEditingTitle
                         ? CrossAxisAlignment.start
                         : CrossAxisAlignment.center,
                     children: [
                       Expanded(
-                        child: _isEditingTitle
+                        child: controller.isEditingTitle
                             ? TextField(
-                                controller: _nomeTreinoController,
-                                focusNode: _titleFocusNode,
+                                controller: controller.nomeTreinoController,
+                                focusNode: controller.titleFocusNode,
                                 maxLines: 1,
                                 maxLength: 35,
                                 style: const TextStyle(
@@ -321,7 +205,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                       );
                                     },
                                 decoration: InputDecoration(
-                                  filled: true, // Fundo escuro
+                                  filled: true,
                                   fillColor: Colors.black.withAlpha(60),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16,
@@ -341,10 +225,14 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                 ),
                                 cursorColor: AppTheme.primary,
                                 textCapitalization: TextCapitalization.words,
-                                onSubmitted: (_) => _toggleEditTitle(),
+                                onSubmitted: (_) =>
+                                    controller.toggleEditTitle(),
                               )
                             : GestureDetector(
-                                onTap: _toggleEditTitle,
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  controller.toggleEditTitle();
+                                },
                                 child: Text(
                                   safeTreinoTitle,
                                   style: const TextStyle(
@@ -360,16 +248,19 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       ),
                       const SizedBox(width: 8),
                       GestureDetector(
-                        onTap: _toggleEditTitle,
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          controller.toggleEditTitle();
+                        },
                         child: Padding(
                           padding: EdgeInsets.only(
-                            top: _isEditingTitle ? 8.0 : 0.0,
+                            top: controller.isEditingTitle ? 8.0 : 0.0,
                           ),
                           child: Icon(
-                            _isEditingTitle
+                            controller.isEditingTitle
                                 ? Icons.check_circle_rounded
                                 : Icons.edit_note,
-                            color: _isEditingTitle
+                            color: controller.isEditingTitle
                                 ? AppTheme.primary
                                 : Colors.white.withAlpha(80),
                             size: 44,
@@ -381,12 +272,8 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                 ),
               ),
             ),
-
-            // ========================================================
-            // FIM: APP BAR EXPANSÍVEL
-            // ========================================================
             SliverOpacity(
-              opacity: _isEditingTitle ? 0.3 : 1.0,
+              opacity: controller.isEditingTitle ? 0.3 : 1.0,
               sliver: SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(
@@ -398,133 +285,36 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ==================================================
-                      // INÍCIO: BLOCOS DE MÉTRICAS
-                      // ==================================================
                       Row(
                         children: [
                           Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.all(24),
-                              decoration: BoxDecoration(
-                                color: AppTheme.surfaceDark,
-                                borderRadius: BorderRadius.circular(24),
-                                border: Border.all(
-                                  color: Colors.white.withAlpha(13),
-                                  width: 1,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withAlpha(60),
-                                    blurRadius: 24,
-                                    offset: const Offset(0, 10),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Exercícios',
-                                    style: TextStyle(
-                                      color: AppTheme.textSecondary,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    '${_exerciciosLocais.length}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.bold,
-                                      height: 1.1,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            child: _MetricCard(
+                              label: 'Exercícios',
+                              value: '${controller.exercicios.length}',
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.all(24),
-                              decoration: BoxDecoration(
-                                color: AppTheme.surfaceDark,
-                                borderRadius: BorderRadius.circular(24),
-                                border: Border.all(
-                                  color: Colors.white.withAlpha(13),
-                                  width: 1,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withAlpha(60),
-                                    blurRadius: 24,
-                                    offset: const Offset(0, 10),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Total de Séries',
-                                    style: TextStyle(
-                                      color: AppTheme.textSecondary,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    '$_totalSeries',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.bold,
-                                      height: 1.1,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            child: _MetricCard(
+                              label: 'Total de Séries',
+                              value: '${controller.totalSeries}',
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 24),
-
-                      // ==================================================
-                      // FIM: BLOCOS DE MÉTRICAS
-                      // ==================================================
-
-                      // ==================================================
-                      // INÍCIO: SEÇÃO DE NOTAS E CABEÇALHO DA LISTA
-                      // ==================================================
                       const SessaoNoteWidget(),
                       const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'LISTA DE EXERCÍCIOS',
-                            style: AppTheme.textSectionHeaderDark,
-                          ),
-                        ],
+                      Text(
+                        'LISTA DE EXERCÍCIOS',
+                        style: AppTheme.textSectionHeaderDark,
                       ),
                     ],
-                  ), // Fim Column
-                ), // Fim Padding
-              ), // Fim SliverToBoxAdapter
-            ), // Fim SliverOpacity
-            // ==================================================
-            // FIM: SEÇÃO DE NOTAS E CABEÇALHO DA LISTA
-            // ==================================================
-
-            // ========================================================
-            // INÍCIO: ESTADO VAZIO (EMPTY STATE)
-            // ========================================================
-            if (_exerciciosLocais.isEmpty)
+                  ),
+                ),
+              ),
+            ),
+            if (controller.exercicios.isEmpty)
               SliverFillRemaining(
                 hasScrollBody: false,
                 child: Padding(
@@ -576,7 +366,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                           curve: Curves.easeOutCubic,
                           child: OrangeGlassActionButton(
                             label: 'Adicionar Exercício',
-                            onTap: _openLibrary,
+                            onTap: () => _openLibrary(context),
                             bottomMargin: 0,
                           ),
                         ),
@@ -586,25 +376,17 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   ),
                 ),
               ),
-
-            // ========================================================
-            // FIM: ESTADO VAZIO (EMPTY STATE)
-            // ========================================================
-            if (_exerciciosLocais.isNotEmpty)
-              // ========================================================
-              // INÍCIO: LISTA REORDENÁVEL DE EXERCÍCIOS
-              // ========================================================
+            if (controller.exercicios.isNotEmpty)
               SliverOpacity(
-                opacity: _isEditingTitle ? 0.3 : 1.0,
+                opacity: controller.isEditingTitle ? 0.3 : 1.0,
                 sliver: SliverPadding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppTheme.paddingScreen,
                     vertical: AppTheme.space16,
                   ),
                   sliver: SliverReorderableList(
-                    itemCount: _exerciciosLocais.length,
-                    onReorder: _onReorder,
-                    // Decorador para o item enquanto está sendo arrastado.
+                    itemCount: controller.exercicios.length,
+                    onReorder: controller.onReorder,
                     proxyDecorator: (child, index, animation) {
                       final curvedAnimation = CurvedAnimation(
                         parent: animation,
@@ -629,34 +411,33 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       );
                     },
                     itemBuilder: (context, index) {
-                      final wrapper = _exerciciosLocais[index];
-                      final isNew = _newExercicios.contains(wrapper.id);
+                      final wrapper = controller.exercicios[index];
+                      final isNew = controller.newExercicios.contains(
+                        wrapper.id,
+                      );
 
-                      // Se o exercício é novo, aplica a animação de "hint".
-                      // Caso contrário, constrói o card normalmente.
                       Widget card;
                       if (isNew) {
                         card = _HintingExercicioAnimator(
                           onEnd: () {
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               if (mounted) {
-                                setState(() {
-                                  _newExercicios.remove(wrapper.id);
-                                });
+                                controller.markHintAsShown(wrapper.id);
                               }
                             });
                           },
                           builder: (context, color) {
-                            return _buildCardContent(index, flashColor: color);
+                            return _buildCardContent(
+                              context,
+                              index,
+                              flashColor: color,
+                            );
                           },
                         );
                       } else {
-                        card = _buildCardContent(index);
+                        card = _buildCardContent(context, index);
                       }
 
-                      // ============================================
-                      // INÍCIO: GESTO DE SWIPE-TO-DELETE (DISMISSIBLE)
-                      // ============================================
                       return Dismissible(
                         key: Key(wrapper.id),
                         direction: DismissDirection.endToStart,
@@ -681,67 +462,48 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                           ),
                         ),
                         onDismissed: (direction) {
-                          final removedItem = _exerciciosLocais[index];
-                          final removedIndex = index;
+                          final removedItemName =
+                              controller.exercicios[index].item.nome;
+                          controller.deleteExercicio(index);
 
-                          setState(() {
-                            _exerciciosLocais.removeAt(index);
-                            _hasChanges = true;
-                          });
-
-                          // Lógica da SnackBar com ação "Desfazer".
-                          // Garante que apenas uma SnackBar de "desfazer" esteja visível.
-                          _snackBarTimer?.cancel();
+                          controller.cancelSnackBarTimer();
                           _scaffoldMessengerKey.currentState
                               ?.removeCurrentSnackBar();
 
                           final snackBar = SnackBar(
-                            content: Text('${removedItem.item.nome} removido'),
+                            content: Text('$removedItemName removido'),
                             action: SnackBarAction(
                               label: 'DESFAZER',
                               textColor: AppTheme.primary,
                               onPressed: () {
-                                _snackBarTimer?.cancel();
+                                controller.cancelSnackBarTimer();
                                 _scaffoldMessengerKey.currentState
                                     ?.hideCurrentSnackBar();
-                                if (!mounted) return;
-                                setState(() {
-                                  _exerciciosLocais.insert(
-                                    removedIndex,
-                                    removedItem,
-                                  );
-                                });
+                                controller.undoDelete();
                               },
                             ),
                             duration: const Duration(days: 365),
                             behavior: SnackBarBehavior.floating,
                           );
 
-                          final controller = _scaffoldMessengerKey.currentState
+                          final snackBarController = _scaffoldMessengerKey
+                              .currentState
                               ?.showSnackBar(snackBar);
 
-                          if (controller != null) {
-                            _snackBarTimer = Timer(
-                              const Duration(seconds: 4),
-                              () {
-                                controller.close();
-                              },
-                            );
+                          if (snackBarController != null) {
+                            controller.startSnackBarTimer(() {
+                              snackBarController.close();
+                              controller.clearUndoState();
+                            });
                           }
                         },
                         child: card,
                       );
                     },
-                  ), // Fim SliverReorderableList
-                ), // Fim SliverPadding
-              ), // Fim SliverOpacity
-            // ========================================================
-            // FIM: LISTA REORDENÁVEL DE EXERCÍCIOS
-            // ========================================================
-            if (_exerciciosLocais.isNotEmpty)
-              // ========================================================
-              // INÍCIO: BOTÃO DE AÇÃO FLUTUANTE (FAB)
-              // ========================================================
+                  ),
+                ),
+              ),
+            if (controller.exercicios.isNotEmpty)
               SliverToBoxAdapter(
                 child: Center(
                   child: IgnorePointer(
@@ -754,7 +516,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                         padding: const EdgeInsets.only(top: 24.0, bottom: 96.0),
                         child: OrangeGlassActionButton(
                           label: 'Adicionar Exercício',
-                          onTap: _openLibrary,
+                          onTap: () => _openLibrary(context),
                           bottomMargin: 0,
                         ),
                       ),
@@ -762,26 +524,19 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   ),
                 ),
               ),
-            // ========================================================
-            // FIM: BOTÃO DE AÇÃO FLUTUANTE (FAB)
-            // ========================================================
           ],
         ),
       ),
     );
   }
 
-  // =================================================================================
-  // FIM: CONSTRUÇÃO DA INTERFACE (BUILD)
-  // =================================================================================
-
-  // =================================================================================
-  // INÍCIO: WIDGETS AUXILIARES (BUILD HELPERS)
-  // =================================================================================
-
-  /// Constrói o conteúdo visual de um card de exercício na lista.
-  Widget _buildCardContent(int exIndex, {Color? flashColor}) {
-    final wrapper = _exerciciosLocais[exIndex];
+  Widget _buildCardContent(
+    BuildContext context,
+    int exIndex, {
+    Color? flashColor,
+  }) {
+    final controller = context.read<ConfigurarTreinoController>();
+    final wrapper = controller.exercicios[exIndex];
     final ex = wrapper.item;
 
     return Padding(
@@ -801,11 +556,10 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
               MaterialPageRoute(
                 builder: (context) => ExercicioDetalhePage(
                   exercicio: ex,
-                  onChanged: () => setState(() => _hasChanges = true),
+                  onChanged: () => controller.onExercicioChanged(),
                 ),
               ),
             );
-            setState(() {});
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -887,17 +641,55 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   }
 }
 
-// =================================================================================
-// FIM: WIDGETS AUXILIARES (BUILD HELPERS)
-// =================================================================================
+class _MetricCard extends StatelessWidget {
+  final String label;
+  final String value;
 
-// =================================================================================
-// INÍCIO: WIDGET DE ANIMAÇÃO
-// =================================================================================
-/// Widget que orquestra uma sequência de animações para novos exercícios:
-/// 1. Flash de cor para destacar o novo item.
-/// 2. Pausa.
-/// 3. Animação de "swipe hint" para ensinar o gesto de exclusão.
+  const _MetricCard({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceDark,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withAlpha(13), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(60),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppTheme.textSecondary,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+              height: 1.1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _HintingExercicioAnimator extends StatefulWidget {
   final Widget Function(BuildContext context, Color? color) builder;
   final VoidCallback onEnd;
@@ -916,7 +708,6 @@ class _HintingExercicioAnimatorState extends State<_HintingExercicioAnimator>
   late Animation<double> _swipeHintAnimation;
   late Animation<double> _swipeHintBgAnimation;
 
-  /// Define a animação de movimento do card para a esquerda e de volta.
   static final _swipeHintTween = TweenSequence<double>([
     TweenSequenceItem(
       tween: Tween(
@@ -935,7 +726,6 @@ class _HintingExercicioAnimatorState extends State<_HintingExercicioAnimator>
     ),
   ]);
 
-  /// Define a animação de largura do fundo vermelho que é revelado.
   static final _swipeHintBgTween = TweenSequence<double>([
     TweenSequenceItem(
       tween: Tween(
@@ -968,10 +758,6 @@ class _HintingExercicioAnimatorState extends State<_HintingExercicioAnimator>
         TweenSequence<Color?>([
           TweenSequenceItem(
             tween: ColorTween(begin: AppTheme.surfaceDark, end: highlightColor),
-            weight: 50.0,
-          ),
-          TweenSequenceItem(
-            tween: ColorTween(begin: highlightColor, end: AppTheme.surfaceDark),
             weight: 50.0,
           ),
           TweenSequenceItem(
@@ -1020,8 +806,6 @@ class _HintingExercicioAnimatorState extends State<_HintingExercicioAnimator>
 
         return Stack(
           children: [
-            // O fundo vermelho é "posicionado" para não influenciar o tamanho do Stack.
-            // Ele simplesmente preenche o espaço definido pelo card principal.
             if (bgWidth > 0)
               Positioned.fill(
                 child: Padding(
@@ -1048,7 +832,6 @@ class _HintingExercicioAnimatorState extends State<_HintingExercicioAnimator>
                   ),
                 ),
               ),
-            // O card principal (não posicionado) define o tamanho do Stack.
             Transform.translate(
               offset: Offset(dx, 0),
               child: widget.builder(context, _colorAnimation.value),
@@ -1059,7 +842,3 @@ class _HintingExercicioAnimatorState extends State<_HintingExercicioAnimator>
     );
   }
 }
-
-// =================================================================================
-// FIM: WIDGET DE ANIMAÇÃO
-// =================================================================================

@@ -12,6 +12,15 @@ class SerieItem {
     this.carga = '-',
     this.descanso = '60s',
   });
+
+  SerieItem clone() {
+    return SerieItem(
+      tipo: tipo,
+      alvo: alvo,
+      carga: carga,
+      descanso: descanso,
+    );
+  }
 }
 
 class ExercicioItem {
@@ -30,4 +39,15 @@ class ExercicioItem {
     this.imagemUrl,
     required this.series,
   });
+
+  ExercicioItem clone() {
+    return ExercicioItem(
+      nome: nome,
+      grupoMuscular: grupoMuscular,
+      observacao: observacao,
+      tipoAlvo: tipoAlvo,
+      imagemUrl: imagemUrl,
+      series: series.map((s) => s.clone()).toList(),
+    );
+  }
 }
