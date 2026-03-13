@@ -655,16 +655,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}${ex.grupoMuscular.isNotEmpty ? ' • ${ex.grupoMuscular}' : ''}',
-                          style: const TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 0.1,
-                          ),
-                        ),
-                        const SizedBox(height: AppTheme.space6),
-                        Text(
                           ex.nome,
                           style: const TextStyle(
                             color: Colors.white,
@@ -674,6 +664,16 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: AppTheme.space6),
+                        Text(
+                          '${ex.grupoMuscular.isNotEmpty ? '${ex.grupoMuscular} • ' : ''}${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
+                          style: const TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.1,
+                          ),
                         ),
                       ],
                     ),
