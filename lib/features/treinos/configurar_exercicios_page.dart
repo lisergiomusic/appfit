@@ -476,10 +476,11 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
             if (_exerciciosLocais.isEmpty)
               SliverFillRemaining(
                 hasScrollBody: false,
-                child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      const Spacer(flex: 2),
                       Container(
                         width: 88,
                         height: 88,
@@ -505,18 +506,31 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 40),
-                        child: Text(
-                          'Comece a montar o treino adicionando\no primeiro exercício abaixo.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 14,
-                            height: 1.4,
+                      Text(
+                        'Toque no botão abaixo para começar a\n'
+                        'montar o seu treino.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 14,
+                          height: 1.4,
+                        ),
+                      ),
+                      const Spacer(flex: 2),
+                      IgnorePointer(
+                        ignoring: !shouldShowFab,
+                        child: AnimatedScale(
+                          scale: shouldShowFab ? 1.0 : 0.0,
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeOutCubic,
+                          child: OrangeGlassActionButton(
+                            label: 'Adicionar Exercício',
+                            onTap: _openLibrary,
+                            bottomMargin: 0,
                           ),
                         ),
                       ),
+                      const Spacer(flex: 3),
                     ],
                   ),
                 ),
@@ -655,26 +669,27 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   ),
                 ),
               ),
-            SliverToBoxAdapter(
-              child: Center(
-                child: IgnorePointer(
-                  ignoring: !shouldShowFab,
-                  child: AnimatedScale(
-                    scale: shouldShowFab ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeOutCubic,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 24.0, bottom: 96.0),
-                      child: OrangeGlassActionButton(
-                        label: 'Adicionar Exercício',
-                        onTap: _openLibrary,
-                        bottomMargin: 0,
+            if (_exerciciosLocais.isNotEmpty)
+              SliverToBoxAdapter(
+                child: Center(
+                  child: IgnorePointer(
+                    ignoring: !shouldShowFab,
+                    child: AnimatedScale(
+                      scale: shouldShowFab ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOutCubic,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 24.0, bottom: 96.0),
+                        child: OrangeGlassActionButton(
+                          label: 'Adicionar Exercício',
+                          onTap: _openLibrary,
+                          bottomMargin: 0,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),
