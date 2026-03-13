@@ -167,7 +167,7 @@ class AlunosPage extends StatelessWidget {
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: AppTheme.primary.withValues(alpha: 0.1),
+                      backgroundColor: AppTheme.primary.withAlpha(26),
                       child: Text(
                         aluno['nome'][0],
                         style: const TextStyle(color: AppTheme.primary),

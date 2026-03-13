@@ -29,7 +29,7 @@ class _OrangeGlassActionButtonState extends State<OrangeGlassActionButton> {
     final glowShadows = _isPressed
         ? <BoxShadow>[
             BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.38),
+              color: AppTheme.primary.withAlpha(97),
               blurRadius: 12,
               spreadRadius: 0.6,
               offset: const Offset(0, 2),
@@ -37,7 +37,7 @@ class _OrangeGlassActionButtonState extends State<OrangeGlassActionButton> {
           ]
         : <BoxShadow>[
             BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.34),
+              color: AppTheme.primary.withAlpha(87),
               blurRadius: 12,
               spreadRadius: 0.4,
               offset: const Offset(0, 2),
@@ -64,13 +64,13 @@ class _OrangeGlassActionButtonState extends State<OrangeGlassActionButton> {
             }
           },
           borderRadius: BorderRadius.circular(18),
-          splashColor: Colors.white.withValues(alpha: 0.16),
+          splashColor: Colors.white.withAlpha(41),
           highlightColor: const Color.fromARGB(
             255,
             153,
             64,
             64,
-          ).withValues(alpha: 0.06),
+          ).withAlpha(15),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
             child: Row(

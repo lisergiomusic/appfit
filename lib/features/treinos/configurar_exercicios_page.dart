@@ -204,30 +204,22 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           slivers: [
             AppFitSliverAppBar(
               title: safeTreinoTitle,
-              expandedHeight: 140,
+              expandedHeight: _isEditingTitle ? 160 : 140,
               onBackPressed: _onBackPressed,
               leading: _isEditingTitle ? const SizedBox.shrink() : null,
               actions: [
                 if (!_isEditingTitle)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12.0),
-                    child: Material(
-                      color: AppTheme.buttonSurface,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        onTap: _concluirEdicao,
-                        customBorder: const CircleBorder(),
-                        child: const SizedBox(
-                          width: 48,
-                          height: 48,
-                          child: Icon(
-                            Icons.check_rounded,
-                            color: AppTheme.textPrimary,
-                            size: 24,
-                          ),
-                        ),
+                  TextButton(
+                    onPressed: _concluirEdicao,
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppTheme.primary,
+                      textStyle: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
                       ),
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
                     ),
+                    child: const Text('Salvar'),
                   ),
               ],
               background: Align(
@@ -239,7 +231,10 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     right: 24,
                   ),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    // Alinha ao topo quando edita para o ícone não "cair" com o contador
+                    crossAxisAlignment: _isEditingTitle
+                        ? CrossAxisAlignment.start
+                        : CrossAxisAlignment.center,
                     children: [
                       Expanded(
                         child: _isEditingTitle
@@ -247,17 +242,59 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                 controller: _nomeTreinoController,
                                 focusNode: _titleFocusNode,
                                 maxLines: 1,
-                                minLines: 1,
+                                maxLength:
+                                    35, // <-- Limite de Caracteres Adicionado
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 48,
+                                  fontSize:
+                                      32, // Fonte um pouco menor para caber na caixa
                                   letterSpacing: -0.5,
                                 ),
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.zero,
+                                buildCounter:
+                                    (
+                                      context, {
+                                      required currentLength,
+                                      required isFocused,
+                                      maxLength,
+                                    }) {
+                                      final isLimit =
+                                          currentLength == maxLength;
+                                      return Text(
+                                        '$currentLength / $maxLength',
+                                        style: TextStyle(
+                                          color: isLimit
+                                              ? Colors.redAccent
+                                              : AppTheme.textSecondary,
+                                          fontSize: 12,
+                                          fontWeight: isLimit
+                                              ? FontWeight.bold
+                                              : FontWeight.w500,
+                                        ),
+                                      );
+                                    },
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.black.withAlpha(
+                                    60,
+                                  ), // Fundo escuro
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    borderSide: BorderSide(
+                                      color: AppTheme.primary.withAlpha(
+                                        120,
+                                      ), // Borda neon sutil
+                                      width: 1.5,
+                                    ),
+                                  ),
                                 ),
                                 cursorColor: AppTheme.primary,
                                 textCapitalization: TextCapitalization.words,
@@ -281,14 +318,19 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       const SizedBox(width: 8),
                       GestureDetector(
                         onTap: _toggleEditTitle,
-                        child: Icon(
-                          _isEditingTitle
-                              ? Icons.check_circle_outline_rounded
-                              : Icons.edit_note,
-                          color: _isEditingTitle
-                              ? AppTheme.primary
-                              : Colors.white.withAlpha(80),
-                          size: 44,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            top: _isEditingTitle ? 8.0 : 0.0,
+                          ), // Ajuste visual do ícone
+                          child: Icon(
+                            _isEditingTitle
+                                ? Icons.check_circle_rounded
+                                : Icons.edit_note,
+                            color: _isEditingTitle
+                                ? AppTheme.primary
+                                : Colors.white.withAlpha(80),
+                            size: 44,
+                          ),
                         ),
                       ),
                     ],

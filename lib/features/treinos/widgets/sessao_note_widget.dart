@@ -99,7 +99,7 @@ class _SessaoNoteWidgetState extends State<SessaoNoteWidget> {
                         style: TextStyle(
                           color: isEmpty
                               ? const Color(0xFF64748b)
-                              : AppTheme.textPrimary.withValues(alpha: 0.9),
+                              : AppTheme.textPrimary.withAlpha(230),
                           fontSize: 16,
                           height: 1.5,
                           fontWeight: isEmpty

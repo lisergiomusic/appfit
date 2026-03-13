@@ -246,7 +246,7 @@ class PerfilAlunoPage extends StatelessWidget {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 24),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withAlpha(51),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -343,7 +343,7 @@ class PerfilAlunoPage extends StatelessWidget {
                         return Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
-                            color: AppTheme.surfaceLight.withValues(alpha: 0.5),
+                            color: AppTheme.surfaceLight.withAlpha(128),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: ListTile(
@@ -515,7 +515,7 @@ class PerfilAlunoPage extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.success.withValues(alpha: 0.15),
+                  backgroundColor: AppTheme.success.withAlpha(38),
                   foregroundColor: AppTheme.success,
                   elevation: 0,
                   shadowColor: Colors.transparent,
@@ -615,10 +615,8 @@ class PerfilAlunoPage extends StatelessWidget {
                         color: isFeito
                             ? AppTheme.primary
                             : (isFalta
-                                  ? Colors.redAccent.withValues(alpha: 0.3)
-                                  : AppTheme.textSecondary.withValues(
-                                      alpha: 0.1,
-                                    )),
+                                  ? Colors.redAccent.withAlpha(77)
+                                  : AppTheme.textSecondary.withAlpha(26)),
                         width: 1.5,
                       ),
                     ),
@@ -631,10 +629,8 @@ class PerfilAlunoPage extends StatelessWidget {
                         color: isFeito
                             ? Colors.white
                             : (isFalta
-                                  ? Colors.redAccent.withValues(alpha: 0.8)
-                                  : AppTheme.textSecondary.withValues(
-                                      alpha: 0.2,
-                                    )),
+                                  ? Colors.redAccent.withAlpha(204)
+                                  : AppTheme.textSecondary.withAlpha(51)),
                       ),
                     ),
                   ),

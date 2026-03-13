@@ -1701,7 +1701,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                         '${_instructionsController.text.length}/$_instructionsMaxChars',
                                         style: TextStyle(
                                           color: AppTheme.textSecondary
-                                              .withValues(alpha: 0.62),
+                                              .withAlpha(158),
                                           fontSize: 12,
                                         ),
                                       ),

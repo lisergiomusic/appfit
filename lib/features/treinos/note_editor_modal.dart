@@ -145,7 +145,7 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
 
             Divider(height: 1, thickness: 1, color: Colors.white.withAlpha(10)),
 
-            // Área do Texto com Contador
+            // Área do Texto
             Flexible(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
@@ -154,13 +154,14 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
                 ),
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.only(bottom: 24),
+                  // Adicionado padding para a caixa de texto não tocar nas laterais do ecrã
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
                   child: TextField(
                     controller: _controller,
                     focusNode: _focusNode,
                     autofocus: true,
                     maxLines: null,
-                    maxLength: 250, // <-- Limite de Caracteres
+                    maxLength: 250,
                     keyboardType: TextInputType.multiline,
                     textCapitalization: TextCapitalization.sentences,
                     style: const TextStyle(
@@ -172,7 +173,6 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
                     cursorColor: AppTheme.primary,
                     cursorWidth: 2.5,
                     cursorRadius: const Radius.circular(2),
-                    // Construção Customizada do Contador
                     buildCounter:
                         (
                           context, {
@@ -183,7 +183,7 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
                           final bool isLimitReached =
                               currentLength == maxLength;
                           return Padding(
-                            padding: const EdgeInsets.only(right: 16, top: 4),
+                            padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               '$currentLength / $maxLength',
                               style: TextStyle(
@@ -201,16 +201,34 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
                         },
                     decoration: InputDecoration(
                       isDense: true,
-                      filled: false,
-                      border: InputBorder.none,
-                      hintText: 'Adicione instruções ou observações',
+                      filled: true,
+                      fillColor: Colors.black.withAlpha(
+                        60,
+                      ), // Fundo translúcido escuro
+                      hintText:
+                          'Digite as instruções, foco ou detalhes aqui...',
                       hintStyle: TextStyle(
                         color: AppTheme.textSecondary.withAlpha(120),
                         fontSize: 17,
                         fontStyle: FontStyle.italic,
                       ),
-                      // Ajustei o padding inferior para o contador não ficar "colado" no texto
-                      contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                      contentPadding: const EdgeInsets.all(
+                        20,
+                      ), // Espaçamento interno da caixa
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide:
+                            BorderSide.none, // Sem borda quando não está focado
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
+                          color: AppTheme.primary.withAlpha(
+                            120,
+                          ), // Borda neon ao focar
+                          width: 1.5,
+                        ),
+                      ),
                     ),
                   ),
                 ),

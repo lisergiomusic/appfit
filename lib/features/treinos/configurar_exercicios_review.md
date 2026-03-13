@@ -29,9 +29,7 @@ A página implementa uma lista reordenável de exercícios com funcionalidades d
 O estado vazio atual é informativo, mas passivo.
 *   **Sugestão:** Adicionar uma seta animada ou um botão "call-to-action" (CTA) evidente no centro da tela vazia, além do FAB, para reduzir a carga cognitiva de "onde clico agora?".
 
-### 4.2. Editor de Notas
-O `_NoteEditorModal` é visualmente agradável, mas o uso de `showGeneralDialog` com uma construção totalmente manual pode ser trabalhoso para manter.
-*   **Sugestão:** Considerar o uso de `showModalBottomSheet` com `isScrollControlled: true`. É um padrão mais nativo em mobile para entrada de dados secundária, permitindo que o usuário arraste para fechar.
+
 
 
 ## 5. Refatoração de Código (Clean Code)

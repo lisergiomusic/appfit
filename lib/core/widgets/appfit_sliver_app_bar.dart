@@ -25,9 +25,8 @@ class AppFitSliverAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Se um leading personalizado for fornecido, use-o.
-    // Caso contrário, construa o botão de voltar padrão.
-    final Widget effectiveLeading = leading ??
+    final Widget effectiveLeading =
+        leading ??
         Align(
           alignment: Alignment.centerLeft,
           child: Padding(
@@ -58,7 +57,7 @@ class AppFitSliverAppBar extends StatelessWidget {
       surfaceTintColor: Colors.transparent,
       pinned: isPinned,
       expandedHeight: expandedHeight,
-      leadingWidth: 100, // Aumentar para acomodar botões com texto
+      leadingWidth: 100,
       leading: effectiveLeading,
       actions: actions,
       flexibleSpace: LayoutBuilder(
@@ -76,12 +75,13 @@ class AppFitSliverAppBar extends StatelessWidget {
               switchInCurve: Curves.easeOutCubic,
               switchOutCurve: Curves.easeInCubic,
               transitionBuilder: (child, animation) {
-                final offsetAnimation = Tween<Offset>(
-                  begin: const Offset(0, 0.15),
-                  end: Offset.zero,
-                )
-                    .chain(CurveTween(curve: Curves.easeOutCubic))
-                    .animate(animation);
+                final offsetAnimation =
+                    Tween<Offset>(
+                          begin: const Offset(0, 0.15),
+                          end: Offset.zero,
+                        )
+                        .chain(CurveTween(curve: Curves.easeOutCubic))
+                        .animate(animation);
 
                 return FadeTransition(
                   opacity: animation,
@@ -102,10 +102,7 @@ class AppFitSliverAppBar extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     )
-                  : const SizedBox(
-                      key: ValueKey('empty_title'),
-                      height: 0,
-                    ),
+                  : const SizedBox(key: ValueKey('empty_title'), height: 0),
             ),
             background: AnimatedOpacity(
               duration: const Duration(milliseconds: 200),
