@@ -105,8 +105,10 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
         ],
       ),
     );
-    if (!mounted) return;
-    if (sair == true) Navigator.pop(context);
+    if (!context.mounted) return;
+    if (sair == true) {
+      Navigator.pop(context);
+    }
   }
 
   void _concluirEdicao(BuildContext context) {
@@ -125,16 +127,13 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
 
     if (exercicioSelecionado != null) {
       controller.addExercicio(exercicioSelecionado);
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        // Aguarda mais tempo para garantir que todas as animações e inserções terminem
-        await Future<void>.delayed(const Duration(milliseconds: 400));
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         if (_scrollController.hasClients) {
-          final max = _scrollController.position.maxScrollExtent;
           _scrollController.animateTo(
-            max + 240,
-            duration: const Duration(milliseconds: 700),
-            curve: Curves.easeOutCubic,
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOut,
           );
         }
       });
@@ -164,6 +163,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
       child: Scaffold(
         backgroundColor: AppTheme.background,
         body: CustomScrollView(
+          controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(
             parent: BouncingScrollPhysics(),
           ),
@@ -805,10 +805,6 @@ class _HintingExercicioAnimatorState extends State<_HintingExercicioAnimator>
             tween: ColorTween(begin: highlightColor, end: AppTheme.surfaceDark),
             weight: 50.0,
           ),
-          TweenSequenceItem(
-            tween: ColorTween(begin: highlightColor, end: AppTheme.surfaceDark),
-            weight: 50.0,
-          ),
         ]).animate(
           CurvedAnimation(
             parent: _controller,
@@ -816,17 +812,24 @@ class _HintingExercicioAnimatorState extends State<_HintingExercicioAnimator>
           ),
         );
 
-    // Sequência 2: Animação de swipe (após uma pausa, de 1600ms a 2600ms)
+    // Sequência 2: Animação de swipe
+    // O swipe começa após o flash e uma pequena pausa.
+    // 800/1600 era 0.5 (metade da animação), mantendo a proporção correta:
+    // Inicia aos 50% (1300ms) e vai até 100% (2600ms)
     final swipeInterval = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(800 / 1600, 1.0, curve: Curves.linear),
+      curve: const Interval(0.5, 1.0, curve: Curves.linear),
     );
     _swipeHintAnimation = _swipeHintTween.animate(swipeInterval);
     _swipeHintBgAnimation = _swipeHintBgTween.animate(swipeInterval);
 
-    _controller.forward().whenComplete(() {
+    Future.delayed(const Duration(milliseconds: 600), () {
       if (mounted) {
-        widget.onEnd();
+        _controller.forward().whenComplete(() {
+          if (mounted) {
+            widget.onEnd();
+          }
+        });
       }
     });
   }
