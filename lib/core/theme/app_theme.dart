@@ -30,7 +30,7 @@ class AppTheme {
   static TextStyle textSectionHeaderDark = TextStyle(
     color: Color(0xFF64748b),
     fontSize: 13,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w800,
     letterSpacing: 0.5,
   );
 

@@ -211,12 +211,12 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       onTap: _concluirEdicao,
                       customBorder: const CircleBorder(),
                       child: const SizedBox(
-                        width: 40,
-                        height: 40,
+                        width: 48,
+                        height: 48,
                         child: Icon(
                           Icons.check_rounded,
                           color: AppTheme.textPrimary,
-                          size: 18,
+                          size: 24,
                         ),
                       ),
                     ),
@@ -291,27 +291,126 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppTheme.paddingScreen,
-                  AppTheme.space24,
+                  AppTheme.space8,
                   AppTheme.paddingScreen,
                   0,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // ========================================================
+                    // INÍCIO DOS BLOCOS DE MÉTRICAS
+                    // ========================================================
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceDark,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: Colors.white.withAlpha(13),
+                                width: 1,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withAlpha(
+                                    60,
+                                  ), // shadow-xl
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Exercícios',
+                                  style: TextStyle(
+                                    color: AppTheme.textSecondary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  '${_exerciciosLocais.length}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 30, // text-3xl
+                                    fontWeight: FontWeight.bold,
+                                    height: 1.1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceDark,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: Colors.white.withAlpha(
+                                  13,
+                                ), // border-white/5
+                                width: 1,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withAlpha(
+                                    60,
+                                  ), // shadow-xl
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Total de Séries',
+                                  style: TextStyle(
+                                    color: AppTheme.textSecondary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  '$_totalSeries',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 30, // text-3xl
+                                    fontWeight: FontWeight.bold,
+                                    height: 1.1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // ========================================================
+                    // FIM DOS BLOCOS DE MÉTRICAS
+                    // ========================================================
                     const SessaoNoteWidget(),
                     const SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '${_exerciciosLocais.length} ${_exerciciosLocais.length == 1 ? 'EXERCÍCIO' : 'EXERCÍCIOS'}',
+                          'LISTA DE EXERCÍCIOS',
                           style: AppTheme.textSectionHeaderDark,
-                        ),
-                        Text(
-                          '$_totalSeries ${_totalSeries == 1 ? 'SÉRIE' : 'SÉRIES'}',
-                          style: AppTheme.textSectionHeaderDark.copyWith(
-                            color: AppTheme.accentMetrics,
-                          ),
                         ),
                       ],
                     ),
@@ -512,7 +611,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                   ReorderableDragStartListener(
                     index: exIndex,
                     child: Padding(
-                      padding: const EdgeInsets.only(right: AppTheme.space8),
+                      padding: const EdgeInsets.all(12.0),
                       child: Icon(
                         Icons.drag_indicator,
                         color: Colors.white.withAlpha(80),
