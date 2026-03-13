@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,6 +36,8 @@ class ConfigurarExerciciosPage extends StatefulWidget {
 }
 
 class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
+  final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+  Timer? _snackBarTimer;
   late List<_ExercicioWrapper> _exerciciosLocais;
   bool _hasChanges = false;
   late TextEditingController _nomeTreinoController;
@@ -71,6 +75,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
   @override
   void dispose() {
+    _snackBarTimer?.cancel();
     _nomeTreinoController.dispose();
     _titleFocusNode.dispose();
     super.dispose();
@@ -188,344 +193,350 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
     final shouldShowFab = !_isEditingTitle && !isKeyboardVisible;
 
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      body: CustomScrollView(
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
-        slivers: [
-          AppFitSliverAppBar(
-            title: safeTreinoTitle,
-            expandedHeight: 140,
-            onBackPressed: _onBackPressed,
-            leading: _isEditingTitle ? const SizedBox.shrink() : null,
-            actions: [
-              if (!_isEditingTitle)
-                Padding(
-                  padding: const EdgeInsets.only(right: 12.0),
-                  child: Material(
-                    color: AppTheme.buttonSurface,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      onTap: _concluirEdicao,
-                      customBorder: const CircleBorder(),
-                      child: const SizedBox(
-                        width: 48,
-                        height: 48,
-                        child: Icon(
-                          Icons.check_rounded,
-                          color: AppTheme.textPrimary,
-                          size: 24,
+    return ScaffoldMessenger(
+      key: _scaffoldMessengerKey,
+      child: Scaffold(
+        backgroundColor: AppTheme.background,
+        body: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          slivers: [
+            AppFitSliverAppBar(
+              title: safeTreinoTitle,
+              expandedHeight: 140,
+              onBackPressed: _onBackPressed,
+              leading: _isEditingTitle ? const SizedBox.shrink() : null,
+              actions: [
+                if (!_isEditingTitle)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 12.0),
+                    child: Material(
+                      color: AppTheme.buttonSurface,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        onTap: _concluirEdicao,
+                        customBorder: const CircleBorder(),
+                        child: const SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: Icon(
+                            Icons.check_rounded,
+                            color: AppTheme.textPrimary,
+                            size: 24,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-            ],
-            background: Align(
-              alignment: Alignment.bottomLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 24, bottom: 16, right: 24),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: _isEditingTitle
-                          ? TextField(
-                              controller: _nomeTreinoController,
-                              focusNode: _titleFocusNode,
-                              maxLines: 1,
-                              minLines: 1,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 40,
-                                letterSpacing: -0.5,
-                              ),
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                isDense: true,
-                                contentPadding: EdgeInsets.zero,
-                              ),
-                              cursorColor: AppTheme.primary,
-                              textCapitalization: TextCapitalization.words,
-                              onSubmitted: (_) => _toggleEditTitle(),
-                            )
-                          : GestureDetector(
-                              onTap: _toggleEditTitle,
-                              child: Text(
-                                safeTreinoTitle,
+              ],
+              background: Align(
+                alignment: Alignment.bottomLeft,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.only(left: 24, bottom: 16, right: 24),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: _isEditingTitle
+                            ? TextField(
+                                controller: _nomeTreinoController,
+                                focusNode: _titleFocusNode,
+                                maxLines: 1,
+                                minLines: 1,
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 40,
+                                  fontSize: 45,
                                   letterSpacing: -0.5,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                    ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: _toggleEditTitle,
-                      child: Icon(
-                        _isEditingTitle
-                            ? Icons.check_circle_outline_rounded
-                            : Icons.edit_note,
-                        color: _isEditingTitle
-                            ? AppTheme.primary
-                            : Colors.white.withAlpha(80),
-                        size: 36,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          SliverOpacity(
-            opacity: _isEditingTitle ? 0.3 : 1.0,
-            sliver: SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppTheme.paddingScreen,
-                  AppTheme.space8,
-                  AppTheme.paddingScreen,
-                  0,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ========================================================
-                    // INÍCIO DOS BLOCOS DE MÉTRICAS
-                    // ========================================================
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: AppTheme.surfaceDark,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(
-                                color: Colors.white.withAlpha(13),
-                                width: 1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withAlpha(
-                                    60,
-                                  ), // shadow-xl
-                                  blurRadius: 24,
-                                  offset: const Offset(0, 10),
+                                decoration: const InputDecoration(
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.zero,
                                 ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Exercícios',
-                                  style: TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  '${_exerciciosLocais.length}',
+                                cursorColor: AppTheme.primary,
+                                textCapitalization: TextCapitalization.words,
+                                onSubmitted: (_) => _toggleEditTitle(),
+                              )
+                            : GestureDetector(
+                                onTap: _toggleEditTitle,
+                                child: Text(
+                                  safeTreinoTitle,
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 30, // text-3xl
                                     fontWeight: FontWeight.bold,
-                                    height: 1.1,
+                                    fontSize: 45,
+                                    letterSpacing: -0.5,
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: AppTheme.surfaceDark,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(
-                                color: Colors.white.withAlpha(
-                                  13,
-                                ), // border-white/5
-                                width: 1,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withAlpha(
-                                    60,
-                                  ), // shadow-xl
-                                  blurRadius: 24,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Total de Séries',
-                                  style: TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  '$_totalSeries',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 30, // text-3xl
-                                    fontWeight: FontWeight.bold,
-                                    height: 1.1,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    // ========================================================
-                    // FIM DOS BLOCOS DE MÉTRICAS
-                    // ========================================================
-                    const SessaoNoteWidget(),
-                    const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'LISTA DE EXERCÍCIOS',
-                          style: AppTheme.textSectionHeaderDark,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          if (_exerciciosLocais.isEmpty)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 88,
-                      height: 88,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withAlpha(10),
-                        shape: BoxShape.circle,
                       ),
-                      child: const Center(
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: _toggleEditTitle,
                         child: Icon(
-                          Icons.fitness_center_outlined,
-                          size: 40,
-                          color: AppTheme.primary,
+                          _isEditingTitle
+                              ? Icons.check_circle_outline_rounded
+                              : Icons.edit_note,
+                          color: _isEditingTitle
+                              ? AppTheme.primary
+                              : Colors.white.withAlpha(80),
+                          size: 41,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Nenhum exercício adicionado',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 40),
-                      child: Text(
-                        'Comece a montar o treino adicionando\no primeiro exercício abaixo.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: AppTheme.textSecondary,
-                          fontSize: 14,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          if (_exerciciosLocais.isNotEmpty)
             SliverOpacity(
               opacity: _isEditingTitle ? 0.3 : 1.0,
-              sliver: SliverPadding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.paddingScreen,
-                  vertical: AppTheme.space16,
-                ),
-                sliver: SliverReorderableList(
-                  itemCount: _exerciciosLocais.length,
-                  onReorder: _onReorder,
-                  proxyDecorator: (child, index, animation) {
-                    final curvedAnimation = CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeInOut,
-                    );
-
-                    return ScaleTransition(
-                      scale: Tween<double>(
-                        begin: 1.0,
-                        end: 1.02,
-                      ).animate(curvedAnimation),
-                      child: Material(
-                        elevation: 6.0,
-                        color: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppTheme.radiusLarge,
+              sliver: SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppTheme.paddingScreen,
+                    AppTheme.space8,
+                    AppTheme.paddingScreen,
+                    0,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ========================================================
+                      // INÍCIO DOS BLOCOS DE MÉTRICAS
+                      // ========================================================
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: AppTheme.surfaceDark,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color: Colors.white.withAlpha(13),
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withAlpha(
+                                      60,
+                                    ), // shadow-xl
+                                    blurRadius: 24,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Exercícios',
+                                    style: TextStyle(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '${_exerciciosLocais.length}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 30, // text-3xl
+                                      fontWeight: FontWeight.bold,
+                                      height: 1.1,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                        child: child,
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: AppTheme.surfaceDark,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color: Colors.white.withAlpha(
+                                    13,
+                                  ), // border-white/5
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withAlpha(
+                                      60,
+                                    ), // shadow-xl
+                                    blurRadius: 24,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Total de Séries',
+                                    style: TextStyle(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '$_totalSeries',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 30, // text-3xl
+                                      fontWeight: FontWeight.bold,
+                                      height: 1.1,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                  itemBuilder: (context, index) => _buildExercicioCard(index),
+                      const SizedBox(height: 24),
+
+                      // ========================================================
+                      // FIM DOS BLOCOS DE MÉTRICAS
+                      // ========================================================
+                      const SessaoNoteWidget(),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'LISTA DE EXERCÍCIOS',
+                            style: AppTheme.textSectionHeaderDark,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          SliverToBoxAdapter(
-            child: Center(
-              child: IgnorePointer(
-                ignoring: !shouldShowFab,
-                child: AnimatedScale(
-                  scale: shouldShowFab ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOutCubic,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 24.0, bottom: 48.0),
-                    child: OrangeGlassActionButton(
-                      label: 'Adicionar Exercício',
-                      onTap: _openLibrary,
-                      bottomMargin: 0,
+            if (_exerciciosLocais.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 88,
+                        height: 88,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(10),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.fitness_center_outlined,
+                            size: 40,
+                            color: AppTheme.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'Nenhum exercício adicionado',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 40),
+                        child: Text(
+                          'Comece a montar o treino adicionando\no primeiro exercício abaixo.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 14,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            if (_exerciciosLocais.isNotEmpty)
+              SliverOpacity(
+                opacity: _isEditingTitle ? 0.3 : 1.0,
+                sliver: SliverPadding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.paddingScreen,
+                    vertical: AppTheme.space16,
+                  ),
+                  sliver: SliverReorderableList(
+                    itemCount: _exerciciosLocais.length,
+                    onReorder: _onReorder,
+                    proxyDecorator: (child, index, animation) {
+                      final curvedAnimation = CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeInOut,
+                      );
+
+                      return ScaleTransition(
+                        scale: Tween<double>(
+                          begin: 1.0,
+                          end: 1.02,
+                        ).animate(curvedAnimation),
+                        child: Material(
+                          elevation: 6.0,
+                          color: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusLarge,
+                            ),
+                          ),
+                          child: child,
+                        ),
+                      );
+                    },
+                    itemBuilder: (context, index) =>
+                        _buildExercicioCard(index),
+                  ),
+                ),
+              ),
+            SliverToBoxAdapter(
+              child: Center(
+                child: IgnorePointer(
+                  ignoring: !shouldShowFab,
+                  child: AnimatedScale(
+                    scale: shouldShowFab ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOutCubic,
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.only(top: 24.0, bottom: 48.0),
+                      child: OrangeGlassActionButton(
+                        label: 'Adicionar Exercício',
+                        onTap: _openLibrary,
+                        bottomMargin: 0,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -557,24 +568,40 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
           _hasChanges = true;
         });
 
-        // Mostra SnackBar com opção de Desfazer
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${ex.nome} removido'),
-            action: SnackBarAction(
-              label: 'DESFAZER',
-              textColor: AppTheme.primary,
-              onPressed: () {
-                setState(() {
-                  _exerciciosLocais.insert(removedIndex, removedItem);
-                });
-              },
-            ),
-            duration: const Duration(seconds: 4),
-            behavior: SnackBarBehavior.floating,
+        // Cancela o timer anterior e remove a SnackBar atual
+        _snackBarTimer?.cancel();
+        _scaffoldMessengerKey.currentState?.removeCurrentSnackBar();
+
+        // Cria a SnackBar com uma duração muito longa, pois vamos controlá-la manualmente
+        final snackBar = SnackBar(
+          content: Text('${ex.nome} removido'),
+          action: SnackBarAction(
+            label: 'DESFAZER',
+            textColor: AppTheme.primary,
+            onPressed: () {
+              // Ao clicar em desfazer, cancela o timer, esconde a snackbar e reinsere o item
+              _snackBarTimer?.cancel();
+              _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+              if (!mounted) return;
+              setState(() {
+                _exerciciosLocais.insert(removedIndex, removedItem);
+              });
+            },
           ),
+          duration: const Duration(days: 365), // Duração efetivamente infinita
+          behavior: SnackBarBehavior.floating,
         );
+
+        // Mostra a SnackBar e guarda seu controlador
+        final controller =
+            _scaffoldMessengerKey.currentState?.showSnackBar(snackBar);
+
+        // Inicia um timer para fechar a SnackBar após 4 segundos
+        if (controller != null) {
+          _snackBarTimer = Timer(const Duration(seconds: 4), () {
+            controller.close();
+          });
+        }
       },
       child: Padding(
         padding: const EdgeInsets.only(bottom: AppTheme.space12),

@@ -22,10 +22,6 @@ A página implementa uma lista reordenável de exercícios com funcionalidades d
 **Impacto UX:** Isso confunde o framework durante a animação de "drag & drop", podendo causar "pulos" visuais, perda de estado interno do item ou falha na animação de troca.
 **Solução:** O modelo `ExercicioItem` deve ter um ID único (UUID) gerado na criação. A Key deve ser `ValueKey(ex.id)`.
 
-### 3.2. Touch Targets (Acessibilidade)
-**Onde:** Ícone de arrastar (`Icons.drag_indicator`) e botão de check no AppBar.
-**O Problema:** Alguns alvos de toque parecem depender apenas do tamanho do ícone.
-**Recomendação:** Garantir que todos os `InkWell` ou `GestureDetector` tenham uma área de toque mínima de 48x48dp (padrão Material/Apple), usando `padding` transparente se necessário.
 
 ## 4. Sugestões de Melhoria de UI/UX
 
@@ -37,9 +33,6 @@ O estado vazio atual é informativo, mas passivo.
 O `_NoteEditorModal` é visualmente agradável, mas o uso de `showGeneralDialog` com uma construção totalmente manual pode ser trabalhoso para manter.
 *   **Sugestão:** Considerar o uso de `showModalBottomSheet` com `isScrollControlled: true`. É um padrão mais nativo em mobile para entrada de dados secundária, permitindo que o usuário arraste para fechar.
 
-### 4.3. Feedback de Exclusão
-O diálogo de confirmação (`AlertDialog`) para remover cada exercício é seguro, mas pode tornar o fluxo lento se o usuário quiser remover vários itens.
-*   **Sugestão (Padrão Gmail/Photos):** Permitir a exclusão direta (sem diálogo) e mostrar uma `SnackBar` com botão "Desfazer" por 3 a 5 segundos. Isso agiliza o fluxo mantendo a segurança.
 
 ## 5. Refatoração de Código (Clean Code)
 
