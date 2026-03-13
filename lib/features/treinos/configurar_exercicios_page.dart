@@ -43,6 +43,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   late TextEditingController _nomeTreinoController;
   bool _isEditingTitle = false;
   late FocusNode _titleFocusNode;
+  final Set<String> _newExercicios = {};
 
   @override
   void initState() {
@@ -118,15 +119,15 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
     if (exercicioSelecionado != null) {
       setState(() {
-        _exerciciosLocais.add(
-          _ExercicioWrapper(
-            ExercicioItem(
-              nome: exercicioSelecionado['nome']!,
-              grupoMuscular: exercicioSelecionado['musculo']!,
-              series: [],
-            ),
+        final newWrapper = _ExercicioWrapper(
+          ExercicioItem(
+            nome: exercicioSelecionado['nome']!,
+            grupoMuscular: exercicioSelecionado['musculo']!,
+            series: [],
           ),
         );
+        _exerciciosLocais.add(newWrapper);
+        _newExercicios.add(newWrapper.id);
         _hasChanges = true;
       });
     }
@@ -554,7 +555,44 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                         ),
                       );
                     },
-                    itemBuilder: (context, index) => _buildExercicioCard(index),
+                    itemBuilder: (context, index) {
+                      final wrapper = _exerciciosLocais[index];
+                      final isNew = _newExercicios.contains(wrapper.id);
+
+                      if (isNew) {
+                        return TweenAnimationBuilder<double>(
+                          key: Key(wrapper.id),
+                          tween: Tween(begin: 0.0, end: 1.0),
+                          duration: const Duration(milliseconds: 1200),
+                          curve: Curves.easeOut,
+                          onEnd: () {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (mounted) {
+                                setState(() {
+                                  _newExercicios.remove(wrapper.id);
+                                });
+                              }
+                            });
+                          },
+                          builder: (context, animationValue, child) {
+                            final highlightColor =
+                                AppTheme.primary.withOpacity(0.12);
+                            final Color color;
+                            if (animationValue < 0.5) {
+                              color = Color.lerp(AppTheme.surfaceDark,
+                                  highlightColor, animationValue * 2)!;
+                            } else {
+                              color = Color.lerp(
+                                  highlightColor,
+                                  AppTheme.surfaceDark,
+                                  (animationValue - 0.5) * 2)!;
+                            }
+                            return _buildExercicioCard(index, flashColor: color);
+                          },
+                        );
+                      }
+                      return _buildExercicioCard(index);
+                    },
                   ),
                 ),
               ),
@@ -567,7 +605,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOutCubic,
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 24.0, bottom: 48.0),
+                      padding: const EdgeInsets.only(top: 24.0, bottom: 96.0),
                       child: OrangeGlassActionButton(
                         label: 'Adicionar Exercício',
                         onTap: _openLibrary,
@@ -584,7 +622,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     );
   }
 
-  Widget _buildExercicioCard(int exIndex) {
+  Widget _buildExercicioCard(int exIndex, {Color? flashColor}) {
     final wrapper = _exerciciosLocais[exIndex];
     final ex = wrapper.item;
 
@@ -655,7 +693,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         padding: const EdgeInsets.only(bottom: AppTheme.space12),
         child: Material(
           elevation: 1.0,
-          color: AppTheme.surfaceDark,
+          color: flashColor ?? AppTheme.surfaceDark,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
             side: BorderSide(color: Colors.white.withAlpha(14), width: 1),
@@ -757,3 +795,4 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     );
   }
 }
+
