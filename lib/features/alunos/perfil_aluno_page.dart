@@ -683,7 +683,7 @@ class PerfilAlunoPage extends StatelessWidget {
                   color: AppTheme.surfaceDark,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: AppTheme.primary.withOpacity(0.3),
+                    color: AppTheme.primary.withAlpha(77),
                     style: BorderStyle.solid,
                   ),
                 ),
@@ -692,7 +692,7 @@ class PerfilAlunoPage extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppTheme.primary.withOpacity(0.1),
+                        color: AppTheme.primary.withAlpha(26),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -788,7 +788,7 @@ class PerfilAlunoPage extends StatelessWidget {
                 gradient: LinearGradient(
                   colors: [
                     AppTheme.surfaceDark,
-                    AppTheme.surfaceLight.withOpacity(0.8),
+                    AppTheme.surfaceLight.withAlpha(204),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -799,7 +799,7 @@ class PerfilAlunoPage extends StatelessWidget {
                       ? Colors.orangeAccent.withAlpha(50)
                       : (diasRestantes < 0
                             ? Colors.redAccent.withAlpha(50)
-                            : Colors.white.withOpacity(0.05)),
+                            : Colors.white.withAlpha(13)),
                 ),
               ),
               child: Column(
@@ -911,7 +911,7 @@ class PerfilAlunoPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                     child: LinearProgressIndicator(
                       value: progressoAtual,
-                      backgroundColor: Colors.black.withOpacity(0.3),
+                      backgroundColor: Colors.black.withAlpha(77),
                       color: corProgresso,
                       minHeight: 4,
                     ),

@@ -53,15 +53,15 @@ class _SessaoNoteWidgetState extends State<SessaoNoteWidget> {
       child: InkWell(
         onTap: _openEditModal,
         borderRadius: BorderRadius.circular(18),
-        hoverColor: Colors.white.withOpacity(0.05),
-        splashColor: Colors.white.withOpacity(0.1),
-        highlightColor: Colors.white.withOpacity(0.05),
+        hoverColor: Colors.white.withAlpha(13),
+        splashColor: Colors.white.withAlpha(26),
+        highlightColor: Colors.white.withAlpha(13),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            border: Border.all(color: Colors.white.withAlpha(13)),
           ),
           child: Row(
             children: [
@@ -70,7 +70,7 @@ class _SessaoNoteWidgetState extends State<SessaoNoteWidget> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withOpacity(0.2),
+                  color: AppTheme.primary.withAlpha(51),
                   shape: BoxShape.circle,
                 ),
                 child: const Center(

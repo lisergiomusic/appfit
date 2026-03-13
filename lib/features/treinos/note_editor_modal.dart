@@ -66,7 +66,7 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.4),
+                        color: Colors.black.withAlpha(102),
                         blurRadius: 30,
                         spreadRadius: -10,
                       ),
