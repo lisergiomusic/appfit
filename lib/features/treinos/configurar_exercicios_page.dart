@@ -559,12 +559,9 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                       final wrapper = _exerciciosLocais[index];
                       final isNew = _newExercicios.contains(wrapper.id);
 
+                      Widget card;
                       if (isNew) {
-                        return TweenAnimationBuilder<double>(
-                          key: Key(wrapper.id),
-                          tween: Tween(begin: 0.0, end: 1.0),
-                          duration: const Duration(milliseconds: 1200),
-                          curve: Curves.easeOut,
+                        card = _HintingExercicioAnimator(
                           onEnd: () {
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               if (mounted) {
@@ -574,24 +571,86 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                               }
                             });
                           },
-                          builder: (context, animationValue, child) {
-                            final highlightColor =
-                                AppTheme.primary.withOpacity(0.12);
-                            final Color color;
-                            if (animationValue < 0.5) {
-                              color = Color.lerp(AppTheme.surfaceDark,
-                                  highlightColor, animationValue * 2)!;
-                            } else {
-                              color = Color.lerp(
-                                  highlightColor,
-                                  AppTheme.surfaceDark,
-                                  (animationValue - 0.5) * 2)!;
-                            }
-                            return _buildExercicioCard(index, flashColor: color);
+                          builder: (context, color) {
+                            return _buildCardContent(index, flashColor: color);
                           },
                         );
+                      } else {
+                        card = _buildCardContent(index);
                       }
-                      return _buildExercicioCard(index);
+
+                      return Dismissible(
+                        key: Key(wrapper.id),
+                        direction: DismissDirection.endToStart,
+                        background: Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: AppTheme.space12,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.only(right: 24),
+                            alignment: Alignment.centerRight,
+                            decoration: BoxDecoration(
+                              color: Colors.redAccent,
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusLarge,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ),
+                        ),
+                        onDismissed: (direction) {
+                          final removedItem = _exerciciosLocais[index];
+                          final removedIndex = index;
+
+                          setState(() {
+                            _exerciciosLocais.removeAt(index);
+                            _hasChanges = true;
+                          });
+
+                          _snackBarTimer?.cancel();
+                          _scaffoldMessengerKey.currentState
+                              ?.removeCurrentSnackBar();
+
+                          final snackBar = SnackBar(
+                            content: Text('${removedItem.item.nome} removido'),
+                            action: SnackBarAction(
+                              label: 'DESFAZER',
+                              textColor: AppTheme.primary,
+                              onPressed: () {
+                                _snackBarTimer?.cancel();
+                                _scaffoldMessengerKey.currentState
+                                    ?.hideCurrentSnackBar();
+                                if (!mounted) return;
+                                setState(() {
+                                  _exerciciosLocais.insert(
+                                    removedIndex,
+                                    removedItem,
+                                  );
+                                });
+                              },
+                            ),
+                            duration: const Duration(days: 365),
+                            behavior: SnackBarBehavior.floating,
+                          );
+
+                          final controller = _scaffoldMessengerKey.currentState
+                              ?.showSnackBar(snackBar);
+
+                          if (controller != null) {
+                            _snackBarTimer = Timer(
+                              const Duration(seconds: 4),
+                              () {
+                                controller.close();
+                              },
+                            );
+                          }
+                        },
+                        child: card,
+                      );
                     },
                   ),
                 ),
@@ -622,172 +681,108 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     );
   }
 
-  Widget _buildExercicioCard(int exIndex, {Color? flashColor}) {
+  Widget _buildCardContent(int exIndex, {Color? flashColor}) {
     final wrapper = _exerciciosLocais[exIndex];
     final ex = wrapper.item;
 
-    return Dismissible(
-      key: Key(wrapper.id), // Agora usamos um ID estável gerado na criação
-      direction: DismissDirection.endToStart,
-      background: Padding(
-        padding: const EdgeInsets.only(bottom: AppTheme.space12),
-        child: Container(
-          padding: const EdgeInsets.only(right: 24),
-          alignment: Alignment.centerRight,
-          decoration: BoxDecoration(
-            color: Colors.redAccent,
-            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-          ),
-          child:
-              const Icon(Icons.delete_outline, color: Colors.white, size: 28),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppTheme.space12),
+      child: Material(
+        elevation: 1.0,
+        color: flashColor ?? AppTheme.surfaceDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+          side: BorderSide(color: Colors.white.withAlpha(14), width: 1),
         ),
-      ),
-      // Removemos confirmDismiss para agilizar o fluxo (UX padrão Gmail)
-      onDismissed: (direction) {
-        // Guarda referência para Undo
-        final removedItem = wrapper;
-        final removedIndex = exIndex;
-
-        setState(() {
-          _exerciciosLocais.removeAt(exIndex);
-          _hasChanges = true;
-        });
-
-        // Cancela o timer anterior e remove a SnackBar atual
-        _snackBarTimer?.cancel();
-        _scaffoldMessengerKey.currentState?.removeCurrentSnackBar();
-
-        // Cria a SnackBar com uma duração muito longa, pois vamos controlá-la manualmente
-        final snackBar = SnackBar(
-          content: Text('${ex.nome} removido'),
-          action: SnackBarAction(
-            label: 'DESFAZER',
-            textColor: AppTheme.primary,
-            onPressed: () {
-              // Ao clicar em desfazer, cancela o timer, esconde a snackbar e reinsere o item
-              _snackBarTimer?.cancel();
-              _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
-              if (!mounted) return;
-              setState(() {
-                _exerciciosLocais.insert(removedIndex, removedItem);
-              });
-            },
-          ),
-          duration: const Duration(days: 365), // Duração efetivamente infinita
-          behavior: SnackBarBehavior.floating,
-        );
-
-        // Mostra a SnackBar e guarda seu controlador
-        final controller = _scaffoldMessengerKey.currentState?.showSnackBar(
-          snackBar,
-        );
-
-        // Inicia um timer para fechar a SnackBar após 4 segundos
-        if (controller != null) {
-          _snackBarTimer = Timer(const Duration(seconds: 4), () {
-            controller.close();
-          });
-        }
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: AppTheme.space12),
-        child: Material(
-          elevation: 1.0,
-          color: flashColor ?? AppTheme.surfaceDark,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-            side: BorderSide(color: Colors.white.withAlpha(14), width: 1),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-            onTap: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ExercicioDetalhePage(
-                    exercicio: ex,
-                    onChanged: () => setState(() => _hasChanges = true),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ExercicioDetalhePage(
+                  exercicio: ex,
+                  onChanged: () => setState(() => _hasChanges = true),
+                ),
+              ),
+            );
+            setState(() {});
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.paddingCard,
+              vertical: AppTheme.space14,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Drag handle
+                ReorderableDragStartListener(
+                  index: exIndex,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Icon(
+                      Icons.drag_indicator,
+                      color: Colors.white.withAlpha(80),
+                      size: 24,
+                    ),
                   ),
                 ),
-              );
-              setState(() {});
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.paddingCard,
-                vertical: AppTheme.space14,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Drag handle
-                  ReorderableDragStartListener(
-                    index: exIndex,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Icon(
-                        Icons.drag_indicator,
-                        color: Colors.white.withAlpha(80),
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                  // Main content
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          ex.nome,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 18,
-                            height: 1.3,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                // Main content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        ex.nome,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                          height: 1.3,
                         ),
-                        const SizedBox(height: AppTheme.space6),
-                        RichText(
-                          text: TextSpan(
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              letterSpacing: 0.1,
-                            ),
-                            children: [
-                              if (ex.grupoMuscular.isNotEmpty)
-                                TextSpan(
-                                  text: '${ex.grupoMuscular} • ',
-                                  style: const TextStyle(
-                                    color: AppTheme.textSecondary,
-                                  ),
-                                ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: AppTheme.space6),
+                      RichText(
+                        text: TextSpan(
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0.1,
+                          ),
+                          children: [
+                            if (ex.grupoMuscular.isNotEmpty)
                               TextSpan(
-                                text:
-                                    '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
+                                text: '${ex.grupoMuscular} • ',
                                 style: const TextStyle(
-                                  color: AppTheme.primary,
-                                  fontWeight: FontWeight.w500,
+                                  color: AppTheme.textSecondary,
                                 ),
                               ),
-                            ],
-                          ),
+                            TextSpan(
+                              text:
+                                  '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
+                              style: const TextStyle(
+                                color: AppTheme.primary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  // Seta
-                  const SizedBox(width: AppTheme.space12),
-                  const Icon(
-                    Icons.chevron_right,
-                    color: Color(0xFF64748b),
-                    size: 28,
-                  ),
-                ],
-              ),
+                ),
+                // Seta
+                const SizedBox(width: AppTheme.space12),
+                const Icon(
+                  Icons.chevron_right,
+                  color: Color(0xFF64748b),
+                  size: 28,
+                ),
+              ],
             ),
           ),
         ),
@@ -796,3 +791,157 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
   }
 }
 
+class _HintingExercicioAnimator extends StatefulWidget {
+  final Widget Function(BuildContext context, Color? color) builder;
+  final VoidCallback onEnd;
+
+  const _HintingExercicioAnimator({required this.builder, required this.onEnd});
+
+  @override
+  _HintingExercicioAnimatorState createState() =>
+      _HintingExercicioAnimatorState();
+}
+
+class _HintingExercicioAnimatorState extends State<_HintingExercicioAnimator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Color?> _colorAnimation;
+  late Animation<double> _swipeHintAnimation;
+  late Animation<double> _swipeHintBgAnimation;
+
+  // Animação de swipe inspirada em exercicio_detalhe_page.dart
+  static final _swipeHintTween = TweenSequence<double>([
+    TweenSequenceItem(
+      tween: Tween(
+        begin: 0.0,
+        end: -72.0,
+      ).chain(CurveTween(curve: Curves.easeOutCubic)),
+      weight: 35,
+    ),
+    TweenSequenceItem(tween: ConstantTween<double>(-72.0), weight: 15),
+    TweenSequenceItem(
+      tween: Tween(
+        begin: -72.0,
+        end: 0.0,
+      ).chain(CurveTween(curve: Curves.easeInOut)),
+      weight: 50,
+    ),
+  ]);
+
+  static final _swipeHintBgTween = TweenSequence<double>([
+    TweenSequenceItem(
+      tween: Tween(
+        begin: 0.0,
+        end: 72.0,
+      ).chain(CurveTween(curve: Curves.easeOutCubic)),
+      weight: 35,
+    ),
+    TweenSequenceItem(tween: ConstantTween<double>(72.0), weight: 15),
+    TweenSequenceItem(
+      tween: Tween(
+        begin: 72.0,
+        end: 0.0,
+      ).chain(CurveTween(curve: Curves.easeInOut)),
+      weight: 50,
+    ),
+  ]);
+
+  @override
+  void initState() {
+    super.initState();
+    // Duração total: flash (800ms) + pausa (400ms) + swipe (1000ms) = 2200ms
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 2200),
+      vsync: this,
+    );
+
+    final highlightColor = AppTheme.primary.withOpacity(0.12);
+    // Animação de flash (0ms -> 800ms)
+    _colorAnimation =
+        TweenSequence<Color?>([
+          TweenSequenceItem(
+            tween: ColorTween(begin: AppTheme.surfaceDark, end: highlightColor),
+            weight: 50.0,
+          ),
+          TweenSequenceItem(
+            tween: ColorTween(begin: highlightColor, end: AppTheme.surfaceDark),
+            weight: 50.0,
+          ),
+        ]).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.0, 800 / 2200, curve: Curves.easeOut),
+          ),
+        );
+
+    // Animação de swipe (1200ms -> 2200ms)
+    final swipeInterval = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(1200 / 2200, 1.0, curve: Curves.linear),
+    );
+    _swipeHintAnimation = _swipeHintTween.animate(swipeInterval);
+    _swipeHintBgAnimation = _swipeHintBgTween.animate(swipeInterval);
+
+    _controller.forward().whenComplete(() {
+      if (mounted) {
+        widget.onEnd();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final dx = _swipeHintAnimation.value;
+        final bgWidth = _swipeHintBgAnimation.value;
+
+        return Stack(
+          children: [
+            // Fundo vermelho com ícone, revelado pelo swipe
+            // O fundo agora é um widget "posicionado" para não participar do cálculo de tamanho do Stack.
+            // Ele irá preencher o espaço definido pelo card (o filho não posicionado).
+            if (bgWidth > 0)
+              Positioned.fill(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: AppTheme.space12),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                      child: Container(
+                        width: bgWidth,
+                        color: Colors.redAccent,
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 24),
+                        child: Opacity(
+                          opacity: (bgWidth / 72.0).clamp(0.0, 1.0),
+                          child: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            // O card principal não é posicionado, portanto, ele define o tamanho do Stack.
+            Transform.translate(
+              offset: Offset(dx, 0),
+              child: widget.builder(context, _colorAnimation.value),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
