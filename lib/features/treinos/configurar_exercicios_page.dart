@@ -649,11 +649,21 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     ),
                   ),
                   // Main content
-                  Expanded(
+                      Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        Text(
+                          '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}${ex.grupoMuscular.isNotEmpty ? ' • ${ex.grupoMuscular}' : ''}',
+                          style: const TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.1,
+                          ),
+                        ),
+                        const SizedBox(height: AppTheme.space6),
                         Text(
                           ex.nome,
                           style: const TextStyle(
@@ -664,16 +674,6 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: AppTheme.space6),
-                        Text(
-                          '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}${ex.grupoMuscular.isNotEmpty ? ' • ${ex.grupoMuscular}' : ''}',
-                          style: const TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 0.1,
-                          ),
                         ),
                       ],
                     ),
