@@ -307,7 +307,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 48,
+                                    fontSize: 45,
                                     letterSpacing: -0.5,
                                   ),
                                   maxLines: 1,
@@ -591,14 +591,18 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
     return Dismissible(
       key: Key(wrapper.id), // Agora usamos um ID estável gerado na criação
       direction: DismissDirection.endToStart,
-      background: Container(
-        padding: const EdgeInsets.only(right: 24),
-        alignment: Alignment.centerRight,
-        decoration: BoxDecoration(
-          color: Colors.redAccent,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+      background: Padding(
+        padding: const EdgeInsets.only(bottom: AppTheme.space12),
+        child: Container(
+          padding: const EdgeInsets.only(right: 24),
+          alignment: Alignment.centerRight,
+          decoration: BoxDecoration(
+            color: Colors.redAccent,
+            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+          ),
+          child:
+              const Icon(Icons.delete_outline, color: Colors.white, size: 28),
         ),
-        child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
       ),
       // Removemos confirmDismiss para agilizar o fluxo (UX padrão Gmail)
       onDismissed: (direction) {
@@ -708,13 +712,30 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: AppTheme.space6),
-                        Text(
-                          '${ex.grupoMuscular.isNotEmpty ? '${ex.grupoMuscular} • ' : ''}${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
-                          style: const TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: 0.1,
+                        RichText(
+                          text: TextSpan(
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              letterSpacing: 0.1,
+                            ),
+                            children: [
+                              if (ex.grupoMuscular.isNotEmpty)
+                                TextSpan(
+                                  text: '${ex.grupoMuscular} • ',
+                                  style: const TextStyle(
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ),
+                              TextSpan(
+                                text:
+                                    '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
+                                style: const TextStyle(
+                                  color: AppTheme.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
