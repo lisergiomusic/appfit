@@ -251,7 +251,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 45,
+                                  fontSize: 48,
                                   letterSpacing: -0.5,
                                 ),
                                 decoration: const InputDecoration(
@@ -270,7 +270,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 45,
+                                    fontSize: 48,
                                     letterSpacing: -0.5,
                                   ),
                                   maxLines: 1,
@@ -288,7 +288,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                           color: _isEditingTitle
                               ? AppTheme.primary
                               : Colors.white.withAlpha(80),
-                          size: 41,
+                          size: 44,
                         ),
                       ),
                     ],
@@ -659,7 +659,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
-                            fontSize: 17,
+                            fontSize: 18,
                             height: 1.3,
                           ),
                           maxLines: 2,
@@ -671,7 +671,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                           style: const TextStyle(
                             color: AppTheme.textSecondary,
                             fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w400,
                             letterSpacing: 0.1,
                           ),
                         ),

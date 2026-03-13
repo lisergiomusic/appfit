@@ -91,7 +91,7 @@ class _SessaoNoteWidgetState extends State<SessaoNoteWidget> {
                       'NOTAS DA SESSÃO',
                       style: TextStyle(
                         color: AppTheme.textSecondary,
-                        fontSize: 10,
+                        fontSize: 12,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.2,
                       ),
@@ -108,11 +108,11 @@ class _SessaoNoteWidgetState extends State<SessaoNoteWidget> {
                           color: isEmpty
                               ? const Color(0xFF64748b)
                               : AppTheme.textPrimary.withValues(alpha: 0.9),
-                          fontSize: 14,
+                          fontSize: 16,
                           height: 1.5,
                           fontWeight: isEmpty
                               ? FontWeight.normal
-                              : FontWeight.w700,
+                              : FontWeight.w400,
                         ),
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,

@@ -29,9 +29,9 @@ class AppTheme {
 
   static TextStyle textSectionHeaderDark = TextStyle(
     color: Color(0xFF64748b),
-    fontSize: 13,
-    fontWeight: FontWeight.w800,
-    letterSpacing: 0.5,
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 1.2,
   );
 
   // --- 3. ESPAÇAMENTOS GLOBAIS (Novo Padrão Compacto) ---
