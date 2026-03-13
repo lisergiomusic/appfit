@@ -48,6 +48,21 @@ class _ConfigurarExerciciosView extends StatefulWidget {
 
 class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _addButtonKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(
+          systemNavigationBarColor: AppTheme.background,
+          systemNavigationBarIconBrightness: Brightness.light,
+        ),
+      );
+    });
+  }
 
   Future<void> _onBackPressed(BuildContext context) async {
     final controller = context.read<ConfigurarTreinoController>();
@@ -110,7 +125,26 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
 
     if (exercicioSelecionado != null) {
       controller.addExercicio(exercicioSelecionado);
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        // Aguarda mais tempo para garantir que todas as animações e inserções terminem
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+        if (!mounted) return;
+        if (_scrollController.hasClients) {
+          final max = _scrollController.position.maxScrollExtent;
+          _scrollController.animateTo(
+            max + 240,
+            duration: const Duration(milliseconds: 700),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      });
     }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -364,10 +398,13 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                           scale: shouldShowFab ? 1.0 : 0.0,
                           duration: const Duration(milliseconds: 200),
                           curve: Curves.easeOutCubic,
-                          child: OrangeGlassActionButton(
-                            label: 'Adicionar Exercício',
-                            onTap: () => _openLibrary(context),
-                            bottomMargin: 0,
+                          child: Container(
+                            key: _addButtonKey,
+                            child: OrangeGlassActionButton(
+                              label: 'Adicionar Exercício',
+                              onTap: () => _openLibrary(context),
+                              bottomMargin: 0,
+                            ),
                           ),
                         ),
                       ),
@@ -514,16 +551,20 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                       curve: Curves.easeOutCubic,
                       child: Padding(
                         padding: const EdgeInsets.only(top: 24.0, bottom: 96.0),
-                        child: OrangeGlassActionButton(
-                          label: 'Adicionar Exercício',
-                          onTap: () => _openLibrary(context),
-                          bottomMargin: 0,
+                        child: Container(
+                          key: _addButtonKey,
+                          child: OrangeGlassActionButton(
+                            label: 'Adicionar Exercício',
+                            onTap: () => _openLibrary(context),
+                            bottomMargin: 0,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
+            // (Removido: Sliver de espaçamento extra. SafeArea agora garante o espaçamento correto do botão.)
           ],
         ),
       ),
