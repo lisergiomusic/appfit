@@ -15,31 +15,23 @@ class _SessaoNoteWidgetState extends State<SessaoNoteWidget> {
 
   void _openEditModal() {
     HapticFeedback.lightImpact();
-    showGeneralDialog(
+    showModalBottomSheet(
       context: context,
-      barrierDismissible: true,
-      barrierLabel: 'Fechar editor de notas',
-      barrierColor: Colors.black.withAlpha(220),
-      transitionDuration: const Duration(milliseconds: 300),
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return NoteEditorModal(
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: NoteEditorModal(
           initialText: _noteText,
           onSave: (newText) {
             setState(() {
               _noteText = newText;
             });
           },
-        );
-      },
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        final tween = Tween<double>(begin: 0.9, end: 1.0);
-        return ScaleTransition(
-          scale: tween.animate(
-            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-          ),
-          child: FadeTransition(opacity: animation, child: child),
-        );
-      },
+        ),
+      ),
     );
   }
 

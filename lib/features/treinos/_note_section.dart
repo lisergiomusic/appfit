@@ -15,34 +15,23 @@ class _NoteSectionState extends State<NoteSection> {
 
   void _openEditModal() {
     HapticFeedback.lightImpact();
-    showGeneralDialog(
+    showModalBottomSheet(
       context: context,
-      barrierDismissible: true,
-      barrierLabel: 'Fechar editor de notas',
-      barrierColor: Colors.black.withAlpha(220),
-      transitionDuration: const Duration(milliseconds: 300),
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return _NoteEditorModal(
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: _NoteEditorModal(
           initialText: _noteText,
           onSave: (newText) {
             setState(() {
               _noteText = newText;
             });
           },
-        );
-      },
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        final tween = Tween<double>(begin: 0.9, end: 1.0);
-        return ScaleTransition(
-          scale: tween.animate(
-            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-          ),
-          child: FadeTransition(
-            opacity: animation,
-            child: child,
-          ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -170,122 +159,103 @@ class _NoteEditorModalState extends State<_NoteEditorModal> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.of(context).pop(),
-      child: Material(
-        color: Colors.transparent,
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            // Evita que o teclado sobreponha o modal
-            child: Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
+    return SafeArea(
+      child: Container(
+        decoration: const BoxDecoration(
+          color: AppTheme.surfaceLight,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle for the bottom sheet
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(50),
+                borderRadius: BorderRadius.circular(2),
               ),
-              child: GestureDetector(
-                onTap: () {}, // Impede que toques no modal o fechem
-                child: Container(
-                  constraints: const BoxConstraints(
-                    maxHeight: 300,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceLight,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: Colors.white.withAlpha(25),
-                      width: 1,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 16, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'EDITOR DE NOTAS',
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(102),
-                        blurRadius: 30,
-                        spreadRadius: -10,
-                      ),
-                    ],
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 16, 16, 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'EDITOR DE NOTAS',
-                              style: TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1,
-                              ),
-                            ),
-                            InkWell(
-                              onTap: _handleSave,
-                              borderRadius: BorderRadius.circular(30),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.primary.withAlpha(40),
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(
-                                      Icons.check_rounded,
-                                      color: AppTheme.primary,
-                                      size: 16,
-                                    ),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      'Salvar',
-                                      style: TextStyle(
-                                        color: AppTheme.primary,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                  InkWell(
+                    onTap: _handleSave,
+                    borderRadius: BorderRadius.circular(30),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
                       ),
-                      Flexible(
-                        child: TextField(
-                          controller: _controller,
-                          focusNode: _focusNode,
-                          autofocus: true,
-                          maxLines: null,
-                          scrollPadding: const EdgeInsets.all(20.0),
-                          keyboardType: TextInputType.multiline,
-                          textCapitalization: TextCapitalization.sentences,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            height: 1.5,
-                          ),
-                          cursorColor: AppTheme.primary,
-                          decoration: const InputDecoration(
-                            isDense: true,
-                            filled: false,
-                            border: InputBorder.none,
-                            hintText: 'Digite aqui...',
-                            hintStyle: TextStyle(color: AppTheme.textSecondary),
-                            contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 20),
-                          ),
-                        ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withAlpha(40),
+                        borderRadius: BorderRadius.circular(30),
                       ),
-                    ],
+                      child: const Row(
+                        children: [
+                          Icon(
+                            Icons.check_rounded,
+                            color: AppTheme.primary,
+                            size: 16,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'Salvar',
+                            style: TextStyle(
+                              color: AppTheme.primary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: TextField(
+                  controller: _controller,
+                  focusNode: _focusNode,
+                  autofocus: true,
+                  maxLines: null,
+                  scrollPadding: const EdgeInsets.all(20.0),
+                  keyboardType: TextInputType.multiline,
+                  textCapitalization: TextCapitalization.sentences,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    height: 1.5,
+                  ),
+                  cursorColor: AppTheme.primary,
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    filled: false,
+                    border: InputBorder.none,
+                    hintText: 'Digite aqui...',
+                    hintStyle: TextStyle(color: AppTheme.textSecondary),
+                    contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 20),
                   ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

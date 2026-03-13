@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/theme/app_theme.dart';
 
 class NoteEditorModal extends StatefulWidget {
@@ -36,125 +37,186 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
   }
 
   void _handleSave() {
+    HapticFeedback.lightImpact();
     widget.onSave(_controller.text.trim());
     Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.of(context).pop(),
-      child: Material(
-        color: Colors.transparent,
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceDark,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32.0)),
+        border: Border(
+          top: BorderSide(color: Colors.white.withAlpha(15), width: 1),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(100),
+            blurRadius: 30,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle (Pill)
+            Container(
+              width: 48,
+              height: 5,
+              margin: const EdgeInsets.only(top: 12, bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(40),
+                borderRadius: BorderRadius.circular(100),
               ),
-              child: GestureDetector(
-                onTap: () {},
-                child: Container(
-                  constraints: const BoxConstraints(maxHeight: 300),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceLight,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: Colors.white.withAlpha(25),
-                      width: 1,
+            ),
+
+            // Cabeçalho
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Text(
+                    'NOTAS DA SESSÃO',
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(102),
-                        blurRadius: 30,
-                        spreadRadius: -10,
-                      ),
-                    ],
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 16, 16, 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _handleSave,
+                      borderRadius: BorderRadius.circular(100),
+                      splashColor: AppTheme.primary.withAlpha(30),
+                      highlightColor: AppTheme.primary.withAlpha(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withAlpha(15),
+                          borderRadius: BorderRadius.circular(100),
+                          border: Border.all(
+                            color: AppTheme.primary.withAlpha(40),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text(
-                              'EDITOR DE NOTAS',
-                              style: TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1,
-                              ),
+                            Icon(
+                              Icons.check_circle_outline_rounded,
+                              color: AppTheme.primary,
+                              size: 18,
                             ),
-                            InkWell(
-                              onTap: _handleSave,
-                              borderRadius: BorderRadius.circular(30),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.primary.withAlpha(40),
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(
-                                      Icons.check_rounded,
-                                      color: AppTheme.primary,
-                                      size: 16,
-                                    ),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      'Salvar',
-                                      style: TextStyle(
-                                        color: AppTheme.primary,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                            SizedBox(width: 6),
+                            Text(
+                              'Salvar',
+                              style: TextStyle(
+                                color: AppTheme.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                letterSpacing: 0.3,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      Flexible(
-                        child: TextField(
-                          controller: _controller,
-                          focusNode: _focusNode,
-                          autofocus: true,
-                          maxLines: null,
-                          scrollPadding: const EdgeInsets.all(20.0),
-                          keyboardType: TextInputType.multiline,
-                          textCapitalization: TextCapitalization.sentences,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            height: 1.5,
-                          ),
-                          cursorColor: AppTheme.primary,
-                          decoration: const InputDecoration(
-                            isDense: true,
-                            filled: false,
-                            border: InputBorder.none,
-                            hintText: 'Digite aqui...',
-                            hintStyle: TextStyle(color: AppTheme.textSecondary),
-                            contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 20),
-                          ),
-                        ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            Divider(height: 1, thickness: 1, color: Colors.white.withAlpha(10)),
+
+            // Área do Texto com Contador
+            Flexible(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.4,
+                  minHeight: 120,
+                ),
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: TextField(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    autofocus: true,
+                    maxLines: null,
+                    maxLength: 250, // <-- Limite de Caracteres
+                    keyboardType: TextInputType.multiline,
+                    textCapitalization: TextCapitalization.sentences,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      height: 1.6,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    cursorColor: AppTheme.primary,
+                    cursorWidth: 2.5,
+                    cursorRadius: const Radius.circular(2),
+                    // Construção Customizada do Contador
+                    buildCounter:
+                        (
+                          context, {
+                          required currentLength,
+                          required isFocused,
+                          maxLength,
+                        }) {
+                          final bool isLimitReached =
+                              currentLength == maxLength;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 16, top: 4),
+                            child: Text(
+                              '$currentLength / $maxLength',
+                              style: TextStyle(
+                                color: isLimitReached
+                                    ? Colors.redAccent
+                                    : AppTheme.textSecondary.withAlpha(120),
+                                fontSize: 13,
+                                fontWeight: isLimitReached
+                                    ? FontWeight.bold
+                                    : FontWeight.w500,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          );
+                        },
+                    decoration: InputDecoration(
+                      isDense: true,
+                      filled: false,
+                      border: InputBorder.none,
+                      hintText: 'Adicione instruções ou observações',
+                      hintStyle: TextStyle(
+                        color: AppTheme.textSecondary.withAlpha(120),
+                        fontSize: 17,
+                        fontStyle: FontStyle.italic,
                       ),
-                    ],
+                      // Ajustei o padding inferior para o contador não ficar "colado" no texto
+                      contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
