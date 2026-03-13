@@ -47,79 +47,78 @@ class _SessaoNoteWidgetState extends State<SessaoNoteWidget> {
   Widget build(BuildContext context) {
     bool isEmpty = _noteText.trim().isEmpty;
 
-    return GestureDetector(
-      onTap: _openEditModal,
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        layoutBuilder: (currentChild, previousChildren) {
-          return Stack(
-            alignment: Alignment.topLeft,
-            children: <Widget>[
-              ...previousChildren,
-              if (currentChild != null) currentChild,
-            ],
-          );
-        },
-        child: isEmpty ? _buildEmptyState() : _buildFilledState(),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return KeyedSubtree(
-      key: const ValueKey('note_empty'),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.add_comment_outlined,
-            color: AppTheme.textSecondary.withAlpha(180),
-            size: 18,
+    return Material(
+      color: AppTheme.surfaceDark,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: _openEditModal,
+        borderRadius: BorderRadius.circular(18),
+        hoverColor: Colors.white.withOpacity(0.05),
+        splashColor: Colors.white.withOpacity(0.1),
+        highlightColor: Colors.white.withOpacity(0.05),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
           ),
-          const SizedBox(width: 12),
-          Text(
-            'Clique para adicionar observações',
-            style: TextStyle(
-              color: AppTheme.textSecondary.withAlpha(180),
-              fontSize: 15,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilledState() {
-    return KeyedSubtree(
-      key: const ValueKey('note_filled'),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: const [
-              Icon(Icons.sticky_note_2, color: AppTheme.primary, size: 16),
-              SizedBox(width: 8),
-              Text(
-                'OBSERVAÇÕES DA SESSÃO',
-                style: TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.8,
+          child: Row(
+            children: [
+              // Icon
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.edit_note,
+                    color: AppTheme.primary,
+                    size: 18,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Text content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'NOTAS DA SESSÃO',
+                      style: AppTheme.microLabelTextStyle,
+                    ),
+                    const SizedBox(height: 2),
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeInOut,
+                      child: Text(
+                        isEmpty
+                            ? 'Toque para adicionar instruções gerais...'
+                            : _noteText,
+                        style: TextStyle(
+                          color: isEmpty
+                              ? const Color(0xFF64748b)
+                              : AppTheme.textPrimary,
+                          fontSize: 14,
+                          height: 1.4,
+                          fontWeight: isEmpty
+                              ? FontWeight.normal
+                              : FontWeight.w500,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            _noteText,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              height: 1.4,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

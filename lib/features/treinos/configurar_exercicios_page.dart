@@ -233,8 +233,11 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
               background: Align(
                 alignment: Alignment.bottomLeft,
                 child: Padding(
-                  padding:
-                      const EdgeInsets.only(left: 24, bottom: 16, right: 24),
+                  padding: const EdgeInsets.only(
+                    left: 24,
+                    bottom: 16,
+                    right: 24,
+                  ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -509,8 +512,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                         ),
                       );
                     },
-                    itemBuilder: (context, index) =>
-                        _buildExercicioCard(index),
+                    itemBuilder: (context, index) => _buildExercicioCard(index),
                   ),
                 ),
               ),
@@ -523,8 +525,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOutCubic,
                     child: Padding(
-                      padding:
-                          const EdgeInsets.only(top: 24.0, bottom: 48.0),
+                      padding: const EdgeInsets.only(top: 24.0, bottom: 48.0),
                       child: OrangeGlassActionButton(
                         label: 'Adicionar Exercício',
                         onTap: _openLibrary,
@@ -593,8 +594,9 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
         );
 
         // Mostra a SnackBar e guarda seu controlador
-        final controller =
-            _scaffoldMessengerKey.currentState?.showSnackBar(snackBar);
+        final controller = _scaffoldMessengerKey.currentState?.showSnackBar(
+          snackBar,
+        );
 
         // Inicia um timer para fechar a SnackBar após 4 segundos
         if (controller != null) {
