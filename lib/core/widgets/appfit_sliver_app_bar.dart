@@ -25,28 +25,16 @@ class AppFitSliverAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Widget effectiveLeading =
-        leading ??
+    final Widget effectiveLeading = leading ??
         Align(
           alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 12),
-            child: Material(
-              color: AppTheme.buttonSurface,
-              shape: const CircleBorder(),
-              child: InkWell(
-                onTap: onBackPressed ?? () => Navigator.pop(context),
-                customBorder: const CircleBorder(),
-                child: const SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: Icon(
-                    CupertinoIcons.back,
-                    color: AppTheme.textPrimary,
-                    size: 18,
-                  ),
-                ),
-              ),
+          child: CupertinoButton(
+            onPressed: onBackPressed ?? () => Navigator.pop(context),
+            padding: const EdgeInsets.only(left: 16),
+            child: const Icon(
+              CupertinoIcons.back,
+              color: AppTheme.textPrimary,
+              size: 24,
             ),
           ),
         );
