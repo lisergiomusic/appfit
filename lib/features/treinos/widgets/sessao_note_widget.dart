@@ -58,7 +58,7 @@ class _SessaoNoteWidgetState extends State<SessaoNoteWidget> {
         highlightColor: Colors.white.withAlpha(13),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: Colors.white.withAlpha(13)),
