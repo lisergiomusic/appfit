@@ -1507,27 +1507,26 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
               AppFitSliverAppBar(
                 title: exerciseTitle,
                 actions: [
-                  Semantics(
-                    label: 'Concluir',
-                    button: true,
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppTheme.primary,
-                        minimumSize: const Size(44, 44),
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                      ),
-                      child: const Text(
-                        'Concluir',
-                        style: TextStyle(
-                          color: AppTheme.primary,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
+                  Padding(
+                    padding: const EdgeInsets.only(right: 12.0),
+                    child: Material(
+                      color: AppTheme.buttonSurface,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        onTap: () => Navigator.pop(context),
+                        customBorder: const CircleBorder(),
+                        child: const SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: Icon(
+                            Icons.check_rounded,
+                            color: AppTheme.textPrimary,
+                            size: 18,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 4),
                 ],
                 background: Align(
                   alignment: Alignment.bottomLeft,

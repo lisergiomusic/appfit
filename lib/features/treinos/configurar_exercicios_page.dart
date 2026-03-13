@@ -101,11 +101,13 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
 
     if (exercicioSelecionado != null) {
       setState(() {
-        _exerciciosLocais.add(ExercicioItem(
-          nome: exercicioSelecionado['nome']!,
-          grupoMuscular: exercicioSelecionado['musculo']!,
-          series: [],
-        ));
+        _exerciciosLocais.add(
+          ExercicioItem(
+            nome: exercicioSelecionado['nome']!,
+            grupoMuscular: exercicioSelecionado['musculo']!,
+            series: [],
+          ),
+        );
         _hasChanges = true;
       });
     }
@@ -542,7 +544,7 @@ class _ConfigurarExerciciosPageState extends State<ConfigurarExerciciosPage> {
                         Text(
                           '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}${ex.grupoMuscular.isNotEmpty ? ' • ${ex.grupoMuscular}' : ''}',
                           style: const TextStyle(
-                            color: Color(0xFF94a3b8),
+                            color: AppTheme.textSecondary,
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                             letterSpacing: 0.1,
