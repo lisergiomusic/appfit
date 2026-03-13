@@ -89,7 +89,12 @@ class _SessaoNoteWidgetState extends State<SessaoNoteWidget> {
                   children: [
                     Text(
                       'NOTAS DA SESSÃO',
-                      style: AppTheme.microLabelTextStyle,
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     AnimatedSize(
@@ -102,12 +107,12 @@ class _SessaoNoteWidgetState extends State<SessaoNoteWidget> {
                         style: TextStyle(
                           color: isEmpty
                               ? const Color(0xFF64748b)
-                              : AppTheme.textPrimary,
+                              : AppTheme.textPrimary.withValues(alpha: 0.9),
                           fontSize: 14,
-                          height: 1.4,
+                          height: 1.5,
                           fontWeight: isEmpty
                               ? FontWeight.normal
-                              : FontWeight.w500,
+                              : FontWeight.w700,
                         ),
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,

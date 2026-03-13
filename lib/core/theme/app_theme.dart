@@ -15,7 +15,7 @@ class AppTheme {
   static const Color surfaceLight = Color(0xFF2C2C2E);
   static const Color buttonSurface = Color(0xFF1E1E1E);
   static const Color textPrimary = Colors.white;
-  static const Color textSecondary = Color(0xFF94a3b8);
+  static const Color textSecondary = Color(0xFF94A3B8);
   static const Color accentMetrics = Color(0xFFFF9F0A);
   static const Color success = Color(0xFF4CAF50);
 
