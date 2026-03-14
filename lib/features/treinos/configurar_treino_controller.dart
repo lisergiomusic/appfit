@@ -103,16 +103,18 @@ class ConfigurarTreinoController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addExercicio(Map<String, String> exercicioData) {
-    final newWrapper = ExercicioWrapper(
-      ExercicioItem(
-        nome: exercicioData['nome']!,
-        grupoMuscular: exercicioData['musculo']!,
-        series: [],
-      ),
-    );
-    _exercicios.add(newWrapper);
-    _newExercicios.add(newWrapper.id);
+  void addExercicios(List<Map<String, String>> listaExercicios) {
+    for (var dados in listaExercicios) {
+      final newWrapper = ExercicioWrapper(
+        ExercicioItem(
+          nome: dados['nome']!,
+          grupoMuscular: dados['musculo']!,
+          series: [],
+        ),
+      );
+      _exercicios.add(newWrapper);
+      _newExercicios.add(newWrapper.id);
+    }
     _hasChanges = true;
     notifyListeners();
   }

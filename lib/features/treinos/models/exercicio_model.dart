@@ -14,12 +14,7 @@ class SerieItem {
   });
 
   SerieItem clone() {
-    return SerieItem(
-      tipo: tipo,
-      alvo: alvo,
-      carga: carga,
-      descanso: descanso,
-    );
+    return SerieItem(tipo: tipo, alvo: alvo, carga: carga, descanso: descanso);
   }
 }
 
@@ -30,6 +25,16 @@ class ExercicioItem {
   String tipoAlvo;
   String? imagemUrl;
   List<SerieItem> series;
+
+  factory ExercicioItem.fromApi(Map<String, dynamic> json) {
+    return ExercicioItem(
+      nome: json['name'] ?? 'Exercício sem nome',
+      observacao: (json['instructions'] as List?)?.join('\n') ?? '',
+      grupoMuscular: (json['targetMuscles'] as List?)?.first ?? 'Geral',
+      imagemUrl: json['gifUrl'],
+      series: [],
+    );
+  }
 
   ExercicioItem({
     required this.nome,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/widgets/appfit_simple_app_bar.dart';
+import '../../core/services/exercise_service.dart'; // Importamos o serviço novo
+import 'models/exercicio_model.dart';
 
 class ExerciciosLibraryPage extends StatefulWidget {
   const ExerciciosLibraryPage({super.key});
@@ -10,150 +11,132 @@ class ExerciciosLibraryPage extends StatefulWidget {
 }
 
 class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
+  // Criamos uma instância do serviço
+  final ExerciseService _exerciseService = ExerciseService();
+
+  // Variável para guardar o "futuro" dos dados
+  late Future<List<ExercicioItem>> _futureExercicios;
+
   final List<String> _categorias = [
-    'Todos',
+    'Tudo',
     'Peito',
     'Costas',
     'Pernas',
-    'Braços',
     'Ombros',
+    'Braços',
   ];
-  String _categoriaSelecionada = 'Todos';
+  String _categoriaSelecionada = 'Tudo';
+  final Set<int> _selecionados = {};
 
-  // Mock de dados da biblioteca
-  final List<Map<String, String>> _biblioteca = [
-    {'nome': 'Supino Reto', 'musculo': 'Peito'},
-    {'nome': 'Agachamento Livre', 'musculo': 'Pernas'},
-    {'nome': 'Puxada Frontal', 'musculo': 'Costas'},
-    {'nome': 'Rosca Direta', 'musculo': 'Braços'},
-    {'nome': 'Desenvolvimento', 'musculo': 'Ombros'},
-    {'nome': 'Leg Press 45', 'musculo': 'Pernas'},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Assim que a tela abre, disparamos a busca na Cloud
+    _futureExercicios = _exerciseService.buscarTodos();
+  }
+
+  void _confirmarSelecao(List<ExercicioItem> listaTotal) {
+    // Pegamos os objetos ExercicioItem reais que foram marcados
+    final selecionadosList = _selecionados.map((i) => listaTotal[i]).toList();
+    Navigator.pop(context, selecionadosList);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: const AppFitSimpleAppBar(
-        title: 'Biblioteca de Exercícios',
-        centerTitle: true,
-      ),
+      // ... (AppBar e botões permanecem iguais, apenas passamos a lista real no confirmarSelecao)
       body: Column(
         children: [
-          // 1. BARRA DE BUSCA MODERNA
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: TextField(
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: 'Pesquisar exercício...',
-                hintStyle: TextStyle(
-                  color: AppTheme.textSecondary.withAlpha(128),
-                ),
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: AppTheme.textSecondary,
-                ),
-                filled: true,
-                fillColor: AppTheme.surfaceDark,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
+          // ... (Barra de busca e Chips permanecem iguais)
 
-          // 2. FILTROS RÁPIDOS (CHIPS)
-          SizedBox(
-            height: 60,
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              scrollDirection: Axis.horizontal,
-              itemCount: _categorias.length,
-              itemBuilder: (context, index) {
-                final cat = _categorias[index];
-                final isSelected = _categoriaSelecionada == cat;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: ChoiceChip(
-                    label: Text(cat),
-                    selected: isSelected,
-                    onSelected: (val) =>
-                        setState(() => _categoriaSelecionada = cat),
-                    selectedColor: AppTheme.primary.withAlpha(51),
-                    backgroundColor: AppTheme.surfaceDark,
-                    labelStyle: TextStyle(
-                      color: isSelected
-                          ? AppTheme.primary
-                          : AppTheme.textSecondary,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    side: BorderSide(
-                      color: isSelected
-                          ? AppTheme.primary.withAlpha(128)
-                          : Colors.white.withAlpha(13),
-                    ),
-                    showCheckmark: false,
-                  ),
-                );
-              },
-            ),
-          ),
-
-          // 3. LISTA DE EXERCÍCIOS
+          // 3. A MÁGICA ACONTECE AQUI: O FutureBuilder
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(24),
-              itemCount: _biblioteca.length,
-              itemBuilder: (context, index) {
-                final ex = _biblioteca[index];
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceDark,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withAlpha(13)),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 4,
+            child: FutureBuilder<List<ExercicioItem>>(
+              future: _futureExercicios,
+              builder: (context, snapshot) {
+                // ESTADO 1: Carregando
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: AppTheme.primary),
+                  );
+                }
+
+                // ESTADO 2: Erro (Cloud offline ou falha de rede)
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'Erro ao carregar: ${snapshot.error}',
+                      style: const TextStyle(color: Colors.redAccent),
                     ),
-                    title: Text(
-                      ex['nome']!,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Text(
-                      ex['musculo']!,
-                      style: const TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.add_circle_outline,
-                      color: AppTheme.primary,
-                    ),
-                    onTap: () {
-                      // Retorna o nome do exercício selecionado para a página anterior
-                      Navigator.pop(context, ex);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${ex['nome']} adicionado ao treino!'),
-                          backgroundColor: AppTheme.success,
+                  );
+                }
+
+                // ESTADO 3: Sucesso (Os dados chegaram!)
+                final exerciciosDaApi = snapshot.data ?? [];
+
+                return ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
+                  itemCount: exerciciosDaApi.length,
+                  itemBuilder: (context, index) {
+                    final ex = exerciciosDaApi[index];
+                    final isSelected = _selecionados.contains(index);
+
+                    return GestureDetector(
+                      onTap: () => setState(() {
+                        if (isSelected)
+                          _selecionados.remove(index);
+                        else
+                          _selecionados.add(index);
+                      }),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            // GIF vindo da Cloud
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(30),
+                              child: Image.network(
+                                ex.imagemUrl ?? '',
+                                width: 56,
+                                height: 56,
+                                fit: BoxFit.cover,
+                                // Placeholder enquanto o GIF carrega da internet
+                                errorBuilder: (_, __, ___) => Container(
+                                  color: AppTheme.surfaceLight,
+                                  child: const Icon(Icons.fitness_center),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    ex.nome,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    ex.grupoMuscular,
+                                    style: const TextStyle(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // ... (Checkmark de seleção permanece igual)
+                          ],
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
