@@ -2,6 +2,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../features/treinos/models/exercicio_model.dart';
 
+class PaginatedExercises {
+  final List<ExercicioItem> items;
+  final DocumentSnapshot? lastDoc;
+  final bool hasMore;
+
+  PaginatedExercises({
+    required this.items,
+    this.lastDoc,
+    required this.hasMore,
+  });
+}
+
 class ExerciseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -12,31 +24,73 @@ class ExerciseService {
     List<ExercicioItem> biblioteca = [];
 
     try {
-      final baseSnapshot = await _db
-          .collection('exercicios_base')
-          .where('personalId', isNull: true)
+      final snapshot = await _db.collection('exercicios_base')
+          .where(Filter.or(
+            Filter('personalId', isNull: true),
+            Filter('personalId', isEqualTo: personalId),
+          ))
           .get();
 
-      biblioteca.addAll(
-        baseSnapshot.docs.map((doc) => ExercicioItem.fromFirestore(doc.data())),
-      );
-
-      if (personalId != null) {
-        final customSnapshot = await _db
-            .collection('exercicios_base')
-            .where('personalId', isEqualTo: personalId)
-            .get();
-
-        biblioteca.addAll(
-          customSnapshot.docs.map(
-            (doc) => ExercicioItem.fromFirestore(doc.data()),
-          ),
-        );
-      }
-
+      biblioteca = snapshot.docs.map((doc) => ExercicioItem.fromFirestore(doc.data(), doc.id)).toList();
       biblioteca.sort((a, b) => a.nome.compareTo(b.nome));
       return biblioteca;
     } catch (e) {
+      throw Exception('Erro ao carregar biblioteca: $e');
+    }
+  }
+
+  // NOVA LÓGICA: Busca paginada usando Filter.or para evitar erro de 'null' no whereIn
+  Future<PaginatedExercises> buscarBibliotecaPaginada({
+    String? categoria,
+    DocumentSnapshot? lastDoc,
+    int limit = 20,
+  }) async {
+    final personalId = _auth.currentUser?.uid;
+
+    try {
+      Query query = _db.collection('exercicios_base');
+
+      // 1. Filtro de Identidade (Público + Privado) usando Filter.or
+      // Isso resolve o erro 'In filters cannot contain null'
+      Filter identityFilter;
+      if (categoria == 'Meus Exercícios') {
+        identityFilter = Filter('personalId', isEqualTo: personalId);
+      } else {
+        identityFilter = Filter.or(
+          Filter('personalId', isNull: true),
+          Filter('personalId', isEqualTo: personalId),
+        );
+      }
+      
+      query = query.where(identityFilter);
+
+      // 2. Filtro de Categoria
+      if (categoria != null && categoria != 'Tudo' && categoria != 'Meus Exercícios') {
+        // Usamos igualdade para permitir que o orderBy principal seja o Nome.
+        // Se usarmos ranges (>= e <=), o Firestore exigiria orderBy('grupoMuscular') primeiro.
+        query = query.where('grupoMuscular', isEqualTo: categoria);
+      }
+
+      // 3. Ordenação por Nome (Exige Índice Composto se houver Filter.or + orderBy)
+      query = query.orderBy('nome');
+
+      if (lastDoc != null) {
+        query = query.startAfterDocument(lastDoc);
+      }
+
+      final snapshot = await query.limit(limit).get();
+      final items = snapshot.docs.map((doc) {
+        return ExercicioItem.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+      }).toList();
+
+      return PaginatedExercises(
+        items: items,
+        lastDoc: snapshot.docs.isNotEmpty ? snapshot.docs.last : null,
+        hasMore: items.length == limit,
+      );
+    } catch (e) {
+      print('Erro no Firebase (ExerciseService): $e');
+      // Importante: Se o terminal mostrar um erro de índice, clique no link gerado.
       throw Exception('Erro ao carregar biblioteca: $e');
     }
   }
@@ -55,187 +109,24 @@ class ExerciseService {
     }
   }
 
-  // --- SCRIPT DE SEED (BIOMECÂNICA CORRIGIDA) ---
+  // SCRIPT DE SEED (Ajustado para categorias exatas)
   Future<void> semearExerciciosBase() async {
     final List<ExercicioItem> exerciciosSemente = [
-      // PEITO
-      ExercicioItem(
-        nome: 'Supino Reto (Barra)',
-        grupoMuscular: 'Peito, Ombros, Tríceps',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Supino Inclinado (Halteres)',
-        grupoMuscular: 'Peito, Ombros, Tríceps',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Crossover (Polia)',
-        grupoMuscular: 'Peito, Ombros',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Voador / Peck Deck (Máquina)',
-        grupoMuscular: 'Peito, Ombros',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Crucifixo Reto (Halteres)',
-        grupoMuscular: 'Peito, Ombros',
-        series: [],
-      ),
-
-      // COSTAS
-      ExercicioItem(
-        nome: 'Puxada Frontal (Polia)',
-        grupoMuscular: 'Costas, Bíceps',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Remada Curvada (Barra)',
-        grupoMuscular: 'Costas, Bíceps',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Remada Baixa (Polia)',
-        grupoMuscular: 'Costas, Bíceps',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Pulldown (Polia)',
-        grupoMuscular: 'Costas',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Levantamento Terra (Barra)',
-        grupoMuscular: 'Costas, Pernas, Glúteos',
-        series: [],
-      ),
-
-      // PERNAS & GLÚTEOS
-      ExercicioItem(
-        nome: 'Agachamento Livre (Barra)',
-        grupoMuscular: 'Pernas, Glúteos',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Leg Press 45° (Máquina)',
-        grupoMuscular: 'Pernas, Glúteos',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Cadeira Extensora (Máquina)',
-        grupoMuscular: 'Pernas',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Mesa Flexora (Máquina)',
-        grupoMuscular: 'Pernas',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Elevação Pélvica (Máquina)',
-        grupoMuscular: 'Glúteos, Pernas',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Cadeira Abdutora (Máquina)',
-        grupoMuscular: 'Glúteos',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Panturrilha em Pé (Máquina)',
-        grupoMuscular: 'Pernas',
-        series: [],
-      ),
-
-      // OMBROS
-      ExercicioItem(
-        nome: 'Desenvolvimento (Halteres)',
-        grupoMuscular: 'Ombros, Tríceps',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Elevação Lateral (Halteres)',
-        grupoMuscular: 'Ombros',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Elevação Frontal (Polia)',
-        grupoMuscular: 'Ombros, Peito',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Crucifixo Inverso (Máquina)',
-        grupoMuscular: 'Ombros, Costas',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Encolhimento (Halteres)',
-        grupoMuscular: 'Ombros, Costas',
-        series: [],
-      ),
-
-      // TRÍCEPS
-      ExercicioItem(
-        nome: 'Tríceps Pulley (Polia)',
-        grupoMuscular: 'Tríceps',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Tríceps Testa (Corda)',
-        grupoMuscular: 'Tríceps',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Tríceps Francês (Halteres)',
-        grupoMuscular: 'Tríceps',
-        series: [],
-      ),
-
-      // BÍCEPS
-      ExercicioItem(
-        nome: 'Rosca Direta (Barra)',
-        grupoMuscular: 'Bíceps',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Rosca Martelo (Halteres)',
-        grupoMuscular: 'Bíceps',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Rosca Scott (Máquina)',
-        grupoMuscular: 'Bíceps',
-        series: [],
-      ),
-
-      // ABDÔMEN
-      ExercicioItem(
-        nome: 'Abdominal Supra (Livre)',
-        grupoMuscular: 'Abdômen',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Prancha Isométrica (Livre)',
-        grupoMuscular: 'Abdômen',
-        series: [],
-      ),
-      ExercicioItem(
-        nome: 'Abdominal Infra (Barra)',
-        grupoMuscular: 'Abdômen',
-        series: [],
-      ),
+      ExercicioItem(nome: 'Supino Reto (Barra)', grupoMuscular: 'Peito', series: []),
+      ExercicioItem(nome: 'Supino Inclinado (Halteres)', grupoMuscular: 'Peito', series: []),
+      ExercicioItem(nome: 'Puxada Frontal (Polia)', grupoMuscular: 'Costas', series: []),
+      ExercicioItem(nome: 'Remada Curvada (Barra)', grupoMuscular: 'Costas', series: []),
+      ExercicioItem(nome: 'Agachamento Livre (Barra)', grupoMuscular: 'Pernas', series: []),
+      ExercicioItem(nome: 'Leg Press 45°', grupoMuscular: 'Pernas', series: []),
+      ExercicioItem(nome: 'Elevação Pélvica', grupoMuscular: 'Glúteos', series: []),
+      ExercicioItem(nome: 'Rosca Direta (Barra)', grupoMuscular: 'Bíceps', series: []),
+      ExercicioItem(nome: 'Tríceps Pulley', grupoMuscular: 'Tríceps', series: []),
+      ExercicioItem(nome: 'Abdominal Supra', grupoMuscular: 'Abdômen', series: []),
     ];
 
     for (var ex in exerciciosSemente) {
       ex.personalId = null;
-
-      String docId = ex.nome
-          .toLowerCase()
-          .replaceAll(RegExp(r'[^\w\s]'), '')
-          .replaceAll(RegExp(r'\s+'), '_');
-
+      String docId = ex.nome.toLowerCase().replaceAll(RegExp(r'[^\w\s]'), '').replaceAll(RegExp(r'\s+'), '_');
       await _db.collection('exercicios_base').doc(docId).set(ex.toFirestore());
     }
   }

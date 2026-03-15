@@ -19,6 +19,7 @@ class SerieItem {
 }
 
 class ExercicioItem {
+  String? id; // Adicionado ID para identificação única
   String nome;
   String grupoMuscular;
   String tipoAlvo;
@@ -27,6 +28,7 @@ class ExercicioItem {
   List<SerieItem> series;
 
   ExercicioItem({
+    this.id,
     required this.nome,
     this.grupoMuscular = 'Geral',
     this.tipoAlvo = 'Reps',
@@ -45,8 +47,9 @@ class ExercicioItem {
     };
   }
 
-  factory ExercicioItem.fromFirestore(Map<String, dynamic> data) {
+  factory ExercicioItem.fromFirestore(Map<String, dynamic> data, [String? docId]) {
     return ExercicioItem(
+      id: docId,
       nome: data['nome'] ?? '',
       grupoMuscular: data['grupoMuscular'] ?? 'Geral',
       imagemUrl: data['imagemUrl'],
@@ -58,6 +61,7 @@ class ExercicioItem {
 
   ExercicioItem clone() {
     return ExercicioItem(
+      id: id,
       nome: nome,
       grupoMuscular: grupoMuscular,
       tipoAlvo: tipoAlvo,
@@ -66,4 +70,14 @@ class ExercicioItem {
       series: series.map((s) => s.clone()).toList(),
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ExercicioItem &&
+          runtimeType == other.runtimeType &&
+          (id != null && other.id != null ? id == other.id : nome == other.nome && personalId == other.personalId);
+
+  @override
+  int get hashCode => id != null ? id.hashCode : nome.hashCode ^ personalId.hashCode;
 }

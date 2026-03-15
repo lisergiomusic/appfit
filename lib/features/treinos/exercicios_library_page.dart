@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/exercise_service.dart';
@@ -13,7 +14,13 @@ class ExerciciosLibraryPage extends StatefulWidget {
 
 class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
   final ExerciseService _exerciseService = ExerciseService();
-  late Future<List<ExercicioItem>> _futureExercicios;
+  final ScrollController _scrollController = ScrollController();
+
+  // Estado da lista
+  List<ExercicioItem> _listaExercicios = [];
+  bool _isLoading = false;
+  bool _hasMore = true;
+  DocumentSnapshot? _lastDoc;
 
   final List<String> _categorias = [
     'Tudo',
@@ -27,40 +34,82 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     'Meus Exercícios',
   ];
   String _categoriaSelecionada = 'Tudo';
-  final Set<int> _selecionados = {};
-  List<ExercicioItem> _listaTotalDaCloud = [];
+  
+  // Seleção baseada no ID ou Nome (Identidade Única)
+  final Set<ExercicioItem> _selecionados = {};
 
   @override
   void initState() {
     super.initState();
-    _carregarDados();
+    _carregarDados(reset: true);
+    _scrollController.addListener(_onScroll);
   }
 
-  void _carregarDados() {
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (!_isLoading && _hasMore) {
+        _carregarDados();
+      }
+    }
+  }
+
+  Future<void> _carregarDados({bool reset = false}) async {
+    if (_isLoading) return;
+
     setState(() {
-      _futureExercicios = _exerciseService.buscarBibliotecaCompleta();
+      _isLoading = true;
+      if (reset) {
+        _listaExercicios = [];
+        _lastDoc = null;
+        _hasMore = true;
+      }
     });
+
+    try {
+      final result = await _exerciseService.buscarBibliotecaPaginada(
+        categoria: _categoriaSelecionada,
+        lastDoc: _lastDoc,
+        limit: 20,
+      );
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _listaExercicios.addAll(result.items);
+          _lastDoc = result.lastDoc;
+          _hasMore = result.hasMore;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao carregar dados: $e')),
+        );
+      }
+    }
   }
 
-  // Finaliza a seleção e volta para a tela de Rotina
   void _confirmarSelecao() {
-    final selecionadosList = _selecionados
-        .map((i) => _listaTotalDaCloud[i])
-        .toList();
-    Navigator.pop(context, selecionadosList);
+    Navigator.pop(context, _selecionados.toList());
   }
 
-  void _alternarSelecao(int index) {
+  void _alternarSelecao(ExercicioItem ex) {
     setState(() {
-      if (_selecionados.contains(index)) {
-        _selecionados.remove(index);
+      if (_selecionados.contains(ex)) {
+        _selecionados.remove(ex);
       } else {
-        _selecionados.add(index);
+        _selecionados.add(ex);
       }
     });
   }
 
-  // --- 2. NOVO MODAL: RESUMO DOS SELECIONADOS (O "CARRINHO") ---
   void _abrirResumoSelecao() {
     showModalBottomSheet(
       context: context,
@@ -70,9 +119,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => StatefulBuilder(
-        // Usamos StatefulBuilder para atualizar a aba ao remover itens
         builder: (context, setModalState) {
-          // Pega a lista real baseada nos índices
           final selecionadosList = _selecionados.toList();
 
           return Container(
@@ -129,8 +176,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   child: ListView.builder(
                     itemCount: selecionadosList.length,
                     itemBuilder: (context, idx) {
-                      final realIndex = selecionadosList[idx];
-                      final ex = _listaTotalDaCloud[realIndex];
+                      final ex = selecionadosList[idx];
 
                       return Container(
                         margin: const EdgeInsets.only(bottom: 12),
@@ -171,13 +217,9 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                               ),
                               onPressed: () {
                                 setModalState(() {
-                                  _selecionados.remove(realIndex);
-                                  selecionadosList.removeAt(idx);
+                                  _selecionados.remove(ex);
                                 });
-                                // Atualiza a tela de trás também!
                                 setState(() {});
-
-                                // Se esvaziar tudo, fecha a aba automaticamente
                                 if (_selecionados.isEmpty) {
                                   Navigator.pop(context);
                                 }
@@ -192,8 +234,8 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(context); // Fecha a aba
-                    _confirmarSelecao(); // Salva e volta para a tela de rotina
+                    Navigator.pop(context);
+                    _confirmarSelecao();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
@@ -219,8 +261,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     );
   }
 
-  // --- 3. NOVO MODAL: PREVIEW DO EXERCÍCIO ---
-  void _mostrarPreviewExercicio(ExercicioItem ex, int realIndex) async {
+  void _mostrarPreviewExercicio(ExercicioItem ex) async {
     final exercicioFoiAdicionado = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -230,7 +271,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
       ),
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
-          final isSelected = _selecionados.contains(realIndex);
+          final isSelected = _selecionados.contains(ex);
 
           return Padding(
             padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
@@ -238,7 +279,6 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Handle de arrastar
                 Center(
                   child: Container(
                     width: 40,
@@ -250,8 +290,6 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     ),
                   ),
                 ),
-
-                // Pré-visualização do Vídeo/GIF
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: AspectRatio(
@@ -283,8 +321,6 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
-                // Textos
                 Text(
                   ex.nome,
                   style: const TextStyle(
@@ -302,20 +338,12 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   ),
                 ),
                 const SizedBox(height: 32),
-
-                // Botão de Ação Dinâmico
                 ElevatedButton(
                   onPressed: () {
-                    // Alterna a seleção
-                    _alternarSelecao(realIndex);
-
-                    // `isSelected` reflete o estado ANTES de `_alternarSelecao` ser chamado.
+                    _alternarSelecao(ex);
                     if (!isSelected) {
-                      // Fecha o modal e retorna `true` para disparar o SnackBar
                       Navigator.of(context).pop(true);
                     } else {
-                      // Se já estava selecionado, o usuário clicou em "Remover".
-                      // Apenas atualizamos o estado do modal.
                       setModalState(() {});
                     }
                   },
@@ -373,8 +401,6 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
             padding: const EdgeInsets.only(right: 8.0),
             child: TextButton.icon(
               onPressed: () async {
-                // Aqui está o segredo: Usamos 'dynamic' (ou deixamos sem tipo)
-                // porque agora a página devolve um objeto ExercicioItem, e não um bool!
                 final dynamic result = await Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -382,27 +408,12 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   ),
                 );
 
-                // Se voltou um ExercicioItem, a criação foi um sucesso!
                 if (result != null && result is ExercicioItem && mounted) {
-                  // 1. Busca a lista atualizada da Nuvem
-                  final novaLista = await _exerciseService
-                      .buscarBibliotecaCompleta();
-
+                  // Ao criar um novo, adicionamos à seleção e recarregamos a lista
                   setState(() {
-                    // 2. Atualiza os dados da tela
-                    _futureExercicios = Future.value(novaLista);
-                    _listaTotalDaCloud = novaLista;
-
-                    // 3. Procura o "Index" (posição) do exercício que acabou de ser criado
-                    final novoIndex = _listaTotalDaCloud.indexWhere(
-                      (ex) => ex.nome == result.nome && ex.personalId != null,
-                    );
-
-                    // 4. Mágica: Adiciona automaticamente ao carrinho!
-                    if (novoIndex != -1) {
-                      _selecionados.add(novoIndex);
-                    }
+                    _selecionados.add(result);
                   });
+                  _carregarDados(reset: true);
                 }
               },
               icon: const Icon(Icons.add, color: AppTheme.primary, size: 20),
@@ -444,6 +455,9 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   borderSide: BorderSide.none,
                 ),
               ),
+              onSubmitted: (value) {
+                // Implementar busca se necessário, ou filtrar a lista atual
+              },
             ),
           ),
           SizedBox(
@@ -460,8 +474,12 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   child: ChoiceChip(
                     label: Text(cat),
                     selected: isSelected,
-                    onSelected: (val) =>
-                        setState(() => _categoriaSelecionada = cat),
+                    onSelected: (val) {
+                      if (val) {
+                        setState(() => _categoriaSelecionada = cat);
+                        _carregarDados(reset: true);
+                      }
+                    },
                     selectedColor: AppTheme.primary,
                     backgroundColor: AppTheme.surfaceDark,
                     labelStyle: TextStyle(
@@ -479,201 +497,167 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
             ),
           ),
           Expanded(
-            child: FutureBuilder<List<ExercicioItem>>(
-              future: _futureExercicios,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
+            child: _listaExercicios.isEmpty && _isLoading
+                ? const Center(
                     child: CircularProgressIndicator(color: AppTheme.primary),
-                  );
-                }
-
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      'Erro: ${snapshot.error}',
-                      style: const TextStyle(color: Colors.redAccent),
-                    ),
-                  );
-                }
-
-                _listaTotalDaCloud = snapshot.data ?? [];
-
-                List<ExercicioItem> listaFiltrada = _listaTotalDaCloud;
-                if (_categoriaSelecionada == 'Meus Exercícios') {
-                  listaFiltrada = _listaTotalDaCloud
-                      .where((ex) => ex.personalId != null)
-                      .toList();
-                } else if (_categoriaSelecionada != 'Tudo') {
-                  listaFiltrada = _listaTotalDaCloud
-                      .where(
-                        (ex) => ex.grupoMuscular.toLowerCase().contains(
-                          _categoriaSelecionada.toLowerCase(),
+                  )
+                : _listaExercicios.isEmpty
+                    ? const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search_off,
+                              size: 64,
+                              color: AppTheme.surfaceLight,
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'Nenhum exercício encontrado.',
+                              style: TextStyle(color: AppTheme.textSecondary),
+                            ),
+                          ],
                         ),
                       )
-                      .toList();
-                }
-
-                if (listaFiltrada.isEmpty) {
-                  return const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off,
-                          size: 64,
-                          color: AppTheme.surfaceLight,
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'Nenhum exercício encontrado.',
-                          style: TextStyle(color: AppTheme.textSecondary),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
-                  itemCount: listaFiltrada.length,
-                  itemBuilder: (context, index) {
-                    final ex = listaFiltrada[index];
-                    final realIndex = _listaTotalDaCloud.indexOf(ex);
-                    final isSelected = _selecionados.contains(realIndex);
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(16),
-                          // 1. ZONA ESQUERDA (O CARD): ABRE O PREVIEW
-                          onTap: () => _mostrarPreviewExercicio(ex, realIndex),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Row(
-                              children: [
-                                // O AVATAR DO EXERCÍCIO (Estrela, Imagem ou Halter)
-                                Container(
-                                  width: 56,
-                                  height: 56,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.surfaceLight,
-                                    shape: BoxShape.circle,
-                                    border: ex.personalId != null
-                                        ? Border.all(
-                                      color: AppTheme.accentMetrics.withAlpha(100),
-                                      width: 2,
-                                    )
-                                        : null,
-                                  ),
-                                  // MÁGICA DA RENDERIZAÇÃO AQUI
-                                  child: ex.personalId != null
-                                  // Condição 1: É personalizado (Estrela)
-                                      ? Center(
-                                    child: Icon(
-                                      Icons.star_rounded,
-                                      color: AppTheme.accentMetrics,
-                                      size: 28,
-                                    ),
-                                  )
-                                      : (ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty)
-                                  // Condição 2: Tem Imagem (Thumbnail circular)
-                                      ? ClipOval(
-                                    child: Image.network(
-                                      ex.imagemUrl!,
-                                      fit: BoxFit.cover,
-                                      // Se a imagem no link quebrar/sair do ar, volta pro halter!
-                                      errorBuilder: (context, error, stackTrace) => const Center(
-                                        child: Icon(Icons.fitness_center, color: AppTheme.textSecondary),
-                                      ),
-                                    ),
-                                  )
-                                  // Condição 3: Padrão sem imagem (Halter)
-                                      : const Center(
-                                    child: Icon(
-                                      Icons.fitness_center,
-                                      color: AppTheme.textSecondary,
-                                    ),
-                                  ),
+                    : ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
+                        itemCount: _listaExercicios.length + (_hasMore ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == _listaExercicios.length) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 32),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: AppTheme.primary,
+                                  strokeWidth: 2,
                                 ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                              ),
+                            );
+                          }
+
+                          final ex = _listaExercicios[index];
+                          final isSelected = _selecionados.contains(ex);
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () => _mostrarPreviewExercicio(ex),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Row(
                                     children: [
-                                      Text(
-                                        ex.nome,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
+                                      Container(
+                                        width: 56,
+                                        height: 56,
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.surfaceLight,
+                                          shape: BoxShape.circle,
+                                          border: ex.personalId != null
+                                              ? Border.all(
+                                                  color: AppTheme.accentMetrics.withAlpha(100),
+                                                  width: 2,
+                                                )
+                                              : null,
+                                        ),
+                                        child: ex.personalId != null
+                                            ? const Center(
+                                                child: Icon(
+                                                  Icons.star_rounded,
+                                                  color: AppTheme.accentMetrics,
+                                                  size: 28,
+                                                ),
+                                              )
+                                            : (ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty)
+                                                ? ClipOval(
+                                                    child: Image.network(
+                                                      ex.imagemUrl!,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder: (context, error, stackTrace) => const Center(
+                                                        child: Icon(Icons.fitness_center, color: AppTheme.textSecondary),
+                                                      ),
+                                                    ),
+                                                  )
+                                                : const Center(
+                                                    child: Icon(
+                                                      Icons.fitness_center,
+                                                      color: AppTheme.textSecondary,
+                                                    ),
+                                                  ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              ex.nome,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              ex.grupoMuscular,
+                                              style: const TextStyle(
+                                                color: AppTheme.textSecondary,
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        ex.grupoMuscular,
-                                        style: const TextStyle(
-                                          color: AppTheme.textSecondary,
-                                          fontSize: 13,
+                                      GestureDetector(
+                                        behavior: HitTestBehavior.opaque,
+                                        onTap: () => _alternarSelecao(ex),
+                                        child: Container(
+                                          padding: const EdgeInsets.only(
+                                            left: 16,
+                                            top: 8,
+                                            bottom: 8,
+                                          ),
+                                          child: Container(
+                                            width: 24,
+                                            height: 24,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: isSelected
+                                                    ? AppTheme.primary
+                                                    : AppTheme.textSecondary.withAlpha(50),
+                                                width: 2,
+                                              ),
+                                              color: isSelected
+                                                  ? AppTheme.primary
+                                                  : Colors.transparent,
+                                            ),
+                                            child: isSelected
+                                                ? const Icon(
+                                                    Icons.check,
+                                                    size: 16,
+                                                    color: Colors.black,
+                                                  )
+                                                : null,
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-
-                                // 2. ZONA DIREITA (A BOLINHA): SELECIONA O EXERCÍCIO
-                                GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: () => _alternarSelecao(realIndex),
-                                  child: Container(
-                                    padding: const EdgeInsets.only(
-                                      left: 16,
-                                      top: 8,
-                                      bottom: 8,
-                                    ),
-                                    child: Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: isSelected
-                                              ? AppTheme.primary
-                                              : AppTheme.textSecondary
-                                                    .withAlpha(50),
-                                          width: 2,
-                                        ),
-                                        color: isSelected
-                                            ? AppTheme.primary
-                                            : Colors.transparent,
-                                      ),
-                                      child: isSelected
-                                          ? const Icon(
-                                              Icons.check,
-                                              size: 16,
-                                              color: Colors.black,
-                                            )
-                                          : null,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                );
-              },
-            ),
           ),
         ],
       ),
@@ -700,7 +684,6 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
               ),
               child: Row(
                 children: [
-                  // LADO ESQUERDO: VER LISTA
                   Expanded(
                     flex: 1,
                     child: InkWell(
@@ -743,8 +726,6 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                       ),
                     ),
                   ),
-
-                  // LADO DIREITO: ADICIONAR DIRETO
                   Expanded(
                     flex: 1,
                     child: ElevatedButton(
