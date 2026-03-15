@@ -37,6 +37,7 @@ dependencies:
   cloud_firestore: ^6.1.2
   provider: ^6.1.5+1
   http: ^1.6.0
+  cached_network_image: ^3.3.0 # Adicionado para cache de imagens
 
 dev_dependencies:
   flutter_test:
