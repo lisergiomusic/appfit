@@ -299,7 +299,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     child: Container(
                       color: AppTheme.surfaceLight,
                       child: ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty
-                          ? Image.network(ex.imagemUrl!, fit: BoxFit.cover)
+                          ? _buildMediaPreview(ex.imagemUrl!)
                           : const Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -311,7 +311,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                   ),
                                   SizedBox(height: 8),
                                   Text(
-                                    'Vídeo indisponível',
+                                    'Mídia indisponível',
                                     style: TextStyle(
                                       color: AppTheme.textSecondary,
                                     ),
@@ -384,6 +384,41 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
         ),
       );
     }
+  }
+
+  Widget _buildMediaPreview(String url) {
+    final videoId = _getYoutubeId(url);
+    if (videoId != null) {
+      final thumbUrl = 'https://img.youtube.com/vi/$videoId/0.jpg';
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.network(thumbUrl, fit: BoxFit.cover),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.black.withAlpha(150),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.play_arrow, color: Colors.white, size: 40),
+            ),
+          ),
+        ],
+      );
+    }
+    // Para GIFs, Image.network anima normalmente
+    return Image.network(url, fit: BoxFit.cover);
+  }
+
+  String? _getYoutubeId(String url) {
+    final RegExp regExp = RegExp(
+      r"(?<=vi\/|v\/|vi=|\/v\/|youtu\.be\/|\/embed\/|v=).+?(?=(?:\?|#|&|$))",
+      caseSensitive: false,
+      multiLine: false,
+    );
+    final match = regExp.firstMatch(url);
+    return match?.group(0);
   }
 
   @override
@@ -786,19 +821,23 @@ class _StaticImageState extends State<_StaticImage> {
 
   void _getImage() {
     _cleanup();
+    if (widget.url.isEmpty) return;
+    
     _hasError = false;
     _imageInfo = null;
     
-    // Resolve a imagem e obtém o stream
-    _imageStream = CachedNetworkImageProvider(widget.url).resolve(createLocalImageConfiguration(context));
+    final videoId = _getYoutubeIdStatic(widget.url);
+    final finalUrl = videoId != null 
+        ? 'https://img.youtube.com/vi/$videoId/0.jpg' 
+        : widget.url;
+
+    _imageStream = CachedNetworkImageProvider(finalUrl).resolve(createLocalImageConfiguration(context));
     
     _listener = ImageStreamListener(
       (info, _) {
         if (mounted && _imageInfo == null) {
           setState(() => _imageInfo = info);
-          // O truque: removemos o listener imediatamente após receber o primeiro frame.
-          // Isso congela o GIF de forma definitiva.
-          _cleanup();
+          _cleanup(); // Congela o GIF após o primeiro frame
         }
       },
       onError: (dynamic exception, StackTrace? stackTrace) {
@@ -808,10 +847,22 @@ class _StaticImageState extends State<_StaticImage> {
     _imageStream!.addListener(_listener!);
   }
 
+  String? _getYoutubeIdStatic(String url) {
+    final RegExp regExp = RegExp(
+      r"(?<=vi\/|v\/|vi=|\/v\/|youtu\.be\/|\/embed\/|v=).+?(?=(?:\?|#|&|$))",
+      caseSensitive: false,
+      multiLine: false,
+    );
+    final match = regExp.firstMatch(url);
+    return match?.group(0);
+  }
+
   void _cleanup() {
     if (_imageStream != null && _listener != null) {
       _imageStream!.removeListener(_listener!);
     }
+    _imageStream = null;
+    _listener = null;
   }
 
   @override
