@@ -23,18 +23,15 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
     'Peito',
     'Costas',
     'Pernas',
-    'Glúteos',
-    'Ombros',
+    'Deltóides',
     'Bíceps',
     'Tríceps',
+    'Glúteos',
+    'Panturrilhas',
     'Abdômen',
   ];
   final Set<String> _gruposSelecionados = {};
-
-  String _tipoAlvoSelecionado = 'Reps';
-  final List<String> _tiposAlvo = ['Reps', 'Tempo (s)'];
   bool _isSaving = false;
-
   void _salvarExercicio() async {
     if (_nomeCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -60,7 +57,6 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
     final novoEx = ExercicioItem(
       nome: _nomeCtrl.text.trim(),
       grupoMuscular: _gruposSelecionados.toList(),
-      tipoAlvo: _tipoAlvoSelecionado,
       imagemUrl: _midiaCtrl.text.trim().isNotEmpty
           ? _midiaCtrl.text.trim()
           : null,
@@ -223,44 +219,6 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                           ),
                         );
                       }).toList(),
-                    ),
-                    const SizedBox(height: 32),
-
-                    // 3. TIPO ALVO
-                    _buildSectionLabel(
-                      'MÉTRICA PRINCIPAL',
-                      Icons.track_changes,
-                    ),
-                    DropdownButtonFormField<String>(
-                      value: _tipoAlvoSelecionado,
-                      dropdownColor: AppTheme.surfaceLight,
-                      icon: const Icon(
-                        Icons.expand_more_rounded,
-                        color: AppTheme.textSecondary,
-                      ),
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: AppTheme.surfaceDark,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                      items: _tiposAlvo
-                          .map(
-                            (tipo) => DropdownMenuItem(
-                              value: tipo,
-                              child: Text(tipo),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (v) =>
-                          setState(() => _tipoAlvoSelecionado = v!),
                     ),
                     const SizedBox(height: 32),
 
