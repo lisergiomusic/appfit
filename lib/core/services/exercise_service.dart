@@ -92,11 +92,13 @@ class ExerciseService {
   }
 
   // Salva um exercício novo criado pelo Personal
-  Future<void> criarExercicioCustomizado(ExercicioItem exercicio) async {
+  // Se forPublico for true e o user for admin (validado no app), personalId será null
+  Future<void> criarExercicioCustomizado(ExercicioItem exercicio, {bool forPublico = false}) async {
     final personalId = _auth.currentUser?.uid;
     if (personalId == null) throw Exception('Utilizador não autenticado');
 
-    exercicio.personalId = personalId;
+    // Se for público, personalId fica null. Caso contrário, leva o ID do utilizador.
+    exercicio.personalId = forPublico ? null : personalId;
 
     try {
       await _db.collection('exercicios_base').add(exercicio.toFirestore());

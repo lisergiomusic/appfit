@@ -1,7 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/exercise_service.dart';
+import '../../core/models/user_model.dart';
 import 'models/exercicio_model.dart';
 
 class CriarExercicioPage extends StatefulWidget {
@@ -13,6 +16,8 @@ class CriarExercicioPage extends StatefulWidget {
 
 class _CriarExercicioPageState extends State<CriarExercicioPage> {
   final ExerciseService _exerciseService = ExerciseService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   final TextEditingController _nomeCtrl = TextEditingController();
   final TextEditingController _midiaCtrl =
@@ -32,6 +37,28 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
   ];
   final Set<String> _gruposSelecionados = {};
   bool _isSaving = false;
+  bool _isAdmin = false;
+  bool _isPublico = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAdminStatus();
+  }
+
+  Future<void> _checkAdminStatus() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      final doc = await _db.collection('usuarios').doc(user.uid).get();
+      if (doc.exists) {
+        final userModel = UserModel.fromFirestore(doc);
+        setState(() {
+          _isAdmin = userModel.isAdmin;
+        });
+      }
+    }
+  }
+
   void _salvarExercicio() async {
     if (_nomeCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -64,7 +91,10 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
     );
 
     try {
-      await _exerciseService.criarExercicioCustomizado(novoEx);
+      await _exerciseService.criarExercicioCustomizado(
+        novoEx, 
+        forPublico: _isAdmin && _isPublico,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -310,6 +340,43 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 32),
+
+                    // 5. BOTÃO SECRETO (ADMIN ONLY)
+                    if (_isAdmin)
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceDark,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: _isPublico 
+                                ? AppTheme.primary.withAlpha(100) 
+                                : Colors.white.withAlpha(10),
+                            width: 1,
+                          ),
+                        ),
+                        child: SwitchListTile(
+                          value: _isPublico,
+                          onChanged: (val) => setState(() => _isPublico = val),
+                          activeColor: AppTheme.primary,
+                          title: const Text(
+                            'Salvar como Exercício Público (Global)',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Este exercício ficará visível para todos os utilizadores da plataforma.',
+                            style: TextStyle(
+                              color: AppTheme.textSecondary.withAlpha(150),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+
                     const SizedBox(height: 40),
                   ],
                 ),
