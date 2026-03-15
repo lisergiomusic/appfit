@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/exercise_service.dart';
 import 'models/exercicio_model.dart';
@@ -581,22 +582,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                               ex.imagemUrl!.isNotEmpty)
                                         ? ClipRRect(
                                             borderRadius: BorderRadius.circular(12),
-                                            child: Image.network(
-                                              ex.imagemUrl!,
-                                              fit: BoxFit.cover,
-                                              errorBuilder:
-                                                  (
-                                                    context,
-                                                    error,
-                                                    stackTrace,
-                                                  ) => const Center(
-                                                    child: Icon(
-                                                      Icons.fitness_center,
-                                                      color: AppTheme
-                                                          .textSecondary,
-                                                    ),
-                                                  ),
-                                            ),
+                                            child: _StaticImage(url: ex.imagemUrl!),
                                           )
                                         : const Center(
                                             child: Icon(
@@ -768,6 +754,96 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
               ),
             )
           : null,
+    );
+  }
+}
+
+class _StaticImage extends StatefulWidget {
+  final String url;
+  const _StaticImage({required this.url});
+
+  @override
+  State<_StaticImage> createState() => _StaticImageState();
+}
+
+class _StaticImageState extends State<_StaticImage> {
+  ImageStream? _imageStream;
+  ImageInfo? _imageInfo;
+  ImageStreamListener? _listener;
+  bool _hasError = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _getImage();
+  }
+
+  @override
+  void didUpdateWidget(_StaticImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.url != widget.url) _getImage();
+  }
+
+  void _getImage() {
+    _cleanup();
+    _hasError = false;
+    _imageInfo = null;
+    
+    // Resolve a imagem e obtém o stream
+    _imageStream = CachedNetworkImageProvider(widget.url).resolve(createLocalImageConfiguration(context));
+    
+    _listener = ImageStreamListener(
+      (info, _) {
+        if (mounted && _imageInfo == null) {
+          setState(() => _imageInfo = info);
+          // O truque: removemos o listener imediatamente após receber o primeiro frame.
+          // Isso congela o GIF de forma definitiva.
+          _cleanup();
+        }
+      },
+      onError: (dynamic exception, StackTrace? stackTrace) {
+        if (mounted) setState(() => _hasError = true);
+      },
+    );
+    _imageStream!.addListener(_listener!);
+  }
+
+  void _cleanup() {
+    if (_imageStream != null && _listener != null) {
+      _imageStream!.removeListener(_listener!);
+    }
+  }
+
+  @override
+  void dispose() {
+    _cleanup();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hasError) {
+      return Container(
+        width: 56,
+        height: 56,
+        color: AppTheme.surfaceLight,
+        child: const Icon(Icons.fitness_center, color: AppTheme.textSecondary),
+      );
+    }
+
+    if (_imageInfo == null) {
+      return Container(
+        width: 56,
+        height: 56,
+        color: AppTheme.surfaceLight,
+      );
+    }
+
+    return RawImage(
+      image: _imageInfo!.image,
+      fit: BoxFit.cover,
+      width: 56,
+      height: 56,
     );
   }
 }
