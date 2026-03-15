@@ -178,8 +178,9 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                 this.setState(() {});
 
                                 // Se esvaziar tudo, fecha a aba automaticamente
-                                if (_selecionados.isEmpty)
+                                if (_selecionados.isEmpty) {
                                   Navigator.pop(context);
+                                }
                               },
                             ),
                           ],
@@ -426,10 +427,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 12,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             child: TextField(
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
@@ -467,9 +465,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     selectedColor: AppTheme.primary,
                     backgroundColor: AppTheme.surfaceDark,
                     labelStyle: TextStyle(
-                      color: isSelected
-                          ? Colors.black
-                          : AppTheme.textSecondary,
+                      color: isSelected ? Colors.black : AppTheme.textSecondary,
                       fontWeight: isSelected
                           ? FontWeight.bold
                           : FontWeight.normal,
@@ -488,9 +484,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(
-                      color: AppTheme.primary,
-                    ),
+                    child: CircularProgressIndicator(color: AppTheme.primary),
                   );
                 }
 
@@ -514,8 +508,8 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   listaFiltrada = _listaTotalDaCloud
                       .where(
                         (ex) => ex.grupoMuscular.toLowerCase().contains(
-                              _categoriaSelecionada.toLowerCase(),
-                            ),
+                          _categoriaSelecionada.toLowerCase(),
+                        ),
                       )
                       .toList();
                 }
@@ -541,7 +535,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 80), 
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
                   itemCount: listaFiltrada.length,
                   itemBuilder: (context, index) {
                     final ex = listaFiltrada[index];
@@ -559,8 +553,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(16),
                           // 1. ZONA ESQUERDA (O CARD): ABRE O PREVIEW
-                          onTap: () =>
-                              _mostrarPreviewExercicio(ex, realIndex),
+                          onTap: () => _mostrarPreviewExercicio(ex, realIndex),
                           child: Padding(
                             padding: const EdgeInsets.all(12),
                             child: Row(
@@ -667,63 +660,96 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: _selecionados.isNotEmpty
-          ? GestureDetector(
-              onTap: _abrirResumoSelecao,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 14,
+          ? Container(
+              height: 64,
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceDark,
+                borderRadius: BorderRadius.circular(32),
+                border: Border.all(
+                  color: AppTheme.primary.withAlpha(40),
+                  width: 1.5,
                 ),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceDark,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-                  border: Border.all(
-                    color: AppTheme.primary.withAlpha(60),
-                    width: 1.5,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(180),
+                    blurRadius: 24,
+                    offset: const Offset(0, 12),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(150),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(
-                        color: AppTheme.primary,
-                        shape: BoxShape.circle,
+                ],
+              ),
+              child: Row(
+                children: [
+                  // LADO ESQUERDO: VER LISTA
+                  Expanded(
+                    flex: 1,
+                    child: InkWell(
+                      onTap: _abrirResumoSelecao,
+                      borderRadius: BorderRadius.circular(28),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
+                              color: AppTheme.surfaceLight,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              '${_selecionados.length}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                height: 1,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Ver lista',
+                            style: TextStyle(
+                              color: AppTheme.textSecondary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const Icon(
+                            Icons.keyboard_arrow_up_rounded,
+                            color: AppTheme.textSecondary,
+                            size: 20,
+                          ),
+                        ],
                       ),
-                      child: Text(
-                        '${_selecionados.length}',
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 14,
+                    ),
+                  ),
+
+                  // LADO DIREITO: ADICIONAR DIRETO
+                  Expanded(
+                    flex: 1,
+                    child: ElevatedButton(
+                      onPressed: _confirmarSelecao,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.black,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(28),
+                        ),
+                        padding: EdgeInsets.zero,
+                      ),
+                      child: const Text(
+                        'Salvar',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          letterSpacing: 0.2,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Ver selecionados',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Icon(
-                      Icons.keyboard_arrow_up_rounded,
-                      color: AppTheme.primary,
-                      size: 24,
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             )
           : null,
