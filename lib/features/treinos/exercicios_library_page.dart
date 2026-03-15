@@ -558,6 +558,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                             padding: const EdgeInsets.all(12),
                             child: Row(
                               children: [
+                                // O AVATAR DO EXERCÍCIO (Estrela, Imagem ou Halter)
                                 Container(
                                   width: 56,
                                   height: 56,
@@ -566,20 +567,38 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                     shape: BoxShape.circle,
                                     border: ex.personalId != null
                                         ? Border.all(
-                                            color: AppTheme.accentMetrics
-                                                .withAlpha(100),
-                                            width: 2,
-                                          )
+                                      color: AppTheme.accentMetrics.withAlpha(100),
+                                      width: 2,
+                                    )
                                         : null,
                                   ),
-                                  child: Center(
+                                  // MÁGICA DA RENDERIZAÇÃO AQUI
+                                  child: ex.personalId != null
+                                  // Condição 1: É personalizado (Estrela)
+                                      ? Center(
                                     child: Icon(
-                                      ex.personalId != null
-                                          ? Icons.star_rounded
-                                          : Icons.fitness_center,
-                                      color: ex.personalId != null
-                                          ? AppTheme.accentMetrics
-                                          : AppTheme.textSecondary,
+                                      Icons.star_rounded,
+                                      color: AppTheme.accentMetrics,
+                                      size: 28,
+                                    ),
+                                  )
+                                      : (ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty)
+                                  // Condição 2: Tem Imagem (Thumbnail circular)
+                                      ? ClipOval(
+                                    child: Image.network(
+                                      ex.imagemUrl!,
+                                      fit: BoxFit.cover,
+                                      // Se a imagem no link quebrar/sair do ar, volta pro halter!
+                                      errorBuilder: (context, error, stackTrace) => const Center(
+                                        child: Icon(Icons.fitness_center, color: AppTheme.textSecondary),
+                                      ),
+                                    ),
+                                  )
+                                  // Condição 3: Padrão sem imagem (Halter)
+                                      : const Center(
+                                    child: Icon(
+                                      Icons.fitness_center,
+                                      color: AppTheme.textSecondary,
                                     ),
                                   ),
                                 ),
