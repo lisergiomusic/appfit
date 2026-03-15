@@ -87,7 +87,6 @@ class ExerciseService {
         hasMore: items.length == limit,
       );
     } catch (e) {
-      print('Erro no Firebase (ExerciseService): $e');
       throw Exception('Erro ao carregar biblioteca: $e');
     }
   }
@@ -109,21 +108,79 @@ class ExerciseService {
   // SCRIPT DE SEED (Atualizado para o novo formato de lista)
   Future<void> semearExerciciosBase() async {
     final List<ExercicioItem> exerciciosSemente = [
-      ExercicioItem(nome: 'Supino Reto (Barra)', grupoMuscular: ['Peito'], series: []),
-      ExercicioItem(nome: 'Supino Inclinado (Halteres)', grupoMuscular: ['Peito'], series: []),
-      ExercicioItem(nome: 'Puxada Frontal (Polia)', grupoMuscular: ['Costas'], series: []),
-      ExercicioItem(nome: 'Remada Curvada (Barra)', grupoMuscular: ['Costas'], series: []),
-      ExercicioItem(nome: 'Agachamento Livre (Barra)', grupoMuscular: ['Pernas','Glúteos'], series: []),
-      ExercicioItem(nome: 'Leg Press 45°', grupoMuscular: ['Pernas','Glúteos'], series: []),
-      ExercicioItem(nome: 'Elevação Pélvica (Máquina)', grupoMuscular: ['Glúteos'], series: []),
-      ExercicioItem(nome: 'Rosca Direta (Barra)', grupoMuscular: ['Bíceps'], series: []),
-      ExercicioItem(nome: 'Tríceps Pulley', grupoMuscular: ['Tríceps'], series: []),
-      ExercicioItem(nome: 'Abdominal Supra', grupoMuscular: ['Abdômen'], series: []),
+      ExercicioItem(
+          nome: 'Supino Reto (Barra)',
+          grupoMuscular: ['Peito'],
+          imagemUrl: null,
+          series: []
+      ),
+      ExercicioItem(
+          nome: 'Supino Inclinado (Halteres)',
+          grupoMuscular: ['Peito'],
+          imagemUrl: null,
+          series: []
+      ),
+      ExercicioItem(
+          nome: 'Puxada Frontal (Polia)',
+          grupoMuscular: ['Costas'],
+          imagemUrl: null,
+          series: []
+      ),
+      ExercicioItem(
+          nome: 'Remada Curvada (Barra)',
+          grupoMuscular: ['Costas'],
+          imagemUrl: null,
+          series: []
+      ),
+      ExercicioItem(
+          nome: 'Agachamento Livre (Barra)',
+          grupoMuscular: ['Pernas', 'Glúteos'],
+          imagemUrl: null,
+          series: []
+      ),
+      ExercicioItem(
+          nome: 'Leg Press 45°',
+          grupoMuscular: ['Pernas', 'Glúteos'],
+          imagemUrl: null,
+          series: []
+      ),
+      ExercicioItem(
+          nome: 'Elevação Pélvica (Máquina)',
+          grupoMuscular: ['Glúteos'],
+          imagemUrl: null,
+          series: []
+      ),
+      ExercicioItem(
+          nome: 'Rosca Direta (Barra)',
+          grupoMuscular: ['Bíceps'],
+          imagemUrl: null,
+          series: []
+      ),
+      ExercicioItem(
+          nome: 'Tríceps Pulley',
+          grupoMuscular: ['Tríceps'],
+          imagemUrl: null,
+          series: []
+      ),
+      ExercicioItem(
+          nome: 'Abdominal Supra',
+          grupoMuscular: ['Abdômen'],
+          imagemUrl: null,
+          series: []
+      ),
     ];
 
     for (var ex in exerciciosSemente) {
+      // Garante que são exercícios do sistema (públicos)
       ex.personalId = null;
-      String docId = ex.nome.toLowerCase().replaceAll(RegExp(r'[^\w\s]'), '').replaceAll(RegExp(r'\s+'), '_');
+
+      // Gera um ID de documento amigável baseado no nome
+      String docId = ex.nome
+          .toLowerCase()
+          .replaceAll(RegExp(r'[^\w\s]'), '')
+          .replaceAll(RegExp(r'\s+'), '_');
+
+      // Salva no Firestore usando o método toFirestore do modelo
       await _db.collection('exercicios_base').doc(docId).set(ex.toFirestore());
     }
   }
