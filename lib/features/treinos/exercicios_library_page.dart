@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart'; // Adicionado
 import '../../core/theme/app_theme.dart';
 import '../../core/services/exercise_service.dart';
 import 'models/exercicio_model.dart';
@@ -267,7 +268,35 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     child: Container(
                       color: AppTheme.surfaceLight,
                       child: ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty
-                          ? Image.network(ex.imagemUrl!, fit: BoxFit.cover)
+                          ? CachedNetworkImage(
+                              imageUrl: ex.imagemUrl!,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => const Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppTheme.primary,
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => const Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.videocam_off,
+                                      color: AppTheme.textSecondary,
+                                      size: 40,
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      'Vídeo indisponível',
+                                      style: TextStyle(
+                                        color: AppTheme.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
                           : const Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -618,11 +647,13 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                   // Condição 2: Tem Imagem (Thumbnail circular)
                                       ? ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
-                                    child: Image.network(
-                                      ex.imagemUrl!,
+                                    child: CachedNetworkImage(
+                                      imageUrl: ex.imagemUrl!,
                                       fit: BoxFit.cover,
-                                      // Se a imagem no link quebrar/sair do ar, volta pro halter!
-                                      errorBuilder: (context, error, stackTrace) => const Center(
+                                      placeholder: (context, url) => Container(
+                                        color: AppTheme.surfaceLight,
+                                      ),
+                                      errorWidget: (context, url, error) => const Center(
                                         child: Icon(Icons.fitness_center, color: AppTheme.textSecondary),
                                       ),
                                     ),
