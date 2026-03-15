@@ -413,7 +413,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
 
   String? _getYoutubeId(String url) {
     final RegExp regExp = RegExp(
-      r"(?<=vi\/|v\/|vi=|\/v\/|youtu\.be\/|\/embed\/|v=).+?(?=(?:\?|#|&|$))",
+      r"(?<=vi/|v/|vi=|/v/|youtu\.be/|/embed/|v=).+?(?=\?|#|&|$)",
       caseSensitive: false,
       multiLine: false,
     );
@@ -849,7 +849,7 @@ class _StaticImageState extends State<_StaticImage> {
 
   String? _getYoutubeIdStatic(String url) {
     final RegExp regExp = RegExp(
-      r"(?<=vi\/|v\/|vi=|\/v\/|youtu\.be\/|\/embed\/|v=).+?(?=(?:\?|#|&|$))",
+      r"(?<=vi/|v/|vi=|/v/|youtu\.be/|/embed/|v=).+?(?=\?|#|&|$)",
       caseSensitive: false,
       multiLine: false,
     );
