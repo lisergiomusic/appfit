@@ -404,7 +404,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                           child: Container(
                             key: _addButtonKey,
                             child: OrangeGlassActionButton(
-                              label: 'Adicionar Exercício',
+                              label: 'Adicionar Exercícios',
                               onTap: () => _openLibrary(context),
                               bottomMargin: 0,
                             ),
@@ -557,7 +557,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                         child: Container(
                           key: _addButtonKey,
                           child: OrangeGlassActionButton(
-                            label: 'Adicionar Exercício',
+                            label: 'Adicionar Exercícios',
                             onTap: () => _openLibrary(context),
                             bottomMargin: 0,
                           ),

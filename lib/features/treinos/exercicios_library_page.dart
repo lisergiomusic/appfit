@@ -175,7 +175,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                   selecionadosList.removeAt(idx);
                                 });
                                 // Atualiza a tela de trás também!
-                                this.setState(() {});
+                                setState(() {});
 
                                 // Se esvaziar tudo, fecha a aba automaticamente
                                 if (_selecionados.isEmpty) {
@@ -407,7 +407,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
               },
               icon: const Icon(Icons.add, color: AppTheme.primary, size: 20),
               label: const Text(
-                'Criar',
+                'Novo Exercício',
                 style: TextStyle(
                   color: AppTheme.primary,
                   fontSize: 16,
