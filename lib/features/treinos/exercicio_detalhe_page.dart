@@ -39,17 +39,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _activeSnackBar;
   Timer? _undoSnackTimer;
   final Map<String, TextEditingController> _controllers = {};
-  final TextEditingController _instructionsController = TextEditingController();
-  final FocusNode _instructionsFocusNode = FocusNode();
-  static const int _instructionsMaxChars = 250;
   final Map<String, String> _lastValues = {};
   final Map<String, bool> _hasUserEdited = {};
   final Set<String> _suppressNextOnChanged = {};
   final Set<String> _hapticTriggeredDismissKeys = {};
-  bool _isEditingInstructions = false;
   final Map<int, AnimationController> _flashControllers = {};
 
-  // Nova animação de flash
+  // Animação de flash ao editar campo
   void _playFlashAnimation(int serieHash) {
     _flashControllers[serieHash]?.dispose();
     final flashController = AnimationController(
@@ -71,9 +67,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     super.initState();
     ex = widget.exercicio;
     controller = ExercicioDetalheController(ex);
-    _instructionsController.text = ex.observacao;
-    _instructionsController.addListener(_onInstructionsChanged);
-    _instructionsFocusNode.addListener(_onInstructionsFocusChange);
   }
 
   Widget _buildEditableSerieField({
@@ -117,25 +110,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
   }
 
-  void _onInstructionsFocusChange() {
-    setState(() {
-      _isEditingInstructions = _instructionsFocusNode.hasFocus;
-    });
-  }
-
-  void _onInstructionsChanged() {
-    if (mounted) setState(() {});
-  }
-
   @override
   void dispose() {
     _disposeControllers();
     _disposeCardAnimationControllers();
     _disposeFlashControllers();
-    _instructionsFocusNode.removeListener(_onInstructionsFocusChange);
-    _instructionsController.removeListener(_onInstructionsChanged);
-    _instructionsFocusNode.dispose();
-    _instructionsController.dispose();
     _undoSnackTimer?.cancel();
     _scrollController.dispose();
     super.dispose();
@@ -160,8 +139,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   }
 
   void _disposeControllers() {
-    for (var controller in _controllers.values) {
-      controller.dispose();
+    for (var ctrl in _controllers.values) {
+      ctrl.dispose();
     }
     _controllers.clear();
   }
@@ -273,7 +252,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     return '${digits}s';
   }
 
-  // Sequência: slide left → hold (mínima) → slide back (suave)
   static final _swipeHintTween = TweenSequence<double>([
     TweenSequenceItem(
       tween: Tween(
@@ -282,10 +260,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       ).chain(CurveTween(curve: Curves.easeInOutCubicEmphasized)),
       weight: 32,
     ),
-    TweenSequenceItem(
-      tween: ConstantTween<double>(-72.0),
-      weight: 1,
-    ), // pausa mínima
+    TweenSequenceItem(tween: ConstantTween<double>(-72.0), weight: 1),
     TweenSequenceItem(
       tween: Tween(
         begin: -72.0,
@@ -295,7 +270,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     ),
   ]);
 
-  // Quanto do fundo vermelho fica visível (espelha o swipe)
   static final _swipeHintBgTween = TweenSequence<double>([
     TweenSequenceItem(
       tween: Tween(
@@ -345,7 +319,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         if (!mounted) return;
         swipeCtrl.dispose();
         if (mounted) setState(() => _swipeHintControllers.remove(serieHash));
-        // M3 state layer: fade in rápido → fade out lento
         rippleCtrl
             .animateTo(
               1.0,
@@ -474,18 +447,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         descanso: descansoToClone,
       );
 
-      // Determine section insert index (append to that section)
       final sectionList = controller.entriesForTipo(tipoEscolhido);
       final insertSectionIndex = sectionList.length;
-
-      // Determine real index to insert into master list: after last of same tipo or at end
       final insertRealIndex = controller.computeInsertRealIndex(tipoEscolhido);
 
       setState(() {
         controller.insertAt(insertRealIndex, newSerie);
       });
 
-      // Animate insertion in section
       Future.microtask(() {
         _animatedListKeys[tipoEscolhido]?.currentState?.insertItem(
           insertSectionIndex,
@@ -493,9 +462,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         );
       });
 
-      // Visual feedback: scroll to new item and highlight briefly
       final int newHash = newSerie.hashCode;
-      // Aguarda a animação de inserção terminar (300ms) antes de iniciar scroll e glow
       Future.delayed(const Duration(milliseconds: 350), () async {
         final key = _rowKeys[newHash];
         if (key != null && key.currentContext != null) {
@@ -506,15 +473,12 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             curve: Curves.easeOutCubic,
           );
         } else {
-          // Fallback: small scroll to bottom
           _scrollController.animateTo(
             _scrollController.position.maxScrollExtent,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOutCubic,
           );
         }
-
-        // Swipe hint → M3 state layer highlight
         _startSwipeHintAndRipple(newHash);
       });
 
@@ -586,7 +550,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   }
 
   TextStyle _microLabelStyle() {
-    return TextStyle(
+    return const TextStyle(
       color: AppTheme.silverGrey,
       fontSize: 10,
       fontWeight: FontWeight.w600,
@@ -595,7 +559,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   }
 
   TextStyle _sectionEyebrowStyle() {
-    return TextStyle(
+    return const TextStyle(
       color: AppTheme.textSecondary,
       fontSize: 10,
       fontWeight: FontWeight.w600,
@@ -628,7 +592,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     final repsFieldKey = 'reps_$realIndex';
     final cargaFieldKey = 'carga_$realIndex';
     final descansoFieldKey = 'descanso_$realIndex';
-    // Use stable keys per serie instance (hashCode) to keep controllers
     final stableId = serie.hashCode;
     final repsFieldStableKey = 'reps_$stableId';
     final cargaFieldStableKey = 'carga_$stableId';
@@ -646,7 +609,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     final dismissKey = '${serie.hashCode}';
     final borderRadius = BorderRadius.circular(14);
 
-    // Inicio dos rows de séries
     final rowKey = _rowKeys.putIfAbsent(serie.hashCode, () => GlobalKey());
 
     return Padding(
@@ -661,10 +623,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
           resizeDuration: const Duration(milliseconds: 300),
           dismissThresholds: const {DismissDirection.endToStart: 0.45},
           confirmDismiss: (_) async {
-            // Prevent concurrent deletes while undo snackbar is active.
-            if (_activeSnackBar != null) {
-              return false;
-            }
+            if (_activeSnackBar != null) return false;
             return true;
           },
           onUpdate: (details) {
@@ -685,7 +644,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             final sectionIndex = controller.sectionIndexOf(serie);
             final messenger = ScaffoldMessenger.of(context);
 
-            // Fecha snackbar anterior e timer se houver
             _undoSnackTimer?.cancel();
             if (_activeSnackBar != null) {
               try {
@@ -694,13 +652,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
               _activeSnackBar = null;
             }
 
-            // Remove do modelo imediatamente
             setState(() {
               controller.removeAt(realIndex);
               _clearEditingState();
             });
 
-            // Anima remoção
             try {
               final listState = _animatedListKeys[tipo]?.currentState;
               if (listState != null) {
@@ -719,7 +675,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
               }
             } catch (_) {}
 
-            // Mostra snackbar imediatamente
             final snackController = messenger.showSnackBar(
               SnackBar(
                 content: const Text(
@@ -740,14 +695,12 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   label: 'Desfazer',
                   textColor: AppTheme.accentMetrics,
                   onPressed: () {
-                    // ...undo logic (pode ser adaptado se necessário)...
+                    // Logica de desfazer, caso deseje adicionar depois
                   },
                 ),
               ),
             );
             _activeSnackBar = snackController;
-            // Gerencia lifecycle do snackbar: limpa referência quando fechado e garante
-            // que o timer de undo seja cancelado. Também força close após duração.
             snackController.closed.then((_) {
               if (identical(_activeSnackBar, snackController)) {
                 _activeSnackBar = null;
@@ -851,7 +804,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           return Stack(
                             clipBehavior: Clip.none,
                             children: [
-                              // Fundo vermelho com ícone (revelado pelo slide)
                               if (bgWidth > 0)
                                 Positioned(
                                   right: 0,
@@ -880,7 +832,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                     ),
                                   ),
                                 ),
-                              // Card com translação
                               Transform.translate(
                                 offset: Offset(dx, 0),
                                 child: Stack(
@@ -1376,20 +1327,12 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
   }
 
-  void _saveInstructions() {
-    setState(() {
-      ex.observacao = _instructionsController.text.trim();
-    });
-    widget.onChanged();
-  }
-
   Widget _buildEmptySeriesState() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppTheme.space48),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Ilustração (Ícone estilizado)
           Container(
             width: 100,
             height: 100,
@@ -1415,7 +1358,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             ),
           ),
           const SizedBox(height: AppTheme.space24),
-          // Texto motivacional
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
             child: Column(
@@ -1445,7 +1387,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             ),
           ),
           const SizedBox(height: AppTheme.space32),
-          // Botão de ação
           Center(
             child: OrangeGlassActionButton(
               label: 'Adicionar Série',
@@ -1479,8 +1420,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         .entries
         .where((e) => e.value.tipo == TipoSerie.trabalho)
         .toList();
+
+    // Agora usa o campo de grupo muscular ou "GERAL"
     final muscleGroupsText = ex.grupoMuscular.trim().isEmpty
-        ? 'EXERCÍCIO'
+        ? 'GERAL'
         : ex.grupoMuscular
               .toUpperCase()
               .replaceAll(RegExp(r'\s*,\s*'), ' • ')
@@ -1579,141 +1522,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           );
                         },
                       ),
-                      const SizedBox(height: AppTheme.space24),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('INSTRUÇÕES', style: _sectionEyebrowStyle()),
-                              if (_isEditingInstructions)
-                                TextButton(
-                                  onPressed: () {
-                                    _instructionsFocusNode.unfocus();
-                                    _saveInstructions();
-                                  },
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: AppTheme.primary,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: AppTheme.space0,
-                                      vertical: AppTheme.space6,
-                                    ),
-                                    minimumSize: Size.zero,
-                                    tapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        'Concluir',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      SizedBox(width: AppTheme.space4),
-                                      Icon(
-                                        Icons.check,
-                                        size: 14,
-                                        color: AppTheme.accentMetrics,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: AppTheme.space10),
-                          Semantics(
-                            label: 'Instruções do exercício',
-                            textField: true,
-                            hint: 'Toque para adicionar instruções de execução',
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                TextField(
-                                  controller: _instructionsController,
-                                  focusNode: _instructionsFocusNode,
-                                  minLines: 3,
-                                  maxLines: 8,
-                                  textCapitalization:
-                                      TextCapitalization.sentences,
-                                  onTapOutside: (_) {
-                                    FocusScope.of(context).unfocus();
-                                    _saveInstructions();
-                                  },
-                                  onSubmitted: (_) => _saveInstructions(),
-                                  style: const TextStyle(
-                                    color: AppTheme.textPrimary,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    height: 1.5,
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: _isEditingInstructions
-                                        ? null
-                                        : 'Toque para adicionar instruções de execução...',
-                                    hintStyle: TextStyle(
-                                      color: AppTheme.textSecondary.withAlpha(
-                                        120,
-                                      ),
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                    filled: true,
-                                    fillColor: AppTheme.surfaceDark,
-                                    contentPadding: const EdgeInsets.all(
-                                      AppTheme.space16,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                      borderSide: BorderSide(
-                                        color: Colors.white.withAlpha(28),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                      borderSide: BorderSide(
-                                        color: Colors.white.withAlpha(28),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                      borderSide: const BorderSide(
-                                        color: AppTheme.accentMetrics,
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                if (_isEditingInstructions)
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                      top: 6,
-                                      right: 6,
-                                    ),
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                        '${_instructionsController.text.length}/$_instructionsMaxChars',
-                                        style: TextStyle(
-                                          color: AppTheme.textSecondary
-                                              .withAlpha(158),
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppTheme.space24),
-                      // Condicional: mostrar estado vazio ou séries
+                      const SizedBox(height: AppTheme.space32),
+
                       if (ex.series.isEmpty)
                         _buildEmptySeriesState()
                       else ...[
@@ -1747,20 +1557,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         ],
                         const SizedBox(height: AppTheme.space12),
                         Center(
-                          child: _isEditingInstructions
-                              ? OrangeGlassActionButton(
-                                  label: 'Salvar Instruções',
-                                  onTap: () {
-                                    _instructionsFocusNode.unfocus();
-                                    _saveInstructions();
-                                  },
-                                  bottomMargin: 0,
-                                )
-                              : OrangeGlassActionButton(
-                                  label: 'Adicionar Série',
-                                  onTap: _adicionarSerie,
-                                  bottomMargin: 0,
-                                ),
+                          child: OrangeGlassActionButton(
+                            label: 'Adicionar Série',
+                            onTap: _adicionarSerie,
+                            bottomMargin: 0,
+                          ),
                         ),
                       ],
                     ],

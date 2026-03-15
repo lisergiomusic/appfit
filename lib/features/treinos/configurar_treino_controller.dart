@@ -103,15 +103,10 @@ class ConfigurarTreinoController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addExercicios(List<Map<String, String>> listaExercicios) {
-    for (var dados in listaExercicios) {
-      final newWrapper = ExercicioWrapper(
-        ExercicioItem(
-          nome: dados['nome']!,
-          grupoMuscular: dados['musculo']!,
-          series: [],
-        ),
-      );
+  void addExercicios(List<ExercicioItem> listaExercicios) {
+    for (var ex in listaExercicios) {
+      // O .clone() é vital para que, se você adicionar dois supinos, eles sejam independentes
+      final newWrapper = ExercicioWrapper(ex.clone());
       _exercicios.add(newWrapper);
       _newExercicios.add(newWrapper.id);
     }

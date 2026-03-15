@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/services/exercise_service.dart'; // Importamos o serviço novo
+import '../../core/services/exercise_service.dart';
 import 'models/exercicio_model.dart';
 
 class ExerciciosLibraryPage extends StatefulWidget {
@@ -11,10 +11,7 @@ class ExerciciosLibraryPage extends StatefulWidget {
 }
 
 class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
-  // Criamos uma instância do serviço
   final ExerciseService _exerciseService = ExerciseService();
-
-  // Variável para guardar o "futuro" dos dados
   late Future<List<ExercicioItem>> _futureExercicios;
 
   final List<String> _categorias = [
@@ -22,125 +19,499 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     'Peito',
     'Costas',
     'Pernas',
-    'Ombros',
-    'Braços',
+    'Glúteos',
+    'Deltóides',
+    'Tríceps',
+    'Bíceps',
+    'Abdômen',
+    'Meus Exercícios',
   ];
   String _categoriaSelecionada = 'Tudo';
   final Set<int> _selecionados = {};
+  List<ExercicioItem> _listaTotalDaCloud = [];
 
   @override
   void initState() {
     super.initState();
-    // Assim que a tela abre, disparamos a busca na Cloud
-    _futureExercicios = _exerciseService.buscarTodos();
+    _carregarDados();
   }
 
-  void _confirmarSelecao(List<ExercicioItem> listaTotal) {
-    // Pegamos os objetos ExercicioItem reais que foram marcados
-    final selecionadosList = _selecionados.map((i) => listaTotal[i]).toList();
+  void _carregarDados() {
+    setState(() {
+      _futureExercicios = _exerciseService.buscarBibliotecaCompleta();
+    });
+  }
+
+  void _confirmarSelecao() {
+    final selecionadosList = _selecionados
+        .map((i) => _listaTotalDaCloud[i])
+        .toList();
     Navigator.pop(context, selecionadosList);
+  }
+
+  void _alternarSelecao(int index) {
+    setState(() {
+      if (_selecionados.contains(index)) {
+        _selecionados.remove(index);
+      } else {
+        _selecionados.add(index);
+      }
+    });
+  }
+
+  // --- MODAL LIMPO: APENAS NOME E MÚSCULO ---
+  void _exibirModalCriarExercicio() {
+    final nomeCtrl = TextEditingController();
+    final musculoCtrl = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 24,
+          right: 24,
+          top: 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Criar Novo Exercício',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 24),
+            TextField(
+              controller: nomeCtrl,
+              style: const TextStyle(color: Colors.white),
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                labelText: 'Nome do Exercício (Ex: Supino Reto Barra)',
+                filled: true,
+                fillColor: AppTheme.surfaceLight,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: musculoCtrl,
+              style: const TextStyle(color: Colors.white),
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                labelText: 'Grupo Muscular (Ex: Peito)',
+                filled: true,
+                fillColor: AppTheme.surfaceLight,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: () async {
+                if (nomeCtrl.text.trim().isEmpty) return;
+
+                final novoEx = ExercicioItem(
+                  nome: nomeCtrl.text.trim(),
+                  grupoMuscular: musculoCtrl.text.trim().isEmpty
+                      ? 'Geral'
+                      : musculoCtrl.text.trim(),
+                  series: [],
+                );
+
+                // 1. CAPTURAMOS O CONTEXTO ANTES DO 'AWAIT' (A Solução!)
+                final navigator = Navigator.of(context);
+                final messenger = ScaffoldMessenger.of(context);
+
+                // 2. Fechamos o modal imediatamente (dá a sensação de app super rápido)
+                navigator.pop();
+
+                try {
+                  // 3. Vamos à Nuvem (O Async Gap acontece aqui)
+                  await _exerciseService.criarExercicioCustomizado(novoEx);
+
+                  // 4. Verificamos se a página principal ainda está aberta
+                  if (!mounted) return;
+
+                  _carregarDados(); // Recarrega a lista
+
+                  // 5. Usamos o 'messenger' que salvamos lá em cima, sem usar o 'context' aqui!
+                  messenger.showSnackBar(
+                    const SnackBar(
+                      content: Text('Exercício criado com sucesso!'),
+                      backgroundColor: AppTheme.success,
+                    ),
+                  );
+                } catch (e) {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text('Erro: $e'),
+                      backgroundColor: Colors.redAccent,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Text(
+                'Salvar e Adicionar à Biblioteca',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      // ... (AppBar e botões permanecem iguais, apenas passamos a lista real no confirmarSelecao)
-      body: Column(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          'Biblioteca',
+          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: false,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.add_box_outlined,
+              color: AppTheme.primary,
+              size: 28,
+            ),
+            tooltip: 'Criar Exercício',
+            onPressed: _exibirModalCriarExercicio,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(
+              right: 16,
+              top: 8,
+              bottom: 8,
+              left: 8,
+            ),
+            child: ElevatedButton(
+              onPressed: _selecionados.isEmpty ? null : _confirmarSelecao,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                disabledBackgroundColor: AppTheme.surfaceLight,
+                shape: const StadiumBorder(),
+                elevation: _selecionados.isEmpty ? 0 : 8,
+                shadowColor: AppTheme.primary.withAlpha(100),
+              ),
+              child: Text(
+                'Adicionar (${_selecionados.length})',
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: Stack(
         children: [
-          // ... (Barra de busca e Chips permanecem iguais)
-
-          // 3. A MÁGICA ACONTECE AQUI: O FutureBuilder
-          Expanded(
-            child: FutureBuilder<List<ExercicioItem>>(
-              future: _futureExercicios,
-              builder: (context, snapshot) {
-                // ESTADO 1: Carregando
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: AppTheme.primary),
-                  );
-                }
-
-                // ESTADO 2: Erro (Cloud offline ou falha de rede)
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      'Erro ao carregar: ${snapshot.error}',
-                      style: const TextStyle(color: Colors.redAccent),
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                child: TextField(
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Buscar exercícios...',
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: AppTheme.textSecondary,
                     ),
-                  );
-                }
-
-                // ESTADO 3: Sucesso (Os dados chegaram!)
-                final exerciciosDaApi = snapshot.data ?? [];
-
-                return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
-                  itemCount: exerciciosDaApi.length,
+                    filled: true,
+                    fillColor: AppTheme.surfaceDark,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 40,
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _categorias.length,
                   itemBuilder: (context, index) {
-                    final ex = exerciciosDaApi[index];
-                    final isSelected = _selecionados.contains(index);
-
-                    return GestureDetector(
-                      onTap: () => setState(() {
-                        if (isSelected)
-                          _selecionados.remove(index);
-                        else
-                          _selecionados.add(index);
-                      }),
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          children: [
-                            // GIF vindo da Cloud
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(30),
-                              child: Image.network(
-                                ex.imagemUrl ?? '',
-                                width: 56,
-                                height: 56,
-                                fit: BoxFit.cover,
-                                // Placeholder enquanto o GIF carrega da internet
-                                errorBuilder: (_, __, ___) => Container(
-                                  color: AppTheme.surfaceLight,
-                                  child: const Icon(Icons.fitness_center),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    ex.nome,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    ex.grupoMuscular,
-                                    style: const TextStyle(
-                                      color: AppTheme.textSecondary,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // ... (Checkmark de seleção permanece igual)
-                          ],
+                    final cat = _categorias[index];
+                    final isSelected = _categoriaSelecionada == cat;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: ChoiceChip(
+                        label: Text(cat),
+                        selected: isSelected,
+                        onSelected: (val) =>
+                            setState(() => _categoriaSelecionada = cat),
+                        selectedColor: AppTheme.primary,
+                        backgroundColor: AppTheme.surfaceDark,
+                        labelStyle: TextStyle(
+                          color: isSelected
+                              ? Colors.black
+                              : AppTheme.textSecondary,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
+                        shape: const StadiumBorder(),
+                        side: BorderSide.none,
+                        showCheckmark: false,
                       ),
                     );
                   },
-                );
-              },
-            ),
+                ),
+              ),
+
+              Expanded(
+                child: FutureBuilder<List<ExercicioItem>>(
+                  future: _futureExercicios,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: AppTheme.primary,
+                        ),
+                      );
+                    }
+
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          'Erro: ${snapshot.error}',
+                          style: const TextStyle(color: Colors.redAccent),
+                        ),
+                      );
+                    }
+
+                    _listaTotalDaCloud = snapshot.data ?? [];
+
+                    List<ExercicioItem> listaFiltrada = _listaTotalDaCloud;
+                    if (_categoriaSelecionada == 'Meus Exercícios') {
+                      listaFiltrada = _listaTotalDaCloud
+                          .where((ex) => ex.personalId != null)
+                          .toList();
+                    } else if (_categoriaSelecionada != 'Tudo') {
+                      listaFiltrada = _listaTotalDaCloud
+                          .where(
+                            (ex) => ex.grupoMuscular.toLowerCase().contains(
+                              _categoriaSelecionada.toLowerCase(),
+                            ),
+                          )
+                          .toList();
+                    }
+
+                    if (listaFiltrada.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.fitness_center,
+                              size: 64,
+                              color: AppTheme.surfaceLight,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _categoriaSelecionada == 'Meus Exercícios'
+                                  ? 'Você ainda não criou nenhum exercício.'
+                                  : 'Nenhum exercício encontrado.',
+                              style: const TextStyle(
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
+                      itemCount: listaFiltrada.length,
+                      itemBuilder: (context, index) {
+                        final ex = listaFiltrada[index];
+                        final realIndex = _listaTotalDaCloud.indexOf(ex);
+                        final isSelected = _selecionados.contains(realIndex);
+
+                        return GestureDetector(
+                          onTap: () => _alternarSelecao(realIndex),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 56,
+                                  height: 56,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.surfaceLight,
+                                    shape: BoxShape.circle,
+                                    border: ex.personalId != null
+                                        ? Border.all(
+                                            color: AppTheme.accentMetrics
+                                                .withAlpha(100),
+                                            width: 2,
+                                          )
+                                        : null,
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      ex.personalId != null
+                                          ? Icons.star_rounded
+                                          : Icons.fitness_center,
+                                      color: ex.personalId != null
+                                          ? AppTheme.accentMetrics
+                                          : AppTheme.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        ex.nome,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      // MOSTRA APENAS O GRUPO MUSCULAR AGORA
+                                      Text(
+                                        ex.grupoMuscular,
+                                        style: const TextStyle(
+                                          color: AppTheme.textSecondary,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? AppTheme.primary
+                                          : AppTheme.textSecondary.withAlpha(
+                                              50,
+                                            ),
+                                      width: 2,
+                                    ),
+                                    color: isSelected
+                                        ? AppTheme.primary
+                                        : Colors.transparent,
+                                  ),
+                                  child: isSelected
+                                      ? const Icon(
+                                          Icons.check,
+                                          size: 16,
+                                          color: Colors.black,
+                                        )
+                                      : null,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
+          if (_selecionados.isNotEmpty)
+            Positioned(
+              bottom: 32,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A1A1A),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                    border: Border.all(color: AppTheme.primary.withAlpha(30)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(150),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${_selecionados.length}',
+                        style: const TextStyle(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Exercícios\nselecionados',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          height: 1.1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

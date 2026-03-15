@@ -1,6 +1,5 @@
 import 'package:appfit/core/widgets/sliver_safe_title.dart';
 import 'package:flutter/cupertino.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
@@ -91,10 +90,10 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           exerciciosList.add(
             ExercicioItem(
               nome: ex['nome'] ?? 'Exercício',
-              grupoMuscular: ex['grupoMuscular'] ?? '',
-              observacao: ex['observacao'] ?? '',
+              grupoMuscular: ex['grupoMuscular'] ?? 'Geral',
               tipoAlvo: ex['tipoAlvo'] ?? 'Reps',
               imagemUrl: ex['imagemUrl'],
+              personalId: ex['personalId'], // Lendo a autoria corretamente
               series: seriesList,
             ),
           );
@@ -572,9 +571,10 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     (ex) => {
                       'nome': ex.nome,
                       'grupoMuscular': ex.grupoMuscular,
-                      'observacao': ex.observacao,
                       'tipoAlvo': ex.tipoAlvo,
                       'imagemUrl': ex.imagemUrl,
+                      'personalId': ex
+                          .personalId, // Adicionando para não perder autoria ao salvar!
                       'series': ex.series
                           .map(
                             (s) => {
@@ -736,7 +736,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                   child: const Text(
                                     'Ficar',
                                     style: TextStyle(
-                                        color: AppTheme.textSecondary),
+                                      color: AppTheme.textSecondary,
+                                    ),
                                   ),
                                 ),
                                 TextButton(
@@ -811,12 +812,13 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       switchOutCurve: Curves.easeInCubic,
                       transitionBuilder: (child, animation) {
                         // Fade + slight upward slide
-                        final offsetAnimation = Tween<Offset>(
-                          begin: const Offset(0, 0.15),
-                          end: Offset.zero,
-                        )
-                            .chain(CurveTween(curve: Curves.easeOutCubic))
-                            .animate(animation);
+                        final offsetAnimation =
+                            Tween<Offset>(
+                                  begin: const Offset(0, 0.15),
+                                  end: Offset.zero,
+                                )
+                                .chain(CurveTween(curve: Curves.easeOutCubic))
+                                .animate(animation);
 
                         return FadeTransition(
                           opacity: animation,

@@ -1,26 +1,61 @@
-import 'dart:convert';
-import 'dart:io'; // <-- Importante para capturar o erro de Socket
-import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../features/treinos/models/exercicio_model.dart';
 
 class ExerciseService {
-  final String _baseUrl = 'https://www.exercisedb.dev/api/v1/exercises';
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<List<ExercicioItem>> buscarTodos() async {
+  // Busca os exercícios do Sistema + Os exercícios que o próprio Personal criou
+  Future<List<ExercicioItem>> buscarBibliotecaCompleta() async {
+    final personalId = _auth.currentUser?.uid;
+    List<ExercicioItem> biblioteca = [];
+
     try {
-      final response = await http.get(Uri.parse(_baseUrl));
+      // 1. Busca os exercícios do sistema (onde personalId é nulo)
+      final baseSnapshot = await _db
+          .collection('exercicios_base')
+          .where('personalId', isNull: true)
+          .get();
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-        final List<dynamic> listaRaw = data['data'];
-        return listaRaw.map((item) => ExercicioItem.fromApi(item)).toList();
-      } else {
-        throw Exception('A API respondeu com erro: ${response.statusCode}');
+      biblioteca.addAll(
+        baseSnapshot.docs.map((doc) => ExercicioItem.fromFirestore(doc.data())),
+      );
+
+      // 2. Busca os exercícios customizados deste personal
+      if (personalId != null) {
+        final customSnapshot = await _db
+            .collection('exercicios_base')
+            .where('personalId', isEqualTo: personalId)
+            .get();
+
+        biblioteca.addAll(
+          customSnapshot.docs.map(
+            (doc) => ExercicioItem.fromFirestore(doc.data()),
+          ),
+        );
       }
-    } on SocketException {
-      throw Exception('Sem conexão com a internet. Verifique o seu Wi-Fi.');
+
+      // Ordena a lista em ordem alfabética para ficar organizado
+      biblioteca.sort((a, b) => a.nome.compareTo(b.nome));
+
+      return biblioteca;
     } catch (e) {
-      throw Exception('Ocorreu um erro inesperado: $e');
+      throw Exception('Erro ao carregar biblioteca: $e');
+    }
+  }
+
+  // Salva um exercício novo criado pelo Personal
+  Future<void> criarExercicioCustomizado(ExercicioItem exercicio) async {
+    final personalId = _auth.currentUser?.uid;
+    if (personalId == null) throw Exception('Utilizador não autenticado');
+
+    exercicio.personalId = personalId;
+
+    try {
+      await _db.collection('exercicios_base').add(exercicio.toFirestore());
+    } catch (e) {
+      throw Exception('Erro ao criar exercício: $e');
     }
   }
 }

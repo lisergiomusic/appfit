@@ -121,17 +121,15 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
   Future<void> _openLibrary(BuildContext context) async {
     final controller = context.read<ConfigurarTreinoController>();
 
-    // Agora recebemos uma LISTA de exercícios da nova biblioteca
-    final List<Map<String, String>>? selecionados = await Navigator.push(
+    // Agora o tipo de retorno bate certinho com o que a biblioteca envia!
+    final List<ExercicioItem>? selecionados = await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const ExerciciosLibraryPage()),
     );
 
     if (selecionados != null && selecionados.isNotEmpty) {
-      // Delegamos a lógica de adição para o controller
       controller.addExercicios(selecionados);
 
-      // Scroll suave para o fim da lista após adicionar
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         if (_scrollController.hasClients) {

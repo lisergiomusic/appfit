@@ -21,37 +21,48 @@ class SerieItem {
 class ExercicioItem {
   String nome;
   String grupoMuscular;
-  String observacao;
   String tipoAlvo;
   String? imagemUrl;
+  String? personalId;
   List<SerieItem> series;
-
-  factory ExercicioItem.fromApi(Map<String, dynamic> json) {
-    return ExercicioItem(
-      nome: json['name'] ?? 'Exercício sem nome',
-      observacao: (json['instructions'] as List?)?.join('\n') ?? '',
-      grupoMuscular: (json['targetMuscles'] as List?)?.first ?? 'Geral',
-      imagemUrl: json['gifUrl'],
-      series: [],
-    );
-  }
 
   ExercicioItem({
     required this.nome,
-    this.grupoMuscular = 'Peito',
-    this.observacao = '',
+    this.grupoMuscular = 'Geral',
     this.tipoAlvo = 'Reps',
     this.imagemUrl,
+    this.personalId,
     required this.series,
   });
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'nome': nome,
+      'grupoMuscular': grupoMuscular,
+      'imagemUrl': imagemUrl,
+      'tipoAlvo': tipoAlvo,
+      'personalId': personalId,
+    };
+  }
+
+  factory ExercicioItem.fromFirestore(Map<String, dynamic> data) {
+    return ExercicioItem(
+      nome: data['nome'] ?? '',
+      grupoMuscular: data['grupoMuscular'] ?? 'Geral',
+      imagemUrl: data['imagemUrl'],
+      tipoAlvo: data['tipoAlvo'] ?? 'Reps',
+      personalId: data['personalId'],
+      series: [],
+    );
+  }
 
   ExercicioItem clone() {
     return ExercicioItem(
       nome: nome,
       grupoMuscular: grupoMuscular,
-      observacao: observacao,
       tipoAlvo: tipoAlvo,
       imagemUrl: imagemUrl,
+      personalId: personalId,
       series: series.map((s) => s.clone()).toList(),
     );
   }
