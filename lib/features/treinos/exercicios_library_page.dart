@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/exercise_service.dart';
 import 'models/exercicio_model.dart';
+import 'criar_exercicio_page.dart';
 
 class ExerciciosLibraryPage extends StatefulWidget {
   const ExerciciosLibraryPage({super.key});
@@ -57,122 +58,6 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
         _selecionados.add(index);
       }
     });
-  }
-
-  // --- 1. MODAL DE CRIAÇÃO (AGORA COM ACESSO CLARO) ---
-  void _exibirModalCriarExercicio() {
-    final nomeCtrl = TextEditingController();
-    final musculoCtrl = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppTheme.surfaceDark,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 24,
-          right: 24,
-          top: 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Criar Novo Exercício',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 24),
-            TextField(
-              controller: nomeCtrl,
-              style: const TextStyle(color: Colors.white),
-              textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(
-                labelText: 'Nome do Exercício (Ex: Supino Reto Barra)',
-                filled: true,
-                fillColor: AppTheme.surfaceLight,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: musculoCtrl,
-              style: const TextStyle(color: Colors.white),
-              textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(
-                labelText: 'Grupo Muscular (Ex: Pernas, Glúteos)',
-                filled: true,
-                fillColor: AppTheme.surfaceLight,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () async {
-                if (nomeCtrl.text.trim().isEmpty) return;
-
-                final novoEx = ExercicioItem(
-                  nome: nomeCtrl.text.trim(),
-                  grupoMuscular: musculoCtrl.text.trim().isEmpty
-                      ? 'Geral'
-                      : musculoCtrl.text.trim(),
-                  series: [],
-                );
-
-                final navigator = Navigator.of(context);
-                final messenger = ScaffoldMessenger.of(context);
-                navigator.pop();
-
-                try {
-                  await _exerciseService.criarExercicioCustomizado(novoEx);
-                  if (!mounted) return;
-                  _carregarDados();
-                  messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Exercício criado com sucesso!'),
-                      backgroundColor: AppTheme.success,
-                    ),
-                  );
-                } catch (e) {
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content: Text('Erro: $e'),
-                      backgroundColor: Colors.redAccent,
-                    ),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: const Text(
-                'Salvar e Adicionar à Biblioteca',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
-    );
   }
 
   // --- 2. NOVO MODAL: RESUMO DOS SELECIONADOS (O "CARRINHO") ---
@@ -464,21 +349,46 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
         ),
         centerTitle: false,
         actions: [
-          // 3. O NOVO BOTÃO DE CRIAR OU CONCLUIR (Dependendo da seleção)
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: TextButton.icon(
-              onPressed: _selecionados.isNotEmpty
-                  ? _confirmarSelecao
-                  : _exibirModalCriarExercicio,
-              icon: Icon(
-                _selecionados.isNotEmpty ? Icons.check : Icons.add,
-                color: AppTheme.primary,
-                size: 20,
-              ),
-              label: Text(
-                _selecionados.isNotEmpty ? 'Concluir' : 'Criar',
-                style: const TextStyle(
+              onPressed: () async {
+                // Aqui está o segredo: Usamos 'dynamic' (ou deixamos sem tipo)
+                // porque agora a página devolve um objeto ExercicioItem, e não um bool!
+                final dynamic result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CriarExercicioPage(),
+                  ),
+                );
+
+                // Se voltou um ExercicioItem, a criação foi um sucesso!
+                if (result != null && result is ExercicioItem && mounted) {
+                  // 1. Busca a lista atualizada da Nuvem
+                  final novaLista = await _exerciseService
+                      .buscarBibliotecaCompleta();
+
+                  setState(() {
+                    // 2. Atualiza os dados da tela
+                    _futureExercicios = Future.value(novaLista);
+                    _listaTotalDaCloud = novaLista;
+
+                    // 3. Procura o "Index" (posição) do exercício que acabou de ser criado
+                    final novoIndex = _listaTotalDaCloud.indexWhere(
+                      (ex) => ex.nome == result.nome && ex.personalId != null,
+                    );
+
+                    // 4. Mágica: Adiciona automaticamente ao carrinho!
+                    if (novoIndex != -1) {
+                      _selecionados.add(novoIndex);
+                    }
+                  });
+                }
+              },
+              icon: const Icon(Icons.add, color: AppTheme.primary, size: 20),
+              label: const Text(
+                'Criar',
+                style: TextStyle(
                   color: AppTheme.primary,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
