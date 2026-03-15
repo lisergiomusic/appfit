@@ -14,6 +14,7 @@ class ExerciciosLibraryPage extends StatefulWidget {
 class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
   final ExerciseService _exerciseService = ExerciseService();
   late Future<List<ExercicioItem>> _futureExercicios;
+  final TextEditingController _searchController = TextEditingController(); // Novo: Controller de busca
 
   final List<String> _categorias = [
     'Tudo',
@@ -27,6 +28,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     'Meus Exercícios',
   ];
   String _categoriaSelecionada = 'Tudo';
+  String _termoBusca = ''; // Novo: Estado do termo de busca
   final Set<int> _selecionados = {};
   List<ExercicioItem> _listaTotalDaCloud = [];
 
@@ -34,6 +36,12 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
   void initState() {
     super.initState();
     _carregarDados();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose(); // Importante limpar o controller
+    super.dispose();
   }
 
   void _carregarDados() {
@@ -429,6 +437,12 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             child: TextField(
+              controller: _searchController, // Adicionado controller
+              onChanged: (value) {
+                setState(() {
+                  _termoBusca = value.toLowerCase();
+                });
+              },
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Buscar exercícios...',
@@ -436,6 +450,17 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   Icons.search,
                   color: AppTheme.textSecondary,
                 ),
+                suffixIcon: _termoBusca.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, color: AppTheme.textSecondary),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {
+                            _termoBusca = '';
+                          });
+                        },
+                      )
+                    : null,
                 filled: true,
                 fillColor: AppTheme.surfaceDark,
                 contentPadding: const EdgeInsets.symmetric(vertical: 0),
@@ -499,20 +524,27 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
 
                 _listaTotalDaCloud = snapshot.data ?? [];
 
-                List<ExercicioItem> listaFiltrada = _listaTotalDaCloud;
-                if (_categoriaSelecionada == 'Meus Exercícios') {
-                  listaFiltrada = _listaTotalDaCloud
-                      .where((ex) => ex.personalId != null)
-                      .toList();
-                } else if (_categoriaSelecionada != 'Tudo') {
-                  listaFiltrada = _listaTotalDaCloud
-                      .where(
-                        (ex) => ex.grupoMuscular.toLowerCase().contains(
-                          _categoriaSelecionada.toLowerCase(),
-                        ),
-                      )
-                      .toList();
-                }
+                // LÓGICA DE FILTRAGEM COMBINADA (Categoria + Busca)
+                List<ExercicioItem> listaFiltrada = _listaTotalDaCloud.where((ex) {
+                  // Filtro por Categoria
+                  bool passaCategoria = true;
+                  if (_categoriaSelecionada == 'Meus Exercícios') {
+                    passaCategoria = ex.personalId != null;
+                  } else if (_categoriaSelecionada != 'Tudo') {
+                    passaCategoria = ex.grupoMuscular.toLowerCase().contains(
+                      _categoriaSelecionada.toLowerCase(),
+                    );
+                  }
+
+                  // Filtro por Termo de Busca (Nome ou Grupo Muscular)
+                  bool passaBusca = true;
+                  if (_termoBusca.isNotEmpty) {
+                    passaBusca = ex.nome.toLowerCase().contains(_termoBusca) ||
+                        ex.grupoMuscular.toLowerCase().contains(_termoBusca);
+                  }
+
+                  return passaCategoria && passaBusca;
+                }).toList();
 
                 if (listaFiltrada.isEmpty) {
                   return const Center(
