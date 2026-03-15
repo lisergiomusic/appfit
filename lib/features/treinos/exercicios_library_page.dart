@@ -564,7 +564,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                   height: 56,
                                   decoration: BoxDecoration(
                                     color: AppTheme.surfaceLight,
-                                    shape: BoxShape.circle,
+                                    borderRadius: BorderRadius.circular(12),
                                     border: ex.personalId != null
                                         ? Border.all(
                                       color: AppTheme.accentMetrics.withAlpha(100),
@@ -584,7 +584,8 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                   )
                                       : (ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty)
                                   // Condição 2: Tem Imagem (Thumbnail circular)
-                                      ? ClipOval(
+                                      ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
                                     child: Image.network(
                                       ex.imagemUrl!,
                                       fit: BoxFit.cover,
