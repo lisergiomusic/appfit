@@ -14,14 +14,13 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
   final ExerciseService _exerciseService = ExerciseService();
   late Future<List<ExercicioItem>> _futureExercicios;
 
-  // ABAS ATUALIZADAS COM BÍCEPS E TRÍCEPS
   final List<String> _categorias = [
     'Tudo',
     'Peito',
     'Costas',
     'Pernas',
     'Glúteos',
-    'Ombros',
+    'Deltóides',
     'Bíceps',
     'Tríceps',
     'Abdômen',
@@ -43,6 +42,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     });
   }
 
+  // Finaliza a seleção e volta para a tela de Rotina
   void _confirmarSelecao() {
     final selecionadosList = _selecionados
         .map((i) => _listaTotalDaCloud[i])
@@ -60,6 +60,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     });
   }
 
+  // --- 1. MODAL DE CRIAÇÃO (AGORA COM ACESSO CLARO) ---
   void _exibirModalCriarExercicio() {
     final nomeCtrl = TextEditingController();
     final musculoCtrl = TextEditingController();
@@ -135,7 +136,6 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
 
                 final navigator = Navigator.of(context);
                 final messenger = ScaffoldMessenger.of(context);
-
                 navigator.pop();
 
                 try {
@@ -176,12 +176,288 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     );
   }
 
+  // --- 2. NOVO MODAL: RESUMO DOS SELECIONADOS (O "CARRINHO") ---
+  void _abrirResumoSelecao() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => StatefulBuilder(
+        // Usamos StatefulBuilder para atualizar a aba ao remover itens
+        builder: (context, setModalState) {
+          // Pega a lista real baseada nos índices
+          final selecionadosList = _selecionados.toList();
+
+          return Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.75,
+            ),
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 24),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(30),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Exercícios Selecionados',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withAlpha(30),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${_selecionados.length}',
+                        style: const TextStyle(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: selecionadosList.length,
+                    itemBuilder: (context, idx) {
+                      final realIndex = selecionadosList[idx];
+                      final ex = _listaTotalDaCloud[realIndex];
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceLight,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    ex.nome,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    ex.grupoMuscular,
+                                    style: const TextStyle(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.remove_circle_outline,
+                                color: Colors.redAccent,
+                              ),
+                              onPressed: () {
+                                setModalState(() {
+                                  _selecionados.remove(realIndex);
+                                  selecionadosList.removeAt(idx);
+                                });
+                                // Atualiza a tela de trás também!
+                                this.setState(() {});
+
+                                // Se esvaziar tudo, fecha a aba automaticamente
+                                if (_selecionados.isEmpty)
+                                  Navigator.pop(context);
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Fecha a aba
+                    _confirmarSelecao(); // Salva e volta para a tela de rotina
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    'Adicionar ao Treino',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // --- 3. NOVO MODAL: PREVIEW DO EXERCÍCIO ---
+  void _mostrarPreviewExercicio(ExercicioItem ex, int realIndex) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final isSelected = _selecionados.contains(realIndex);
+
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Handle de arrastar
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 24),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(30),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+
+                // Pré-visualização do Vídeo/GIF
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Container(
+                      color: AppTheme.surfaceLight,
+                      child: ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty
+                          ? Image.network(ex.imagemUrl!, fit: BoxFit.cover)
+                          : const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.videocam_off,
+                                    color: AppTheme.textSecondary,
+                                    size: 40,
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'Vídeo indisponível',
+                                    style: TextStyle(
+                                      color: AppTheme.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Textos
+                Text(
+                  ex.nome,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  ex.grupoMuscular,
+                  style: const TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Botão de Ação Dinâmico
+                ElevatedButton(
+                  onPressed: () {
+                    // Alterna a seleção
+                    _alternarSelecao(realIndex);
+                    // Atualiza o visual DENTRO do modal
+                    setModalState(() {});
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isSelected
+                        ? AppTheme.surfaceLight
+                        : AppTheme.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Text(
+                    isSelected ? 'Remover da Seleção' : 'Selecionar Exercício',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: isSelected ? Colors.redAccent : Colors.black,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppTheme.background,
         elevation: 0,
         title: const Text(
           'Biblioteca',
@@ -189,67 +465,30 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
         ),
         centerTitle: false,
         actions: [
-          // BOTÃO VARINHA MÁGICA: Popula o banco de dados
-          IconButton(
-            icon: const Icon(Icons.auto_fix_high, color: Colors.amber),
-            tooltip: 'Semear Banco de Dados',
-            onPressed: () async {
-              final messenger = ScaffoldMessenger.of(context);
-              messenger.showSnackBar(
-                const SnackBar(
-                  content: Text('A injetar a biomecânica na Cloud...'),
-                ),
-              );
-              try {
-                await _exerciseService.semearExerciciosBase();
-                if (!mounted) return; // Fix do Async Gap!
-                _carregarDados();
-                messenger.showSnackBar(
-                  const SnackBar(
-                    content: Text('Biblioteca Padrão criada com sucesso!'),
-                    backgroundColor: AppTheme.success,
-                  ),
-                );
-              } catch (e) {
-                messenger.showSnackBar(
-                  SnackBar(
-                    content: Text('Erro: $e'),
-                    backgroundColor: Colors.redAccent,
-                  ),
-                );
-              }
-            },
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.add_box_outlined,
-              color: AppTheme.primary,
-              size: 28,
-            ),
-            tooltip: 'Criar Exercício',
-            onPressed: _exibirModalCriarExercicio,
-          ),
+          // 3. O NOVO BOTÃO DE CRIAR OU CONCLUIR (Dependendo da seleção)
           Padding(
-            padding: const EdgeInsets.only(
-              right: 16,
-              top: 8,
-              bottom: 8,
-              left: 8,
-            ),
-            child: ElevatedButton(
-              onPressed: _selecionados.isEmpty ? null : _confirmarSelecao,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                disabledBackgroundColor: AppTheme.surfaceLight,
-                shape: const StadiumBorder(),
-                elevation: _selecionados.isEmpty ? 0 : 8,
-                shadowColor: AppTheme.primary.withAlpha(100),
+            padding: const EdgeInsets.only(right: 8.0),
+            child: TextButton.icon(
+              onPressed: _selecionados.isNotEmpty
+                  ? _confirmarSelecao
+                  : _exibirModalCriarExercicio,
+              icon: Icon(
+                _selecionados.isNotEmpty ? Icons.check : Icons.add,
+                color: AppTheme.primary,
+                size: 20,
               ),
-              child: Text(
-                'Adicionar (${_selecionados.length})',
+              label: Text(
+                _selecionados.isNotEmpty ? 'Concluir' : 'Criar',
                 style: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
                 ),
               ),
             ),
@@ -357,24 +596,19 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     }
 
                     if (listaFiltrada.isEmpty) {
-                      return Center(
+                      return const Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(
-                              Icons.fitness_center,
+                            Icon(
+                              Icons.search_off,
                               size: 64,
                               color: AppTheme.surfaceLight,
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16),
                             Text(
-                              _categoriaSelecionada == 'Meus Exercícios'
-                                  ? 'Você ainda não criou nenhum exercício.'
-                                  : 'Nenhum exercício encontrado. Clique na varinha mágica no topo!',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: AppTheme.textSecondary,
-                              ),
+                              'Nenhum exercício encontrado.',
+                              style: TextStyle(color: AppTheme.textSecondary),
                             ),
                           ],
                         ),
@@ -382,100 +616,127 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     }
 
                     return ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
+                      padding: const EdgeInsets.fromLTRB(
+                        20,
+                        24,
+                        20,
+                        120,
+                      ), // Padding extra no fundo para não bater no pill
                       itemCount: listaFiltrada.length,
                       itemBuilder: (context, index) {
                         final ex = listaFiltrada[index];
                         final realIndex = _listaTotalDaCloud.indexOf(ex);
                         final isSelected = _selecionados.contains(realIndex);
 
-                        return GestureDetector(
-                          onTap: () => _alternarSelecao(realIndex),
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
                               borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 56,
-                                  height: 56,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.surfaceLight,
-                                    shape: BoxShape.circle,
-                                    border: ex.personalId != null
-                                        ? Border.all(
-                                            color: AppTheme.accentMetrics
-                                                .withAlpha(100),
-                                            width: 2,
-                                          )
-                                        : null,
-                                  ),
-                                  child: Center(
-                                    child: Icon(
-                                      ex.personalId != null
-                                          ? Icons.star_rounded
-                                          : Icons.fitness_center,
-                                      color: ex.personalId != null
-                                          ? AppTheme.accentMetrics
-                                          : AppTheme.textSecondary,
+                              // 1. ZONA ESQUERDA (O CARD): ABRE O PREVIEW
+                              onTap: () =>
+                                  _mostrarPreviewExercicio(ex, realIndex),
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 56,
+                                      height: 56,
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.surfaceLight,
+                                        shape: BoxShape.circle,
+                                        border: ex.personalId != null
+                                            ? Border.all(
+                                                color: AppTheme.accentMetrics
+                                                    .withAlpha(100),
+                                                width: 2,
+                                              )
+                                            : null,
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          ex.personalId != null
+                                              ? Icons.star_rounded
+                                              : Icons.fitness_center,
+                                          color: ex.personalId != null
+                                              ? AppTheme.accentMetrics
+                                              : AppTheme.textSecondary,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        ex.nome,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        ex.grupoMuscular,
-                                        style: const TextStyle(
-                                          color: AppTheme.textSecondary,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  width: 24,
-                                  height: 24,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? AppTheme.primary
-                                          : AppTheme.textSecondary.withAlpha(
-                                              50,
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            ex.nome,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
                                             ),
-                                      width: 2,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            ex.grupoMuscular,
+                                            style: const TextStyle(
+                                              color: AppTheme.textSecondary,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    color: isSelected
-                                        ? AppTheme.primary
-                                        : Colors.transparent,
-                                  ),
-                                  child: isSelected
-                                      ? const Icon(
-                                          Icons.check,
-                                          size: 16,
-                                          color: Colors.black,
-                                        )
-                                      : null,
+
+                                    // 2. ZONA DIREITA (A BOLINHA): SELECIONA O EXERCÍCIO
+                                    GestureDetector(
+                                      // HitTestBehavior.opaque diz ao Flutter: "Se o dedo tocar aqui, o clique morre aqui, não passe para o InkWell de baixo"
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () => _alternarSelecao(realIndex),
+                                      child: Container(
+                                        // Padding transparente para aumentar a área de toque do dedo!
+                                        padding: const EdgeInsets.only(
+                                          left: 16,
+                                          top: 8,
+                                          bottom: 8,
+                                        ),
+                                        child: Container(
+                                          width: 24,
+                                          height: 24,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: isSelected
+                                                  ? AppTheme.primary
+                                                  : AppTheme.textSecondary
+                                                        .withAlpha(50),
+                                              width: 2,
+                                            ),
+                                            color: isSelected
+                                                ? AppTheme.primary
+                                                : Colors.transparent,
+                                          ),
+                                          child: isSelected
+                                              ? const Icon(
+                                                  Icons.check,
+                                                  size: 16,
+                                                  color: Colors.black,
+                                                )
+                                              : null,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         );
@@ -486,51 +747,71 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
               ),
             ],
           ),
+
+          // --- 4. O PILL FLUTUANTE (AGORA CLICÁVEL) ---
           if (_selecionados.isNotEmpty)
             Positioned(
               bottom: 32,
               left: 0,
               right: 0,
               child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1A1A1A),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-                    border: Border.all(color: AppTheme.primary.withAlpha(30)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(150),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
+                child: GestureDetector(
+                  onTap: _abrirResumoSelecao, // Aciona o novo Modal
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceDark,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                      border: Border.all(
+                        color: AppTheme.primary.withAlpha(60),
+                        width: 1.5,
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '${_selecionados.length}',
-                        style: const TextStyle(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(150),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: AppTheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '${_selecionados.length}',
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Ver selecionados',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Icon(
+                          Icons.keyboard_arrow_up_rounded,
                           color: AppTheme.primary,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
+                          size: 24,
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Exercícios\nselecionados',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          height: 1.1,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
