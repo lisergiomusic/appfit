@@ -21,7 +21,7 @@ class SerieItem {
 class ExercicioItem {
   String? id; // Adicionado ID para identificação única
   String nome;
-  String grupoMuscular;
+  List<String> grupoMuscular;
   String tipoAlvo;
   String? imagemUrl;
   String? personalId;
@@ -30,7 +30,7 @@ class ExercicioItem {
   ExercicioItem({
     this.id,
     required this.nome,
-    this.grupoMuscular = 'Geral',
+    this.grupoMuscular = const ['Geral'],
     this.tipoAlvo = 'Reps',
     this.imagemUrl,
     this.personalId,
@@ -48,10 +48,20 @@ class ExercicioItem {
   }
 
   factory ExercicioItem.fromFirestore(Map<String, dynamic> data, [String? docId]) {
+    // Lógica de migração: se grupoMuscular for String, converte para List<String>
+    List<String> grupos = ['Geral'];
+    final rawGrupo = data['grupoMuscular'];
+    
+    if (rawGrupo is String) {
+      grupos = rawGrupo.split(',').map((e) => e.trim()).toList();
+    } else if (rawGrupo is List) {
+      grupos = List<String>.from(rawGrupo);
+    }
+
     return ExercicioItem(
       id: docId,
       nome: data['nome'] ?? '',
-      grupoMuscular: data['grupoMuscular'] ?? 'Geral',
+      grupoMuscular: grupos,
       imagemUrl: data['imagemUrl'],
       tipoAlvo: data['tipoAlvo'] ?? 'Reps',
       personalId: data['personalId'],
@@ -63,7 +73,7 @@ class ExercicioItem {
     return ExercicioItem(
       id: id,
       nome: nome,
-      grupoMuscular: grupoMuscular,
+      grupoMuscular: List<String>.from(grupoMuscular),
       tipoAlvo: tipoAlvo,
       imagemUrl: imagemUrl,
       personalId: personalId,

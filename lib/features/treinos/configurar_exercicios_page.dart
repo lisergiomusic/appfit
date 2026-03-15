@@ -651,7 +651,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                           children: [
                             if (ex.grupoMuscular.isNotEmpty)
                               TextSpan(
-                                text: '${ex.grupoMuscular} • ',
+                                text: '${ex.grupoMuscular.join(' • ')} • ',
                                 style: const TextStyle(
                                   color: AppTheme.textSecondary,
                                 ),

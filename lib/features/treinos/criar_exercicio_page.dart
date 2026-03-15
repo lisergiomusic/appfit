@@ -57,12 +57,9 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
 
     setState(() => _isSaving = true);
 
-    // Transforma o Set {'Pernas', 'Glúteos'} numa String 'Pernas, Glúteos' para o Firebase
-    final stringGrupos = _gruposSelecionados.join(', ');
-
     final novoEx = ExercicioItem(
       nome: _nomeCtrl.text.trim(),
-      grupoMuscular: stringGrupos,
+      grupoMuscular: _gruposSelecionados.toList(),
       tipoAlvo: _tipoAlvoSelecionado,
       imagemUrl: _midiaCtrl.text.trim().isNotEmpty
           ? _midiaCtrl.text.trim()

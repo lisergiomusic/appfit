@@ -34,7 +34,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     'Meus Exercícios',
   ];
   String _categoriaSelecionada = 'Tudo';
-  
+
   // Seleção baseada no ID ou Nome (Identidade Única)
   final Set<ExercicioItem> _selecionados = {};
 
@@ -52,7 +52,8 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       if (!_isLoading && _hasMore) {
         _carregarDados();
       }
@@ -89,9 +90,9 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao carregar dados: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao carregar dados: $e')));
       }
     }
   }
@@ -201,7 +202,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    ex.grupoMuscular,
+                                    ex.grupoMuscular.join(' • '),
                                     style: const TextStyle(
                                       color: AppTheme.textSecondary,
                                       fontSize: 12,
@@ -331,7 +332,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  ex.grupoMuscular,
+                  ex.grupoMuscular.join(' • '),
                   style: const TextStyle(
                     color: AppTheme.textSecondary,
                     fontSize: 16,
@@ -502,162 +503,175 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     child: CircularProgressIndicator(color: AppTheme.primary),
                   )
                 : _listaExercicios.isEmpty
-                    ? const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.search_off,
-                              size: 64,
-                              color: AppTheme.surfaceLight,
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                              'Nenhum exercício encontrado.',
-                              style: TextStyle(color: AppTheme.textSecondary),
-                            ),
-                          ],
+                ? const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          size: 64,
+                          color: AppTheme.surfaceLight,
                         ),
-                      )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
-                        itemCount: _listaExercicios.length + (_hasMore ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index == _listaExercicios.length) {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 32),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: AppTheme.primary,
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                            );
-                          }
-
-                          final ex = _listaExercicios[index];
-                          final isSelected = _selecionados.contains(ex);
-
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              borderRadius: BorderRadius.circular(16),
+                        SizedBox(height: 16),
+                        Text(
+                          'Nenhum exercício encontrado.',
+                          style: TextStyle(color: AppTheme.textSecondary),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
+                    itemCount: _listaExercicios.length + (_hasMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == _listaExercicios.length) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 32),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppTheme.primary,
+                              strokeWidth: 2,
                             ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(16),
-                                onTap: () => _mostrarPreviewExercicio(ex),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 56,
-                                        height: 56,
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.surfaceLight,
-                                          shape: BoxShape.circle,
-                                          border: ex.personalId != null
-                                              ? Border.all(
-                                                  color: AppTheme.accentMetrics.withAlpha(100),
-                                                  width: 2,
-                                                )
-                                              : null,
-                                        ),
-                                        child: ex.personalId != null
-                                            ? const Center(
-                                                child: Icon(
-                                                  Icons.star_rounded,
-                                                  color: AppTheme.accentMetrics,
-                                                  size: 28,
-                                                ),
-                                              )
-                                            : (ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty)
-                                                ? ClipOval(
-                                                    child: Image.network(
-                                                      ex.imagemUrl!,
-                                                      fit: BoxFit.cover,
-                                                      errorBuilder: (context, error, stackTrace) => const Center(
-                                                        child: Icon(Icons.fitness_center, color: AppTheme.textSecondary),
-                                                      ),
-                                                    ),
-                                                  )
-                                                : const Center(
+                          ),
+                        );
+                      }
+
+                      final ex = _listaExercicios[index];
+                      final isSelected = _selecionados.contains(ex);
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () => _mostrarPreviewExercicio(ex),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 56,
+                                    height: 56,
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.surfaceLight,
+                                      shape: BoxShape.circle,
+                                      border: ex.personalId != null
+                                          ? Border.all(
+                                              color: AppTheme.accentMetrics
+                                                  .withAlpha(100),
+                                              width: 2,
+                                            )
+                                          : null,
+                                    ),
+                                    child: ex.personalId != null
+                                        ? const Center(
+                                            child: Icon(
+                                              Icons.star_rounded,
+                                              color: AppTheme.accentMetrics,
+                                              size: 28,
+                                            ),
+                                          )
+                                        : (ex.imagemUrl != null &&
+                                              ex.imagemUrl!.isNotEmpty)
+                                        ? ClipOval(
+                                            child: Image.network(
+                                              ex.imagemUrl!,
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) => const Center(
                                                     child: Icon(
                                                       Icons.fitness_center,
-                                                      color: AppTheme.textSecondary,
+                                                      color: AppTheme
+                                                          .textSecondary,
                                                     ),
                                                   ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              ex.nome,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16,
-                                              ),
                                             ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              ex.grupoMuscular,
-                                              style: const TextStyle(
-                                                color: AppTheme.textSecondary,
-                                                fontSize: 13,
-                                              ),
+                                          )
+                                        : const Center(
+                                            child: Icon(
+                                              Icons.fitness_center,
+                                              color: AppTheme.textSecondary,
                                             ),
-                                          ],
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        behavior: HitTestBehavior.opaque,
-                                        onTap: () => _alternarSelecao(ex),
-                                        child: Container(
-                                          padding: const EdgeInsets.only(
-                                            left: 16,
-                                            top: 8,
-                                            bottom: 8,
                                           ),
-                                          child: Container(
-                                            width: 24,
-                                            height: 24,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                color: isSelected
-                                                    ? AppTheme.primary
-                                                    : AppTheme.textSecondary.withAlpha(50),
-                                                width: 2,
-                                              ),
-                                              color: isSelected
-                                                  ? AppTheme.primary
-                                                  : Colors.transparent,
-                                            ),
-                                            child: isSelected
-                                                ? const Icon(
-                                                    Icons.check,
-                                                    size: 16,
-                                                    color: Colors.black,
-                                                  )
-                                                : null,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
                                   ),
-                                ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          ex.nome,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          ex.grupoMuscular.join(' • '),
+                                          style: const TextStyle(
+                                            color: AppTheme.textSecondary,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () => _alternarSelecao(ex),
+                                    child: Container(
+                                      padding: const EdgeInsets.only(
+                                        left: 16,
+                                        top: 8,
+                                        bottom: 8,
+                                      ),
+                                      child: Container(
+                                        width: 24,
+                                        height: 24,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: isSelected
+                                                ? AppTheme.primary
+                                                : AppTheme.textSecondary
+                                                      .withAlpha(50),
+                                            width: 2,
+                                          ),
+                                          color: isSelected
+                                              ? AppTheme.primary
+                                              : Colors.transparent,
+                                        ),
+                                        child: isSelected
+                                            ? const Icon(
+                                                Icons.check,
+                                                size: 16,
+                                                color: Colors.black,
+                                              )
+                                            : null,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),

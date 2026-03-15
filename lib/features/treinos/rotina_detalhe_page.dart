@@ -87,10 +87,20 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               ),
             );
           }
+          
+          // Lógica de migração para grupoMuscular
+          List<String> grupos = ['Geral'];
+          final rawGrupo = ex['grupoMuscular'];
+          if (rawGrupo is String) {
+            grupos = rawGrupo.split(',').map((e) => e.trim()).toList();
+          } else if (rawGrupo is List) {
+            grupos = List<String>.from(rawGrupo);
+          }
+
           exerciciosList.add(
             ExercicioItem(
               nome: ex['nome'] ?? 'Exercício',
-              grupoMuscular: ex['grupoMuscular'] ?? 'Geral',
+              grupoMuscular: grupos,
               tipoAlvo: ex['tipoAlvo'] ?? 'Reps',
               imagemUrl: ex['imagemUrl'],
               personalId: ex['personalId'], // Lendo a autoria corretamente

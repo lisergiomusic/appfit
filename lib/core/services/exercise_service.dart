@@ -51,7 +51,6 @@ class ExerciseService {
       Query query = _db.collection('exercicios_base');
 
       // 1. Filtro de Identidade (Público + Privado) usando Filter.or
-      // Isso resolve o erro 'In filters cannot contain null'
       Filter identityFilter;
       if (categoria == 'Meus Exercícios') {
         identityFilter = Filter('personalId', isEqualTo: personalId);
@@ -64,11 +63,10 @@ class ExerciseService {
       
       query = query.where(identityFilter);
 
-      // 2. Filtro de Categoria
+      // 2. Filtro de Categoria (Migrado para array-contains)
       if (categoria != null && categoria != 'Tudo' && categoria != 'Meus Exercícios') {
-        // Usamos igualdade para permitir que o orderBy principal seja o Nome.
-        // Se usarmos ranges (>= e <=), o Firestore exigiria orderBy('grupoMuscular') primeiro.
-        query = query.where('grupoMuscular', isEqualTo: categoria);
+        // Agora usamos arrayContains pois grupoMuscular no Firestore é uma lista
+        query = query.where('grupoMuscular', arrayContains: categoria);
       }
 
       // 3. Ordenação por Nome (Exige Índice Composto se houver Filter.or + orderBy)
@@ -90,7 +88,6 @@ class ExerciseService {
       );
     } catch (e) {
       print('Erro no Firebase (ExerciseService): $e');
-      // Importante: Se o terminal mostrar um erro de índice, clique no link gerado.
       throw Exception('Erro ao carregar biblioteca: $e');
     }
   }
@@ -109,19 +106,19 @@ class ExerciseService {
     }
   }
 
-  // SCRIPT DE SEED (Ajustado para categorias exatas)
+  // SCRIPT DE SEED (Atualizado para o novo formato de lista)
   Future<void> semearExerciciosBase() async {
     final List<ExercicioItem> exerciciosSemente = [
-      ExercicioItem(nome: 'Supino Reto (Barra)', grupoMuscular: 'Peito', series: []),
-      ExercicioItem(nome: 'Supino Inclinado (Halteres)', grupoMuscular: 'Peito', series: []),
-      ExercicioItem(nome: 'Puxada Frontal (Polia)', grupoMuscular: 'Costas', series: []),
-      ExercicioItem(nome: 'Remada Curvada (Barra)', grupoMuscular: 'Costas', series: []),
-      ExercicioItem(nome: 'Agachamento Livre (Barra)', grupoMuscular: 'Pernas', series: []),
-      ExercicioItem(nome: 'Leg Press 45°', grupoMuscular: 'Pernas', series: []),
-      ExercicioItem(nome: 'Elevação Pélvica', grupoMuscular: 'Glúteos', series: []),
-      ExercicioItem(nome: 'Rosca Direta (Barra)', grupoMuscular: 'Bíceps', series: []),
-      ExercicioItem(nome: 'Tríceps Pulley', grupoMuscular: 'Tríceps', series: []),
-      ExercicioItem(nome: 'Abdominal Supra', grupoMuscular: 'Abdômen', series: []),
+      ExercicioItem(nome: 'Supino Reto (Barra)', grupoMuscular: ['Peito'], series: []),
+      ExercicioItem(nome: 'Supino Inclinado (Halteres)', grupoMuscular: ['Peito'], series: []),
+      ExercicioItem(nome: 'Puxada Frontal (Polia)', grupoMuscular: ['Costas'], series: []),
+      ExercicioItem(nome: 'Remada Curvada (Barra)', grupoMuscular: ['Costas'], series: []),
+      ExercicioItem(nome: 'Agachamento Livre (Barra)', grupoMuscular: ['Pernas','Glúteos'], series: []),
+      ExercicioItem(nome: 'Leg Press 45°', grupoMuscular: ['Pernas','Glúteos'], series: []),
+      ExercicioItem(nome: 'Elevação Pélvica (Máquina)', grupoMuscular: ['Glúteos'], series: []),
+      ExercicioItem(nome: 'Rosca Direta (Barra)', grupoMuscular: ['Bíceps'], series: []),
+      ExercicioItem(nome: 'Tríceps Pulley', grupoMuscular: ['Tríceps'], series: []),
+      ExercicioItem(nome: 'Abdominal Supra', grupoMuscular: ['Abdômen'], series: []),
     ];
 
     for (var ex in exerciciosSemente) {

@@ -1422,12 +1422,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         .toList();
 
     // Agora usa o campo de grupo muscular ou "GERAL"
-    final muscleGroupsText = ex.grupoMuscular.trim().isEmpty
+    final muscleGroupsText = ex.grupoMuscular.isEmpty
         ? 'GERAL'
-        : ex.grupoMuscular
-              .toUpperCase()
-              .replaceAll(RegExp(r'\s*,\s*'), ' • ')
-              .replaceAll(RegExp(r'\s+/\s+'), ' • ');
+        : ex.grupoMuscular.join(' • ').toUpperCase();
 
     return GestureDetector(
       onTap: () {
