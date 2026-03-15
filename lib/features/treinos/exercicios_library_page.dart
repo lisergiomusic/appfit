@@ -14,15 +14,16 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
   final ExerciseService _exerciseService = ExerciseService();
   late Future<List<ExercicioItem>> _futureExercicios;
 
+  // ABAS ATUALIZADAS COM BÍCEPS E TRÍCEPS
   final List<String> _categorias = [
     'Tudo',
     'Peito',
     'Costas',
     'Pernas',
     'Glúteos',
-    'Deltóides',
-    'Tríceps',
+    'Ombros',
     'Bíceps',
+    'Tríceps',
     'Abdômen',
     'Meus Exercícios',
   ];
@@ -59,7 +60,6 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     });
   }
 
-  // --- MODAL LIMPO: APENAS NOME E MÚSCULO ---
   void _exibirModalCriarExercicio() {
     final nomeCtrl = TextEditingController();
     final musculoCtrl = TextEditingController();
@@ -111,7 +111,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
               style: const TextStyle(color: Colors.white),
               textCapitalization: TextCapitalization.words,
               decoration: InputDecoration(
-                labelText: 'Grupo Muscular (Ex: Peito)',
+                labelText: 'Grupo Muscular (Ex: Pernas, Glúteos)',
                 filled: true,
                 fillColor: AppTheme.surfaceLight,
                 border: OutlineInputBorder(
@@ -133,23 +133,15 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   series: [],
                 );
 
-                // 1. CAPTURAMOS O CONTEXTO ANTES DO 'AWAIT' (A Solução!)
                 final navigator = Navigator.of(context);
                 final messenger = ScaffoldMessenger.of(context);
 
-                // 2. Fechamos o modal imediatamente (dá a sensação de app super rápido)
                 navigator.pop();
 
                 try {
-                  // 3. Vamos à Nuvem (O Async Gap acontece aqui)
                   await _exerciseService.criarExercicioCustomizado(novoEx);
-
-                  // 4. Verificamos se a página principal ainda está aberta
                   if (!mounted) return;
-
-                  _carregarDados(); // Recarrega a lista
-
-                  // 5. Usamos o 'messenger' que salvamos lá em cima, sem usar o 'context' aqui!
+                  _carregarDados();
                   messenger.showSnackBar(
                     const SnackBar(
                       content: Text('Exercício criado com sucesso!'),
@@ -197,6 +189,37 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
         ),
         centerTitle: false,
         actions: [
+          // BOTÃO VARINHA MÁGICA: Popula o banco de dados
+          IconButton(
+            icon: const Icon(Icons.auto_fix_high, color: Colors.amber),
+            tooltip: 'Semear Banco de Dados',
+            onPressed: () async {
+              final messenger = ScaffoldMessenger.of(context);
+              messenger.showSnackBar(
+                const SnackBar(
+                  content: Text('A injetar a biomecânica na Cloud...'),
+                ),
+              );
+              try {
+                await _exerciseService.semearExerciciosBase();
+                if (!mounted) return; // Fix do Async Gap!
+                _carregarDados();
+                messenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Biblioteca Padrão criada com sucesso!'),
+                    backgroundColor: AppTheme.success,
+                  ),
+                );
+              } catch (e) {
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text('Erro: $e'),
+                    backgroundColor: Colors.redAccent,
+                  ),
+                );
+              }
+            },
+          ),
           IconButton(
             icon: const Icon(
               Icons.add_box_outlined,
@@ -347,7 +370,8 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                             Text(
                               _categoriaSelecionada == 'Meus Exercícios'
                                   ? 'Você ainda não criou nenhum exercício.'
-                                  : 'Nenhum exercício encontrado.',
+                                  : 'Nenhum exercício encontrado. Clique na varinha mágica no topo!',
+                              textAlign: TextAlign.center,
                               style: const TextStyle(
                                 color: AppTheme.textSecondary,
                               ),
@@ -416,7 +440,6 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                         ),
                                       ),
                                       const SizedBox(height: 4),
-                                      // MOSTRA APENAS O GRUPO MUSCULAR AGORA
                                       Text(
                                         ex.grupoMuscular,
                                         style: const TextStyle(
