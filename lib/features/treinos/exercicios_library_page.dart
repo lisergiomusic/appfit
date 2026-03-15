@@ -20,7 +20,6 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     'Costas',
     'Pernas',
     'Glúteos',
-    'Deltóides',
     'Bíceps',
     'Tríceps',
     'Abdômen',
