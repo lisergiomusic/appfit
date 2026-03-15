@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -16,6 +17,8 @@ class ExerciciosLibraryPage extends StatefulWidget {
 class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
   final ExerciseService _exerciseService = ExerciseService();
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
 
   // Estado da lista
   List<ExercicioItem> _listaExercicios = [];
@@ -37,6 +40,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     'Meus Exercícios',
   ];
   String _categoriaSelecionada = 'Tudo';
+  String _termoBusca = '';
 
   // Seleção baseada no ID ou Nome (Identidade Única)
   final Set<ExercicioItem> _selecionados = {};
@@ -51,6 +55,8 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -63,8 +69,20 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     }
   }
 
+  void _onSearchChanged(String value) {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      if (_termoBusca != value) {
+        setState(() {
+          _termoBusca = value;
+        });
+        _carregarDados(reset: true);
+      }
+    });
+  }
+
   Future<void> _carregarDados({bool reset = false}) async {
-    if (_isLoading) return;
+    if (_isLoading && !reset) return;
 
     setState(() {
       _isLoading = true;
@@ -78,6 +96,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     try {
       final result = await _exerciseService.buscarBibliotecaPaginada(
         categoria: _categoriaSelecionada,
+        busca: _termoBusca.isEmpty ? null : _termoBusca,
         lastDoc: _lastDoc,
         limit: 20,
       );
@@ -479,6 +498,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             child: TextField(
+              controller: _searchController,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Buscar exercícios...',
@@ -486,6 +506,15 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   Icons.search,
                   color: AppTheme.textSecondary,
                 ),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, color: AppTheme.textSecondary),
+                        onPressed: () {
+                          _searchController.clear();
+                          _onSearchChanged('');
+                        },
+                      )
+                    : null,
                 filled: true,
                 fillColor: AppTheme.surfaceDark,
                 contentPadding: const EdgeInsets.symmetric(vertical: 0),
@@ -494,9 +523,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   borderSide: BorderSide.none,
                 ),
               ),
-              onSubmitted: (value) {
-                // Implementar busca se necessário, ou filtrar a lista atual
-              },
+              onChanged: _onSearchChanged,
             ),
           ),
           SizedBox(
