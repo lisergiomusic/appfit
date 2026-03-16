@@ -1,10 +1,9 @@
 import '../treinos/treinos_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
-import 'home_page.dart'; // Importamos a nossa aba Home
-import '../alunos/alunos_page.dart'; // Importamos a tela de Alunos
+import 'home_page.dart';
+import '../alunos/alunos_page.dart';
 import '../../main.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -16,17 +15,7 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  int _indiceAtual = 0; // Controla qual aba está ativa
-
-  // Lista das telas que serão exibidas
-  final List<Widget> _paginas = [
-    const HomePage(),
-    const AlunosPage(), // Agora exibe a tela real de alunos
-    const TreinosPage(),
-    const Center(
-      child: Text('Configurações', style: TextStyle(color: Colors.white)),
-    ),
-  ];
+  int _indiceAtual = 0;
 
   Future<void> _sair(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
@@ -34,46 +23,46 @@ class _DashboardPageState extends State<DashboardPage> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const ChecagemPagina()),
-        (route) => false,
+            (route) => false,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final User? user = FirebaseAuth.instance.currentUser;
+    final List<Widget> paginas = [
+      const HomePage(),
+      const AlunosPage(),
+      const TreinosPage(),
+      Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.settings, size: 64, color: AppTheme.textSecondary),
+            const SizedBox(height: AppTheme.space16),
+            const Text(
+                'Ajustes',
+                style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)
+            ),
+            const SizedBox(height: AppTheme.space32),
+            ElevatedButton.icon(
+              onPressed: () => _sair(context),
+              icon: const Icon(Icons.logout),
+              label: const Text('Sair do AppFit'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent.withAlpha(25),
+                foregroundColor: Colors.redAccent,
+                elevation: 0,
+              ),
+            )
+          ],
+        ),
+      ),
+    ];
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppTheme.surfaceDark,
-        title: FutureBuilder<DocumentSnapshot>(
-          future: FirebaseFirestore.instance
-              .collection('usuarios')
-              .doc(user?.uid)
-              .get(),
-          builder: (context, snapshot) {
-            String nome = "Treinador";
-            if (snapshot.hasData && snapshot.data!.exists) {
-              nome = snapshot.data!.get('nome').toString().split(' ')[0];
-            }
-            return Text(
-              'Olá, $nome',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            );
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: AppTheme.primary),
-            onPressed: () => _sair(context),
-          ),
-        ],
-        automaticallyImplyLeading: false,
-      ),
-
-      // O corpo agora muda dependendo do ícone clicado na barra!
-      body: _paginas[_indiceAtual],
-
+      backgroundColor: AppTheme.background,
+      body: paginas[_indiceAtual],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _indiceAtual,
         onTap: (index) {
@@ -81,17 +70,15 @@ class _DashboardPageState extends State<DashboardPage> {
             _indiceAtual = index;
           });
         },
-        type: BottomNavigationBarType.fixed, // Mantém os nomes sempre visíveis
+        type: BottomNavigationBarType.fixed,
         backgroundColor: AppTheme.surfaceDark,
         selectedItemColor: AppTheme.primary,
         unselectedItemColor: AppTheme.textSecondary,
+        elevation: 16,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.grid_view_rounded), label: 'Início'),
           BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Alunos'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.fitness_center),
-            label: 'Treinos',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.fitness_center), label: 'Rotinas'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ajustes'),
         ],
       ),
