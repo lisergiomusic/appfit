@@ -225,11 +225,6 @@ class HomePage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('ATENÇÃO NECESSÁRIA', style: AppTheme.microLabelTextStyle),
-                  TextButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(minimumSize: Size.zero, padding: EdgeInsets.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                    child: const Text('Ver Todos', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primary)),
-                  ),
                 ],
               ),
             ),
