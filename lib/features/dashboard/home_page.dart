@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
 
 class HomePage extends StatelessWidget {
@@ -6,6 +8,8 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final User? user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
@@ -112,20 +116,32 @@ class HomePage extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(width: AppTheme.space16),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Bem-vindo, Alex',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimary,
-                          letterSpacing: -0.5,
-                        ),
+                      FutureBuilder<DocumentSnapshot>(
+                        future: FirebaseFirestore.instance
+                            .collection('usuarios')
+                            .doc(user?.uid)
+                            .get(),
+                        builder: (context, snapshot) {
+                          String nome = "...";
+                          if (snapshot.hasData && snapshot.data!.exists) {
+                            nome = snapshot.data!.get('nome').toString().split(' ')[0];
+                          }
+                          return Text(
+                            'Bem-vindo, $nome',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimary,
+                              letterSpacing: -0.5,
+                            ),
+                          );
+                        },
                       ),
-                      Text(
-                        'Master Trainer • Nível Premium',
+                      const Text(
+                        'Nível Premium',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
