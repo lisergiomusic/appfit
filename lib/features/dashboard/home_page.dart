@@ -84,7 +84,6 @@ class HomePage extends StatelessWidget {
                         ),
                         child: const CircleAvatar(
                           radius: 30,
-                          // TODO: No futuro podes puxar a foto real do Firestore também
                           backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
                         ),
                       ),
@@ -108,7 +107,6 @@ class HomePage extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // O TEU CÓDIGO INSERIDO AQUI
                       FutureBuilder<DocumentSnapshot>(
                         future: FirebaseFirestore.instance
                             .collection('usuarios')
@@ -172,59 +170,20 @@ class HomePage extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: AppTheme.space24),
-
-            // --- 3. ATIVIDADES RECENTES (Scroll Horizontal) ---
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
-              child: Text(
-                'ATIVIDADE RECENTE',
-                style: AppTheme.textSectionHeaderDark,
-              ),
-            ),
-            const SizedBox(height: AppTheme.space12),
-            SizedBox(
-              height: 110,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
-                children: [
-                  _buildRecentActivityCard(
-                    name: 'Jordan Smith',
-                    action: 'Concluiu Treino A',
-                    time: 'Há 2 horas',
-                    icon: Icons.local_fire_department,
-                    iconColor: AppTheme.accentMetrics,
-                  ),
-                  const SizedBox(width: AppTheme.space12),
-                  _buildRecentActivityCard(
-                    name: 'Sarah Williams',
-                    action: 'Atualizou as medidas',
-                    time: 'Há 4 horas',
-                    icon: Icons.straighten,
-                    iconColor: AppTheme.iosBlue,
-                  ),
-                  const SizedBox(width: AppTheme.space12),
-                  _buildRecentActivityCard(
-                    name: 'Marcus Chen',
-                    action: 'Novo PR no Supino',
-                    time: 'Ontem',
-                    icon: Icons.emoji_events,
-                    iconColor: Colors.amber,
-                  ),
-                ],
-              ),
-            ),
-
             const SizedBox(height: AppTheme.space32),
 
-            // --- 4. ATENÇÃO NECESSÁRIA (Lista Vertical Prioritária) ---
+            // --- 3. ATENÇÃO NECESSÁRIA (Movido para cima - Prioridade Alta) ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                   Text('ATENÇÃO NECESSÁRIA', style: AppTheme.textSectionHeaderDark),
+                  Text('ATENÇÃO NECESSÁRIA', style: AppTheme.textSectionHeaderDark),
+                  TextButton(
+                    onPressed: () {},
+                    style: TextButton.styleFrom(minimumSize: Size.zero, padding: EdgeInsets.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                    child: const Text('Ver Todos', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+                  ),
                 ],
               ),
             ),
@@ -251,6 +210,49 @@ class HomePage extends StatelessWidget {
                 ],
               ),
             ),
+
+            const SizedBox(height: AppTheme.space32),
+
+            // --- 4. ATIVIDADES RECENTES (Lista Vertical Compacta) ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
+              child: Text(
+                'ATIVIDADE RECENTE',
+                style: AppTheme.textSectionHeaderDark,
+              ),
+            ),
+            const SizedBox(height: AppTheme.space12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
+              child: Column(
+                children: [
+                  _buildRecentActivityListTile(
+                    name: 'Jordan Smith',
+                    action: 'Concluiu Treino A',
+                    time: 'Há 2h',
+                    icon: Icons.local_fire_department,
+                    iconColor: AppTheme.accentMetrics,
+                  ),
+                  const SizedBox(height: AppTheme.space12),
+                  _buildRecentActivityListTile(
+                    name: 'Sarah Williams',
+                    action: 'Atualizou as medidas',
+                    time: 'Há 4h',
+                    icon: Icons.straighten,
+                    iconColor: AppTheme.iosBlue,
+                  ),
+                  const SizedBox(height: AppTheme.space12),
+                  _buildRecentActivityListTile(
+                    name: 'Marcus Chen',
+                    action: 'Novo PR no Supino',
+                    time: 'Ontem',
+                    icon: Icons.emoji_events,
+                    iconColor: Colors.amber,
+                  ),
+                ],
+              ),
+            ),
+
             const SizedBox(height: 100), // Espaço para não encostar na nav bar inferior
           ],
         ),
@@ -287,37 +289,34 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentActivityCard({required String name, required String action, required String time, required IconData icon, required Color iconColor}) {
+  // Refatorado para formato vertical (ListTile style)
+  Widget _buildRecentActivityListTile({required String name, required String action, required String time, required IconData icon, required Color iconColor}) {
     return Container(
-      width: 220,
       padding: const EdgeInsets.all(AppTheme.space16),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         border: Border.all(color: Colors.white.withAlpha(15)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(color: iconColor.withAlpha(30), shape: BoxShape.circle),
-                child: Icon(icon, size: 16, color: iconColor),
-              ),
-              const SizedBox(width: AppTheme.space8),
-              Text(time, style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary, fontWeight: FontWeight.w600)),
-            ],
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: iconColor.withAlpha(30), shape: BoxShape.circle),
+            child: Icon(icon, size: 20, color: iconColor),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-              Text(action, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
-            ],
+          const SizedBox(width: AppTheme.space16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                const SizedBox(height: 2),
+                Text(action, style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
+              ],
+            ),
           ),
+          Text(time, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontWeight: FontWeight.w600)),
         ],
       ),
     );
