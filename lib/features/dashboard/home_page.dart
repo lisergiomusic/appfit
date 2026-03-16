@@ -177,9 +177,9 @@ class HomePage extends StatelessWidget {
             // --- 3. ATIVIDADES RECENTES (Scroll Horizontal) ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
-              child: const Text(
+              child: Text(
                 'ATIVIDADE RECENTE',
-                style: AppTheme.microLabelTextStyle,
+                style: AppTheme.textSectionHeaderDark,
               ),
             ),
             const SizedBox(height: AppTheme.space12),
@@ -224,7 +224,7 @@ class HomePage extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('ATENÇÃO NECESSÁRIA', style: AppTheme.microLabelTextStyle),
+                   Text('ATENÇÃO NECESSÁRIA', style: AppTheme.textSectionHeaderDark),
                 ],
               ),
             ),
