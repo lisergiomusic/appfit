@@ -8,6 +8,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Instância do utilizador logado para buscar o nome no Firestore
     final User? user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
@@ -45,27 +46,18 @@ class HomePage extends StatelessWidget {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: AppTheme.textSecondary),
-            onPressed: () {},
-          ),
+          IconButton(icon: const Icon(Icons.search, color: AppTheme.textSecondary), onPressed: () {}),
           Stack(
             alignment: Alignment.center,
             children: [
-              IconButton(
-                icon: const Icon(Icons.notifications_none, color: AppTheme.textSecondary),
-                onPressed: () {},
-              ),
+              IconButton(icon: const Icon(Icons.notifications_none, color: AppTheme.textSecondary), onPressed: () {}),
               Positioned(
                 top: 12,
                 right: 12,
                 child: Container(
                   width: AppTheme.space8,
                   height: AppTheme.space8,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.primary,
-                    shape: BoxShape.circle,
-                  ),
+                  decoration: const BoxDecoration(color: AppTheme.primary, shape: BoxShape.circle),
                 ),
               ),
             ],
@@ -77,13 +69,9 @@ class HomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // --- 1. HEADER COM DADOS REAIS DO FIREBASE ---
             Padding(
-              padding: const EdgeInsets.fromLTRB(
-                  AppTheme.space24,
-                  AppTheme.space32,
-                  AppTheme.space24,
-                  AppTheme.space16
-              ),
+              padding: const EdgeInsets.fromLTRB(AppTheme.space24, AppTheme.space32, AppTheme.space24, AppTheme.space16),
               child: Row(
                 children: [
                   Stack(
@@ -96,6 +84,7 @@ class HomePage extends StatelessWidget {
                         ),
                         child: const CircleAvatar(
                           radius: 30,
+                          // TODO: No futuro podes puxar a foto real do Firestore também
                           backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
                         ),
                       ),
@@ -119,6 +108,7 @@ class HomePage extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // O TEU CÓDIGO INSERIDO AQUI
                       FutureBuilder<DocumentSnapshot>(
                         future: FirebaseFirestore.instance
                             .collection('usuarios')
@@ -153,16 +143,15 @@ class HomePage extends StatelessWidget {
                 ],
               ),
             ),
+
+            // --- 2. STATS ROW (Visão Geral) ---
             Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.space24,
-                  vertical: AppTheme.space8
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24, vertical: AppTheme.space8),
               child: Row(
                 children: [
                   Expanded(
                     child: _buildStatCard(
-                      label: 'ALUNOS',
+                      label: 'ALUNOS ATIVOS',
                       value: '42',
                       trendText: '+12%',
                       trendIcon: Icons.trending_up,
@@ -182,175 +171,120 @@ class HomePage extends StatelessWidget {
                 ],
               ),
             ),
+
+            const SizedBox(height: AppTheme.space24),
+
+            // --- 3. ATIVIDADES RECENTES (Scroll Horizontal) ---
             Padding(
-              padding: const EdgeInsets.fromLTRB(
-                  AppTheme.space24,
-                  AppTheme.space16,
-                  AppTheme.space24,
-                  AppTheme.space16
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
+              child: const Text(
+                'ATIVIDADE RECENTE',
+                style: AppTheme.microLabelTextStyle,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+            const SizedBox(height: AppTheme.space12),
+            SizedBox(
+              height: 110,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
                 children: [
-                  const Row(
-                    children: [
-                      Icon(Icons.bolt, color: AppTheme.primary, size: 24),
-                      SizedBox(width: AppTheme.space8),
-                      Text(
-                        'Ações Rápidas',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimary,
-                        ),
-                      ),
-                    ],
+                  _buildRecentActivityCard(
+                    name: 'Jordan Smith',
+                    action: 'Concluiu Treino A',
+                    time: 'Há 2 horas',
+                    icon: Icons.local_fire_department,
+                    iconColor: AppTheme.accentMetrics,
                   ),
-                  const SizedBox(height: AppTheme.space16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AspectRatio(
-                          aspectRatio: 1,
-                          child: _buildQuickActionSquare(
-                            icon: Icons.person_add,
-                            text: 'CADASTRAR\nALUNO',
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: AppTheme.space12),
-                      Expanded(
-                        child: AspectRatio(
-                          aspectRatio: 1,
-                          child: _buildQuickActionSquare(
-                            icon: Icons.add_task,
-                            text: 'CRIAR\nTEMPLATE',
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: AppTheme.space12),
-                      Expanded(
-                        child: AspectRatio(
-                          aspectRatio: 1,
-                          child: _buildQuickActionSquare(
-                            icon: Icons.analytics,
-                            text: 'VER\nRELATÓRIOS',
-                          ),
-                        ),
-                      ),
-                    ],
+                  const SizedBox(width: AppTheme.space12),
+                  _buildRecentActivityCard(
+                    name: 'Sarah Williams',
+                    action: 'Atualizou as medidas',
+                    time: 'Há 4 horas',
+                    icon: Icons.straighten,
+                    iconColor: AppTheme.iosBlue,
+                  ),
+                  const SizedBox(width: AppTheme.space12),
+                  _buildRecentActivityCard(
+                    name: 'Marcus Chen',
+                    action: 'Novo PR no Supino',
+                    time: 'Ontem',
+                    icon: Icons.emoji_events,
+                    iconColor: Colors.amber,
                   ),
                 ],
               ),
             ),
+
+            const SizedBox(height: AppTheme.space32),
+
+            // --- 4. ATENÇÃO NECESSÁRIA (Lista Vertical Prioritária) ---
             Padding(
-              padding: const EdgeInsets.all(AppTheme.space24),
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('ATENÇÃO NECESSÁRIA', style: AppTheme.microLabelTextStyle),
+                  TextButton(
+                    onPressed: () {},
+                    style: TextButton.styleFrom(minimumSize: Size.zero, padding: EdgeInsets.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                    child: const Text('Ver Todos', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppTheme.space12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
               child: Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Alunos Ativos',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimary,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {},
-                        style: TextButton.styleFrom(
-                          minimumSize: Size.zero,
-                          padding: EdgeInsets.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: const Text(
-                          'Ver Todos',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.primary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppTheme.space16),
-                  _buildStudentCard(
-                    name: 'Jordan Smith',
-                    tag: 'CUTTING',
-                    progress: 0.75,
-                    weekText: 'SEMANA 6/8',
-                    avatarUrl: 'https://i.pravatar.cc/150?img=5',
-                  ),
-                  const SizedBox(height: AppTheme.space16),
-                  _buildStudentCard(
+                  _buildActionRequiredCard(
                     name: 'Marcus Chen',
-                    tag: 'BULKING',
-                    progress: 0.40,
-                    weekText: 'SEMANA 3/12',
+                    issue: 'Plano vence em 2 dias',
+                    actionText: 'RENOVAR PLANO',
+                    isUrgent: true,
                     avatarUrl: 'https://i.pravatar.cc/150?img=12',
                   ),
-                  const SizedBox(height: AppTheme.space16),
-                  _buildStudentCard(
-                    name: 'Sarah Williams',
-                    tag: 'YOGA',
-                    progress: 0.92,
-                    weekText: 'SEMANA 4/4',
-                    isPlaceholder: true,
+                  const SizedBox(height: AppTheme.space12),
+                  _buildActionRequiredCard(
+                    name: 'Lucas Ferreira',
+                    issue: 'Sem treinar há 7 dias',
+                    actionText: 'ENVIAR MENSAGEM',
+                    isUrgent: false,
+                    avatarUrl: 'https://i.pravatar.cc/150?img=8',
                   ),
-                  const SizedBox(height: 100),
                 ],
               ),
             ),
+            const SizedBox(height: 100), // Espaço para não encostar na nav bar inferior
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatCard({
-    required String label,
-    required String value,
-    required String trendText,
-    required IconData trendIcon,
-    required Color trendColor,
-  }) {
+  // --- WIDGETS AUXILIARES ---
+
+  Widget _buildStatCard({required String label, required String value, required String trendText, required IconData trendIcon, required Color trendColor}) {
     return Container(
-      padding: const EdgeInsets.all(AppTheme.space20),
+      padding: const EdgeInsets.all(AppTheme.space16),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        border: Border.all(color: Colors.white.withAlpha(25)),
+        border: Border.all(color: Colors.white.withAlpha(15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label, style: AppTheme.microLabelTextStyle),
           const SizedBox(height: AppTheme.space4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              color: AppTheme.textPrimary,
-              letterSpacing: -1.0,
-            ),
-          ),
+          Text(value, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppTheme.textPrimary, letterSpacing: -1.0)),
           const SizedBox(height: AppTheme.space8),
           Row(
             children: [
               Icon(trendIcon, size: 14, color: trendColor),
               const SizedBox(width: AppTheme.space4),
-              Text(
-                trendText,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: trendColor,
-                ),
-              ),
+              Text(trendText, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: trendColor)),
             ],
           ),
         ],
@@ -358,155 +292,79 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActionSquare({required IconData icon, required String text}) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {},
+  Widget _buildRecentActivityCard({required String name, required String action, required String time, required IconData icon, required Color iconColor}) {
+    return Container(
+      width: 220,
+      padding: const EdgeInsets.all(AppTheme.space16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceDark,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppTheme.primary.withAlpha(25),
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-            border: Border.all(color: AppTheme.primary.withAlpha(50)),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+        border: Border.all(color: Colors.white.withAlpha(15)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
             children: [
-              Icon(icon, color: AppTheme.primary, size: 28),
-              const SizedBox(height: AppTheme.space8),
-              Text(
-                text,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textSecondary,
-                  height: 1.2,
-                ),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(color: iconColor.withAlpha(30), shape: BoxShape.circle),
+                child: Icon(icon, size: 16, color: iconColor),
               ),
+              const SizedBox(width: AppTheme.space8),
+              Text(time, style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary, fontWeight: FontWeight.w600)),
             ],
           ),
-        ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+              Text(action, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildStudentCard({
-    required String name,
-    required String tag,
-    required double progress,
-    required String weekText,
-    String? avatarUrl,
-    bool isPlaceholder = false,
-  }) {
+  Widget _buildActionRequiredCard({required String name, required String issue, required String actionText, required bool isUrgent, required String avatarUrl}) {
     return Container(
-      padding: const EdgeInsets.all(AppTheme.paddingCard),
+      padding: const EdgeInsets.all(AppTheme.space16),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        border: Border.all(color: Colors.white.withAlpha(25)),
+        border: Border.all(color: isUrgent ? Colors.redAccent.withAlpha(80) : Colors.white.withAlpha(15)),
       ),
       child: Row(
         children: [
-          if (isPlaceholder)
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: AppTheme.surfaceLight,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withAlpha(25)),
-              ),
-              child: const Icon(Icons.account_circle, color: AppTheme.primary, size: 32),
-            )
-          else
-            CircleAvatar(
-              radius: 28,
-              backgroundImage: NetworkImage(avatarUrl!),
-            ),
+          CircleAvatar(radius: 24, backgroundImage: NetworkImage(avatarUrl)),
           const SizedBox(width: AppTheme.space16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                const SizedBox(height: 2),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: AppTheme.space8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: tag == 'YOGA' ? Colors.white.withAlpha(25) : AppTheme.primary.withAlpha(50),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                      ),
-                      child: Text(
-                        tag,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: tag == 'YOGA' ? AppTheme.textSecondary : AppTheme.primary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppTheme.space8),
-                Container(
-                  height: 6,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(25),
-                    borderRadius: BorderRadius.circular(AppTheme.space10),
-                  ),
-                  alignment: Alignment.centerLeft,
-                  child: FractionallySizedBox(
-                    widthFactor: progress,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary,
-                        borderRadius: BorderRadius.circular(AppTheme.space10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.primary.withAlpha(128),
-                            blurRadius: 10,
-                            offset: const Offset(0, 0),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppTheme.space8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'PROGRESSO: ${(progress * 100).toInt()}%',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                    Text(
-                      weekText,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
+                    if (isUrgent) const Icon(Icons.error_outline, size: 12, color: Colors.redAccent),
+                    if (isUrgent) const SizedBox(width: 4),
+                    Text(issue, style: TextStyle(fontSize: 12, color: isUrgent ? Colors.redAccent : AppTheme.textSecondary)),
                   ],
                 ),
               ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.space12, vertical: AppTheme.space8),
+            decoration: BoxDecoration(
+              color: isUrgent ? Colors.redAccent.withAlpha(20) : AppTheme.surfaceLight,
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+            ),
+            child: Text(
+              actionText,
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isUrgent ? Colors.redAccent : AppTheme.textPrimary),
             ),
           ),
         ],
