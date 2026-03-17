@@ -190,6 +190,61 @@ class HomePage extends StatelessWidget {
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.bolt, color: AppTheme.primary, size: 16),
+                      const SizedBox(width: AppTheme.space8),
+                      Text(
+                        'AÇÕES RÁPIDAS',
+                        style: AppTheme.textSectionHeaderDark,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppTheme.space16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AspectRatio(
+                          aspectRatio: 1,
+                          child: _buildQuickActionSquare(
+                            icon: Icons.person_add,
+                            text: 'CADASTRAR\nALUNO',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppTheme.space12),
+                      Expanded(
+                        child: AspectRatio(
+                          aspectRatio: 1,
+                          child: _buildQuickActionSquare(
+                            icon: Icons.add_task,
+                            text: 'CRIAR\nTEMPLATE',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppTheme.space12),
+                      Expanded(
+                        child: AspectRatio(
+                          aspectRatio: 1,
+                          child: _buildQuickActionSquare(
+                            icon: Icons.analytics,
+                            text: 'VER\nRELATÓRIOS',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: AppTheme.space32),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -292,6 +347,40 @@ class HomePage extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionSquare({required IconData icon, required String text}) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {},
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppTheme.primary.withAlpha(25),
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+            border: Border.all(color: AppTheme.primary.withAlpha(50)),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: AppTheme.primary, size: 28),
+              const SizedBox(height: AppTheme.space8),
+              Text(
+                text,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textSecondary,
+                  height: 1.2,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
