@@ -8,7 +8,6 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Instância do utilizador logado para buscar o nome no Firestore
     final User? user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
@@ -46,7 +45,6 @@ class HomePage extends StatelessWidget {
           ],
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.search, color: AppTheme.textSecondary), onPressed: () {}),
           Stack(
             alignment: Alignment.center,
             children: [
@@ -69,7 +67,6 @@ class HomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- 1. HEADER COM DADOS REAIS DO FIREBASE ---
             Padding(
               padding: const EdgeInsets.fromLTRB(AppTheme.space24, AppTheme.space32, AppTheme.space24, AppTheme.space16),
               child: Row(
@@ -82,9 +79,23 @@ class HomePage extends StatelessWidget {
                           shape: BoxShape.circle,
                           border: Border.all(color: AppTheme.primary, width: 2),
                         ),
-                        child: const CircleAvatar(
-                          radius: 30,
-                          backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
+                        child: FutureBuilder<DocumentSnapshot>(
+                          future: FirebaseFirestore.instance
+                              .collection('usuarios')
+                              .doc(user?.uid)
+                              .get(),
+                          builder: (context, snapshot) {
+                            String? photoUrl;
+                            if (snapshot.hasData && snapshot.data!.exists) {
+                              photoUrl = (snapshot.data!.data() as Map<String, dynamic>)['photoUrl'];
+                            }
+                            return CircleAvatar(
+                              radius: 30,
+                              backgroundImage: photoUrl != null
+                                  ? NetworkImage(photoUrl)
+                                  : const NetworkImage('https://i.pravatar.cc/150?img=11'),
+                            );
+                          },
                         ),
                       ),
                       Positioned(
@@ -117,8 +128,9 @@ class HomePage extends StatelessWidget {
                           if (snapshot.hasData && snapshot.data!.exists) {
                             nome = snapshot.data!.get('nome').toString().split(' ')[0];
                           }
+                          final saudacao = _getSaudacao();
                           return Text(
-                            'Bem-vindo, $nome',
+                            '$saudacao, $nome',
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -142,7 +154,6 @@ class HomePage extends StatelessWidget {
               ),
             ),
 
-            // --- 2. STATS ROW (Visão Geral) ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24, vertical: AppTheme.space8),
               child: Row(
@@ -172,48 +183,6 @@ class HomePage extends StatelessWidget {
 
             const SizedBox(height: AppTheme.space32),
 
-            // --- 3. ATENÇÃO NECESSÁRIA (Movido para cima - Prioridade Alta) ---
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('ATENÇÃO NECESSÁRIA', style: AppTheme.textSectionHeaderDark),
-                  TextButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(minimumSize: Size.zero, padding: EdgeInsets.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                    child: const Text('Ver Todos', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primary)),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppTheme.space12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
-              child: Column(
-                children: [
-                  _buildActionRequiredCard(
-                    name: 'Marcus Chen',
-                    issue: 'Plano vence em 2 dias',
-                    actionText: 'RENOVAR PLANO',
-                    isUrgent: true,
-                    avatarUrl: 'https://i.pravatar.cc/150?img=12',
-                  ),
-                  const SizedBox(height: AppTheme.space12),
-                  _buildActionRequiredCard(
-                    name: 'Lucas Ferreira',
-                    issue: 'Sem treinar há 7 dias',
-                    actionText: 'ENVIAR MENSAGEM',
-                    isUrgent: false,
-                    avatarUrl: 'https://i.pravatar.cc/150?img=8',
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppTheme.space32),
-
-            // --- 4. ATIVIDADES RECENTES (Lista Vertical Compacta) ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
               child: Text(
@@ -253,14 +222,23 @@ class HomePage extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 100), // Espaço para não encostar na nav bar inferior
+            const SizedBox(height: 100),
           ],
         ),
       ),
     );
   }
 
-  // --- WIDGETS AUXILIARES ---
+  String _getSaudacao() {
+    final hora = DateTime.now().hour;
+    if (hora >= 5 && hora < 12) {
+      return 'Bom dia';
+    } else if (hora >= 12 && hora < 18) {
+      return 'Boa tarde';
+    } else {
+      return 'Boa noite';
+    }
+  }
 
   Widget _buildStatCard({required String label, required String value, required String trendText, required IconData trendIcon, required Color trendColor}) {
     return Container(
@@ -289,7 +267,6 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // Refatorado para formato vertical (ListTile style)
   Widget _buildRecentActivityListTile({required String name, required String action, required String time, required IconData icon, required Color iconColor}) {
     return Container(
       padding: const EdgeInsets.all(AppTheme.space16),
@@ -317,50 +294,6 @@ class HomePage extends StatelessWidget {
             ),
           ),
           Text(time, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionRequiredCard({required String name, required String issue, required String actionText, required bool isUrgent, required String avatarUrl}) {
-    return Container(
-      padding: const EdgeInsets.all(AppTheme.space16),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        border: Border.all(color: isUrgent ? Colors.redAccent.withAlpha(80) : Colors.white.withAlpha(15)),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(radius: 24, backgroundImage: NetworkImage(avatarUrl)),
-          const SizedBox(width: AppTheme.space16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    if (isUrgent) const Icon(Icons.error_outline, size: 12, color: Colors.redAccent),
-                    if (isUrgent) const SizedBox(width: 4),
-                    Text(issue, style: TextStyle(fontSize: 12, color: isUrgent ? Colors.redAccent : AppTheme.textSecondary)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppTheme.space12, vertical: AppTheme.space8),
-            decoration: BoxDecoration(
-              color: isUrgent ? Colors.redAccent.withAlpha(20) : AppTheme.surfaceLight,
-              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-            ),
-            child: Text(
-              actionText,
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isUrgent ? Colors.redAccent : AppTheme.textPrimary),
-            ),
-          ),
         ],
       ),
     );
