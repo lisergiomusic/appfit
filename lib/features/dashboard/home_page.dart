@@ -89,11 +89,16 @@ class HomePage extends StatelessWidget {
                             if (snapshot.hasData && snapshot.data!.exists) {
                               photoUrl = (snapshot.data!.data() as Map<String, dynamic>)['photoUrl'];
                             }
+                            
                             return CircleAvatar(
                               radius: 30,
-                              backgroundImage: photoUrl != null
+                              backgroundColor: AppTheme.surfaceLight,
+                              backgroundImage: photoUrl != null && photoUrl.isNotEmpty
                                   ? NetworkImage(photoUrl)
-                                  : const NetworkImage('https://i.pravatar.cc/150?img=11'),
+                                  : null,
+                              child: photoUrl == null || photoUrl.isEmpty
+                                  ? const Icon(Icons.person, color: AppTheme.textSecondary, size: 30)
+                                  : null,
                             );
                           },
                         ),
