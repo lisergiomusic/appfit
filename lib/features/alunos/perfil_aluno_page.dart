@@ -161,66 +161,8 @@ class PerfilAlunoPage extends StatelessWidget {
     );
   }
 
-  Future<void> _removerFichaAtiva(BuildContext context, String docId) async {
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surfaceDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Remover Ficha?',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        content: const Text(
-          'O aluno ficará sem nenhuma rotina ativa no momento. Deseja continuar?',
-          style: TextStyle(color: AppTheme.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text(
-              'Cancelar',
-              style: TextStyle(color: AppTheme.textSecondary),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Sim, Remover',
-              style: TextStyle(
-                color: Colors.redAccent,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmar == true) {
-      try {
-        await FirebaseFirestore.instance
-            .collection('rotinas')
-            .doc(docId)
-            .update({'ativa': false});
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Rotina arquivada com sucesso.'),
-              backgroundColor: AppTheme.primary,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-      } catch (e) {
-        debugPrint("Erro ao remover ficha: $e");
-      }
-    }
-  }
-
   void _exibirOpcoesVincularTreino(BuildContext context) {
     final String? personalId = FirebaseAuth.instance.currentUser?.uid;
-
     showModalBottomSheet(
       context: context,
       backgroundColor: AppTheme.surfaceDark,
@@ -816,10 +758,7 @@ class PerfilAlunoPage extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                   Text(
-                    'ROTINA ATUAL',
-                    style: AppTheme.textSectionHeaderDark,
-                  ),
+                  Text('ROTINA ATUAL', style: AppTheme.textSectionHeaderDark),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
