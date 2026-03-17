@@ -5,6 +5,7 @@ import '../../core/theme/app_theme.dart';
 import '../treinos/rotina_detalhe_page.dart';
 import 'gerenciar_aluno_page.dart';
 import 'feedback_historico_page.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class PerfilAlunoPage extends StatelessWidget {
   final String alunoId;
@@ -16,7 +17,6 @@ class PerfilAlunoPage extends StatelessWidget {
     required this.alunoNome,
   });
 
-  // --- LÓGICA DE CLONAGEM COM DATA DE VENCIMENTO ---
   Future<void> _atribuirTreinoAoAluno(
     BuildContext context,
     String templateId,
@@ -30,7 +30,6 @@ class PerfilAlunoPage extends StatelessWidget {
           .get();
       if (!templateDoc.exists) return;
 
-      // 1. ARQUIVA A FICHA ANTIGA DO ALUNO PRIMEIRO (Segurança)
       final rotinasAntigas = await FirebaseFirestore.instance
           .collection('rotinas')
           .where('alunoId', isEqualTo: alunoId)
@@ -41,10 +40,8 @@ class PerfilAlunoPage extends StatelessWidget {
         await doc.reference.update({'ativa': false});
       }
 
-      // 2. PREPARA O CLONE DA NOVA FICHA
       final rotinaData = templateDoc.data() as Map<String, dynamic>;
 
-      // Adiciona Aluno, Status e DATAS (Criação e Vencimento calculada)
       rotinaData['alunoId'] = alunoId;
       rotinaData['ativa'] = true;
       rotinaData['dataCriacao'] = FieldValue.serverTimestamp();
@@ -52,7 +49,6 @@ class PerfilAlunoPage extends StatelessWidget {
         DateTime.now().add(Duration(days: duracaoSemanas * 7)),
       );
 
-      // 3. SALVA O CLONE ATIVADO
       await FirebaseFirestore.instance.collection('rotinas').add(rotinaData);
 
       if (context.mounted) {
@@ -69,7 +65,6 @@ class PerfilAlunoPage extends StatelessWidget {
     }
   }
 
-  // --- MODAL PARA ESCOLHER A DURAÇÃO ANTES DE CLONAR ---
   void _confirmarAtivacaoTemplate(
     BuildContext context,
     String templateId,
@@ -136,8 +131,8 @@ class PerfilAlunoPage extends StatelessWidget {
               ),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(dialogContext); // Fecha o dialog
-                  Navigator.pop(context); // Fecha o bottom sheet de trás
+                  Navigator.pop(dialogContext);
+                  Navigator.pop(context);
                   _atribuirTreinoAoAluno(
                     context,
                     templateId,
@@ -365,7 +360,6 @@ class PerfilAlunoPage extends StatelessWidget {
                               Icons.add_circle,
                               color: AppTheme.primary,
                             ),
-                            // <-- AGORA CHAMA O DIALOG DE DURAÇÃO ANTES DE CLONAR
                             onTap: () => _confirmarAtivacaoTemplate(
                               context,
                               doc.id,
@@ -400,6 +394,7 @@ class PerfilAlunoPage extends StatelessWidget {
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const Text(
           'Gestão do Aluno',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
@@ -426,141 +421,160 @@ class PerfilAlunoPage extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 36,
-                    backgroundColor: AppTheme.surfaceLight,
-                    child: Icon(
-                      Icons.person,
-                      size: 40,
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          alunoNome,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.textPrimary,
-                            letterSpacing: -0.5,
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('usuarios')
+            .doc(alunoId)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(color: AppTheme.primary));
+          }
+
+          final alunoData = snapshot.data?.data() as Map<String, dynamic>? ?? {};
+          final photoUrl = alunoData['photoUrl'] as String?;
+          final status = (alunoData['status']?.toString().toLowerCase() ?? 'ativo');
+          final isAtivo = status == 'ativo';
+
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isAtivo ? AppTheme.success : AppTheme.textSecondary.withAlpha(100),
+                            width: 2,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 6),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                        child: CircleAvatar(
+                          radius: 36,
+                          backgroundColor: AppTheme.surfaceLight,
+                          backgroundImage: photoUrl != null && photoUrl.isNotEmpty
+                              ? CachedNetworkImageProvider(photoUrl)
+                              : null,
+                          child: photoUrl == null || photoUrl.isEmpty
+                              ? Text(
+                                  alunoNome.isNotEmpty ? alunoNome[0].toUpperCase() : '?',
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.primary,
+                                  ),
+                                )
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
-                              '28 anos',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: AppTheme.textSecondary,
-                                fontWeight: FontWeight.w500,
+                            Text(
+                              alunoNome,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimary,
+                                letterSpacing: -0.5,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Text(
-                                '•',
-                                style: TextStyle(color: AppTheme.textSecondary),
-                              ),
-                            ),
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: AppTheme.success,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            const Text(
-                              'Ativo',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: AppTheme.textSecondary,
-                                fontWeight: FontWeight.w500,
-                              ),
+                            const SizedBox(height: 6),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  '28 anos',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: AppTheme.textSecondary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  status.toUpperCase(),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: AppTheme.textSecondary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: ElevatedButton.icon(
+                    onPressed: () => _chamarWhatsApp(context),
+                    icon: const Icon(Icons.chat_bubble_outline, size: 20),
+                    label: const Text(
+                      'Enviar Mensagem',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.success.withAlpha(38),
+                      foregroundColor: AppTheme.success,
+                      elevation: 0,
+                      shadowColor: Colors.transparent,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      minimumSize: const Size(double.infinity, 50),
                     ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: ElevatedButton.icon(
-                onPressed: () => _chamarWhatsApp(context),
-                icon: const Icon(Icons.chat_bubble_outline, size: 20),
-                label: const Text(
-                  'Chamar no WhatsApp',
-                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.success.withAlpha(38),
-                  foregroundColor: AppTheme.success,
-                  elevation: 0,
-                  shadowColor: Colors.transparent,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  minimumSize: const Size(double.infinity, 50),
+                const SizedBox(height: 32),
+                _buildRitmoDaSemana(),
+                const SizedBox(height: 32),
+
+                _buildFichaAtivaHeroCard(context),
+
+                const SizedBox(height: 24),
+                _buildMenuOption(
+                  icon: Icons.calendar_month_outlined,
+                  title: 'Histórico de Feedbacks',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            FeedbackHistoricoPage(alunoNome: alunoNome),
+                      ),
+                    );
+                  },
                 ),
-              ),
+                _buildMenuOption(
+                  icon: Icons.assignment_outlined,
+                  title: 'Avaliação Física',
+                  onTap: () {},
+                ),
+                _buildMenuOption(
+                  icon: Icons.payments_outlined,
+                  title: 'Situação Financeira',
+                  onTap: () {},
+                ),
+                const SizedBox(height: 48),
+              ],
             ),
-            const SizedBox(height: 32),
-            _buildRitmoDaSemana(),
-            const SizedBox(height: 32),
-
-            // O CARD MÁGICO DE ROTINA ATIVA
-            _buildFichaAtivaHeroCard(context),
-
-            const SizedBox(height: 24),
-            _buildMenuOption(
-              icon: Icons.calendar_month_outlined,
-              title: 'Histórico de Feedbacks',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        FeedbackHistoricoPage(alunoNome: alunoNome),
-                  ),
-                );
-              },
-            ),
-            _buildMenuOption(
-              icon: Icons.assignment_outlined,
-              title: 'Avaliação Física',
-              onTap: () {},
-            ),
-            _buildMenuOption(
-              icon: Icons.payments_outlined,
-              title: 'Situação Financeira',
-              onTap: () {},
-            ),
-            const SizedBox(height: 48),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -652,7 +666,6 @@ class PerfilAlunoPage extends StatelessWidget {
     );
   }
 
-  // A JOGADA DE MESTRE DE UI/UX: LÊ A ROTINA ATIVA DIRETAMENTE DA COLEÇÃO ROTINAS
   Widget _buildFichaAtivaHeroCard(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -729,7 +742,6 @@ class PerfilAlunoPage extends StatelessWidget {
           var treinoDoc = snapshot.data!.docs.first;
           var rotina = treinoDoc.data() as Map<String, dynamic>;
 
-          // --- LEITURA DAS DATAS E CÁLCULO MATEMÁTICO ---
           DateTime hoje = DateTime.now();
           DateTime dataCriacao =
               (rotina['dataCriacao'] as Timestamp?)?.toDate() ?? hoje;
@@ -769,8 +781,7 @@ class PerfilAlunoPage extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (context) => RotinaDetalhePage(
                     rotinaData: rotina,
-                    rotinaId: treinoDoc
-                        .id, // Passa os IDs para habilitar edição lá dentro!
+                    rotinaId: treinoDoc.id,
                     alunoId: alunoId,
                     alunoNome: alunoNome,
                   ),
@@ -831,7 +842,6 @@ class PerfilAlunoPage extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          // --- REMOVIDO: O Lápis daqui! ---
                           GestureDetector(
                             onTap: () =>
                                 _removerFichaAtiva(context, treinoDoc.id),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Importação da Auth
-import 'package:cloud_firestore/cloud_firestore.dart'; // Importação do Banco de Dados
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'core/config/firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/login_page.dart';
@@ -24,22 +24,19 @@ class AppFit extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'AppFit',
       theme: AppTheme.themeData,
-      home: const ChecagemPagina(), // <-- O App agora começa no Porteiro!
+      home: const ChecagemPagina(),
     );
   }
 }
 
-// --- O NOSSO NOVO PORTEIRO ---
 class ChecagemPagina extends StatelessWidget {
   const ChecagemPagina({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // StreamBuilder fica "ouvindo" o estado da autenticação em tempo real
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        // Se ainda está carregando a verificação, mostra uma bolinha girando
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(
@@ -48,9 +45,7 @@ class ChecagemPagina extends StatelessWidget {
           );
         }
 
-        // Se o Firebase confirmou que existe um usuário logado
         if (snapshot.hasData && snapshot.data != null) {
-          // Precisamos descobrir se ele é aluno ou personal lá no banco de dados
           return FutureBuilder<DocumentSnapshot>(
             future: FirebaseFirestore.instance
                 .collection('usuarios')
@@ -66,25 +61,21 @@ class ChecagemPagina extends StatelessWidget {
                 );
               }
 
-              // Se encontrou o cadastro no banco, lê o tipo e abre a Dashboard
               if (firestoreSnapshot.hasData && firestoreSnapshot.data!.exists) {
                 String tipo = firestoreSnapshot.data!.get('tipoUsuario');
                 return DashboardPage(userType: tipo);
               }
 
-              // Falha de segurança: se o usuário está logado mas não tem dados no banco, manda pro início
               return const SelecaoPerfilScreen();
             },
           );
         }
 
-        // Se NÃO tem ninguém logado, mostra a tela inicial normal
         return const SelecaoPerfilScreen();
       },
     );
   }
 }
-// -----------------------------
 
 class SelecaoPerfilScreen extends StatelessWidget {
   const SelecaoPerfilScreen({super.key});
@@ -100,7 +91,6 @@ class SelecaoPerfilScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(flex: 3),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -122,7 +112,6 @@ class SelecaoPerfilScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-
               const Text(
                 'A sua plataforma',
                 textAlign: TextAlign.center,
@@ -132,9 +121,7 @@ class SelecaoPerfilScreen extends StatelessWidget {
                   color: AppTheme.textSecondary,
                 ),
               ),
-
               const Spacer(flex: 2),
-
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
@@ -157,9 +144,7 @@ class SelecaoPerfilScreen extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(height: 16),
-
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
@@ -185,7 +170,6 @@ class SelecaoPerfilScreen extends StatelessWidget {
                   ),
                 ),
               ),
-
               const Spacer(flex: 3),
             ],
           ),
