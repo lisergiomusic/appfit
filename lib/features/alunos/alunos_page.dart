@@ -113,7 +113,75 @@ class AlunosPage extends StatelessWidget {
     final String? personalId = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: AppTheme.background.withAlpha(200),
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withAlpha(30),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.fitness_center, color: AppTheme.primary, size: 20),
+            ),
+            const SizedBox(width: AppTheme.space12),
+            const Text(
+              'AppFit',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                color: AppTheme.textPrimary,
+                letterSpacing: -0.8,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: Stack(
+              children: [
+                const Icon(Icons.notifications_none_outlined, color: AppTheme.textPrimary, size: 28),
+                Positioned(
+                  right: 2,
+                  top: 2,
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppTheme.background, width: 2),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            onPressed: () {},
+          ),
+          const SizedBox(width: AppTheme.space12),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(
+            height: 1.0,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withAlpha(0),
+                  Colors.white.withAlpha(25),
+                  Colors.white.withAlpha(0),
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
+          ),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _exibirModalCadastro(context),
         backgroundColor: AppTheme.primary,
