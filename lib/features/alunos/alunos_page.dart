@@ -367,19 +367,17 @@ class _AlunosPageState extends State<AlunosPage> {
   }
 
   Widget _buildFilterChips(int total, int ativos, int risco, int inativos) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
+    return Padding(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-      physics: const BouncingScrollPhysics(),
       child: Row(
         children: [
-          _buildChip(label: 'Todos', count: total, value: 'todos'),
+          Expanded(child: _buildChip(label: 'Todos', count: total, value: 'todos')),
           const SizedBox(width: 8),
-          _buildChip(label: 'Ativos', count: ativos, value: 'ativo'),
+          Expanded(child: _buildChip(label: 'Ativos', count: ativos, value: 'ativo')),
           const SizedBox(width: 8),
-          _buildChip(label: 'Em Risco', count: risco, value: 'risco', activeColor: Colors.orangeAccent),
+          Expanded(child: _buildChip(label: 'Risco', count: risco, value: 'risco', activeColor: Colors.orangeAccent)),
           const SizedBox(width: 8),
-          _buildChip(label: 'Inativos', count: inativos, value: 'inativo'),
+          Expanded(child: _buildChip(label: 'Inativos', count: inativos, value: 'inativo')),
         ],
       ),
     );
@@ -393,7 +391,7 @@ class _AlunosPageState extends State<AlunosPage> {
       onTap: () => setState(() => _statusFilter = value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
         decoration: BoxDecoration(
           color: isSelected ? primaryColor : AppTheme.surfaceDark,
           borderRadius: BorderRadius.circular(12),
@@ -405,18 +403,23 @@ class _AlunosPageState extends State<AlunosPage> {
               : [],
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.black : AppTheme.textSecondary,
-                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                fontSize: 13,
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? Colors.black : AppTheme.textSecondary,
+                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                  fontSize: 12,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 4),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               decoration: BoxDecoration(
                 color: isSelected ? Colors.black.withAlpha(40) : Colors.white.withAlpha(10),
                 borderRadius: BorderRadius.circular(6),
@@ -426,7 +429,7 @@ class _AlunosPageState extends State<AlunosPage> {
                 style: TextStyle(
                   color: isSelected ? Colors.black : AppTheme.textPrimary,
                   fontWeight: FontWeight.w800,
-                  fontSize: 11,
+                  fontSize: 10,
                 ),
               ),
             ),
