@@ -190,9 +190,31 @@ class HomePage extends StatelessWidget {
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
-              child: Text(
-                'ATIVIDADE RECENTE',
-                style: AppTheme.textSectionHeaderDark,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'ATIVIDADE RECENTE',
+                    style: AppTheme.textSectionHeaderDark,
+                  ),
+                  TextButton(
+                    onPressed: null,
+                    style: TextButton.styleFrom(
+                      minimumSize: Size.zero,
+                      padding: EdgeInsets.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: const Text(
+                      'VER MAIS +',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                        color: AppTheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: AppTheme.space12),
@@ -256,8 +278,7 @@ class HomePage extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         border: Border.all(color: Colors.white.withAlpha(15)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column( crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label, style: AppTheme.microLabelTextStyle),
           const SizedBox(height: AppTheme.space4),
