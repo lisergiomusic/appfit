@@ -606,14 +606,9 @@ class PerfilAlunoPage extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Frequência Semanal',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                  letterSpacing: -0.5,
-                ),
+              Text(
+                'FREQUÊNCIA SEMANAL',
+                style: AppTheme.textSectionHeaderDark,
               ),
               Text(
                 'Semana Atual',
@@ -631,9 +626,12 @@ class PerfilAlunoPage extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 24),
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceDark.withAlpha(180),
+            color: AppTheme.surfaceDark,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppTheme.textSecondary.withAlpha(26)),
+            border: Border.all(color: Colors.white.withAlpha(10)),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withAlpha(50), blurRadius: 10, offset: const Offset(0, 4))
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -652,13 +650,12 @@ class PerfilAlunoPage extends StatelessWidget {
                           fontWeight: FontWeight.w900,
                           color: AppTheme.textSecondary,
                           letterSpacing: 1.2,
-                          fontFamily: 'Inter',
                         ),
                       ),
                       const SizedBox(height: 6),
                       Container(
-                        width: 44,
-                        height: 44,
+                        width: 46,
+                        height: 46,
                         decoration: BoxDecoration(
                           color: isFeito
                               ? AppTheme.primary
