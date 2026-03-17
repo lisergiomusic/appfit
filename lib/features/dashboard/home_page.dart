@@ -13,22 +13,16 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.background.withAlpha(230),
+        backgroundColor: AppTheme.background.withAlpha(200),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: Colors.white.withAlpha(12), height: 1.0),
-        ),
         title: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppTheme.primary.withAlpha(50),
-                shape: BoxShape.circle,
-                border: Border.all(color: AppTheme.primary.withAlpha(76)),
+                color: AppTheme.primary.withAlpha(30),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(Icons.fitness_center, color: AppTheme.primary, size: 20),
             ),
@@ -36,48 +30,78 @@ class HomePage extends StatelessWidget {
             const Text(
               'AppFit',
               style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
                 color: AppTheme.textPrimary,
-                letterSpacing: -0.5,
+                letterSpacing: -0.8,
               ),
             ),
           ],
         ),
         actions: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(icon: const Icon(Icons.notifications_none, color: AppTheme.textSecondary), onPressed: () {}),
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Container(
-                  width: AppTheme.space8,
-                  height: AppTheme.space8,
-                  decoration: const BoxDecoration(color: AppTheme.primary, shape: BoxShape.circle),
+          IconButton(
+            icon: Stack(
+              children: [
+                const Icon(Icons.notifications_none_outlined, color: AppTheme.textPrimary, size: 28),
+                Positioned(
+                  right: 2,
+                  top: 2,
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppTheme.background, width: 2),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
+            onPressed: () {},
           ),
-          const SizedBox(width: AppTheme.space8),
+          const SizedBox(width: AppTheme.space12),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(
+            height: 1.0,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withAlpha(0),
+                  Colors.white.withAlpha(25),
+                  Colors.white.withAlpha(0),
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
+          ),
+        ),
       ),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Perfil e Boas-vindas
             Padding(
-              padding: const EdgeInsets.fromLTRB(AppTheme.space24, AppTheme.space32, AppTheme.space24, AppTheme.space16),
+              padding: const EdgeInsets.fromLTRB(AppTheme.space24, AppTheme.space24, AppTheme.space24, AppTheme.space24),
               child: Row(
                 children: [
                   Stack(
+                    alignment: Alignment.bottomRight,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
+                        padding: const EdgeInsets.all(3),
+                        decoration: const BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: AppTheme.primary, width: 2),
+                          gradient: LinearGradient(
+                            colors: [AppTheme.primary, AppTheme.iosBlue],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
                         child: FutureBuilder<DocumentSnapshot>(
                           future: FirebaseFirestore.instance
@@ -89,85 +113,80 @@ class HomePage extends StatelessWidget {
                             if (snapshot.hasData && snapshot.data!.exists) {
                               photoUrl = (snapshot.data!.data() as Map<String, dynamic>)['photoUrl'];
                             }
-
                             return CircleAvatar(
-                              radius: 30,
+                              radius: 34,
                               backgroundColor: AppTheme.surfaceLight,
-                              backgroundImage: photoUrl != null && photoUrl.isNotEmpty
-                                  ? NetworkImage(photoUrl)
-                                  : null,
+                              backgroundImage: photoUrl != null && photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
                               child: photoUrl == null || photoUrl.isEmpty
-                                  ? const Icon(Icons.person, color: AppTheme.textSecondary, size: 30)
+                                  ? const Icon(Icons.person, color: AppTheme.textSecondary, size: 34)
                                   : null,
                             );
                           },
                         ),
                       ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          width: AppTheme.space20,
-                          height: AppTheme.space20,
-                          decoration: BoxDecoration(
-                            color: AppTheme.primary,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: AppTheme.background, width: 2),
-                          ),
-                          child: const Icon(Icons.check, size: 12, color: AppTheme.background),
+                      Container(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppTheme.background, width: 3),
                         ),
+                        child: const Icon(Icons.check, size: 12, color: Colors.black),
                       ),
                     ],
                   ),
                   const SizedBox(width: AppTheme.space16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      FutureBuilder<DocumentSnapshot>(
-                        future: FirebaseFirestore.instance
-                            .collection('usuarios')
-                            .doc(user?.uid)
-                            .get(),
-                        builder: (context, snapshot) {
-                          String nome = "...";
-                          if (snapshot.hasData && snapshot.data!.exists) {
-                            nome = snapshot.data!.get('nome').toString().split(' ')[0];
-                          }
-                          final saudacao = _getSaudacao();
-                          return Text(
-                            '$saudacao, $nome',
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textPrimary,
-                              letterSpacing: -0.5,
-                            ),
-                          );
-                        },
-                      ),
-                      const Text(
-                        'Nível Premium',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.textSecondary,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        FutureBuilder<DocumentSnapshot>(
+                          future: FirebaseFirestore.instance
+                              .collection('usuarios')
+                              .doc(user?.uid)
+                              .get(),
+                          builder: (context, snapshot) {
+                            String nome = "...";
+                            if (snapshot.hasData && snapshot.data!.exists) {
+                              nome = snapshot.data!.get('nome').toString().split(' ')[0];
+                            }
+                            return Text(
+                              '${_getSaudacao()}, $nome',
+                              style: const TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.textPrimary,
+                                letterSpacing: -1.0,
+                              ),
+                            );
+                          },
                         ),
-                      ),
-                    ],
+                        const Text(
+                          'Nível Premium',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
 
+            // Stats Row
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24, vertical: AppTheme.space8),
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
               child: Row(
                 children: [
                   Expanded(
                     child: _buildStatCard(
                       label: 'ALUNOS ATIVOS',
                       value: '42',
-                      trendText: '+12%',
+                      trendText: '+12% este mês',
                       trendIcon: Icons.trending_up,
                       trendColor: AppTheme.primary,
                     ),
@@ -176,9 +195,9 @@ class HomePage extends StatelessWidget {
                   Expanded(
                     child: _buildStatCard(
                       label: 'ATENÇÃO NECESSÁRIA',
-                      value: '5',
-                      trendText: 'Pendente',
-                      trendIcon: Icons.pending_actions,
+                      value: '05',
+                      trendText: 'Pendentes',
+                      trendIcon: Icons.error_outline,
                       trendColor: AppTheme.accentMetrics,
                     ),
                   ),
@@ -188,51 +207,40 @@ class HomePage extends StatelessWidget {
 
             const SizedBox(height: AppTheme.space32),
 
+            // Quick Actions
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Icon(Icons.bolt, color: AppTheme.primary, size: 16),
-                      const SizedBox(width: AppTheme.space8),
-                      Text(
-                        'AÇÕES RÁPIDAS',
-                        style: AppTheme.textSectionHeaderDark,
-                      ),
+                      Text('AÇÕES RÁPIDAS', style: AppTheme.textSectionHeaderDark),
+                      const Icon(Icons.keyboard_arrow_right, color: AppTheme.textSecondary, size: 18),
                     ],
                   ),
                   const SizedBox(height: AppTheme.space16),
                   Row(
                     children: [
                       Expanded(
-                        child: AspectRatio(
-                          aspectRatio: 1,
-                          child: _buildQuickActionSquare(
-                            icon: Icons.person_add,
-                            text: 'CADASTRAR\nALUNO',
-                          ),
+                        child: _buildQuickActionSquare(
+                          icon: Icons.person_add_rounded,
+                          text: 'CADASTRAR\nALUNO',
                         ),
                       ),
                       const SizedBox(width: AppTheme.space12),
                       Expanded(
-                        child: AspectRatio(
-                          aspectRatio: 1,
-                          child: _buildQuickActionSquare(
-                            icon: Icons.add_task,
-                            text: 'CRIAR\nROTINA',
-                          ),
+                        child: _buildQuickActionSquare(
+                          icon: Icons.assignment_add,
+                          text: 'CRIAR\nROTINA',
                         ),
                       ),
                       const SizedBox(width: AppTheme.space12),
                       Expanded(
-                        child: AspectRatio(
-                          aspectRatio: 1,
-                          child: _buildQuickActionSquare(
-                            icon: Icons.analytics,
-                            text: 'VER\nRELATÓRIOS',
-                          ),
+                        child: _buildQuickActionSquare(
+                          icon: Icons.bar_chart_rounded,
+                          text: 'VER\nRELATÓRIOS',
                         ),
                       ),
                     ],
@@ -243,36 +251,20 @@ class HomePage extends StatelessWidget {
 
             const SizedBox(height: AppTheme.space32),
 
+            // Recent Activity
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'ATIVIDADE RECENTE',
-                    style: AppTheme.textSectionHeaderDark,
-                  ),
+                  Text('ATIVIDADE RECENTE', style: AppTheme.textSectionHeaderDark),
                   TextButton(
-                    onPressed: null,
-                    style: TextButton.styleFrom(
-                      minimumSize: Size.zero,
-                      padding: EdgeInsets.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: const Text(
-                      'VER MAIS +',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.2,
-                        color: AppTheme.primary,
-                      ),
-                    ),
+                    onPressed: () {},
+                    child: const Text('VER TUDO', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.primary)),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: AppTheme.space12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.space24),
               child: Column(
@@ -282,17 +274,13 @@ class HomePage extends StatelessWidget {
                     action: 'Concluiu Treino A',
                     time: 'Há 2h',
                     photoUrl: null,
-                    icon: Icons.local_fire_department,
-                    iconColor: AppTheme.accentMetrics,
                   ),
                   const SizedBox(height: AppTheme.space12),
                   _buildRecentActivityListTile(
                     name: 'Paola Oliveira',
-                    action: 'Atualizou as medidas',
+                    action: 'Atualizou medidas',
                     time: 'Há 4h',
                     photoUrl: null,
-                    icon: Icons.straighten,
-                    iconColor: AppTheme.iosBlue,
                   ),
                   const SizedBox(height: AppTheme.space12),
                   _buildRecentActivityListTile(
@@ -300,14 +288,11 @@ class HomePage extends StatelessWidget {
                     action: 'Novo PR no Supino',
                     time: 'Ontem',
                     photoUrl: null,
-                    icon: Icons.emoji_events,
-                    iconColor: Colors.amber,
                   ),
                 ],
               ),
             ),
-
-            const SizedBox(height: 100),
+            const SizedBox(height: 120),
           ],
         ),
       ),
@@ -316,13 +301,9 @@ class HomePage extends StatelessWidget {
 
   String _getSaudacao() {
     final hora = DateTime.now().hour;
-    if (hora >= 5 && hora < 12) {
-      return 'Bom dia';
-    } else if (hora >= 12 && hora < 18) {
-      return 'Boa tarde';
-    } else {
-      return 'Boa noite';
-    }
+    if (hora >= 5 && hora < 12) return 'Bom dia';
+    if (hora >= 12 && hora < 18) return 'Boa tarde';
+    return 'Boa noite';
   }
 
   Widget _buildStatCard({required String label, required String value, required String trendText, required IconData trendIcon, required Color trendColor}) {
@@ -330,20 +311,31 @@ class HomePage extends StatelessWidget {
       padding: const EdgeInsets.all(AppTheme.space16),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        border: Border.all(color: Colors.white.withAlpha(15)),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        border: Border.all(color: Colors.white.withAlpha(10)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withAlpha(50), blurRadius: 10, offset: const Offset(0, 4))
+        ],
       ),
-      child: Column( crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: AppTheme.microLabelTextStyle),
-          const SizedBox(height: AppTheme.space4),
-          Text(value, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppTheme.textPrimary, letterSpacing: -1.0)),
+          Text(label, style: AppTheme.microLabelTextStyle.copyWith(color: AppTheme.textSecondary)),
           const SizedBox(height: AppTheme.space8),
+          Text(value, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -1.5)),
+          const SizedBox(height: AppTheme.space12),
           Row(
             children: [
               Icon(trendIcon, size: 14, color: trendColor),
-              const SizedBox(width: AppTheme.space4),
-              Text(trendText, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: trendColor)),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  trendText,
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: trendColor),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
         ],
@@ -352,30 +344,31 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildQuickActionSquare({required IconData icon, required String text}) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {},
+    return Container(
+      height: 100,
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceDark,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppTheme.primary.withAlpha(25),
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-            border: Border.all(color: AppTheme.primary.withAlpha(50)),
-          ),
+        border: Border.all(color: AppTheme.primary.withAlpha(40)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {},
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: AppTheme.primary, size: 28),
+              Icon(icon, color: AppTheme.primary, size: 32),
               const SizedBox(height: AppTheme.space8),
               Text(
                 text,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textSecondary,
-                  height: 1.2,
+                  fontWeight: FontWeight.w900,
+                  color: AppTheme.textPrimary,
+                  height: 1.1,
                 ),
               ),
             ],
@@ -390,24 +383,20 @@ class HomePage extends StatelessWidget {
     required String action,
     required String time,
     String? photoUrl,
-    required IconData icon,
-    required Color iconColor,
   }) {
     return Container(
-      padding: const EdgeInsets.all(AppTheme.space16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceDark,
+        color: AppTheme.surfaceDark.withAlpha(150),
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        border: Border.all(color: Colors.white.withAlpha(15)),
+        border: Border.all(color: Colors.white.withAlpha(10)),
       ),
       child: Row(
         children: [
           CircleAvatar(
             radius: 24,
             backgroundColor: AppTheme.surfaceLight,
-            backgroundImage: photoUrl != null && photoUrl.isNotEmpty
-                ? NetworkImage(photoUrl)
-                : null,
+            backgroundImage: photoUrl != null && photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
             child: photoUrl == null || photoUrl.isEmpty
                 ? const Icon(Icons.person, color: AppTheme.textSecondary, size: 24)
                 : null,
@@ -417,26 +406,21 @@ class HomePage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                Text(name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
                 const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Icon(icon, size: 14, color: iconColor),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        action,
-                        style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+                Text(
+                  action,
+                  style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          Text(time, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontWeight: FontWeight.w600)),
+          Text(
+            time,
+            style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
+          ),
         ],
       ),
     );
