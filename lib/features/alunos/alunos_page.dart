@@ -13,8 +13,159 @@ class AlunosPage extends StatefulWidget {
 
 class _AlunosPageState extends State<AlunosPage> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
   String _searchQuery = "";
   String _statusFilter = "todos"; // "todos", "ativo", "inativo", "risco"
+
+  // Estados de Paginação
+  List<DocumentSnapshot> _alunosDocs = [];
+  bool _isLoading = true;
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+  DocumentSnapshot? _lastDocument;
+  static const int _limit = 20;
+
+  // Contagens Globais para os Chips
+  int _totalCount = 0;
+  int _ativosCount = 0;
+  int _inativosCount = 0;
+  int _riscoCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchInitialData();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (!_isLoading && !_isLoadingMore && _hasMore) {
+        _fetchNextPage();
+      }
+    }
+  }
+
+  Future<void> _fetchInitialData() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _alunosDocs = [];
+      _lastDocument = null;
+      _hasMore = true;
+    });
+
+    await Future.wait([
+      _updateSummaryCounts(),
+      _fetchNextPage(isInitial: true),
+    ]);
+
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  Future<void> _updateSummaryCounts() async {
+    final String? personalId = FirebaseAuth.instance.currentUser?.uid;
+    if (personalId == null) return;
+
+    final baseQuery = FirebaseFirestore.instance
+        .collection('usuarios')
+        .where('tipoUsuario', isEqualTo: 'aluno')
+        .where('personalId', isEqualTo: personalId);
+
+    try {
+      // Usando Aggregate Queries para eficiência (custo de 1 leitura por 1000 índices)
+      final total = await baseQuery.count().get();
+      final ativos = await baseQuery.where('status', isEqualTo: 'ativo').count().get();
+      final inativos = await baseQuery.where('status', isEqualTo: 'inativo').count().get();
+
+      // Cálculo de risco: Ativo e sem treino há mais de 7 dias
+      final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
+      final risco = await baseQuery
+          .where('status', isEqualTo: 'ativo')
+          .where('ultimoTreino', isLessThanOrEqualTo: Timestamp.fromDate(sevenDaysAgo))
+          .count()
+          .get();
+
+      if (mounted) {
+        setState(() {
+          _totalCount = total.count ?? 0;
+          _ativosCount = ativos.count ?? 0;
+          _inativosCount = inativos.count ?? 0;
+          _riscoCount = risco.count ?? 0;
+        });
+      }
+    } catch (e) {
+      debugPrint("Erro ao buscar contagens: $e");
+    }
+  }
+
+  Future<void> _fetchNextPage({bool isInitial = false}) async {
+    if (!isInitial && (_isLoadingMore || !_hasMore)) return;
+
+    if (!isInitial) setState(() => _isLoadingMore = true);
+
+    final String? personalId = FirebaseAuth.instance.currentUser?.uid;
+    if (personalId == null) return;
+
+    try {
+      Query query = FirebaseFirestore.instance
+          .collection('usuarios')
+          .where('tipoUsuario', isEqualTo: 'aluno')
+          .where('personalId', isEqualTo: personalId);
+
+      // Filtro de Status no Servidor
+      if (_statusFilter == "ativo") {
+        query = query.where('status', isEqualTo: 'ativo');
+      } else if (_statusFilter == "inativo") {
+        query = query.where('status', isEqualTo: 'inativo');
+      } else if (_statusFilter == "risco") {
+        final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
+        query = query
+            .where('status', isEqualTo: 'ativo')
+            .where('ultimoTreino', isLessThanOrEqualTo: Timestamp.fromDate(sevenDaysAgo));
+      }
+
+      // Busca por Nome (Prefix matching) - requer que o nome comece com a query
+      if (_searchQuery.isNotEmpty) {
+        query = query
+            .where('nome', isGreaterThanOrEqualTo: _searchQuery)
+            .where('nome', isLessThanOrEqualTo: '$_searchQuery\uf8ff');
+      }
+
+      query = query.orderBy('nome').limit(_limit);
+
+      if (_lastDocument != null) {
+        query = query.startAfterDocument(_lastDocument!);
+      }
+
+      final snapshot = await query.get();
+
+      if (mounted) {
+        setState(() {
+          if (snapshot.docs.length < _limit) {
+            _hasMore = false;
+          }
+
+          if (snapshot.docs.isNotEmpty) {
+            _lastDocument = snapshot.docs.last;
+            _alunosDocs.addAll(snapshot.docs);
+          }
+          _isLoadingMore = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Erro ao buscar alunos: $e");
+      if (mounted) setState(() => _isLoadingMore = false);
+    }
+  }
 
   Future<void> _deletarAluno(String id) async {
     final bool? confirmar = await showDialog<bool>(
@@ -40,6 +191,7 @@ class _AlunosPageState extends State<AlunosPage> {
 
     if (confirmar == true) {
       await FirebaseFirestore.instance.collection('usuarios').doc(id).delete();
+      _fetchInitialData();
     }
   }
 
@@ -59,7 +211,10 @@ class _AlunosPageState extends State<AlunosPage> {
         'dataCriacao': FieldValue.serverTimestamp(),
         'ultimoTreino': FieldValue.serverTimestamp(),
       });
-      if (context.mounted) Navigator.pop(context);
+      if (context.mounted) {
+        Navigator.pop(context);
+        _fetchInitialData();
+      }
     } catch (e) {
       debugPrint("Erro ao salvar: $e");
     }
@@ -149,8 +304,6 @@ class _AlunosPageState extends State<AlunosPage> {
 
   @override
   Widget build(BuildContext context) {
-    final String? personalId = FirebaseAuth.instance.currentUser?.uid;
-
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: _buildAppBar(),
@@ -160,101 +313,51 @@ class _AlunosPageState extends State<AlunosPage> {
         icon: const Icon(Icons.add, color: Colors.black, size: 20),
         label: const Text('ADICIONAR', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5)),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('usuarios')
-            .where('tipoUsuario', isEqualTo: 'aluno')
-            .where('personalId', isEqualTo: personalId)
-            .snapshots(),
-        builder: (context, snapshot) {
-          int total = 0;
-          int ativos = 0;
-          int inativos = 0;
-          int risco = 0;
-
-          if (snapshot.hasData) {
-            final allDocs = snapshot.data!.docs;
-            total = allDocs.length;
-
-            for (var doc in allDocs) {
-              final data = doc.data() as Map<String, dynamic>;
-              final status = data['status']?.toString().toLowerCase() ?? "ativo";
-
-              if (status == 'ativo') {
-                ativos++;
-                if (data['ultimoTreino'] != null) {
-                  final DateTime lastWorkout = (data['ultimoTreino'] as Timestamp).toDate();
-                  if (DateTime.now().difference(lastWorkout).inDays >= 7) {
-                    risco++;
-                  }
-                }
-              } else if (status == 'inativo') {
-                inativos++;
-              }
-            }
-          }
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              _buildSearchBar(),
-              _buildFilterChips(total, ativos, risco, inativos),
-              Expanded(
-                child: Builder(builder: (context) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator(color: AppTheme.primary));
-                  }
-
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return _buildEmptyState();
-                  }
-
-                  final docs = snapshot.data!.docs.where((doc) {
-                    final data = doc.data() as Map<String, dynamic>;
-                    final nome = data['nome']?.toString().toLowerCase() ?? "";
-                    final status = data['status']?.toString().toLowerCase() ?? "ativo";
-
-                    bool emRisco = false;
-                    if (data['ultimoTreino'] != null) {
-                      final DateTime lastWorkout = (data['ultimoTreino'] as Timestamp).toDate();
-                      if (DateTime.now().difference(lastWorkout).inDays >= 7 && status == 'ativo') {
-                        emRisco = true;
+      body: RefreshIndicator(
+        onRefresh: _fetchInitialData,
+        color: AppTheme.primary,
+        backgroundColor: AppTheme.surfaceDark,
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          slivers: [
+            SliverToBoxAdapter(child: _buildHeader()),
+            SliverToBoxAdapter(child: _buildSearchBar()),
+            SliverToBoxAdapter(child: _buildFilterChips()),
+            if (_isLoading)
+              const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator(color: AppTheme.primary)),
+              )
+            else if (_alunosDocs.isEmpty)
+              SliverFillRemaining(
+                child: _searchQuery.isNotEmpty || _statusFilter != "todos" 
+                  ? _buildNoResultsState() 
+                  : _buildEmptyState(),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      if (index == _alunosDocs.length) {
+                        return _hasMore 
+                          ? const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 32),
+                              child: Center(child: CircularProgressIndicator(color: AppTheme.primary)),
+                            )
+                          : const SizedBox.shrink();
                       }
-                    }
-
-                    final matchesSearch = nome.contains(_searchQuery.toLowerCase());
-                    bool matchesFilter = false;
-                    if (_statusFilter == "todos") {
-                      matchesFilter = true;
-                    } else if (_statusFilter == "risco") {
-                      matchesFilter = emRisco;
-                    } else {
-                      matchesFilter = status == _statusFilter;
-                    }
-
-                    return matchesSearch && matchesFilter;
-                  }).toList();
-
-                  if (docs.isEmpty && (_searchQuery.isNotEmpty || _statusFilter != "todos")) {
-                    return _buildNoResultsState();
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: docs.length,
-                    itemBuilder: (context, index) {
-                      final doc = docs[index];
+                      final doc = _alunosDocs[index];
                       final aluno = doc.data() as Map<String, dynamic>;
                       return _buildDismissibleCard(doc.id, aluno);
                     },
-                  );
-                }),
+                    childCount: _alunosDocs.length + 1,
+                  ),
+                ),
               ),
-            ],
-          );
-        },
+          ],
+        ),
       ),
     );
   }
@@ -340,7 +443,10 @@ class _AlunosPageState extends State<AlunosPage> {
         ),
         child: TextField(
           controller: _searchController,
-          onChanged: (val) => setState(() => _searchQuery = val),
+          onChanged: (val) {
+            setState(() => _searchQuery = val);
+            _fetchInitialData();
+          },
           style: const TextStyle(color: Colors.white, fontSize: 15),
           decoration: InputDecoration(
             hintText: 'Pesquisar por nome...',
@@ -352,6 +458,7 @@ class _AlunosPageState extends State<AlunosPage> {
                     onPressed: () {
                       _searchController.clear();
                       setState(() => _searchQuery = "");
+                      _fetchInitialData();
                     },
                   )
                 : null,
@@ -366,18 +473,18 @@ class _AlunosPageState extends State<AlunosPage> {
     );
   }
 
-  Widget _buildFilterChips(int total, int ativos, int risco, int inativos) {
+  Widget _buildFilterChips() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       child: Row(
         children: [
-          Expanded(child: _buildChip(label: 'Todos', count: total, value: 'todos')),
+          Expanded(child: _buildChip(label: 'Todos', count: _totalCount, value: 'todos')),
           const SizedBox(width: 8),
-          Expanded(child: _buildChip(label: 'Ativos', count: ativos, value: 'ativo')),
+          Expanded(child: _buildChip(label: 'Ativos', count: _ativosCount, value: 'ativo')),
           const SizedBox(width: 8),
-          Expanded(child: _buildChip(label: 'Risco', count: risco, value: 'risco', activeColor: Colors.orangeAccent)),
+          Expanded(child: _buildChip(label: 'Risco', count: _riscoCount, value: 'risco', activeColor: Colors.orangeAccent)),
           const SizedBox(width: 8),
-          Expanded(child: _buildChip(label: 'Inativos', count: inativos, value: 'inativo')),
+          Expanded(child: _buildChip(label: 'Inativos', count: _inativosCount, value: 'inativo')),
         ],
       ),
     );
@@ -388,7 +495,12 @@ class _AlunosPageState extends State<AlunosPage> {
     final Color primaryColor = activeColor ?? AppTheme.primary;
 
     return GestureDetector(
-      onTap: () => setState(() => _statusFilter = value),
+      onTap: () {
+        if (_statusFilter != value) {
+          setState(() => _statusFilter = value);
+          _fetchInitialData();
+        }
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
