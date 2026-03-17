@@ -21,18 +21,37 @@ class _AlunosPageState extends State<AlunosPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.surfaceDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
-        title: const Text('Remover Aluno', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        content: const Text('Deseja realmente remover este aluno? Todos os dados vinculados serão perdidos.',
-            style: TextStyle(color: AppTheme.textSecondary)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        ),
+        title: const Text(
+          'Remover Aluno',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Deseja realmente remover este aluno? Todos os dados vinculados serão perdidos.',
+          style: TextStyle(color: AppTheme.textSecondary),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('CANCELAR', style: TextStyle(color: AppTheme.textSecondary, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'CANCELAR',
+              style: TextStyle(
+                color: AppTheme.textSecondary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('REMOVER', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'REMOVER',
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -43,7 +62,11 @@ class _AlunosPageState extends State<AlunosPage> {
     }
   }
 
-  Future<void> _salvarAluno(BuildContext context, String nome, String email) async {
+  Future<void> _salvarAluno(
+    BuildContext context,
+    String nome,
+    String email,
+  ) async {
     if (nome.isEmpty || email.isEmpty) return;
 
     final String? personalId = FirebaseAuth.instance.currentUser?.uid;
@@ -57,7 +80,8 @@ class _AlunosPageState extends State<AlunosPage> {
         'status': 'ativo', // Padrão ao cadastrar
         'personalId': personalId,
         'dataCriacao': FieldValue.serverTimestamp(),
-        'ultimoTreino': FieldValue.serverTimestamp(), // Para fins de teste do "Em Risco"
+        'ultimoTreino':
+            FieldValue.serverTimestamp(), // Para fins de teste do "Em Risco"
       });
       if (mounted) Navigator.pop(context);
     } catch (e) {
@@ -96,11 +120,19 @@ class _AlunosPageState extends State<AlunosPage> {
                   children: [
                     Text(
                       'Novo Aluno',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: -0.5,
+                      ),
                     ),
                     Text(
                       'Preencha os dados do aluno abaixo',
-                      style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppTheme.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -133,12 +165,25 @@ class _AlunosPageState extends State<AlunosPage> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () => _salvarAluno(context, nomeController.text, emailController.text),
+                onPressed: () => _salvarAluno(
+                  context,
+                  nomeController.text,
+                  emailController.text,
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
-                child: const Text('CADASTRAR ALUNO', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, letterSpacing: 1.0)),
+                child: const Text(
+                  'CADASTRAR ALUNO',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.0,
+                  ),
+                ),
               ),
             ),
           ],
@@ -158,7 +203,15 @@ class _AlunosPageState extends State<AlunosPage> {
         onPressed: _exibirModalCadastro,
         backgroundColor: AppTheme.primary,
         icon: const Icon(Icons.add, color: Colors.black, size: 20),
-        label: const Text('ADICIONAR', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5)),
+        label: const Text(
+          'ADICIONAR',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.w900,
+            fontSize: 13,
+            letterSpacing: 0.5,
+          ),
+        ),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,7 +228,9 @@ class _AlunosPageState extends State<AlunosPage> {
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator(color: AppTheme.primary));
+                  return const Center(
+                    child: CircularProgressIndicator(color: AppTheme.primary),
+                  );
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -185,20 +240,26 @@ class _AlunosPageState extends State<AlunosPage> {
                 final docs = snapshot.data!.docs.where((doc) {
                   final data = doc.data() as Map<String, dynamic>;
                   final nome = data['nome']?.toString().toLowerCase() ?? "";
-                  final status = data['status']?.toString().toLowerCase() ?? "ativo";
-                  
+                  final status =
+                      data['status']?.toString().toLowerCase() ?? "ativo";
+
                   // Lógica "Em Risco": Inativo por mais de 7 dias (exemplo)
                   bool emRisco = false;
                   if (data['ultimoTreino'] != null) {
-                    final DateTime lastWorkout = (data['ultimoTreino'] as Timestamp).toDate();
-                    final int daysSinceLastWorkout = DateTime.now().difference(lastWorkout).inDays;
+                    final DateTime lastWorkout =
+                        (data['ultimoTreino'] as Timestamp).toDate();
+                    final int daysSinceLastWorkout = DateTime.now()
+                        .difference(lastWorkout)
+                        .inDays;
                     if (daysSinceLastWorkout >= 7 && status == 'ativo') {
                       emRisco = true;
                     }
                   }
 
-                  final matchesSearch = nome.contains(_searchQuery.toLowerCase());
-                  
+                  final matchesSearch = nome.contains(
+                    _searchQuery.toLowerCase(),
+                  );
+
                   bool matchesFilter = false;
                   if (_statusFilter == "todos") {
                     matchesFilter = true;
@@ -211,7 +272,8 @@ class _AlunosPageState extends State<AlunosPage> {
                   return matchesSearch && matchesFilter;
                 }).toList();
 
-                if (docs.isEmpty && (_searchQuery.isNotEmpty || _statusFilter != "todos")) {
+                if (docs.isEmpty &&
+                    (_searchQuery.isNotEmpty || _statusFilter != "todos")) {
                   return _buildNoResultsState();
                 }
 
@@ -246,18 +308,31 @@ class _AlunosPageState extends State<AlunosPage> {
               color: AppTheme.primary.withAlpha(30),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.fitness_center, color: AppTheme.primary, size: 20),
+            child: const Icon(
+              Icons.fitness_center,
+              color: AppTheme.primary,
+              size: 20,
+            ),
           ),
           const SizedBox(width: AppTheme.space12),
           const Text(
             'AppFit',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -0.8),
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              color: AppTheme.textPrimary,
+              letterSpacing: -0.8,
+            ),
           ),
         ],
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications_none_outlined, color: AppTheme.textPrimary, size: 26),
+          icon: const Icon(
+            Icons.notifications_none_outlined,
+            color: AppTheme.textPrimary,
+            size: 26,
+          ),
           onPressed: () {},
         ),
         const SizedBox(width: AppTheme.space12),
@@ -268,7 +343,11 @@ class _AlunosPageState extends State<AlunosPage> {
           height: 1.0,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.white.withAlpha(0), Colors.white.withAlpha(20), Colors.white.withAlpha(0)],
+              colors: [
+                Colors.white.withAlpha(0),
+                Colors.white.withAlpha(20),
+                Colors.white.withAlpha(0),
+              ],
             ),
           ),
         ),
@@ -293,23 +372,12 @@ class _AlunosPageState extends State<AlunosPage> {
             ),
           ),
           const SizedBox(height: 8),
-          Row(
-            children: [
-              Container(
-                width: 32,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppTheme.primary,
-                  borderRadius: BorderRadius.circular(2),
-                  gradient: const LinearGradient(colors: [AppTheme.primary, AppTheme.iosBlue]),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'GERENCIAMENTO DE CLIENTES',
-                style: AppTheme.textSectionHeaderDark.copyWith(fontSize: 10, letterSpacing: 1.5),
-              ),
-            ],
+          Text(
+            'GERENCIAMENTO DE CLIENTES',
+            style: AppTheme.textSectionHeaderDark.copyWith(
+              fontSize: 10,
+              letterSpacing: 1.5,
+            ),
           ),
         ],
       ),
@@ -333,10 +401,18 @@ class _AlunosPageState extends State<AlunosPage> {
           decoration: InputDecoration(
             hintText: 'Pesquisar por nome...',
             hintStyle: TextStyle(color: AppTheme.textSecondary.withAlpha(80)),
-            prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.textSecondary, size: 20),
+            prefixIcon: const Icon(
+              Icons.search_rounded,
+              color: AppTheme.textSecondary,
+              size: 20,
+            ),
             suffixIcon: _searchQuery.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(Icons.close_rounded, size: 18, color: AppTheme.textSecondary),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: AppTheme.textSecondary,
+                    ),
                     onPressed: () {
                       _searchController.clear();
                       setState(() => _searchQuery = "");
@@ -356,16 +432,18 @@ class _AlunosPageState extends State<AlunosPage> {
 
   Widget _buildFilterChips() {
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-      physics: const BouncingScrollPhysics(),
       child: Row(
         children: [
           _buildChip(label: 'Todos', value: 'todos'),
           const SizedBox(width: 8),
           _buildChip(label: 'Ativos', value: 'ativo'),
           const SizedBox(width: 8),
-          _buildChip(label: 'Em Risco', value: 'risco', activeColor: Colors.orangeAccent),
+          _buildChip(
+            label: 'Em Risco',
+            value: 'risco',
+            activeColor: Colors.orangeAccent,
+          ),
           const SizedBox(width: 8),
           _buildChip(label: 'Inativos', value: 'inativo'),
         ],
@@ -373,10 +451,14 @@ class _AlunosPageState extends State<AlunosPage> {
     );
   }
 
-  Widget _buildChip({required String label, required String value, Color? activeColor}) {
+  Widget _buildChip({
+    required String label,
+    required String value,
+    Color? activeColor,
+  }) {
     final bool isSelected = _statusFilter == value;
     final Color primaryColor = activeColor ?? AppTheme.primary;
-    
+
     return GestureDetector(
       onTap: () => setState(() => _statusFilter = value),
       child: AnimatedContainer(
@@ -389,7 +471,13 @@ class _AlunosPageState extends State<AlunosPage> {
             color: isSelected ? primaryColor : Colors.white.withAlpha(15),
           ),
           boxShadow: isSelected
-              ? [BoxShadow(color: primaryColor.withAlpha(60), blurRadius: 10, offset: const Offset(0, 4))]
+              ? [
+                  BoxShadow(
+                    color: primaryColor.withAlpha(60),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
               : [],
         ),
         child: Text(
@@ -420,7 +508,11 @@ class _AlunosPageState extends State<AlunosPage> {
           color: Colors.redAccent.withAlpha(30),
           borderRadius: BorderRadius.circular(20),
         ),
-        child: const Icon(Icons.delete_sweep_rounded, color: Colors.redAccent, size: 28),
+        child: const Icon(
+          Icons.delete_sweep_rounded,
+          color: Colors.redAccent,
+          size: 28,
+        ),
       ),
       child: _buildAlunoCard(
         nome: aluno['nome'] ?? 'Sem nome',
@@ -432,7 +524,8 @@ class _AlunosPageState extends State<AlunosPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PerfilAlunoPage(alunoId: id, alunoNome: aluno['nome']),
+              builder: (context) =>
+                  PerfilAlunoPage(alunoId: id, alunoNome: aluno['nome']),
             ),
           );
         },
@@ -449,7 +542,7 @@ class _AlunosPageState extends State<AlunosPage> {
     required VoidCallback onTap,
   }) {
     final bool isAtivo = status == 'ativo';
-    
+
     // Lógica visual Em Risco
     bool emRisco = false;
     if (ultimoTreino != null && isAtivo) {
@@ -459,7 +552,9 @@ class _AlunosPageState extends State<AlunosPage> {
       }
     }
 
-    final Color statusColor = emRisco ? Colors.orangeAccent : (isAtivo ? AppTheme.primary : Colors.redAccent);
+    final Color statusColor = emRisco
+        ? Colors.orangeAccent
+        : (isAtivo ? AppTheme.primary : Colors.redAccent);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -484,19 +579,26 @@ class _AlunosPageState extends State<AlunosPage> {
                       padding: const EdgeInsets.all(1),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white.withAlpha(30), width: 1),
+                        border: Border.all(
+                          color: Colors.white.withAlpha(30),
+                          width: 1,
+                        ),
                       ),
                       child: CircleAvatar(
                         radius: 26,
                         backgroundColor: AppTheme.surfaceLight,
-                        backgroundImage: photoUrl != null && photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                        backgroundImage: photoUrl != null && photoUrl.isNotEmpty
+                            ? NetworkImage(photoUrl)
+                            : null,
                         child: photoUrl == null || photoUrl.isEmpty
-                            ? Text(nome.isNotEmpty ? nome[0].toUpperCase() : '?',
+                            ? Text(
+                                nome.isNotEmpty ? nome[0].toUpperCase() : '?',
                                 style: TextStyle(
                                   color: statusColor,
                                   fontWeight: FontWeight.w900,
                                   fontSize: 20,
-                                ))
+                                ),
+                              )
                             : null,
                       ),
                     ),
@@ -506,7 +608,10 @@ class _AlunosPageState extends State<AlunosPage> {
                       decoration: BoxDecoration(
                         color: statusColor,
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppTheme.surfaceDark, width: 2),
+                        border: Border.all(
+                          color: AppTheme.surfaceDark,
+                          width: 2,
+                        ),
                       ),
                     ),
                   ],
@@ -520,14 +625,32 @@ class _AlunosPageState extends State<AlunosPage> {
                         children: [
                           Text(
                             nome,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textPrimary, letterSpacing: -0.2),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.textPrimary,
+                              letterSpacing: -0.2,
+                            ),
                           ),
                           if (emRisco) ...[
                             const SizedBox(width: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(color: Colors.orangeAccent.withAlpha(40), borderRadius: BorderRadius.circular(4)),
-                              child: const Text('RISCO', style: TextStyle(color: Colors.orangeAccent, fontSize: 8, fontWeight: FontWeight.w900)),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.orangeAccent.withAlpha(40),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'RISCO',
+                                style: TextStyle(
+                                  color: Colors.orangeAccent,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
                             ),
                           ],
                         ],
@@ -535,14 +658,22 @@ class _AlunosPageState extends State<AlunosPage> {
                       const SizedBox(height: 2),
                       Text(
                         email.toLowerCase(),
-                        style: TextStyle(fontSize: 12, color: AppTheme.textSecondary.withAlpha(180), fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textSecondary.withAlpha(180),
+                          fontWeight: FontWeight.w500,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.textSecondary.withAlpha(100), size: 14),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: AppTheme.textSecondary.withAlpha(100),
+                  size: 14,
+                ),
               ],
             ),
           ),
@@ -556,11 +687,25 @@ class _AlunosPageState extends State<AlunosPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.group_add_rounded, size: 64, color: AppTheme.textSecondary.withAlpha(30)),
+          Icon(
+            Icons.group_add_rounded,
+            size: 64,
+            color: AppTheme.textSecondary.withAlpha(30),
+          ),
           const SizedBox(height: 24),
-          const Text('Nenhum aluno ainda', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
+          const Text(
+            'Nenhum aluno ainda',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
           const SizedBox(height: 8),
-          const Text('Toque em ADICIONAR para começar.', style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+          const Text(
+            'Toque em ADICIONAR para começar.',
+            style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+          ),
         ],
       ),
     );
@@ -573,10 +718,20 @@ class _AlunosPageState extends State<AlunosPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_off_rounded, size: 48, color: AppTheme.textSecondary.withAlpha(40)),
+            Icon(
+              Icons.search_off_rounded,
+              size: 48,
+              color: AppTheme.textSecondary.withAlpha(40),
+            ),
             const SizedBox(height: 16),
-            Text('Nenhum resultado para os filtros aplicados',
-                textAlign: TextAlign.center, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+            Text(
+              'Nenhum resultado para os filtros aplicados',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 14,
+              ),
+            ),
           ],
         ),
       ),
