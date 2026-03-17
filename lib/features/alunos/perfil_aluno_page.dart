@@ -606,13 +606,17 @@ class PerfilAlunoPage extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'FREQUÊNCIA SEMANAL',
-                style: AppTheme.textSectionHeaderDark,
-              ),
+              Text('FREQUÊNCIA SEMANAL', style: AppTheme.textSectionHeaderDark),
               TextButton(
                 onPressed: () {},
-                child: const Text('VER TUDO', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.primary)),
+                child: const Text(
+                  'VER TUDO',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.primary,
+                  ),
+                ),
               ),
             ],
           ),
@@ -625,7 +629,11 @@ class PerfilAlunoPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             border: Border.all(color: Colors.white.withAlpha(10)),
             boxShadow: [
-              BoxShadow(color: Colors.black.withAlpha(50), blurRadius: 10, offset: const Offset(0, 4))
+              BoxShadow(
+                color: Colors.black.withAlpha(50),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
             ],
           ),
           child: Column(
