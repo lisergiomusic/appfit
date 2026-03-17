@@ -163,7 +163,7 @@ class HomePage extends StatelessWidget {
                           },
                         ),
                         const Text(
-                          'Nível Premium',
+                          'Plano Premium',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
@@ -359,7 +359,7 @@ class HomePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: AppTheme.primary, size: 32),
+              Icon(icon, color: AppTheme.primary, size: 28),
               const SizedBox(height: AppTheme.space8),
               Text(
                 text,
@@ -385,43 +385,85 @@ class HomePage extends StatelessWidget {
     String? photoUrl,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceDark.withAlpha(150),
+        color: AppTheme.surfaceDark.withAlpha(180),
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        border: Border.all(color: Colors.white.withAlpha(10)),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: AppTheme.surfaceLight,
-            backgroundImage: photoUrl != null && photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
-            child: photoUrl == null || photoUrl.isEmpty
-                ? const Icon(Icons.person, color: AppTheme.textSecondary, size: 24)
-                : null,
+        border: Border.all(color: Colors.white.withAlpha(15)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(30),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          const SizedBox(width: AppTheme.space16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {},
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
               children: [
-                Text(name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
-                const SizedBox(height: 2),
+                // Avatar
+                Container(
+                  padding: const EdgeInsets.all(1.5),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppTheme.textSecondary.withAlpha(40)),
+                  ),
+                  child: CircleAvatar(
+                    radius: 22,
+                    backgroundColor: AppTheme.surfaceLight,
+                    backgroundImage: photoUrl != null && photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                    child: photoUrl == null || photoUrl.isEmpty
+                        ? const Icon(Icons.person, color: AppTheme.textSecondary, size: 22)
+                        : null,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                // Informações Centrais
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary,
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        action,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.textSecondary.withAlpha(200),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Tempo alinhado à direita e centralizado verticalmente
                 Text(
-                  action,
-                  style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  time,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppTheme.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
           ),
-          Text(
-            time,
-            style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
-          ),
-        ],
+        ),
       ),
     );
   }
