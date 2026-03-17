@@ -808,178 +808,118 @@ class PerfilAlunoPage extends StatelessWidget {
           if (totalDias <= 0) totalDias = 1;
 
           int diasPassados = hoje.difference(dataCriacao).inDays;
-          int diasRestantes = totalDias - diasPassados;
-
           double progressoAtual = (diasPassados / totalDias).clamp(0.0, 1.0);
 
-          bool alertaVencimento = diasRestantes <= 7 && diasRestantes >= 0;
-          Color corProgresso = AppTheme.success;
-
-          String textoRestante;
-          if (diasRestantes < 0) {
-            textoRestante = 'Vencida há ${diasRestantes.abs()} dias';
-            corProgresso = Colors.redAccent;
-          } else if (diasRestantes == 0) {
-            textoRestante = 'Vence hoje';
-            corProgresso = Colors.orangeAccent;
-          } else if (alertaVencimento) {
-            textoRestante = 'Vence em $diasRestantes dias';
-            corProgresso = Colors.orangeAccent;
-          } else {
-            textoRestante = '$diasRestantes dias restantes';
-          }
-
-          return InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => RotinaDetalhePage(
-                    rotinaData: rotina,
-                    rotinaId: treinoDoc.id,
-                    alunoId: alunoId,
-                    alunoNome: alunoNome,
-                  ),
-                ),
-              );
-            },
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppTheme.surfaceDark,
-                    AppTheme.surfaceLight.withAlpha(204),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: alertaVencimento
-                      ? Colors.orangeAccent.withAlpha(50)
-                      : (diasRestantes < 0
-                            ? Colors.redAccent.withAlpha(50)
-                            : Colors.white.withAlpha(13)),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.style,
-                            size: 16,
-                            color: diasRestantes < 0
-                                ? Colors.redAccent
-                                : AppTheme.primary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            diasRestantes < 0
-                                ? 'ROTINA EXPIRADA'
-                                : 'ROTINA ATUAL',
-                            style: TextStyle(
-                              color: diasRestantes < 0
-                                  ? Colors.redAccent
-                                  : AppTheme.primary,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          GestureDetector(
-                            onTap: () =>
-                                _removerFichaAtiva(context, treinoDoc.id),
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Icon(
-                                Icons.archive_outlined,
-                                color: AppTheme.textSecondary,
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () => _exibirOpcoesVincularTreino(context),
-                            child: const Text(
-                              'Trocar',
-                              style: TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                   Text(
+                    'ROTINA ATUAL',
+                    style: AppTheme.textSectionHeaderDark,
                   ),
-                  const SizedBox(height: 16),
-
-                  Text(
-                    rotina['nome'] ?? 'Projeto Hipertrofia',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Toque para ver e editar treinos',
-                    style: TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 12,
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        textoRestante,
-                        style: TextStyle(
-                          color: corProgresso,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RotinaDetalhePage(
+                            rotinaData: rotina,
+                            rotinaId: treinoDoc.id,
+                            alunoId: alunoId,
+                            alunoNome: alunoNome,
+                          ),
                         ),
+                      );
+                    },
+                    child: const Text(
+                      'VER DETALHES',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.primary,
                       ),
-                      Text(
-                        '${(progressoAtual * 100).toInt()}%',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: LinearProgressIndicator(
-                      value: progressoAtual,
-                      backgroundColor: Colors.black.withAlpha(77),
-                      color: corProgresso,
-                      minHeight: 4,
                     ),
                   ),
                 ],
               ),
-            ),
+
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceDark,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.white.withAlpha(15)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          rotina['nome'] ?? 'Full Body A',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(10),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.fitness_center,
+                            color: AppTheme.primary,
+                            size: 24,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'PROGRESSO DO PLANO',
+                          style: TextStyle(
+                            color: Colors.white.withAlpha(100),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        Text(
+                          '${(progressoAtual * 100).toInt()}%',
+                          style: TextStyle(
+                            color: Colors.white.withAlpha(150),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: LinearProgressIndicator(
+                        value: progressoAtual,
+                        minHeight: 10,
+                        backgroundColor: Colors.white.withAlpha(15),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppTheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           );
         },
       ),
