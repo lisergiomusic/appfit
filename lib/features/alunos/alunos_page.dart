@@ -14,6 +14,7 @@ class AlunosPage extends StatefulWidget {
 class _AlunosPageState extends State<AlunosPage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
+  String _statusFilter = "todos"; // "todos", "ativo", "inativo"
 
   Future<void> _deletarAluno(String id) async {
     final bool? confirmar = await showDialog<bool>(
@@ -53,6 +54,7 @@ class _AlunosPageState extends State<AlunosPage> {
         'nome': nome,
         'email': email,
         'tipoUsuario': 'aluno',
+        'status': 'ativo', // Padrão ao cadastrar
         'personalId': personalId,
         'dataCriacao': FieldValue.serverTimestamp(),
       });
@@ -162,6 +164,7 @@ class _AlunosPageState extends State<AlunosPage> {
         children: [
           _buildHeader(),
           _buildSearchBar(),
+          _buildFilterChips(),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -179,11 +182,17 @@ class _AlunosPageState extends State<AlunosPage> {
                 }
 
                 final docs = snapshot.data!.docs.where((doc) {
-                  final nome = (doc.data() as Map<String, dynamic>)['nome']?.toString().toLowerCase() ?? "";
-                  return nome.contains(_searchQuery.toLowerCase());
+                  final data = doc.data() as Map<String, dynamic>;
+                  final nome = data['nome']?.toString().toLowerCase() ?? "";
+                  final status = data['status']?.toString().toLowerCase() ?? "ativo";
+
+                  final matchesSearch = nome.contains(_searchQuery.toLowerCase());
+                  final matchesFilter = _statusFilter == "todos" || status == _statusFilter;
+
+                  return matchesSearch && matchesFilter;
                 }).toList();
 
-                if (docs.isEmpty && _searchQuery.isNotEmpty) {
+                if (docs.isEmpty && (_searchQuery.isNotEmpty || _statusFilter != "todos")) {
                   return _buildNoResultsState();
                 }
 
@@ -290,7 +299,7 @@ class _AlunosPageState extends State<AlunosPage> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
       child: Container(
         height: 52,
         decoration: BoxDecoration(
@@ -326,6 +335,52 @@ class _AlunosPageState extends State<AlunosPage> {
     );
   }
 
+  Widget _buildFilterChips() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: [
+          _buildChip(label: 'Todos', value: 'todos'),
+          const SizedBox(width: 8),
+          _buildChip(label: 'Ativos', value: 'ativo'),
+          const SizedBox(width: 8),
+          _buildChip(label: 'Inativos', value: 'inativo'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChip({required String label, required String value}) {
+    final bool isSelected = _statusFilter == value;
+    return GestureDetector(
+      onTap: () => setState(() => _statusFilter = value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primary : AppTheme.surfaceDark,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppTheme.primary : Colors.white.withAlpha(15),
+          ),
+          boxShadow: isSelected
+              ? [BoxShadow(color: AppTheme.primary.withAlpha(60), blurRadius: 10, offset: const Offset(0, 4))]
+              : [],
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.black : AppTheme.textSecondary,
+            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDismissibleCard(String id, Map<String, dynamic> aluno) {
     return Dismissible(
       key: Key(id),
@@ -347,6 +402,7 @@ class _AlunosPageState extends State<AlunosPage> {
       child: _buildAlunoCard(
         nome: aluno['nome'] ?? 'Sem nome',
         email: aluno['email'] ?? 'Sem e-mail',
+        status: aluno['status'] ?? 'ativo',
         photoUrl: aluno['photoUrl'],
         onTap: () {
           Navigator.push(
@@ -360,7 +416,14 @@ class _AlunosPageState extends State<AlunosPage> {
     );
   }
 
-  Widget _buildAlunoCard({required String nome, required String email, String? photoUrl, required VoidCallback onTap}) {
+  Widget _buildAlunoCard({
+    required String nome,
+    required String email,
+    required String status,
+    String? photoUrl,
+    required VoidCallback onTap,
+  }) {
+    final bool isAtivo = status == 'ativo';
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -382,9 +445,11 @@ class _AlunosPageState extends State<AlunosPage> {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: LinearGradient(colors: [AppTheme.primary, AppTheme.iosBlue]),
+                        gradient: LinearGradient(
+                          colors: isAtivo ? [AppTheme.primary, AppTheme.iosBlue] : [Colors.grey, Colors.blueGrey],
+                        ),
                       ),
                       child: CircleAvatar(
                         radius: 26,
@@ -392,7 +457,11 @@ class _AlunosPageState extends State<AlunosPage> {
                         backgroundImage: photoUrl != null && photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
                         child: photoUrl == null || photoUrl.isEmpty
                             ? Text(nome.isNotEmpty ? nome[0].toUpperCase() : '?',
-                                style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w900, fontSize: 20))
+                                style: TextStyle(
+                                  color: isAtivo ? AppTheme.primary : Colors.grey,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 20,
+                                ))
                             : null,
                       ),
                     ),
@@ -400,7 +469,7 @@ class _AlunosPageState extends State<AlunosPage> {
                       width: 12,
                       height: 12,
                       decoration: BoxDecoration(
-                        color: AppTheme.primary,
+                        color: isAtivo ? AppTheme.primary : Colors.grey,
                         shape: BoxShape.circle,
                         border: Border.all(color: AppTheme.surfaceDark, width: 2),
                       ),
@@ -459,7 +528,7 @@ class _AlunosPageState extends State<AlunosPage> {
           children: [
             Icon(Icons.search_off_rounded, size: 48, color: AppTheme.textSecondary.withAlpha(40)),
             const SizedBox(height: 16),
-            Text('Nenhum resultado para "$_searchQuery"',
+            Text('Nenhum resultado para os filtros aplicados',
                 textAlign: TextAlign.center, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
           ],
         ),
