@@ -460,7 +460,7 @@ class PerfilAlunoPage extends StatelessWidget {
                           ),
                         ),
                         child: CircleAvatar(
-                          radius: 36,
+                          radius: 50,
                           backgroundColor: AppTheme.surfaceLight,
                           backgroundImage:
                               photoUrl != null && photoUrl.isNotEmpty
@@ -511,7 +511,7 @@ class PerfilAlunoPage extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  status.toUpperCase(),
+                                  '82kg',
                                   style: const TextStyle(
                                     fontSize: 14,
                                     color: AppTheme.textSecondary,
@@ -549,7 +549,7 @@ class PerfilAlunoPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 20),
                 _buildRitmoDaSemana(),
                 const SizedBox(height: 32),
 
