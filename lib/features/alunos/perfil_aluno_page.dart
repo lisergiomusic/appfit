@@ -428,12 +428,16 @@ class PerfilAlunoPage extends StatelessWidget {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: AppTheme.primary));
+            return const Center(
+              child: CircularProgressIndicator(color: AppTheme.primary),
+            );
           }
 
-          final alunoData = snapshot.data?.data() as Map<String, dynamic>? ?? {};
+          final alunoData =
+              snapshot.data?.data() as Map<String, dynamic>? ?? {};
           final photoUrl = alunoData['photoUrl'] as String?;
-          final status = (alunoData['status']?.toString().toLowerCase() ?? 'ativo');
+          final status =
+              (alunoData['status']?.toString().toLowerCase() ?? 'ativo');
           final isAtivo = status == 'ativo';
 
           return SingleChildScrollView(
@@ -449,19 +453,24 @@ class PerfilAlunoPage extends StatelessWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: isAtivo ? AppTheme.success : AppTheme.textSecondary.withAlpha(100),
+                            color: isAtivo
+                                ? AppTheme.success
+                                : AppTheme.textSecondary.withAlpha(100),
                             width: 2,
                           ),
                         ),
                         child: CircleAvatar(
                           radius: 36,
                           backgroundColor: AppTheme.surfaceLight,
-                          backgroundImage: photoUrl != null && photoUrl.isNotEmpty
+                          backgroundImage:
+                              photoUrl != null && photoUrl.isNotEmpty
                               ? CachedNetworkImageProvider(photoUrl)
                               : null,
                           child: photoUrl == null || photoUrl.isEmpty
                               ? Text(
-                                  alunoNome.isNotEmpty ? alunoNome[0].toUpperCase() : '?',
+                                  alunoNome.isNotEmpty
+                                      ? alunoNome[0].toUpperCase()
+                                      : '?',
                                   style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
@@ -589,27 +598,12 @@ class PerfilAlunoPage extends StatelessWidget {
       {'dia': 'S', 'status': 'futuro'},
       {'dia': 'D', 'status': 'futuro'},
     ];
-    final totalPlanejado = 5;
-    final feitos = dias.where((d) => d['status'] == 'feito').length;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.textSecondary.withAlpha(26)),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withValues(alpha: .08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
@@ -631,85 +625,99 @@ class PerfilAlunoPage extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: dias.map((d) {
-              final isFeito = d['status'] == 'feito';
-              final isFalta = d['status'] == 'falta';
-              return Column(
-                children: [
-                  Text(
-                    d['dia']!,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                      color: AppTheme.textSecondary,
-                      letterSpacing: 1.2,
-                      fontFamily: 'Inter',
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: isFeito
-                          ? AppTheme.primary
-                          : (isFalta
-                              ? AppTheme.surfaceLight
-                              : AppTheme.surfaceDark),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: isFeito
-                          ? [
-                              BoxShadow(
-                                color: AppTheme.primary.withValues(alpha: .18),
-                                blurRadius: 12,
-                                offset: const Offset(0, 2),
-                              ),
-                            ]
-                          : null,
-                      border: Border.all(
-                        color: isFeito
-                            ? AppTheme.primary
-                            : (isFalta
-                                ? Colors.redAccent.withAlpha(77)
-                                : AppTheme.textSecondary.withAlpha(26)),
-                        width: 1.5,
+        ),
+        const SizedBox(height: 12),
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceDark.withAlpha(180),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppTheme.textSecondary.withAlpha(26)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: dias.map((d) {
+                  final isFeito = d['status'] == 'feito';
+                  final isFalta = d['status'] == 'falta';
+                  return Column(
+                    children: [
+                      Text(
+                        d['dia']!,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          color: AppTheme.textSecondary,
+                          letterSpacing: 1.2,
+                          fontFamily: 'Inter',
+                        ),
                       ),
-                    ),
-                    child: Center(
-                      child: isFeito
-                          ? Icon(Icons.check, color: AppTheme.surfaceDark, size: 26)
-                          : (isFalta
-                              ? Icon(Icons.close, color: Colors.redAccent.withAlpha(204), size: 22)
-                              : Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.textSecondary.withAlpha(51),
-                                    shape: BoxShape.circle,
+                      const SizedBox(height: 6),
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: isFeito
+                              ? AppTheme.primary
+                              : (isFalta
+                                    ? AppTheme.surfaceLight
+                                    : AppTheme.surfaceDark),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: isFeito
+                              ? [
+                                  BoxShadow(
+                                    color: AppTheme.primary.withValues(
+                                      alpha: .18,
+                                    ),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 2),
                                   ),
-                                )),
-                    ),
-                  ),
-                ],
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 24),
-          Center(
-            child: Text(
-              'Você treinou $feitos de $totalPlanejado dias planejados nesta semana.',
-              style: TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+                                ]
+                              : null,
+                          border: Border.all(
+                            color: isFeito
+                                ? AppTheme.primary
+                                : (isFalta
+                                      ? Colors.redAccent.withAlpha(77)
+                                      : AppTheme.textSecondary.withAlpha(26)),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Center(
+                          child: isFeito
+                              ? Icon(
+                                  Icons.check,
+                                  color: AppTheme.surfaceDark,
+                                  size: 26,
+                                )
+                              : (isFalta
+                                    ? Icon(
+                                        Icons.close,
+                                        color: Colors.redAccent.withAlpha(204),
+                                        size: 22,
+                                      )
+                                    : Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.textSecondary
+                                              .withAlpha(51),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      )),
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
