@@ -221,7 +221,7 @@ class HomePage extends StatelessWidget {
                           aspectRatio: 1,
                           child: _buildQuickActionSquare(
                             icon: Icons.add_task,
-                            text: 'CRIAR\nTEMPLATE',
+                            text: 'CRIAR\nROTINA',
                           ),
                         ),
                       ),
