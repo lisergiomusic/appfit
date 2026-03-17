@@ -89,7 +89,7 @@ class HomePage extends StatelessWidget {
                             if (snapshot.hasData && snapshot.data!.exists) {
                               photoUrl = (snapshot.data!.data() as Map<String, dynamic>)['photoUrl'];
                             }
-                            
+
                             return CircleAvatar(
                               radius: 30,
                               backgroundColor: AppTheme.surfaceLight,
@@ -201,25 +201,28 @@ class HomePage extends StatelessWidget {
               child: Column(
                 children: [
                   _buildRecentActivityListTile(
-                    name: 'Jordan Smith',
+                    name: 'Cristiano Ronaldo',
                     action: 'Concluiu Treino A',
                     time: 'Há 2h',
+                    photoUrl: null,
                     icon: Icons.local_fire_department,
                     iconColor: AppTheme.accentMetrics,
                   ),
                   const SizedBox(height: AppTheme.space12),
                   _buildRecentActivityListTile(
-                    name: 'Sarah Williams',
+                    name: 'Paola Oliveira',
                     action: 'Atualizou as medidas',
                     time: 'Há 4h',
+                    photoUrl: null,
                     icon: Icons.straighten,
                     iconColor: AppTheme.iosBlue,
                   ),
                   const SizedBox(height: AppTheme.space12),
                   _buildRecentActivityListTile(
-                    name: 'Marcus Chen',
+                    name: 'Everton Ribeiro',
                     action: 'Novo PR no Supino',
                     time: 'Ontem',
+                    photoUrl: null,
                     icon: Icons.emoji_events,
                     iconColor: Colors.amber,
                   ),
@@ -272,7 +275,14 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentActivityListTile({required String name, required String action, required String time, required IconData icon, required Color iconColor}) {
+  Widget _buildRecentActivityListTile({
+    required String name,
+    required String action,
+    required String time,
+    String? photoUrl,
+    required IconData icon,
+    required Color iconColor,
+  }) {
     return Container(
       padding: const EdgeInsets.all(AppTheme.space16),
       decoration: BoxDecoration(
@@ -282,10 +292,15 @@ class HomePage extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: iconColor.withAlpha(30), shape: BoxShape.circle),
-            child: Icon(icon, size: 20, color: iconColor),
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: AppTheme.surfaceLight,
+            backgroundImage: photoUrl != null && photoUrl.isNotEmpty
+                ? NetworkImage(photoUrl)
+                : null,
+            child: photoUrl == null || photoUrl.isEmpty
+                ? const Icon(Icons.person, color: AppTheme.textSecondary, size: 24)
+                : null,
           ),
           const SizedBox(width: AppTheme.space16),
           Expanded(
@@ -294,7 +309,20 @@ class HomePage extends StatelessWidget {
               children: [
                 Text(name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
                 const SizedBox(height: 2),
-                Text(action, style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Row(
+                  children: [
+                    Icon(icon, size: 14, color: iconColor),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        action,
+                        style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
