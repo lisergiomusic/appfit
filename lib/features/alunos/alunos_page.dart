@@ -14,7 +14,7 @@ class AlunosPage extends StatefulWidget {
 class _AlunosPageState extends State<AlunosPage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
-  String _statusFilter = "todos"; // "todos", "ativo", "inativo"
+  String _statusFilter = "todos"; // "todos", "ativo", "inativo", "risco"
 
   Future<void> _deletarAluno(String id) async {
     final bool? confirmar = await showDialog<bool>(
@@ -57,6 +57,7 @@ class _AlunosPageState extends State<AlunosPage> {
         'status': 'ativo', // Padrão ao cadastrar
         'personalId': personalId,
         'dataCriacao': FieldValue.serverTimestamp(),
+        'ultimoTreino': FieldValue.serverTimestamp(), // Para fins de teste do "Em Risco"
       });
       if (mounted) Navigator.pop(context);
     } catch (e) {
@@ -185,9 +186,27 @@ class _AlunosPageState extends State<AlunosPage> {
                   final data = doc.data() as Map<String, dynamic>;
                   final nome = data['nome']?.toString().toLowerCase() ?? "";
                   final status = data['status']?.toString().toLowerCase() ?? "ativo";
+                  
+                  // Lógica "Em Risco": Inativo por mais de 7 dias (exemplo)
+                  bool emRisco = false;
+                  if (data['ultimoTreino'] != null) {
+                    final DateTime lastWorkout = (data['ultimoTreino'] as Timestamp).toDate();
+                    final int daysSinceLastWorkout = DateTime.now().difference(lastWorkout).inDays;
+                    if (daysSinceLastWorkout >= 7 && status == 'ativo') {
+                      emRisco = true;
+                    }
+                  }
 
                   final matchesSearch = nome.contains(_searchQuery.toLowerCase());
-                  final matchesFilter = _statusFilter == "todos" || status == _statusFilter;
+                  
+                  bool matchesFilter = false;
+                  if (_statusFilter == "todos") {
+                    matchesFilter = true;
+                  } else if (_statusFilter == "risco") {
+                    matchesFilter = emRisco;
+                  } else {
+                    matchesFilter = status == _statusFilter;
+                  }
 
                   return matchesSearch && matchesFilter;
                 }).toList();
@@ -346,27 +365,31 @@ class _AlunosPageState extends State<AlunosPage> {
           const SizedBox(width: 8),
           _buildChip(label: 'Ativos', value: 'ativo'),
           const SizedBox(width: 8),
+          _buildChip(label: 'Em Risco', value: 'risco', activeColor: Colors.orangeAccent),
+          const SizedBox(width: 8),
           _buildChip(label: 'Inativos', value: 'inativo'),
         ],
       ),
     );
   }
 
-  Widget _buildChip({required String label, required String value}) {
+  Widget _buildChip({required String label, required String value, Color? activeColor}) {
     final bool isSelected = _statusFilter == value;
+    final Color primaryColor = activeColor ?? AppTheme.primary;
+    
     return GestureDetector(
       onTap: () => setState(() => _statusFilter = value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primary : AppTheme.surfaceDark,
+          color: isSelected ? primaryColor : AppTheme.surfaceDark,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppTheme.primary : Colors.white.withAlpha(15),
+            color: isSelected ? primaryColor : Colors.white.withAlpha(15),
           ),
           boxShadow: isSelected
-              ? [BoxShadow(color: AppTheme.primary.withAlpha(60), blurRadius: 10, offset: const Offset(0, 4))]
+              ? [BoxShadow(color: primaryColor.withAlpha(60), blurRadius: 10, offset: const Offset(0, 4))]
               : [],
         ),
         child: Text(
@@ -404,6 +427,7 @@ class _AlunosPageState extends State<AlunosPage> {
         email: aluno['email'] ?? 'Sem e-mail',
         status: aluno['status'] ?? 'ativo',
         photoUrl: aluno['photoUrl'],
+        ultimoTreino: aluno['ultimoTreino'],
         onTap: () {
           Navigator.push(
             context,
@@ -421,9 +445,22 @@ class _AlunosPageState extends State<AlunosPage> {
     required String email,
     required String status,
     String? photoUrl,
+    dynamic ultimoTreino,
     required VoidCallback onTap,
   }) {
     final bool isAtivo = status == 'ativo';
+    
+    // Lógica visual Em Risco
+    bool emRisco = false;
+    if (ultimoTreino != null && isAtivo) {
+      final DateTime lastWorkout = (ultimoTreino as Timestamp).toDate();
+      if (DateTime.now().difference(lastWorkout).inDays >= 7) {
+        emRisco = true;
+      }
+    }
+
+    final Color statusColor = emRisco ? Colors.orangeAccent : (isAtivo ? AppTheme.primary : Colors.redAccent);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -444,12 +481,10 @@ class _AlunosPageState extends State<AlunosPage> {
                   alignment: Alignment.bottomRight,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(2),
+                      padding: const EdgeInsets.all(1),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: isAtivo ? [AppTheme.primary, AppTheme.iosBlue] : [Colors.grey, Colors.blueGrey],
-                        ),
+                        border: Border.all(color: Colors.white.withAlpha(30), width: 1),
                       ),
                       child: CircleAvatar(
                         radius: 26,
@@ -458,7 +493,7 @@ class _AlunosPageState extends State<AlunosPage> {
                         child: photoUrl == null || photoUrl.isEmpty
                             ? Text(nome.isNotEmpty ? nome[0].toUpperCase() : '?',
                                 style: TextStyle(
-                                  color: isAtivo ? AppTheme.primary : Colors.grey,
+                                  color: statusColor,
                                   fontWeight: FontWeight.w900,
                                   fontSize: 20,
                                 ))
@@ -469,7 +504,7 @@ class _AlunosPageState extends State<AlunosPage> {
                       width: 12,
                       height: 12,
                       decoration: BoxDecoration(
-                        color: isAtivo ? AppTheme.primary : Colors.grey,
+                        color: statusColor,
                         shape: BoxShape.circle,
                         border: Border.all(color: AppTheme.surfaceDark, width: 2),
                       ),
@@ -481,9 +516,21 @@ class _AlunosPageState extends State<AlunosPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        nome,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textPrimary, letterSpacing: -0.2),
+                      Row(
+                        children: [
+                          Text(
+                            nome,
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textPrimary, letterSpacing: -0.2),
+                          ),
+                          if (emRisco) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(color: Colors.orangeAccent.withAlpha(40), borderRadius: BorderRadius.circular(4)),
+                              child: const Text('RISCO', style: TextStyle(color: Colors.orangeAccent, fontSize: 8, fontWeight: FontWeight.w900)),
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 2),
                       Text(
