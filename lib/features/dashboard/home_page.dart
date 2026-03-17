@@ -175,7 +175,7 @@ class HomePage extends StatelessWidget {
                   const SizedBox(width: AppTheme.space16),
                   Expanded(
                     child: _buildStatCard(
-                      label: 'FEEDBACK',
+                      label: 'ATENÇÃO NECESSÁRIA',
                       value: '5',
                       trendText: 'Pendente',
                       trendIcon: Icons.pending_actions,
@@ -208,7 +208,7 @@ class HomePage extends StatelessWidget {
                       'VER MAIS +',
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                         letterSpacing: 1.2,
                         color: AppTheme.primary,
                       ),
