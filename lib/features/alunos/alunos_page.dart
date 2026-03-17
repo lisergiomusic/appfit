@@ -1,106 +1,143 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // <-- NOVO: Importação para pegar o ID do Personal
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/theme/app_theme.dart';
 import 'perfil_aluno_page.dart';
 
-class AlunosPage extends StatelessWidget {
+class AlunosPage extends StatefulWidget {
   const AlunosPage({super.key});
 
-  // --- FUNÇÃO PARA DELETAR DO BANCO ---
+  @override
+  State<AlunosPage> createState() => _AlunosPageState();
+}
+
+class _AlunosPageState extends State<AlunosPage> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
+
   Future<void> _deletarAluno(String id) async {
-    await FirebaseFirestore.instance.collection('usuarios').doc(id).delete();
+    final bool? confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surfaceDark,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+        title: const Text('Remover Aluno', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: const Text('Deseja realmente remover este aluno? Todos os dados vinculados serão perdidos.',
+            style: TextStyle(color: AppTheme.textSecondary)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('CANCELAR', style: TextStyle(color: AppTheme.textSecondary, fontWeight: FontWeight.bold)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('REMOVER', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true) {
+      await FirebaseFirestore.instance.collection('usuarios').doc(id).delete();
+    }
   }
 
-  Future<void> _salvarAluno(
-    BuildContext context,
-    String nome,
-    String email,
-  ) async {
+  Future<void> _salvarAluno(BuildContext context, String nome, String email) async {
     if (nome.isEmpty || email.isEmpty) return;
 
-    // <-- NOVO: Pegamos o ID único do Personal logado
     final String? personalId = FirebaseAuth.instance.currentUser?.uid;
-
-    if (personalId == null) {
-      debugPrint("Erro: Nenhum personal logado.");
-      return;
-    }
+    if (personalId == null) return;
 
     try {
       await FirebaseFirestore.instance.collection('usuarios').add({
         'nome': nome,
         'email': email,
         'tipoUsuario': 'aluno',
-        'personalId':
-            personalId, // <-- NOVO: Carimbamos o aluno com o ID do seu Personal!
+        'personalId': personalId,
         'dataCriacao': FieldValue.serverTimestamp(),
       });
-      if (context.mounted) Navigator.pop(context);
+      if (mounted) Navigator.pop(context);
     } catch (e) {
       debugPrint("Erro ao salvar: $e");
     }
   }
 
-  void _exibirModalCadastro(BuildContext context) {
+  void _exibirModalCadastro() {
     final nomeController = TextEditingController();
     final emailController = TextEditingController();
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTheme.surfaceDark,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Padding(
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: AppTheme.surfaceDark,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 32,
           left: 24,
           right: 24,
-          top: 24,
+          top: 32,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Novo Aluno',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Novo Aluno',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5),
+                    ),
+                    Text(
+                      'Preencha os dados do aluno abaixo',
+                      style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close, color: AppTheme.textSecondary),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 32),
             TextField(
               controller: nomeController,
               decoration: const InputDecoration(
                 labelText: 'Nome do Aluno',
-                prefixIcon: Icon(Icons.person),
+                prefixIcon: Icon(Icons.person_outline),
               ),
-              style: const TextStyle(color: Colors.white),
+              textCapitalization: TextCapitalization.words,
             ),
             const SizedBox(height: 16),
             TextField(
               controller: emailController,
               decoration: const InputDecoration(
-                labelText: 'E-mail',
-                prefixIcon: Icon(Icons.email),
+                labelText: 'E-mail de Acesso',
+                prefixIcon: Icon(Icons.alternate_email),
               ),
-              style: const TextStyle(color: Colors.white),
               keyboardType: TextInputType.emailAddress,
             ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => _salvarAluno(
-                context,
-                nomeController.text,
-                emailController.text,
-              ),
-              child: const Text('Cadastrar Aluno'),
-            ),
             const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () => _salvarAluno(context, nomeController.text, emailController.text),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: const Text('CADASTRAR ALUNO', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, letterSpacing: 1.0)),
+              ),
+            ),
           ],
         ),
       ),
@@ -109,171 +146,323 @@ class AlunosPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // <-- NOVO: Pegamos o ID do Personal para usar no filtro da consulta
     final String? personalId = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background.withAlpha(200),
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppTheme.primary.withAlpha(30),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.fitness_center, color: AppTheme.primary, size: 20),
+      appBar: _buildAppBar(),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _exibirModalCadastro,
+        backgroundColor: AppTheme.primary,
+        icon: const Icon(Icons.add, color: Colors.black, size: 20),
+        label: const Text('ADICIONAR', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5)),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(),
+          _buildSearchBar(),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('usuarios')
+                  .where('tipoUsuario', isEqualTo: 'aluno')
+                  .where('personalId', isEqualTo: personalId)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator(color: AppTheme.primary));
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return _buildEmptyState();
+                }
+
+                final docs = snapshot.data!.docs.where((doc) {
+                  final nome = (doc.data() as Map<String, dynamic>)['nome']?.toString().toLowerCase() ?? "";
+                  return nome.contains(_searchQuery.toLowerCase());
+                }).toList();
+
+                if (docs.isEmpty && _searchQuery.isNotEmpty) {
+                  return _buildNoResultsState();
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    final doc = docs[index];
+                    final aluno = doc.data() as Map<String, dynamic>;
+                    return _buildDismissibleCard(doc.id, aluno);
+                  },
+                );
+              },
             ),
-            const SizedBox(width: AppTheme.space12),
-            const Text(
-              'AppFit',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-                color: AppTheme.textPrimary,
-                letterSpacing: -0.8,
-              ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: AppTheme.background.withAlpha(200),
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      title: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withAlpha(30),
+              borderRadius: BorderRadius.circular(12),
             ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Stack(
-              children: [
-                const Icon(Icons.notifications_none_outlined, color: AppTheme.textPrimary, size: 28),
-                Positioned(
-                  right: 2,
-                  top: 2,
-                  child: Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primary,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppTheme.background, width: 2),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            onPressed: () {},
+            child: const Icon(Icons.fitness_center, color: AppTheme.primary, size: 20),
           ),
           const SizedBox(width: AppTheme.space12),
+          const Text(
+            'AppFit',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -0.8),
+          ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
-          child: Container(
-            height: 1.0,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.white.withAlpha(0),
-                  Colors.white.withAlpha(25),
-                  Colors.white.withAlpha(0),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.notifications_none_outlined, color: AppTheme.textPrimary, size: 26),
+          onPressed: () {},
+        ),
+        const SizedBox(width: AppTheme.space12),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1.0),
+        child: Container(
+          height: 1.0,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.white.withAlpha(0), Colors.white.withAlpha(20), Colors.white.withAlpha(0)],
             ),
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _exibirModalCadastro(context),
-        backgroundColor: AppTheme.primary,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('usuarios')
-            .where('tipoUsuario', isEqualTo: 'aluno')
-            .where(
-              'personalId',
-              isEqualTo: personalId,
-            ) // <-- NOVO: O Firestore agora só traz os SEUS alunos!
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text(
-                'Nenhum aluno.',
-                style: TextStyle(color: AppTheme.textSecondary),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Meus Alunos',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 40,
+              letterSpacing: -1.5,
+              height: 1.0,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary,
+                  borderRadius: BorderRadius.circular(2),
+                  gradient: const LinearGradient(colors: [AppTheme.primary, AppTheme.iosBlue]),
+                ),
               ),
-            );
-          }
+              const SizedBox(width: 8),
+              Text(
+                'GERENCIAMENTO DE CLIENTES',
+                style: AppTheme.textSectionHeaderDark.copyWith(fontSize: 10, letterSpacing: 1.5),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: snapshot.data!.docs.length,
-            itemBuilder: (context, index) {
-              var doc = snapshot.data!.docs[index];
-              var aluno = doc.data() as Map<String, dynamic>;
-
-              return Dismissible(
-                key: Key(doc.id),
-                direction: DismissDirection.endToStart,
-                background: Container(
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 20),
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.delete, color: Colors.white),
-                ),
-                onDismissed: (direction) => _deletarAluno(doc.id),
-                child: Card(
-                  color: AppTheme.surfaceLight,
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: AppTheme.primary.withAlpha(26),
-                      child: Text(
-                        aluno['nome'][0],
-                        style: const TextStyle(color: AppTheme.primary),
-                      ),
-                    ),
-                    title: Text(
-                      aluno['nome'],
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Text(
-                      aluno['email'],
-                      style: const TextStyle(color: AppTheme.textSecondary),
-                    ),
-                    trailing: const Icon(
-                      Icons.chevron_right,
-                      color: AppTheme.textSecondary,
-                    ), // Adicionei a setinha para a direita
-                    // <-- ADICIONAMOS O CLIQUE AQUI:
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PerfilAlunoPage(
-                            alunoId: doc.id,
-                            alunoNome: aluno['nome'],
-                          ),
-                        ),
-                      );
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      child: Container(
+        height: 52,
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceDark,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withAlpha(10)),
+        ),
+        child: TextField(
+          controller: _searchController,
+          onChanged: (val) => setState(() => _searchQuery = val),
+          style: const TextStyle(color: Colors.white, fontSize: 15),
+          decoration: InputDecoration(
+            hintText: 'Pesquisar por nome...',
+            hintStyle: TextStyle(color: AppTheme.textSecondary.withAlpha(80)),
+            prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.textSecondary, size: 20),
+            suffixIcon: _searchQuery.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.close_rounded, size: 18, color: AppTheme.textSecondary),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() => _searchQuery = "");
                     },
-                  ),
-                ),
-              );
-            },
+                  )
+                : null,
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            filled: false,
+            contentPadding: const EdgeInsets.symmetric(vertical: 15),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDismissibleCard(String id, Map<String, dynamic> aluno) {
+    return Dismissible(
+      key: Key(id),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (direction) async {
+        await _deletarAluno(id);
+        return false;
+      },
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 24),
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.redAccent.withAlpha(30),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: const Icon(Icons.delete_sweep_rounded, color: Colors.redAccent, size: 28),
+      ),
+      child: _buildAlunoCard(
+        nome: aluno['nome'] ?? 'Sem nome',
+        email: aluno['email'] ?? 'Sem e-mail',
+        photoUrl: aluno['photoUrl'],
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PerfilAlunoPage(alunoId: id, alunoNome: aluno['nome']),
+            ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildAlunoCard({required String nome, required String email, String? photoUrl, required VoidCallback onTap}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceDark.withAlpha(150),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withAlpha(10)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(colors: [AppTheme.primary, AppTheme.iosBlue]),
+                      ),
+                      child: CircleAvatar(
+                        radius: 26,
+                        backgroundColor: AppTheme.surfaceLight,
+                        backgroundImage: photoUrl != null && photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                        child: photoUrl == null || photoUrl.isEmpty
+                            ? Text(nome.isNotEmpty ? nome[0].toUpperCase() : '?',
+                                style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w900, fontSize: 20))
+                            : null,
+                      ),
+                    ),
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppTheme.surfaceDark, width: 2),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        nome,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textPrimary, letterSpacing: -0.2),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        email.toLowerCase(),
+                        style: TextStyle(fontSize: 12, color: AppTheme.textSecondary.withAlpha(180), fontWeight: FontWeight.w500),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.textSecondary.withAlpha(100), size: 14),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.group_add_rounded, size: 64, color: AppTheme.textSecondary.withAlpha(30)),
+          const SizedBox(height: 24),
+          const Text('Nenhum aluno ainda', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 8),
+          const Text('Toque em ADICIONAR para começar.', style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoResultsState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off_rounded, size: 48, color: AppTheme.textSecondary.withAlpha(40)),
+            const SizedBox(height: 16),
+            Text('Nenhum resultado para "$_searchQuery"',
+                textAlign: TextAlign.center, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+          ],
+        ),
       ),
     );
   }
