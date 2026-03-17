@@ -581,85 +581,132 @@ class PerfilAlunoPage extends StatelessWidget {
 
   Widget _buildRitmoDaSemana() {
     final dias = [
-      {'dia': 'Seg', 'status': 'feito'},
-      {'dia': 'Ter', 'status': 'feito'},
-      {'dia': 'Qua', 'status': 'feito'},
-      {'dia': 'Qui', 'status': 'falta'},
-      {'dia': 'Sex', 'status': 'feito'},
-      {'dia': 'Sáb', 'status': 'futuro'},
-      {'dia': 'Dom', 'status': 'futuro'},
+      {'dia': 'S', 'status': 'feito'},
+      {'dia': 'T', 'status': 'feito'},
+      {'dia': 'Q', 'status': 'futuro'},
+      {'dia': 'Q', 'status': 'feito'},
+      {'dia': 'S', 'status': 'feito'},
+      {'dia': 'S', 'status': 'futuro'},
+      {'dia': 'D', 'status': 'futuro'},
     ];
+    final totalPlanejado = 5;
+    final feitos = dias.where((d) => d['status'] == 'feito').length;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.textSecondary.withAlpha(26)),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primary.withValues(alpha: .08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Ritmo da Semana',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Frequência Semanal',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              Text(
+                'Semana Atual',
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 13,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: dias.map((d) {
-              bool isFeito = d['status'] == 'feito';
-              bool isFalta = d['status'] == 'falta';
+              final isFeito = d['status'] == 'feito';
+              final isFalta = d['status'] == 'falta';
               return Column(
                 children: [
+                  Text(
+                    d['dia']!,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      color: AppTheme.textSecondary,
+                      letterSpacing: 1.2,
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                  const SizedBox(height: 6),
                   Container(
-                    width: 36,
+                    width: 44,
                     height: 44,
                     decoration: BoxDecoration(
                       color: isFeito
                           ? AppTheme.primary
                           : (isFalta
-                                ? AppTheme.surfaceLight
-                                : Colors.transparent),
-                      borderRadius: BorderRadius.circular(12),
+                              ? AppTheme.surfaceLight
+                              : AppTheme.surfaceDark),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: isFeito
+                          ? [
+                              BoxShadow(
+                                color: AppTheme.primary.withValues(alpha: .18),
+                                blurRadius: 12,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
                       border: Border.all(
                         color: isFeito
                             ? AppTheme.primary
                             : (isFalta
-                                  ? Colors.redAccent.withAlpha(77)
-                                  : AppTheme.textSecondary.withAlpha(26)),
+                                ? Colors.redAccent.withAlpha(77)
+                                : AppTheme.textSecondary.withAlpha(26)),
                         width: 1.5,
                       ),
                     ),
                     child: Center(
-                      child: Icon(
-                        isFeito
-                            ? Icons.done
-                            : (isFalta ? Icons.close : Icons.circle),
-                        size: isFeito || isFalta ? 18 : 6,
-                        color: isFeito
-                            ? Colors.white
-                            : (isFalta
-                                  ? Colors.redAccent.withAlpha(204)
-                                  : AppTheme.textSecondary.withAlpha(51)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    d['dia']!,
-                    style: TextStyle(
-                      color: isFeito ? Colors.white : AppTheme.textSecondary,
-                      fontWeight: isFeito ? FontWeight.bold : FontWeight.normal,
-                      fontSize: 12,
+                      child: isFeito
+                          ? Icon(Icons.check, color: AppTheme.surfaceDark, size: 26)
+                          : (isFalta
+                              ? Icon(Icons.close, color: Colors.redAccent.withAlpha(204), size: 22)
+                              : Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.textSecondary.withAlpha(51),
+                                    shape: BoxShape.circle,
+                                  ),
+                                )),
                     ),
                   ),
                 ],
               );
             }).toList(),
+          ),
+          const SizedBox(height: 24),
+          Center(
+            child: Text(
+              'Você treinou $feitos de $totalPlanejado dias planejados nesta semana.',
+              style: TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
         ],
       ),
