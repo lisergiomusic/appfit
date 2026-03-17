@@ -610,18 +610,13 @@ class PerfilAlunoPage extends StatelessWidget {
                 'FREQUÊNCIA SEMANAL',
                 style: AppTheme.textSectionHeaderDark,
               ),
-              Text(
-                'Semana Atual',
-                style: TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 13,
-                ),
+              TextButton(
+                onPressed: () {},
+                child: const Text('VER TUDO', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.primary)),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 12),
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 24),
           padding: const EdgeInsets.all(24),
