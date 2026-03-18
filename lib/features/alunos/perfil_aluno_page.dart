@@ -321,15 +321,6 @@ class PerfilAlunoPage extends StatelessWidget {
     );
   }
 
-  void _chamarWhatsApp(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Em breve: Abrir conversa no WhatsApp!'),
-        backgroundColor: AppTheme.success,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -342,26 +333,6 @@ class PerfilAlunoPage extends StatelessWidget {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.settings_outlined,
-              color: AppTheme.textSecondary,
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => GerenciarAlunoPage(
-                    alunoId: alunoId,
-                    alunoNome: alunoNome,
-                  ),
-                ),
-              );
-            },
-            tooltip: 'Gerenciar Aluno',
-          ),
-        ],
       ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
@@ -378,120 +349,107 @@ class PerfilAlunoPage extends StatelessWidget {
           final alunoData =
               snapshot.data?.data() as Map<String, dynamic>? ?? {};
           final photoUrl = alunoData['photoUrl'] as String?;
-          final status =
-              (alunoData['status']?.toString().toLowerCase() ?? 'ativo');
-          final isAtivo = status == 'ativo';
 
           return SingleChildScrollView(
             child: Column(
               children: [
                 const SizedBox(height: 20),
+                // Section 1: Refactored Profile Header (Keep this refactored as per previous request)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isAtivo
-                                ? AppTheme.success
-                                : AppTheme.textSecondary.withAlpha(100),
-                            width: 2,
+                      Stack(
+                        children: [
+                          Container(
+                            width: 96,
+                            height: 96,
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppTheme.primary,
+                                width: 4,
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 44,
+                              backgroundColor: AppTheme.surfaceLight,
+                              backgroundImage: photoUrl != null && photoUrl.isNotEmpty
+                                  ? CachedNetworkImageProvider(photoUrl)
+                                  : null,
+                              child: photoUrl == null || photoUrl.isEmpty
+                                  ? Text(
+                                      alunoNome.isNotEmpty ? alunoNome[0].toUpperCase() : '?',
+                                      style: const TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.primary,
+                                      ),
+                                    )
+                                  : null,
+                            ),
                           ),
-                        ),
-                        child: CircleAvatar(
-                          radius: 50,
-                          backgroundColor: AppTheme.surfaceLight,
-                          backgroundImage:
-                              photoUrl != null && photoUrl.isNotEmpty
-                              ? CachedNetworkImageProvider(photoUrl)
-                              : null,
-                          child: photoUrl == null || photoUrl.isEmpty
-                              ? Text(
-                                  alunoNome.isNotEmpty
-                                      ? alunoNome[0].toUpperCase()
-                                      : '?',
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.primary,
-                                  ),
-                                )
-                              : null,
-                        ),
+
+                        ],
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 20),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               alunoNome,
                               style: const TextStyle(
                                 fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimary,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
                                 letterSpacing: -0.5,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 6),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  '28 anos',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: AppTheme.textSecondary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '82kg',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: AppTheme.textSecondary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(height: 4),
+                            const Text(
+                              '28 anos',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppTheme.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              '82kg',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppTheme.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
                         ),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.more_vert,
+                          color: Color(0xFF94A3B8),
+                          size: 32,
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => GerenciarAlunoPage(
+                                alunoId: alunoId,
+                                alunoNome: alunoNome,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 32),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: ElevatedButton.icon(
-                    onPressed: () => _chamarWhatsApp(context),
-                    icon: const Icon(Icons.chat_bubble_outline, size: 20),
-                    label: const Text(
-                      'Enviar Mensagem',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.success.withAlpha(38),
-                      foregroundColor: AppTheme.success,
-                      elevation: 0,
-                      shadowColor: Colors.transparent,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      minimumSize: const Size(double.infinity, 50),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
                 _buildRitmoDaSemana(),
                 const SizedBox(height: 32),
 
@@ -550,16 +508,17 @@ class PerfilAlunoPage extends StatelessWidget {
             children: [
               Text('FREQUÊNCIA SEMANAL', style: AppTheme.textSectionHeaderDark),
               TextButton(
-                onPressed: () {},
-                child: const Text(
-                  'VER TUDO',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.primary,
+                  onPressed: () {},
+                  child: const Text(
+                    'Ver Mais',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.primary,
+                    ),
                   ),
-                ),
               ),
+
             ],
           ),
         ),
@@ -599,15 +558,15 @@ class PerfilAlunoPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Container(
-                        width: 46,
-                        height: 46,
+                        width: 44,
+                        height: 44,
                         decoration: BoxDecoration(
                           color: isFeito
                               ? AppTheme.primary
                               : (isFalta
                                     ? AppTheme.surfaceLight
                                     : AppTheme.surfaceDark),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
                           boxShadow: isFeito
                               ? [
                                   BoxShadow(
@@ -774,7 +733,7 @@ class PerfilAlunoPage extends StatelessWidget {
                       );
                     },
                     child: const Text(
-                      'VER DETALHES',
+                      'Ver detalhes',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
@@ -803,13 +762,13 @@ class PerfilAlunoPage extends StatelessWidget {
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 22,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(10),
+                            color: AppTheme.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
@@ -829,7 +788,7 @@ class PerfilAlunoPage extends StatelessWidget {
                           style: TextStyle(
                             color: Colors.white.withAlpha(100),
                             fontSize: 11,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w900,
                             letterSpacing: 0.5,
                           ),
                         ),
