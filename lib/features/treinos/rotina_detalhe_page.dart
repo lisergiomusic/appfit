@@ -45,7 +45,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   String _nome = '';
   String _objetivo = '';
   int _duracaoSemanas = 4;
-  List<_TreinoData> _treinos = [];
+  final List<_TreinoData> _treinos = [];
 
   bool _isReordering = false;
   bool _isLoading = false;
@@ -284,7 +284,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 label: 'DURAÇÃO PLANEJADA',
                 icon: Icons.schedule,
                 child: DropdownButtonFormField<int>(
-                  value: semanasSelecionadas,
+                  initialValue: semanasSelecionadas,
                   dropdownColor: AppTheme.surfaceLight,
                   icon: Icon(
                     Icons.expand_more_rounded,
@@ -652,7 +652,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
     return PopScope(
       canPop: !_foiModificado,
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, result) async {
         if (didPop) {
           return;
         }
