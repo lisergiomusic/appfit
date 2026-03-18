@@ -858,8 +858,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       alignment: Alignment.bottomLeft,
                       child: Padding(
                         padding: const EdgeInsets.only(
-                          left: AppTheme.space16,
-                          right: AppTheme.space16,
+                          left: AppTheme.space24,
+                          right: AppTheme.space24,
                           bottom: 10,
                         ),
                         child: AnimatedOpacity(
@@ -868,7 +868,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                           child: Text(
                             title,
                             style: const TextStyle(
-                              fontSize: 45,
+                              fontSize: 40,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                               letterSpacing: -0.5,
@@ -884,12 +884,12 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               ),
             ),
 
-            // O Resto da tela
+            // inicio do corpo
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 16.0,
+                  horizontal: AppTheme.space24,
+                  vertical: 12.0,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -898,8 +898,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       _objetivo.isEmpty ? 'Defina o objetivo' : _objetivo,
                       style: TextStyle(
                         color: AppTheme.textSecondary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -922,7 +922,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       ],
                     ),
 
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 32),
 
                     isTemplate
                         ? _buildTemplateBadge()
