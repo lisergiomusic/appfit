@@ -357,6 +357,18 @@ class PerfilAlunoPage extends StatelessWidget {
     );
   }
 
+  void _irParaGerenciarAluno(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GerenciarAlunoPage(
+          alunoId: alunoId,
+          alunoNome: alunoNome,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -372,22 +384,8 @@ class PerfilAlunoPage extends StatelessWidget {
           'Perfil do Aluno',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit, size: 20),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => GerenciarAlunoPage(
-                    alunoId: alunoId,
-                    alunoNome: alunoNome,
-                  ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(width: 8),
+        actions: const [
+          SizedBox(width: 48), // Equilíbrio visual (ou ajuste conforme necessário)
         ],
       ),
       body: StreamBuilder<DocumentSnapshot>(
@@ -484,42 +482,77 @@ class PerfilAlunoPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // BOTÃO WHATSAPP FULL WIDTH
+                // BOTÕES DE AÇÃO HORIZONTAIS (WHATSAPP E GERENCIAR)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: InkWell(
-                    onTap: () => _abrirWhatsApp(context, telefone),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF25D366).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFF25D366).withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.chat_bubble_outline_rounded,
-                            color: Color(0xFF25D366),
-                            size: 20,
-                          ),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'Enviar Mensagem',
-                            style: TextStyle(
-                              color: Color(0xFF25D366),
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => _abrirWhatsApp(context, telefone),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF25D366).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFF25D366).withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.chat_bubble_outline_rounded,
+                                  color: Color(0xFF25D366),
+                                  size: 20,
+                                ),
+                                SizedBox(width: 12),
+                                Text(
+                                  'Mensagem',
+                                  style: TextStyle(
+                                    color: Color(0xFF25D366),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 12), // Espaçamento entre os botões
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => _irParaGerenciarAluno(context),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceLight.withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.settings_outlined, color: AppTheme.textSecondary, size: 20),
+                                SizedBox(width: 12),
+                                Text(
+                                  'Gerenciar',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 32),
