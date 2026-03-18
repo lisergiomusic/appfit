@@ -87,7 +87,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               ),
             );
           }
-          
+
           // Lógica de migração para grupoMuscular
           List<String> grupos = ['Geral'];
           final rawGrupo = ex['grupoMuscular'];
@@ -935,14 +935,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Sessões',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.textSecondary,
-                            letterSpacing: 0.5,
-                          ),
+                        Text(
+                          'SESSÕES DE TREINO',
+                          style: AppTheme.textSectionHeaderDark,
                         ),
                         if (_treinos.isNotEmpty)
                           GestureDetector(
@@ -1208,13 +1203,20 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     String letra = String.fromCharCode(65 + index);
 
     // Widget que contém o conteúdo do card
-    final cardContent = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(24), // Pill Style
-        border: Border.all(color: Colors.white.withAlpha(15), width: 0.5),
+    final cardContent = Material(
+      elevation: 1.0,
+      color: AppTheme.surfaceDark,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        side: BorderSide(
+          color: Colors.white.withAlpha(14), width: 1,
+        ),
       ),
+      child: Padding(padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.paddingCard,
+        vertical: AppTheme.space14,
+      ),
+
       child: Row(
         children: [
           Container(
@@ -1245,10 +1247,13 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
-                    fontSize: 16,
+                    fontSize: 18,
+                    height: 1.3,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppTheme.space6),
                 Text(
                   '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}${sessao.diaSemana != null ? ' • ${sessao.diaSemana}' : ''}',
                   style: TextStyle(
@@ -1338,6 +1343,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   ),
           ),
         ],
+      ),
       ),
     );
 

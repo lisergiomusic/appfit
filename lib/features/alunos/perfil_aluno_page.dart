@@ -760,7 +760,7 @@ class PerfilAlunoPage extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('PLANO ATUAL', style: AppTheme.textSectionHeaderDark),
+              Text('PLANILHA ATUAL', style: AppTheme.textSectionHeaderDark),
               const SizedBox(height: 16),
               GestureDetector(
                 onTap: () {
