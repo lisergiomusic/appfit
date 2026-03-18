@@ -39,6 +39,7 @@ dependencies:
   http: ^1.6.0
   cached_network_image: ^3.3.0 # Adicionado para cache de imagens
   url_launcher: ^6.3.2
+  font_awesome_flutter: ^11.0.0
 
 dev_dependencies:
   flutter_test:

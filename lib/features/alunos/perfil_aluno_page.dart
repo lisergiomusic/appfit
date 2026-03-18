@@ -7,6 +7,7 @@ import 'gerenciar_aluno_page.dart';
 import 'feedback_historico_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class PerfilAlunoPage extends StatelessWidget {
   final String alunoId;
@@ -503,14 +504,14 @@ class PerfilAlunoPage extends StatelessWidget {
                             child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
-                                  Icons.chat_bubble_outline_rounded,
+                                FaIcon(
+                                  FontAwesomeIcons.whatsapp,
                                   color: Color(0xFF25D366),
                                   size: 20,
                                 ),
                                 SizedBox(width: 12),
                                 Text(
-                                  'Mensagem',
+                                  'Conversar',
                                   style: TextStyle(
                                     color: Color(0xFF25D366),
                                     fontSize: 14,
