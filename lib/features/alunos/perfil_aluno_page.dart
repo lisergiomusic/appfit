@@ -455,7 +455,7 @@ class PerfilAlunoPage extends StatelessWidget {
 
                 _buildFichaAtivaHeroCard(context),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 40),
                 _buildMenuOption(
                   icon: Icons.calendar_month_outlined,
                   title: 'Histórico de Feedbacks',
@@ -474,11 +474,7 @@ class PerfilAlunoPage extends StatelessWidget {
                   title: 'Avaliação Física',
                   onTap: () {},
                 ),
-                _buildMenuOption(
-                  icon: Icons.payments_outlined,
-                  title: 'Situação Financeira',
-                  onTap: () {},
-                ),
+
                 const SizedBox(height: 48),
               ],
             ),
@@ -717,7 +713,7 @@ class PerfilAlunoPage extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('ROTINA ATUAL', style: AppTheme.textSectionHeaderDark),
+                  Text('PLANILHA ATUAL', style: AppTheme.textSectionHeaderDark),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
@@ -733,7 +729,7 @@ class PerfilAlunoPage extends StatelessWidget {
                       );
                     },
                     child: const Text(
-                      'Ver detalhes',
+                      'Ver Detalhes',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
