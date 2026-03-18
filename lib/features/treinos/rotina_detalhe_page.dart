@@ -1255,10 +1255,12 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 ),
                 const SizedBox(height: AppTheme.space6),
                 Text(
-                  '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}${sessao.diaSemana != null ? ' • ${sessao.diaSemana}' : ''}',
+                  '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}',
                   style: TextStyle(
-                    color: AppTheme.textSecondary.withAlpha(180),
-                    fontSize: 13,
+                    color: AppTheme.textSecondary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: 0.1,
                   ),
                 ),
               ],
