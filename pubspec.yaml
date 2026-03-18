@@ -38,6 +38,7 @@ dependencies:
   provider: ^6.1.5+1
   http: ^1.6.0
   cached_network_image: ^3.3.0 # Adicionado para cache de imagens
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
