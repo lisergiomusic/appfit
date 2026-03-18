@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/services/rotina_service.dart';
 import 'configurar_exercicios_page.dart';
 import 'models/exercicio_model.dart';
@@ -143,18 +144,18 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 0, bottom: 12),
+          padding: EdgeInsets.only(left: 0, bottom: AppTheme.space12),
           child: Row(
             children: [
               Icon(icon, size: 16, color: AppTheme.primary),
-              const SizedBox(width: 8),
+              SizedBox(width: AppTheme.space8),
               Text(
                 label,
                 style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
+                  color: AppTheme.textSecondary,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
+                  letterSpacing: 1.2,
                 ),
               ),
             ],
@@ -169,24 +170,26 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   InputDecoration _buildInputDecoration({required String hintText}) {
     return InputDecoration(
       hintText: hintText,
-      hintStyle: TextStyle(
-        color: AppTheme.textSecondary.withAlpha(80),
-        fontSize: 15,
-        fontWeight: FontWeight.w400,
+      hintStyle: GoogleFonts.inter(
+        color: AppTheme.textSecondary.withAlpha(128),
+        fontSize: 13,
       ),
       filled: true,
-      fillColor: Colors.white.withAlpha(8),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      fillColor: AppTheme.surfaceDark,
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: AppTheme.space14,
+        vertical: AppTheme.space12,
+      ),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         borderSide: BorderSide(color: Colors.white.withAlpha(20), width: 0.5),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         borderSide: BorderSide(color: Colors.white.withAlpha(20), width: 0.5),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         borderSide: BorderSide(
           color: AppTheme.primary.withAlpha(150),
           width: 1,
@@ -1127,33 +1130,36 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   Widget _buildAddSessaoButton() {
     return InkWell(
       onTap: () => _exibirModalSessao(),
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppTheme.space16,
+          vertical: AppTheme.space16,
+        ),
         decoration: BoxDecoration(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
           border: Border.all(
             color: AppTheme.primary.withAlpha(120),
             width: 1.5,
           ),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.add_circle_outline, color: AppTheme.primary, size: 22),
-            const SizedBox(width: 8),
-            const Text(
-              'Nova Sessão',
-              style: TextStyle(
-                color: AppTheme.primary,
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-                letterSpacing: 0.3,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.add_circle_outline, color: AppTheme.primary, size: 22),
+              SizedBox(width: AppTheme.space8),
+              const Text(
+                'Nova Sessão',
+                style: TextStyle(
+                  color: AppTheme.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  letterSpacing: 0.3,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
       ),
     );
   }
