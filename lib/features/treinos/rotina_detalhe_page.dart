@@ -867,14 +867,14 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                           opacity: isCollapsed ? 0.0 : 1.0,
                           child: Text(
                             title,
+                            style: const TextStyle(
+                              fontSize: 45,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: -0.5,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 34,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                              height: 1.14,
-                            ),
                           ),
                         ),
                       ),
@@ -1208,146 +1208,145 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       color: AppTheme.surfaceDark,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        side: BorderSide(
-          color: Colors.white.withAlpha(14), width: 1,
+        side: BorderSide(color: Colors.white.withAlpha(14), width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.paddingCard,
+          vertical: AppTheme.space14,
         ),
-      ),
-      child: Padding(padding: const EdgeInsets.symmetric(
-        horizontal: AppTheme.paddingCard,
-        vertical: AppTheme.space14,
-      ),
 
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: const BoxDecoration(
-              color: AppTheme.surfaceLight,
-              shape: BoxShape.circle, // Avatar agora é 100% redondo
-            ),
-            child: Center(
-              child: Text(
-                letra,
-                style: const TextStyle(
-                  color: AppTheme.primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: const BoxDecoration(
+                color: AppTheme.surfaceLight,
+                shape: BoxShape.circle, // Avatar agora é 100% redondo
+              ),
+              child: Center(
+                child: Text(
+                  letra,
+                  style: const TextStyle(
+                    color: AppTheme.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  sessao.nome,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18,
-                    height: 1.3,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    sessao.nome,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: AppTheme.space6),
-                Text(
-                  '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}',
-                  style: TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 0.1,
+                  const SizedBox(height: AppTheme.space6),
+                  Text(
+                    '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}',
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0.1,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          SizedBox(
-            width: 44,
-            height: 44,
-            child: isReordering
-                ? ReorderableDragStartListener(
-                    index: index,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary.withAlpha(20),
+            SizedBox(
+              width: 44,
+              height: 44,
+              child: isReordering
+                  ? ReorderableDragStartListener(
+                      index: index,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withAlpha(20),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.drag_indicator, // Ícone elegante de drag
+                          color: AppTheme.textSecondary.withAlpha(80),
+                          size: 20,
+                        ),
+                      ),
+                    )
+                  : PopupMenuButton<String>(
+                      padding: EdgeInsets.zero,
+                      color: AppTheme.surfaceLight,
+                      shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
-                        Icons.drag_indicator, // Ícone elegante de drag
-                        color: AppTheme.textSecondary.withAlpha(80),
-                        size: 20,
+                      position: PopupMenuPosition.under,
+                      icon: Icon(
+                        Icons.chevron_right,
+                        color: AppTheme.textSecondary.withAlpha(160),
+                        size: 28,
                       ),
-                    ),
-                  )
-                : PopupMenuButton<String>(
-                    padding: EdgeInsets.zero,
-                    color: AppTheme.surfaceLight,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    position: PopupMenuPosition.under,
-                    icon: Icon(
-                      Icons.chevron_right,
-                      color: AppTheme.textSecondary.withAlpha(160),
-                      size: 28,
-                    ),
-                    onSelected: (value) {
-                      if (value == 'edit') _exibirModalSessao(index: index);
-                      if (value == 'delete') _excluirTreino(index);
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.edit_outlined,
-                              color: AppTheme.textSecondary.withAlpha(200),
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'Editar',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
+                      onSelected: (value) {
+                        if (value == 'edit') _exibirModalSessao(index: index);
+                        if (value == 'delete') _excluirTreino(index);
+                      },
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.edit_outlined,
+                                color: AppTheme.textSecondary.withAlpha(200),
+                                size: 18,
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.delete_outline,
-                              color: Colors.redAccent,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'Excluir',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Editar',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-          ),
-        ],
-      ),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.delete_outline,
+                                color: Colors.redAccent,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Excluir',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ],
+        ),
       ),
     );
 
