@@ -671,9 +671,9 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                   ),
                 ),
                 const SizedBox(width: AppTheme.space12),
-                const Icon(
+                Icon(
                   Icons.chevron_right,
-                  color: Color(0xFF64748b),
+                  color: AppTheme.textSecondary.withAlpha(160),
                   size: 28,
                 ),
               ],

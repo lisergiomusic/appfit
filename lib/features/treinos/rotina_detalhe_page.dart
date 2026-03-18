@@ -897,7 +897,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     Text(
                       _objetivo.isEmpty ? 'Defina o objetivo' : _objetivo,
                       style: TextStyle(
-                        color: AppTheme.textSecondary.withAlpha(180),
+                        color: AppTheme.textSecondary,
                         fontSize: 15,
                         fontWeight: FontWeight.w400,
                       ),
@@ -908,13 +908,13 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                         Icon(
                           Icons.schedule,
                           size: 14,
-                          color: AppTheme.textSecondary.withAlpha(150),
+                          color: AppTheme.textSecondary,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           '$_duracaoSemanas semanas',
                           style: TextStyle(
-                            color: AppTheme.textSecondary.withAlpha(150),
+                            color: AppTheme.textSecondary,
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                           ),
@@ -1218,6 +1218,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       ),
 
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
             width: 36,
@@ -1241,6 +1242,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   sessao.nome,
@@ -1293,8 +1295,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     position: PopupMenuPosition.under,
                     icon: Icon(
                       Icons.chevron_right,
-                      color: AppTheme.textSecondary.withAlpha(100),
-                      size: 22,
+                      color: AppTheme.textSecondary.withAlpha(160),
+                      size: 28,
                     ),
                     onSelected: (value) {
                       if (value == 'edit') _exibirModalSessao(index: index);
