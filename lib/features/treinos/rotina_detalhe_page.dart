@@ -775,7 +775,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(left: 8, right: 8),
+                        padding: const EdgeInsets.only(left: 8, right: 0),
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
@@ -786,8 +786,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                               height: 48,
                               alignment: Alignment.center,
                               child: Icon(
-                                Icons.edit_note,
-                                size: 44,
+                               CupertinoIcons.ellipsis_vertical,
+                                size: 28,
                                 color: AppTheme.textSecondary,
                               ),
                             ),
@@ -804,7 +804,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'SESSÕES DE TREINO',
+                      'LISTA DE TREINOS',
                       style: AppTheme.textSectionHeaderDark,
                     ),
                     if (_treinos.isNotEmpty)
@@ -845,7 +845,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                 _isReordering ? 'Concluir' : 'Reordenar',
                                 style: TextStyle(
                                   color: _isReordering ? AppTheme.primary : AppTheme.textSecondary,
-                                  fontSize: 11,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -1000,7 +1000,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               Icon(Icons.add_circle_outline, color: AppTheme.primary, size: 22),
               SizedBox(width: AppTheme.space8),
               const Text(
-                'Nova Sessão',
+                'Novo Treino',
                 style: TextStyle(
                   color: AppTheme.primary,
                   fontWeight: FontWeight.w600,
