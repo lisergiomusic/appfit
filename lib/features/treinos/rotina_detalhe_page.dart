@@ -816,7 +816,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppTheme.space24,
-              vertical: 12.0,
+              vertical: 24,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -829,6 +829,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                      fontWeight: FontWeight.bold,
                 ),
                  ),
+                const SizedBox(height: 12),
 
                 Text(
                   _objetivo.isEmpty ? 'Defina o objetivo' : _objetivo,
