@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/rotina_service.dart';
 import 'configurar_exercicios_page.dart';
@@ -44,6 +45,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   // --- CONTROLADORES TIPO 'LATE' PARA PERSISTÊNCIA ---
   late TextEditingController nomeCtrl;
   late TextEditingController objCtrl;
+  String _tipoVencimento = 'sessoes';
+  int _vencimentoSessoes = 20;
+  DateTime _vencimentoData = DateTime.now().add(const Duration(days: 30));
 
   int _duracaoSemanas = 4;
   final List<_TreinoData> _treinos = [];
@@ -134,75 +138,69 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
   void _exibirModalInfo(BuildContext context) {
-    int semanasSelecionadas = _duracaoSemanas;
+    String tipoTemp = _tipoVencimento;
+    int sessoesTemp = _vencimentoSessoes;
+    DateTime dataTemp = _vencimentoData;
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
       backgroundColor: AppTheme.surfaceDark,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (context) => StatefulBuilder(
         builder: (context, setStateModal) => Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 24, right: 24, top: 12,
-          ),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Center(
-                child: Container(
-                  width: 40, height: 4, margin: const EdgeInsets.only(bottom: 24),
-                  decoration: BoxDecoration(color: Colors.white.withAlpha(30), borderRadius: BorderRadius.circular(2)),
-                ),
+              const Text('Configurar Vencimento', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
+
+              // Switch entre Sessoes e Data
+              SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(value: 'sessoes', label: Text('Sessões')),
+                  ButtonSegment(value: 'data', label: Text('Data')),
+                ],
+                selected: {tipoTemp},
+                onSelectionChanged: (val) => setStateModal(() => tipoTemp = val.first),
               ),
-              const Text('Configurar Rotina', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 28),
-              RotinaModernInput(
-                label: 'NOME DA ROTINA',
-                icon: Icons.title,
-                child: TextField(
-                  controller: nomeCtrl, // Usa o controller da classe
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                  decoration: rotinaInputDecoration(hintText: 'Ex: Projeto Hipertrofia Mês 1'),
+
+              const SizedBox(height: 20),
+
+              if (tipoTemp == 'sessoes')
+                TextField(
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: rotinaInputDecoration(hintText: 'Qtd de sessões (ex: 20)'),
+                  onChanged: (v) => sessoesTemp = int.tryParse(v) ?? 20,
+                )
+              else
+                ListTile(
+                  title: const Text('Data de Vencimento', style: TextStyle(color: Colors.white)),
+                  subtitle: Text(DateFormat('dd/MM/yyyy').format(dataTemp), style: const TextStyle(color: AppTheme.primary)),
+                  trailing: const Icon(Icons.calendar_today, color: AppTheme.primary),
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: dataTemp,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                    );
+                    if (picked != null) setStateModal(() => dataTemp = picked);
+                  },
                 ),
-              ),
-              const SizedBox(height: 24),
-              RotinaModernInput(
-                label: 'OBJETIVO PRINCIPAL',
-                icon: Icons.track_changes,
-                child: TextField(
-                  controller: objCtrl, // Usa o controller da classe
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                  decoration: rotinaInputDecoration(hintText: 'Ex: Ganho de massa e força'),
-                ),
-              ),
-              const SizedBox(height: 24),
-              RotinaModernInput(
-                label: 'DURAÇÃO PLANEJADA',
-                icon: Icons.schedule,
-                child: DropdownButtonFormField<int>(
-                  initialValue: semanasSelecionadas,
-                  dropdownColor: AppTheme.surfaceLight,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                  items: [4, 5, 6, 8, 10, 12].map((w) => DropdownMenuItem(value: w, child: Text('$w semanas'))).toList(),
-                  onChanged: (v) => setStateModal(() => semanasSelecionadas = v!),
-                  decoration: rotinaInputDecoration(hintText: 'Escolha a duração'),
-                ),
-              ),
+
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: () {
                   setState(() {
-                    _duracaoSemanas = semanasSelecionadas;
+                    _tipoVencimento = tipoTemp;
+                    _vencimentoSessoes = sessoesTemp;
+                    _vencimentoData = dataTemp;
                   });
                   Navigator.pop(context);
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(11))),
-                child: const Text('Concluir', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Colors.black)),
+                child: const Text('Confirmar'),
               ),
-              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -290,15 +288,16 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
   Future<bool> _salvarRotinaCompleta() async {
-    final String nomeParaSalvar = nomeCtrl.text.trim();final String objetivoParaSalvar = objCtrl.text.trim();
+    final String nomeParaSalvar = nomeCtrl.text.trim();
+    final String objetivoParaSalvar = objCtrl.text.trim();
 
     if (nomeParaSalvar.isEmpty || _treinos.isEmpty) return false;
 
     try {
-      // MAPEAMENTO (Verifique se nenhum campo aqui é NULO)
+      // 1. Mapeamento das sessões para JSON
       List<Map<String, dynamic>> sessoesJson = _treinos.map((t) => {
         'nome': t.nome,
-        'diaSemana': t.diaSemana ?? '', // Garante que não vá null
+        'diaSemana': t.diaSemana ?? '',
         'orientacoes': t.orientacoes ?? '',
         'exercicios': t.exercicios.map((ex) => {
           'nome': ex.nome,
@@ -313,35 +312,36 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         }).toList(),
       }).toList();
 
-      print('--- [DATABASE] ENVIANDO PARA O FIRESTORE... ---');
+      print('--- [DATABASE] SALVANDO COM TIPO: $_tipoVencimento ---');
 
+      // 2. Chamada do serviço tratando as duas opções
       if (widget.rotinaId != null) {
+        // EDIÇÃO
         await RotinaService().atualizarRotina(
           rotinaId: widget.rotinaId!,
           nome: nomeParaSalvar,
           objetivo: objetivoParaSalvar,
           sessoes: sessoesJson,
-          duracaoDias: _duracaoSemanas * 7,
-          dataCriacaoOriginal: widget.rotinaData?['dataCriacao'] as Timestamp?,
+          tipoVencimento: _tipoVencimento, // Passando o tipo escolhido
+          sessoesAlvo: _tipoVencimento == 'sessoes' ? _vencimentoSessoes : null,
+          dataVencimento: _tipoVencimento == 'data' ? _vencimentoData : null,
         );
       } else {
+        // CRIAÇÃO NOVA
         await RotinaService().criarRotina(
           alunoId: widget.alunoId,
           nome: nomeParaSalvar,
           objetivo: objetivoParaSalvar,
           sessoes: sessoesJson,
-          duracaoDias: _duracaoSemanas * 7,
+          tipoVencimento: _tipoVencimento, // Passando o tipo escolhido
+          sessoesAlvo: _tipoVencimento == 'sessoes' ? _vencimentoSessoes : null,
+          dataVencimento: _tipoVencimento == 'data' ? _vencimentoData : null,
         );
       }
 
-      print('--- [DATABASE] SALVO COM SUCESSO! ---');
       return true;
     } catch (e) {
-      print('--- [DATABASE ERRO] ---');
-      print('Erro: $e');
-      // Se cair aqui, o erro será impresso no console.
-      // Se for "Permission Denied", o problema são as Rules.
-      // Se for "Network Error", o problema é sua conexão/emulador.
+      print('Erro ao salvar rotina: $e');
       return false;
     }
   }

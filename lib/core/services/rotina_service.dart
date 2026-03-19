@@ -11,12 +11,15 @@ class RotinaService {
     required String nome,
     required String objetivo,
     required List<Map<String, dynamic>> sessoes,
-    int duracaoDias = 28,
+    // Novos parâmetros para suportar as duas opções:
+    required String tipoVencimento, // 'sessoes' ou 'data'
+    int? sessoesAlvo,               // Ex: 20
+    DateTime? dataVencimento,       // Ex: 20/12/2024
   }) async {
     final personalId = _auth.currentUser?.uid;
     if (personalId == null) throw Exception('Personal não autenticado.');
 
-    // 1. Desativar rotinas antigas usando BATCH (Muito mais rápido e à prova de falhas)
+    // 1. Desativar rotinas antigas do aluno
     if (alunoId != null) {
       final rotinasAntigas = await _db
           .collection('rotinas')
@@ -29,48 +32,64 @@ class RotinaService {
         for (var doc in rotinasAntigas.docs) {
           batch.update(doc.reference, {'ativa': false});
         }
-        await batch.commit(); // Executa todas as desativações num único milissegundo
+        await batch.commit();
       }
     }
 
-    final dataVencimento = DateTime.now().add(Duration(days: duracaoDias));
-
-    final payload = {
+    // 2. Montar o Payload baseado na escolha do usuário
+    final Map<String, dynamic> payload = {
       'personalId': personalId,
       'alunoId': alunoId,
       'nome': nome,
       'objetivo': objetivo,
-      'dataCriacao': FieldValue.serverTimestamp(),
-      'dataVencimento': Timestamp.fromDate(dataVencimento),
-      'ativa': true,
       'sessoes': sessoes,
+      'ativa': true,
+      'dataCriacao': FieldValue.serverTimestamp(),
+      'tipoVencimento': tipoVencimento, // Salva se é 'sessoes' ou 'data'
     };
 
-    // 2. Gravar usando .set() num documento novo para persistência offline imediata
+    if (tipoVencimento == 'sessoes') {
+      payload['vencimentoSessoes'] = sessoesAlvo ?? 20;
+      payload['sessoesConcluidas'] = 0; // Inicia o contador
+    } else {
+      // Se for data, usamos a data passada ou um padrão de 30 dias
+      payload['dataVencimento'] = dataVencimento != null
+          ? Timestamp.fromDate(dataVencimento)
+          : Timestamp.fromDate(DateTime.now().add(const Duration(days: 30)));
+    }
+
+    // 3. Gravar no Firestore
     final novaRotinaRef = _db.collection('rotinas').doc();
     await novaRotinaRef.set(payload);
   }
 
   // --- ATUALIZAÇÃO DE ROTINA EXISTENTE ---
+  // (Ajustado para aceitar as mudanças de vencimento também)
   Future<void> atualizarRotina({
     required String rotinaId,
     required String nome,
     required String objetivo,
     required List<Map<String, dynamic>> sessoes,
-    required int duracaoDias,
-    Timestamp? dataCriacaoOriginal,
+    String? tipoVencimento,
+    int? sessoesAlvo,
+    DateTime? dataVencimento,
   }) async {
-
-    await FirebaseFirestore.instance
-        .collection('rotinas')
-        .doc(rotinaId)
-        .set({
+    final Map<String, dynamic> updateData = {
       'nome': nome,
       'objetivo': objetivo,
       'sessoes': sessoes,
-      'duracaoDias': duracaoDias,
       'dataUltimaAlteracao': FieldValue.serverTimestamp(),
-      'dataCriacao': ?dataCriacaoOriginal,
-    }, SetOptions(merge: true));
+    };
+
+    if (tipoVencimento != null) {
+      updateData['tipoVencimento'] = tipoVencimento;
+      if (tipoVencimento == 'sessoes') {
+        updateData['vencimentoSessoes'] = sessoesAlvo;
+      } else if (dataVencimento != null) {
+        updateData['dataVencimento'] = Timestamp.fromDate(dataVencimento);
+      }
+    }
+
+    await _db.collection('rotinas').doc(rotinaId).update(updateData);
   }
 }
