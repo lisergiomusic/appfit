@@ -42,14 +42,14 @@ class RotinaDetalhePage extends StatefulWidget {
 }
 
 class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
-  // --- CONTROLADORES TIPO 'LATE' PARA PERSISTÊNCIA ---
+  final List<String> _sugestoesObjetivo = ['Hipertrofia', 'Emagrecimento', 'Força', 'RML', 'Cardio'];
   late TextEditingController nomeCtrl;
   late TextEditingController objCtrl;
   String _tipoVencimento = 'sessoes';
   int _vencimentoSessoes = 20;
   DateTime _vencimentoData = DateTime.now().add(const Duration(days: 30));
 
-  int _duracaoSemanas = 4;
+
   final List<_TreinoData> _treinos = [];
   bool _isReordering = false;
 
@@ -141,46 +141,141 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
   void _exibirModalInfo(BuildContext context) {
+    // Estados temporários para o modal
     String tipoTemp = _tipoVencimento;
     int sessoesTemp = _vencimentoSessoes;
     DateTime dataTemp = _vencimentoData;
 
+    // Usamos os controllers existentes (nomeCtrl e objCtrl) diretamente
+    // ou criamos temporários se quisermos "cancelar" a edição.
+    // Aqui usaremos os reais para persistência imediata.
+
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true, // Importante para o teclado não cobrir
       backgroundColor: AppTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
       builder: (context) => StatefulBuilder(
-        builder: (context, setStateModal) => Padding(
-          padding: const EdgeInsets.all(24),
+        builder: (context, setStateModal) => Container(
+          padding: EdgeInsets.only(
+            left: 24, right: 24, top: 12,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Configurar Vencimento', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              // Handle de arrastar
+              Center(
+                child: Container(
+                  width: 40, height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text('Configurações da Planilha',
+                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 24),
+
+              // 1. NOME DA PLANILHA
+              RotinaModernInput(
+                label: 'NOME DA PLANILHA',
+                icon: Icons.edit_note,
+                child: TextField(
+                  controller: nomeCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: rotinaInputDecoration(hintText: 'Ex: Protocolo Y'),
+                ),
+              ),
               const SizedBox(height: 20),
 
-              // Switch entre Sessoes e Data
-              SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: 'sessoes', label: Text('Sessões')),
-                  ButtonSegment(value: 'data', label: Text('Data')),
-                ],
-                selected: {tipoTemp},
-                onSelectionChanged: (val) => setStateModal(() => tipoTemp = val.first),
+              // 2. OBJETIVO COM CHIPS DE SUGESTÃO
+              RotinaModernInput(
+                label: 'OBJETIVO PRINCIPAL',
+                icon: Icons.ads_click,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: objCtrl,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: rotinaInputDecoration(hintText: 'Ex: Hipertrofia Máxima'),
+                    ),
+                    const SizedBox(height: 8),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: _sugestoesObjetivo.map((obj) => Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: ChoiceChip(
+                            label: Text(obj),
+                            selected: objCtrl.text == obj,
+                            onSelected: (selected) {
+                              if (selected) setStateModal(() => objCtrl.text = obj);
+                            },
+                            backgroundColor: AppTheme.surfaceLight,
+                            selectedColor: AppTheme.primary,
+                            labelStyle: TextStyle(
+                              color: objCtrl.text == obj ? Colors.black : Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
+                        )).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // 3. TIPO DE VENCIMENTO (Sessões vs Data)
+              const Text('VALIDADE DA PLANILHA',
+                  style: TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceLight,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    _buildTabOption(setStateModal, 'Sessões', 'sessoes', tipoTemp),
+                    _buildTabOption(setStateModal, 'Data Fixa', 'data', tipoTemp),
+                  ],
+                ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
-              if (tipoTemp == 'sessoes')
-                TextField(
+              // 4. INPUT DINÂMICO DE VENCIMENTO
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: tipoTemp == 'sessoes'
+                    ? TextField(
+                  key: const ValueKey('inputSessoes'),
                   keyboardType: TextInputType.number,
                   style: const TextStyle(color: Colors.white),
-                  decoration: rotinaInputDecoration(hintText: 'Qtd de sessões (ex: 20)'),
+                  decoration: rotinaInputDecoration(
+                    hintText: 'Quantas sessões de treino?',
+
+                  ),
                   onChanged: (v) => sessoesTemp = int.tryParse(v) ?? 20,
                 )
-              else
-                ListTile(
-                  title: const Text('Data de Vencimento', style: TextStyle(color: Colors.white)),
-                  subtitle: Text(DateFormat('dd/MM/yyyy').format(dataTemp), style: const TextStyle(color: AppTheme.primary)),
-                  trailing: const Icon(Icons.calendar_today, color: AppTheme.primary),
+                    : ListTile(
+                  key: const ValueKey('inputData'),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  tileColor: AppTheme.surfaceLight,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  leading: const Icon(Icons.calendar_month, color: AppTheme.primary),
+                  title: const Text('Vence em:', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  trailing: Text(DateFormat('dd/MM/yyyy').format(dataTemp),
+                      style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 16)),
                   onTap: () async {
                     final picked = await showDatePicker(
                       context: context,
@@ -191,20 +286,57 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     if (picked != null) setStateModal(() => dataTemp = picked);
                   },
                 ),
+              ),
 
               const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _tipoVencimento = tipoTemp;
-                    _vencimentoSessoes = sessoesTemp;
-                    _vencimentoData = dataTemp;
-                  });
-                  Navigator.pop(context);
-                },
-                child: const Text('Confirmar'),
+
+              // BOTÃO CONFIRMAR
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _tipoVencimento = tipoTemp;
+                      _vencimentoSessoes = sessoesTemp;
+                      _vencimentoData = dataTemp;
+                    });
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  child: const Text('SALVAR CONFIGURAÇÕES',
+                      style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, letterSpacing: 1)),
+                ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+// Widget auxiliar para as abas de Sessão/Data
+  Widget _buildTabOption(StateSetter setStateModal, String label, String value, String current) {
+    bool isSelected = current == value;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setStateModal(() => _tipoVencimento = value), // Note: use tipoTemp se estiver usando local
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.background : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isSelected ? AppTheme.primary : Colors.white38,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
         ),
       ),
@@ -419,7 +551,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                               children: [
                                 const Icon(Icons.schedule, size: 14, color: AppTheme.textSecondary),
                                 const SizedBox(width: 6),
-                                Text('$_duracaoSemanas semanas', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
+                                Text('x semanas', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
                               ],
                             ),
                           ],
