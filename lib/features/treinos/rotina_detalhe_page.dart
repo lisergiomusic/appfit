@@ -699,29 +699,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          actions: [
-            Semantics(
-              label: 'Editar',
-              button: true,
-              child: TextButton(
-                onPressed: () => _exibirModalInfo(context),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppTheme.accentMetrics,
-                  minimumSize: const Size(44, 44),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                ),
-                child: const Text(
-                  'Editar',
-                  style: TextStyle(
-                    color: AppTheme.accentMetrics,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 4),
-          ],
+          actions: [],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1.0),
             child: Container(
@@ -750,44 +728,75 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                 Text (
-                  _nome.isEmpty ? 'Nova Rotina' : _nome,
-                   style: TextStyle(
-                     color: Colors.white,
-                     fontSize: 40,
-                     fontWeight: FontWeight.bold,
-                ),
-                 ),
-                const SizedBox(height: 12),
-
-                Text(
-                  _objetivo.isEmpty ? 'Defina o objetivo' : _objetivo,
-                  style: TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.schedule,
-                      size: 14,
-                      color: AppTheme.textSecondary,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '$_duracaoSemanas semanas',
-                      style: TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _nome.isEmpty ? 'Nova Rotina' : _nome,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 40,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              _objetivo.isEmpty ? 'Defina o objetivo' : _objetivo,
+                              style: TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.schedule,
+                                  size: 14,
+                                  color: AppTheme.textSecondary,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '$_duracaoSemanas semanas',
+                                  style: TextStyle(
+                                    color: AppTheme.textSecondary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8, right: 4),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(24),
+                            onTap: () => _exibirModalInfo(context),
+                            child: Container(
+                              width: 48,
+                              height: 48,
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.edit,
+                                size: 30,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
                 isTemplate ? _buildTemplateBadge() : const SizedBox.shrink(),
                 isTemplate ? const SizedBox(height: 24) : const SizedBox.shrink(),
                 // --- CABEÇALHO DA LISTA DE SESSÕES ---
