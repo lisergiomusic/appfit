@@ -183,7 +183,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 label: 'DURAÇÃO PLANEJADA',
                 icon: Icons.schedule,
                 child: DropdownButtonFormField<int>(
-                  value: semanasSelecionadas,
+                  initialValue: semanasSelecionadas,
                   dropdownColor: AppTheme.surfaceLight,
                   style: const TextStyle(color: Colors.white, fontSize: 16),
                   items: [4, 5, 6, 8, 10, 12].map((w) => DropdownMenuItem(value: w, child: Text('$w semanas'))).toList(),
@@ -245,7 +245,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               label: 'DIA DA SEMANA',
               icon: Icons.calendar_today,
               child: DropdownButtonFormField<String>(
-                value: diaSemana,
+                initialValue: diaSemana,
                 dropdownColor: AppTheme.surfaceLight,
                 items: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
                 onChanged: (v) => diaSemana = v,
@@ -366,11 +366,14 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         appBar: AppBar(
           backgroundColor: AppTheme.background,
           elevation: 0,
-          leading: IconButton(
+          leading: CupertinoButton(
             padding: const EdgeInsets.only(left: 8),
-            icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.textPrimary, size: 22),
+            child: const Icon(
+                CupertinoIcons.back,
+                color: AppTheme.textPrimary,
+                size: 24
+            ),
             onPressed: () async {
-              // No botão da AppBar, chamamos a função e fechamos manualmente
               bool salvo = await _salvarRotinaCompleta();
               if (salvo && context.mounted) {
                 Navigator.of(context).pop();
