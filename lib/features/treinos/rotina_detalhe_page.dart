@@ -1070,7 +1070,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }) {
     String letra = String.fromCharCode(65 + index);
 
-    // Widget que contém o conteúdo do card
+    // Widget que contém o conteúdo do card (Material > InkWell para splash funcionar)
     final cardContent = Material(
       elevation: 2.0,
       shadowColor: Colors.black.withAlpha(153),
@@ -1079,156 +1079,11 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         side: BorderSide(color: Colors.white.withAlpha(14), width: 1),
       ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppTheme.paddingCard,
-          vertical: AppTheme.space14,
-        ),
-
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: AppTheme.surfaceLight,
-                shape: BoxShape.circle, // Avatar agora é 100% redondo
-                border: Border.all(color: AppTheme.primary.withAlpha(30)),
-              ),
-              child: Center(
-                child: Text(
-                  letra,
-                  style: const TextStyle(
-                    color: AppTheme.primary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(width: AppTheme.space16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    sessao.nome,
-                    style: TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 18,
-                      height: 1.3,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: AppTheme.space6),
-                  Text(
-                    '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}',
-                    style: TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 0.1,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              width: 44,
-              height: 44,
-              child: isReordering
-                  ? ReorderableDragStartListener(
-                      index: index,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary.withAlpha(20),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.drag_indicator, // Ícone elegante de drag
-                          color: AppTheme.textSecondary.withAlpha(80),
-                          size: 20,
-                        ),
-                      ),
-                    )
-                  : PopupMenuButton<String>(
-                      padding: EdgeInsets.zero,
-                      color: AppTheme.surfaceLight,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      position: PopupMenuPosition.under,
-                      icon: Icon(
-                        Icons.chevron_right,
-                        color: AppTheme.textSecondary.withAlpha(160),
-                        size: 28,
-                      ),
-                      onSelected: (value) {
-                        if (value == 'edit') _exibirModalSessao(index: index);
-                        if (value == 'delete') _excluirTreino(index);
-                      },
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.edit_outlined,
-                                color: AppTheme.textSecondary.withAlpha(200),
-                                size: 18,
-                              ),
-                              SizedBox(width: AppTheme.space8),
-                              Text(
-                                'Editar',
-                                style: TextStyle(
-                                  color: AppTheme.textPrimary,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.delete_outline,
-                                color: Colors.redAccent,
-                                size: 18,
-                              ),
-                              SizedBox(width: AppTheme.space8),
-                              Text(
-                                'Excluir',
-                                style: TextStyle(
-                                  color: AppTheme.textPrimary,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    return isReordering
-        ? Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            child: cardContent,
-          )
-        : Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            child: InkWell(
-              onTap: () async {
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        onTap: isReordering
+            ? null
+            : () async {
                 final String? novoNomeTreino = await Navigator.push<String?>(
                   context,
                   MaterialPageRoute(
@@ -1247,9 +1102,151 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   }
                 });
               },
-              borderRadius: BorderRadius.circular(24), // Pill Style
-              child: cardContent,
-            ),
-          );
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppTheme.paddingCard,
+            vertical: AppTheme.space14,
+          ),
+
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceLight,
+                  shape: BoxShape.circle, // Avatar agora é 100% redondo
+                  border: Border.all(color: AppTheme.primary.withAlpha(30)),
+                ),
+                child: Center(
+                  child: Text(
+                    letra,
+                    style: const TextStyle(
+                      color: AppTheme.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: AppTheme.space16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      sessao.nome,
+                      style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        height: 1.3,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: AppTheme.space6),
+                    Text(
+                      '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}',
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 44,
+                height: 44,
+                child: isReordering
+                    ? ReorderableDragStartListener(
+                        index: index,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary.withAlpha(20),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.drag_indicator, // Ícone elegante de drag
+                            color: AppTheme.textSecondary.withAlpha(80),
+                            size: 20,
+                          ),
+                        ),
+                      )
+                    : PopupMenuButton<String>(
+                        padding: EdgeInsets.zero,
+                        color: AppTheme.surfaceLight,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        position: PopupMenuPosition.under,
+                        icon: Icon(
+                          Icons.chevron_right,
+                          color: AppTheme.textSecondary.withAlpha(160),
+                          size: 28,
+                        ),
+                        onSelected: (value) {
+                          if (value == 'edit') _exibirModalSessao(index: index);
+                          if (value == 'delete') _excluirTreino(index);
+                        },
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.edit_outlined,
+                                  color: AppTheme.textSecondary.withAlpha(200),
+                                  size: 18,
+                                ),
+                                SizedBox(width: AppTheme.space8),
+                                Text(
+                                  'Editar',
+                                  style: TextStyle(
+                                    color: AppTheme.textPrimary,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.redAccent,
+                                  size: 18,
+                                ),
+                                SizedBox(width: AppTheme.space8),
+                                Text(
+                                  'Excluir',
+                                  style: TextStyle(
+                                    color: AppTheme.textPrimary,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: cardContent,
+    );
   }
 }
