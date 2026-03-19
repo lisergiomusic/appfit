@@ -49,7 +49,6 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   final List<_TreinoData> _treinos = [];
 
   bool _isReordering = false;
-  bool _isLoading = false;
   bool _foiModificado = false; // Controla se o botão de Salvar aparece
 
   @override
@@ -57,6 +56,12 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     super.initState();
     _preencherDados();
   }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
 
   void _preencherDados() {
     if (widget.rotinaData != null) {
@@ -478,7 +483,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
   // --- SALVAR TUDO NO FIREBASE ---
-  Future<void> _salvarRotinaCompleta() async {
+  Future<bool> _salvarRotinaCompleta() async {
     if (_nome.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -486,7 +491,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           backgroundColor: Colors.redAccent,
         ),
       );
-      return;
+      return false;
     }
     if (_treinos.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -495,10 +500,10 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           backgroundColor: Colors.redAccent,
         ),
       );
-      return;
+      return false;
     }
 
-    setState(() => _isLoading = true);
+    // mark start of save (UI loading indicator removed; saving proceeds)
 
     try {
       List<Map<String, dynamic>> sessoesJson = _treinos
@@ -560,8 +565,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             backgroundColor: AppTheme.success,
           ),
         );
-        Navigator.pop(context);
       }
+      return true;
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -571,8 +576,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           ),
         );
       }
+      return false;
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      // save finished
     }
   }
 
@@ -582,110 +588,40 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         widget.rotinaData != null && widget.rotinaData!['alunoId'] == null;
 
     return PopScope(
-      canPop: !_foiModificado,
+      canPop: true,
       onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) {
+        if (didPop) return;
+        if (_foiModificado) {
+          final sucesso = await _salvarRotinaCompleta();
+          if (sucesso && mounted) {
+            Navigator.of(context).maybePop();
+          }
+          // Se falhar, SnackBar já é exibido e não sai da tela
           return;
         }
-        final sair = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: AppTheme.surfaceDark,
-            title: const Text(
-              'Descartar alterações?',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            content: const Text(
-              'Você fez mudanças nesta rotina. Se voltar agora, elas não serão salvas no banco de dados.',
-              style: TextStyle(color: AppTheme.textSecondary),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text(
-                  'Ficar',
-                  style: TextStyle(color: AppTheme.textSecondary),
-                ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  'Descartar',
-                  style: TextStyle(
-                    color: Colors.redAccent,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-        if (sair == true) {
-          if (mounted) {
-            Navigator.pop(context);
-          }
-        }
+        if (mounted) Navigator.of(context).maybePop();
       },
       child: Scaffold(
         backgroundColor: AppTheme.background,
         appBar: AppBar(
           backgroundColor: AppTheme.background,
           elevation: 0,
-          leading: CupertinoButton(
-            padding: const EdgeInsets.only(left: 16),
-            child: const Icon(
-              CupertinoIcons.back,
+          leading: IconButton(
+            padding: const EdgeInsets.only(left: 8),
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
               color: AppTheme.textPrimary,
-              size: 24,
+              size: 22,
             ),
-            onPressed: () {
-              if (!_foiModificado) {
-                Navigator.pop(context);
+            onPressed: () async {
+              if (_foiModificado) {
+                final sucesso = await _salvarRotinaCompleta();
+                if (sucesso && mounted) {
+                  Navigator.of(context).maybePop();
+                }
+                // Se falhar, SnackBar já é exibido e não sai da tela
               } else {
-                showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: AppTheme.surfaceDark,
-                    title: const Text(
-                      'Descartar alterações?',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    content: const Text(
-                      'Você fez mudanças nesta rotina. Se voltar agora, elas não serão salvas no banco de dados.',
-                      style: TextStyle(color: AppTheme.textSecondary),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text(
-                          'Ficar',
-                          style: TextStyle(
-                            color: AppTheme.textSecondary,
-                          ),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context, true);
-                          Navigator.pop(context);
-                        },
-                        child: const Text(
-                          'Descartar',
-                          style: TextStyle(
-                            color: Colors.redAccent,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+                if (mounted) Navigator.of(context).maybePop();
               }
             },
           ),
@@ -940,52 +876,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             ),
           ),
         ),
-        bottomNavigationBar: (_foiModificado || widget.rotinaId == null)
-            ? SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: Semantics(
-                        label: 'Salvar rotina',
-                        button: true,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _salvarRotinaCompleta,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.success,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2.5,
-                                  ),
-                                )
-                              : Text(
-                                  _isLoading ? 'Salvando...' : 'Salvar',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16,
-                                    letterSpacing: 0.3,
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            : null,
+        bottomNavigationBar: null,
       ),
     );
   }
