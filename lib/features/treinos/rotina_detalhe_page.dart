@@ -691,8 +691,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           ),
           title: Text(
             'Gerenciar Planilha',
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: AppTheme.textPrimary,
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -703,12 +703,12 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1.0),
             child: Container(
-              height: 1.0,
+              height: 0.8,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
                     Colors.white.withAlpha(0),
-                    Colors.white.withAlpha(25),
+                    Colors.white.withAlpha(12),
                     Colors.white.withAlpha(0),
                   ],
                   begin: Alignment.centerLeft,
@@ -718,16 +718,19 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             ),
           ),
         ),
-        body: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.space24,
-              vertical: 24,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+        body: SafeArea(
+          top: false,
+          bottom: true,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.space24,
+                vertical: AppTheme.space24,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -735,24 +738,26 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Title: more compact and heavier for professional look
                             Text(
                               _nome.isEmpty ? 'Nova Rotina' : _nome,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 40,
-                                fontWeight: FontWeight.bold,
+                              style: TextStyle(
+                                color: AppTheme.textPrimary,
+                                fontSize: 32,
+                                fontWeight: FontWeight.w900,
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            SizedBox(height: AppTheme.space12),
                             Text(
                               _objetivo.isEmpty ? 'Defina o objetivo' : _objetivo,
                               style: TextStyle(
                                 color: AppTheme.textSecondary,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
+                                height: 1.35,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: AppTheme.space8),
                             Row(
                               children: [
                                 Icon(
@@ -760,7 +765,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                   size: 14,
                                   color: AppTheme.textSecondary,
                                 ),
-                                const SizedBox(width: 6),
+                                SizedBox(width: AppTheme.space6),
                                 Text(
                                   '$_duracaoSemanas semanas',
                                   style: TextStyle(
@@ -786,7 +791,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                               height: 48,
                               alignment: Alignment.center,
                               child: Icon(
-                               CupertinoIcons.ellipsis_vertical,
+                                CupertinoIcons.ellipsis_vertical,
                                 size: 28,
                                 color: AppTheme.textSecondary,
                               ),
@@ -796,137 +801,140 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 32),
-                isTemplate ? _buildTemplateBadge() : const SizedBox.shrink(),
-                isTemplate ? const SizedBox(height: 24) : const SizedBox.shrink(),
-                // --- CABEÇALHO DA LISTA DE SESSÕES ---
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'LISTA DE TREINOS',
-                      style: AppTheme.textSectionHeaderDark,
-                    ),
-                    if (_treinos.isNotEmpty)
-                      GestureDetector(
-                        onTap: () {
-                          if (_treinos.length > 1) {
-                            setState(() => _isReordering = !_isReordering);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Precisas de pelo menos 2 sessões para reordenar.',
-                                ),
-                                backgroundColor: AppTheme.surfaceLight,
-                              ),
-                            );
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _isReordering ? AppTheme.primary.withAlpha(30) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                _isReordering ? Icons.check_rounded : Icons.swap_vert_outlined,
-                                size: 16,
-                                color: _isReordering ? AppTheme.primary : AppTheme.textSecondary,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                _isReordering ? 'Concluir' : 'Reordenar',
-                                style: TextStyle(
-                                  color: _isReordering ? AppTheme.primary : AppTheme.textSecondary,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                  SizedBox(height: AppTheme.space32),
+                  if (isTemplate) _buildTemplateBadge() else const SizedBox.shrink(),
+                  if (isTemplate) SizedBox(height: AppTheme.space24) else const SizedBox.shrink(),
+
+                  // Header: Lista de Treinos
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'LISTA DE TREINOS',
+                        style: AppTheme.textSectionHeaderDark,
                       ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                if (_treinos.isEmpty)
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 60),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.fitness_center,
-                            size: 60,
-                            color: Colors.white.withAlpha(20),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Nenhuma sessão',
-                            style: TextStyle(
-                              color: AppTheme.textSecondary.withAlpha(180),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                      if (_treinos.isNotEmpty)
+                        GestureDetector(
+                          onTap: () {
+                            if (_treinos.length > 1) {
+                              setState(() => _isReordering = !_isReordering);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Precisas de pelo menos 2 sessões para reordenar.',
+                                  ),
+                                  backgroundColor: AppTheme.surfaceLight,
+                                ),
+                              );
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _isReordering ? AppTheme.primary.withAlpha(30) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _isReordering ? Icons.check_rounded : Icons.swap_vert_outlined,
+                                  size: 16,
+                                  color: _isReordering ? AppTheme.primary : AppTheme.textSecondary,
+                                ),
+                                SizedBox(width: AppTheme.space4),
+                                Text(
+                                  _isReordering ? 'Concluir' : 'Reordenar',
+                                  style: TextStyle(
+                                    color: _isReordering ? AppTheme.primary : AppTheme.textSecondary,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: AppTheme.space12),
+
+                  if (_treinos.isEmpty)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 60),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.fitness_center,
+                              size: 60,
+                              color: Colors.white.withAlpha(20),
+                            ),
+                            SizedBox(height: AppTheme.space16),
+                            Text(
+                              'Nenhuma sessão',
+                              style: TextStyle(
+                                color: AppTheme.textSecondary.withAlpha(180),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else if (_isReordering)
+                    ReorderableListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      buildDefaultDragHandles: false,
+                      itemCount: _treinos.length,
+                      onReorder: (oldIndex, newIndex) {
+                        setState(() {
+                          if (newIndex > oldIndex) newIndex -= 1;
+                          final item = _treinos.removeAt(oldIndex);
+                          _treinos.insert(newIndex, item);
+                          _foiModificado = true;
+                        });
+                      },
+                      proxyDecorator: (child, index, animation) {
+                        return Transform.scale(
+                          scale: 1.0,
+                          child: Material(
+                            elevation: 0,
+                            color: Colors.transparent,
+                            child: child,
+                          ),
+                        );
+                      },
+                      itemBuilder: (context, index) {
+                        var sessao = _treinos[index];
+                        return Container(
+                          key: ValueKey(sessao),
+                          child: _buildSessaoCard(
+                            sessao,
+                            index,
+                            isReordering: true,
+                          ),
+                        );
+                      },
+                    )
+                  else
+                    ..._treinos.asMap().entries.map(
+                      (entry) => _buildSessaoCard(
+                        entry.value,
+                        entry.key,
+                        isReordering: false,
                       ),
                     ),
-                  )
-                else if (_isReordering)
-                  ReorderableListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    buildDefaultDragHandles: false,
-                    itemCount: _treinos.length,
-                    onReorder: (oldIndex, newIndex) {
-                      setState(() {
-                        if (newIndex > oldIndex) newIndex -= 1;
-                        final item = _treinos.removeAt(oldIndex);
-                        _treinos.insert(newIndex, item);
-                        _foiModificado = true;
-                      });
-                    },
-                    proxyDecorator: (child, index, animation) {
-                      return Transform.scale(
-                        scale: 1.0,
-                        child: Material(
-                          elevation: 0,
-                          color: Colors.transparent,
-                          child: child,
-                        ),
-                      );
-                    },
-                    itemBuilder: (context, index) {
-                      var sessao = _treinos[index];
-                      return Container(
-                        key: ValueKey(sessao),
-                        child: _buildSessaoCard(
-                          sessao,
-                          index,
-                          isReordering: true,
-                        ),
-                      );
-                    },
-                  )
-                else
-                  ..._treinos.asMap().entries.map(
-                    (entry) => _buildSessaoCard(
-                      entry.value,
-                      entry.key,
-                      isReordering: false,
-                    ),
-                  ),
-                const SizedBox(height: 8),
-                if (!_isReordering) _buildAddSessaoButton(),
-              ],
+                  SizedBox(height: AppTheme.space8),
+                  if (!_isReordering) _buildAddSessaoButton(),
+                ],
+              ),
             ),
           ),
         ),
@@ -939,33 +947,37 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     child: SizedBox(
                       width: double.infinity,
                       height: 52,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _salvarRotinaCompleta,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF34C759),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(26),
+                      child: Semantics(
+                        label: 'Salvar rotina',
+                        button: true,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _salvarRotinaCompleta,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.success,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                            ),
                           ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : Text(
+                                  _isLoading ? 'Salvando...' : 'Salvar',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
                         ),
-                        child: _isLoading
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2.5,
-                                ),
-                              )
-                            : Text(
-                                _isLoading ? 'Salvando...' : 'Salvar',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                  letterSpacing: 0.3,
-                                ),
-                              ),
                       ),
                     ),
                   ),
@@ -994,22 +1006,22 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             width: 1.5,
           ),
         ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.add_circle_outline, color: AppTheme.primary, size: 22),
-              SizedBox(width: AppTheme.space8),
-              const Text(
-                'Novo Treino',
-                style: TextStyle(
-                  color: AppTheme.primary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  letterSpacing: 0.3,
-                ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add_circle_outline, color: AppTheme.primary, size: 22),
+            SizedBox(width: AppTheme.space8),
+            const Text(
+              'Novo Treino',
+              style: TextStyle(
+                color: AppTheme.primary,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                letterSpacing: 0.3,
               ),
-            ],
-          ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1022,10 +1034,10 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         borderRadius: BorderRadius.circular(24), // Ajustado para Pill Style
         border: Border.all(color: AppTheme.primary.withAlpha(30)),
       ),
-      child: const Row(
+      child: Row(
         children: [
           Icon(Icons.collections_bookmark, color: AppTheme.primary, size: 18),
-          SizedBox(width: 12),
+          SizedBox(width: AppTheme.space12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1038,7 +1050,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     fontSize: 13,
                   ),
                 ),
-                SizedBox(height: 2),
+                SizedBox(height: AppTheme.space4),
                 Text(
                   'Sem data de vencimento até ser atribuído.',
                   style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
@@ -1060,14 +1072,15 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
     // Widget que contém o conteúdo do card
     final cardContent = Material(
-      elevation: 1.0,
+      elevation: 2.0,
+      shadowColor: Colors.black.withAlpha(153),
       color: AppTheme.surfaceDark,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         side: BorderSide(color: Colors.white.withAlpha(14), width: 1),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
+        padding: EdgeInsets.symmetric(
           horizontal: AppTheme.paddingCard,
           vertical: AppTheme.space14,
         ),
@@ -1078,9 +1091,10 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             Container(
               width: 36,
               height: 36,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppTheme.surfaceLight,
                 shape: BoxShape.circle, // Avatar agora é 100% redondo
+                border: Border.all(color: AppTheme.primary.withAlpha(30)),
               ),
               child: Center(
                 child: Text(
@@ -1093,7 +1107,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: AppTheme.space16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1101,8 +1115,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 children: [
                   Text(
                     sessao.nome,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
                       fontWeight: FontWeight.w600,
                       fontSize: 18,
                       height: 1.3,
@@ -1110,7 +1124,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: AppTheme.space6),
+                  SizedBox(height: AppTheme.space6),
                   Text(
                     '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}',
                     style: TextStyle(
@@ -1167,11 +1181,11 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                 color: AppTheme.textSecondary.withAlpha(200),
                                 size: 18,
                               ),
-                              const SizedBox(width: 8),
-                              const Text(
+                              SizedBox(width: AppTheme.space8),
+                              Text(
                                 'Editar',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: AppTheme.textPrimary,
                                   fontSize: 14,
                                 ),
                               ),
@@ -1187,11 +1201,11 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                 color: Colors.redAccent,
                                 size: 18,
                               ),
-                              const SizedBox(width: 8),
-                              const Text(
+                              SizedBox(width: AppTheme.space8),
+                              Text(
                                 'Excluir',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: AppTheme.textPrimary,
                                   fontSize: 14,
                                 ),
                               ),

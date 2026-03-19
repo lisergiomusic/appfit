@@ -814,11 +814,6 @@ class _HintingExercicioAnimatorState extends State<_HintingExercicioAnimator>
             curve: const Interval(0.0, 1200 / 2600, curve: Curves.easeOut),
           ),
         );
-
-    // Sequência 2: Animação de swipe
-    // O swipe começa após o flash e uma pequena pausa.
-    // 800/1600 era 0.5 (metade da animação), mantendo a proporção correta:
-    // Inicia aos 50% (1300ms) e vai até 100% (2600ms)
     final swipeInterval = CurvedAnimation(
       parent: _controller,
       curve: const Interval(0.5, 1.0, curve: Curves.linear),
