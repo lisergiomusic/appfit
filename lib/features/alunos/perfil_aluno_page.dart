@@ -388,6 +388,23 @@ class PerfilAlunoPage extends StatelessWidget {
         actions: const [
           SizedBox(width: 48), // Equilíbrio visual (ou ajuste conforme necessário)
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(
+            height: 1.0,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withAlpha(0),
+                  Colors.white.withAlpha(25),
+                  Colors.white.withAlpha(0),
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
+          ),
+        ),
       ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
