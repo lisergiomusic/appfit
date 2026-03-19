@@ -705,71 +705,60 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         appBar: AppBar(
           backgroundColor: AppTheme.background,
           elevation: 0,
-          leading: Padding(
-            padding: const EdgeInsets.only(left: 12),
-            child: Material(
-              color: AppTheme.buttonSurface,
-              shape: const CircleBorder(),
-              child: InkWell(
-                onTap: () {
-                  if (!_foiModificado) {
-                    Navigator.pop(context);
-                  } else {
-                    showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        backgroundColor: AppTheme.surfaceDark,
-                        title: const Text(
-                          'Descartar alterações?',
+          leading: CupertinoButton(
+            padding: const EdgeInsets.only(left: 16),
+            child: const Icon(
+              CupertinoIcons.back,
+              color: AppTheme.textPrimary,
+              size: 24,
+            ),
+            onPressed: () {
+              if (!_foiModificado) {
+                Navigator.pop(context);
+              } else {
+                showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: AppTheme.surfaceDark,
+                    title: const Text(
+                      'Descartar alterações?',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    content: const Text(
+                      'Você fez mudanças nesta rotina. Se voltar agora, elas não serão salvas no banco de dados.',
+                      style: TextStyle(color: AppTheme.textSecondary),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text(
+                          'Ficar',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context, true);
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          'Descartar',
+                          style: TextStyle(
+                            color: Colors.redAccent,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        content: const Text(
-                          'Você fez mudanças nesta rotina. Se voltar agora, elas não serão salvas no banco de dados.',
-                          style: TextStyle(color: AppTheme.textSecondary),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text(
-                              'Ficar',
-                              style: TextStyle(
-                                color: AppTheme.textSecondary,
-                              ),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context, true);
-                              Navigator.pop(context);
-                            },
-                            child: const Text(
-                              'Descartar',
-                              style: TextStyle(
-                                color: Colors.redAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
-                    );
-                  }
-                },
-                customBorder: const CircleBorder(),
-                child: const SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: Icon(
-                    CupertinoIcons.back,
-                    color: AppTheme.textPrimary,
-                    size: 18,
+                    ],
                   ),
-                ),
-              ),
-            ),
+                );
+              }
+            },
           ),
           title: Text(
             'Gerenciar Planilha',
