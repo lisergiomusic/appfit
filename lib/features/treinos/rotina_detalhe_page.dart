@@ -785,6 +785,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(24),
+                            splashColor: AppTheme.splash.withAlpha(30),
+                            highlightColor: AppTheme.splash.withAlpha(12),
                             onTap: () => _exibirModalInfo(context),
                             child: Container(
                               width: 48,
@@ -990,37 +992,42 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
   // BOTÃO ADICIONAR SESSÃO - REFINADO (OUTLINE PILL)
   Widget _buildAddSessaoButton() {
-    return InkWell(
-      onTap: () => _exibirModalSessao(),
-      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppTheme.space16,
-          vertical: AppTheme.space16,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-          border: Border.all(
-            color: AppTheme.primary.withAlpha(120),
-            width: 1.5,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _exibirModalSessao(),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        splashColor: AppTheme.splash.withAlpha(30),
+        highlightColor: AppTheme.splash.withAlpha(12),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppTheme.space16,
+            vertical: AppTheme.space16,
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.add_circle_outline, color: AppTheme.primary, size: 22),
-            SizedBox(width: AppTheme.space8),
-            const Text(
-              'Novo Treino',
-              style: TextStyle(
-                color: AppTheme.primary,
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-                letterSpacing: 0.3,
-              ),
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+            border: Border.all(
+              color: AppTheme.primary.withAlpha(120),
+              width: 1.5,
             ),
-          ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.add_circle_outline, color: AppTheme.primary, size: 22),
+              SizedBox(width: AppTheme.space8),
+              const Text(
+                'Novo Treino',
+                style: TextStyle(
+                  color: AppTheme.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1081,6 +1088,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        splashColor: AppTheme.splash.withAlpha(30),
+        highlightColor: AppTheme.splash.withAlpha(12),
         onTap: isReordering
             ? null
             : () async {

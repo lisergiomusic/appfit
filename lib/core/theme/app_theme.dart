@@ -6,6 +6,9 @@
     static const Color primary = Color(
       0xFF30D158,
     ); // Verde para interações principais
+    // Splash color token (uses the same green by default). Use this token
+    // everywhere for ripple/splash colors so changing it here updates all spots.
+    static const Color splash = primary;
     static const Color background = Color(0xFF121212); // Google Material Dark
   
     static const Color iosBlue = Color(0xFF007AFF);
