@@ -1,4 +1,3 @@
-// Ficheiro: lib/core/services/rotina_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -17,6 +16,7 @@ class RotinaService {
     final personalId = _auth.currentUser?.uid;
     if (personalId == null) throw Exception('Personal não autenticado.');
 
+    // 1. Desativar rotinas antigas usando BATCH (Muito mais rápido e à prova de falhas)
     if (alunoId != null) {
       final rotinasAntigas = await _db
           .collection('rotinas')
@@ -24,8 +24,12 @@ class RotinaService {
           .where('ativa', isEqualTo: true)
           .get();
 
-      for (var doc in rotinasAntigas.docs) {
-        await doc.reference.update({'ativa': false});
+      if (rotinasAntigas.docs.isNotEmpty) {
+        final batch = _db.batch();
+        for (var doc in rotinasAntigas.docs) {
+          batch.update(doc.reference, {'ativa': false});
+        }
+        await batch.commit(); // Executa todas as desativações num único milissegundo
       }
     }
 
@@ -42,27 +46,31 @@ class RotinaService {
       'sessoes': sessoes,
     };
 
-    await _db.collection('rotinas').add(payload);
+    // 2. Gravar usando .set() num documento novo para persistência offline imediata
+    final novaRotinaRef = _db.collection('rotinas').doc();
+    await novaRotinaRef.set(payload);
   }
 
-  // --- NOVO: ATUALIZAÇÃO DE ROTINA EXISTENTE ---
+  // --- ATUALIZAÇÃO DE ROTINA EXISTENTE ---
   Future<void> atualizarRotina({
     required String rotinaId,
     required String nome,
     required String objetivo,
     required List<Map<String, dynamic>> sessoes,
-    int duracaoDias = 28,
-    Timestamp? dataCriacaoOriginal, // Recebemos para não alterar o histórico
+    required int duracaoDias,
+    Timestamp? dataCriacaoOriginal,
   }) async {
-    // Calcula a nova data de vencimento a partir da data em que a rotina foi criada
-    final baseDate = dataCriacaoOriginal?.toDate() ?? DateTime.now();
-    final dataVencimento = baseDate.add(Duration(days: duracaoDias));
 
-    await _db.collection('rotinas').doc(rotinaId).update({
+    await FirebaseFirestore.instance
+        .collection('rotinas')
+        .doc(rotinaId)
+        .set({
       'nome': nome,
       'objetivo': objetivo,
-      'dataVencimento': Timestamp.fromDate(dataVencimento),
       'sessoes': sessoes,
-    });
+      'duracaoDias': duracaoDias,
+      'dataUltimaAlteracao': FieldValue.serverTimestamp(),
+      'dataCriacao': ?dataCriacaoOriginal,
+    }, SetOptions(merge: true));
   }
 }

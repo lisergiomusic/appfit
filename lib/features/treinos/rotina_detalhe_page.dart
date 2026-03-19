@@ -8,7 +8,6 @@ import 'models/exercicio_model.dart';
 import 'widgets/rotina_modern_input.dart';
 import 'widgets/rotina_input_decoration.dart';
 
-// Modelo local para gerir as sessões durante a edição
 class _TreinoData {
   String nome;
   String? diaSemana;
@@ -24,7 +23,7 @@ class _TreinoData {
 }
 
 class RotinaDetalhePage extends StatefulWidget {
-  final Map<String, dynamic>? rotinaData; // Nulo se for nova rotina!
+  final Map<String, dynamic>? rotinaData;
   final String? rotinaId;
   final String? alunoId;
   final String? alunoNome;
@@ -42,38 +41,37 @@ class RotinaDetalhePage extends StatefulWidget {
 }
 
 class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
-  // --- ESTADO GERAL DA ROTINA ---
-  String _nome = '';
-  String _objetivo = '';
+  // --- CONTROLADORES TIPO 'LATE' PARA PERSISTÊNCIA ---
+  late TextEditingController nomeCtrl;
+  late TextEditingController objCtrl;
+
   int _duracaoSemanas = 4;
   final List<_TreinoData> _treinos = [];
-
   bool _isReordering = false;
-  bool _foiModificado = false; // Controla se o botão de Salvar aparece
 
   @override
   void initState() {
     super.initState();
+    // Inicializamos os controladores com os dados vindos do Firebase ou vazios
+    nomeCtrl = TextEditingController(text: widget.rotinaData?['nome'] ?? '');
+    objCtrl = TextEditingController(text: widget.rotinaData?['objetivo'] ?? '');
+
     _preencherDados();
   }
 
   @override
   void dispose() {
+    nomeCtrl.dispose();
+    objCtrl.dispose();
     super.dispose();
   }
 
-
   void _preencherDados() {
     if (widget.rotinaData != null) {
-      _nome = widget.rotinaData!['nome'] ?? '';
-      _objetivo = widget.rotinaData!['objetivo'] ?? '';
-
       if (widget.rotinaData!['dataCriacao'] != null &&
           widget.rotinaData!['dataVencimento'] != null) {
-        DateTime criacao = (widget.rotinaData!['dataCriacao'] as Timestamp)
-            .toDate();
-        DateTime vencimento =
-            (widget.rotinaData!['dataVencimento'] as Timestamp).toDate();
+        DateTime criacao = (widget.rotinaData!['dataCriacao'] as Timestamp).toDate();
+        DateTime vencimento = (widget.rotinaData!['dataVencimento'] as Timestamp).toDate();
         int dias = vencimento.difference(criacao).inDays;
         if (dias > 0) _duracaoSemanas = (dias / 7).round();
       }
@@ -94,7 +92,6 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             );
           }
 
-          // Lógica de migração para grupoMuscular
           List<String> grupos = ['Geral'];
           final rawGrupo = ex['grupoMuscular'];
           if (rawGrupo is String) {
@@ -109,7 +106,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               grupoMuscular: grupos,
               tipoAlvo: ex['tipoAlvo'] ?? 'Reps',
               imagemUrl: ex['imagemUrl'],
-              personalId: ex['personalId'], // Lendo a autoria corretamente
+              personalId: ex['personalId'],
               series: seriesList,
             ),
           );
@@ -124,7 +121,6 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         );
       }
     } else {
-      // Se for uma rotina nova, abre logo o modal de informações no início
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _exibirModalInfo(context);
       });
@@ -132,152 +128,79 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
   TipoSerie _parseTipoSerie(String? tipo) {
-    if (tipo == 'aquecimento' || tipo == 'TipoSerie.aquecimento') {
-      return TipoSerie.aquecimento;
-    }
+    if (tipo == 'aquecimento' || tipo == 'TipoSerie.aquecimento') return TipoSerie.aquecimento;
     if (tipo == 'feeder' || tipo == 'TipoSerie.feeder') return TipoSerie.feeder;
     return TipoSerie.trabalho;
   }
 
-  // --- MODAL PARA EDITAR CABEÇALHO (REFINADO) ---
   void _exibirModalInfo(BuildContext context) {
-    final nomeCtrl = TextEditingController(text: _nome);
-    final objCtrl = TextEditingController(text: _objetivo);
     int semanasSelecionadas = _duracaoSemanas;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppTheme.surfaceDark,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (context) => StatefulBuilder(
         builder: (context, setStateModal) => Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 24,
-            right: 24,
-            top: 12,
+            left: 24, right: 24, top: 12,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // HANDLE DE ARRASTAR
               Center(
                 child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 24),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(30),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+                  width: 40, height: 4, margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(color: Colors.white.withAlpha(30), borderRadius: BorderRadius.circular(2)),
                 ),
               ),
-
-              const Text(
-                'Configurar Rotina',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: -0.5,
-                ),
-              ),
+              const Text('Configurar Rotina', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
               const SizedBox(height: 28),
-
               RotinaModernInput(
                 label: 'NOME DA ROTINA',
                 icon: Icons.title,
                 child: TextField(
-                  controller: nomeCtrl,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: -0.3,
-                  ),
+                  controller: nomeCtrl, // Usa o controller da classe
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
                   decoration: rotinaInputDecoration(hintText: 'Ex: Projeto Hipertrofia Mês 1'),
                 ),
               ),
               const SizedBox(height: 24),
-
               RotinaModernInput(
                 label: 'OBJETIVO PRINCIPAL',
                 icon: Icons.track_changes,
                 child: TextField(
-                  controller: objCtrl,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: -0.3,
-                  ),
+                  controller: objCtrl, // Usa o controller da classe
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
                   decoration: rotinaInputDecoration(hintText: 'Ex: Ganho de massa e força'),
                 ),
               ),
               const SizedBox(height: 24),
-
               RotinaModernInput(
                 label: 'DURAÇÃO PLANEJADA',
                 icon: Icons.schedule,
                 child: DropdownButtonFormField<int>(
-                  initialValue: semanasSelecionadas,
+                  value: semanasSelecionadas,
                   dropdownColor: AppTheme.surfaceLight,
-                  icon: Icon(
-                    Icons.expand_more_rounded,
-                    color: AppTheme.primary.withAlpha(150),
-                    size: 18,
-                  ),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  items: [4, 5, 6, 8, 10, 12]
-                      .map(
-                        (w) => DropdownMenuItem(
-                          value: w,
-                          child: Text('$w semanas'),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (v) =>
-                      setStateModal(() => semanasSelecionadas = v!),
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  items: [4, 5, 6, 8, 10, 12].map((w) => DropdownMenuItem(value: w, child: Text('$w semanas'))).toList(),
+                  onChanged: (v) => setStateModal(() => semanasSelecionadas = v!),
                   decoration: rotinaInputDecoration(hintText: 'Escolha a duração'),
                 ),
               ),
               const SizedBox(height: 32),
-
               ElevatedButton(
                 onPressed: () {
                   setState(() {
-                    _nome = nomeCtrl.text.trim();
-                    _objetivo = objCtrl.text.trim();
                     _duracaoSemanas = semanasSelecionadas;
-                    _foiModificado = true;
                   });
                   Navigator.pop(context);
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  elevation: 0,
-                  shadowColor: Colors.transparent,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(11),
-                  ),
-                ),
-                child: const Text(
-                  'Concluir',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    letterSpacing: -0.3,
-                  ),
-                ),
+                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(11))),
+                child: const Text('Concluir', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Colors.black)),
               ),
               const SizedBox(height: 24),
             ],
@@ -287,186 +210,71 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     );
   }
 
-  // --- MODAL PARA ADICIONAR/EDITAR SESSÃO (REFINADO) ---
   void _exibirModalSessao({int? index}) {
     final bool isEditing = index != null;
-    final nomeCtrl = TextEditingController(
-      text: isEditing ? _treinos[index].nome : null,
-    );
+    final sNomeCtrl = TextEditingController(text: isEditing ? _treinos[index].nome : null);
     String? diaSemana = isEditing ? _treinos[index].diaSemana : null;
-    final orientCtrl = TextEditingController(
-      text: isEditing ? _treinos[index].orientacoes : null,
-    );
+    final orientCtrl = TextEditingController(text: isEditing ? _treinos[index].orientacoes : null);
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppTheme.surfaceDark,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (_) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 24,
-          right: 24,
-          top: 12,
-        ),
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 24, right: 24, top: 12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Center(
               child: Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 24),
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(30),
-                  borderRadius: BorderRadius.circular(2),
-                ),
+                width: 40, height: 4, margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(color: Colors.white.withAlpha(30), borderRadius: BorderRadius.circular(2)),
               ),
             ),
-
-            Text(
-              isEditing ? 'Editar Sessão' : 'Nova Sessão',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                letterSpacing: -0.5,
-              ),
-            ),
+            Text(isEditing ? 'Editar Sessão' : 'Nova Sessão', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
             const SizedBox(height: 28),
-
             RotinaModernInput(
               label: 'NOME DO TREINO',
               icon: Icons.fitness_center,
-              child: TextField(
-                controller: nomeCtrl,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  letterSpacing: -0.3,
-                ),
-                decoration: rotinaInputDecoration(hintText: 'Ex: Push, Pull, Costas...'),
-              ),
+              child: TextField(controller: sNomeCtrl, style: const TextStyle(color: Colors.white, fontSize: 16), decoration: rotinaInputDecoration(hintText: 'Ex: Push, Pull...')),
             ),
             const SizedBox(height: 24),
-
             RotinaModernInput(
-              label: 'DIA DA SEMANA (OPCIONAL)',
+              label: 'DIA DA SEMANA',
               icon: Icons.calendar_today,
               child: DropdownButtonFormField<String>(
-                initialValue: diaSemana,
+                value: diaSemana,
                 dropdownColor: AppTheme.surfaceLight,
-                icon: Icon(
-                  Icons.expand_more_rounded,
-                  color: AppTheme.primary.withAlpha(150),
-                  size: 18,
-                ),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                ),
-                items:
-                    <String>[
-                          'Segunda',
-                          'Terça',
-                          'Quarta',
-                          'Quinta',
-                          'Sexta',
-                          'Sábado',
-                          'Domingo',
-                        ]
-                        .map((d) => DropdownMenuItem(value: d, child: Text(d)))
-                        .toList(),
+                items: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
                 onChanged: (v) => diaSemana = v,
                 decoration: rotinaInputDecoration(hintText: 'Sem dia fixo'),
               ),
             ),
             const SizedBox(height: 24),
-
             RotinaModernInput(
-              label: 'NOTAS GERAIS DA SESSÃO',
+              label: 'NOTAS',
               icon: Icons.notes,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceDark,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.white.withAlpha(15),
-                    width: 0.5,
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                child: TextField(
-                  controller: orientCtrl,
-                  maxLines: 3,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  decoration:
-                      rotinaInputDecoration(
-                        hintText: 'Ex: Aquecer manguito rotador antes...',
-                      ).copyWith(
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        fillColor: Colors.transparent,
-                      ),
-                ),
-              ),
+              child: TextField(controller: orientCtrl, maxLines: 3, style: const TextStyle(color: Colors.white, fontSize: 16), decoration: rotinaInputDecoration(hintText: 'Ex: Aquecer...')),
             ),
             const SizedBox(height: 32),
-
             ElevatedButton(
               onPressed: () {
-                final newName = nomeCtrl.text.trim().isEmpty
-                    ? 'Treino ${String.fromCharCode(65 + _treinos.length)}'
-                    : nomeCtrl.text.trim();
+                final newName = sNomeCtrl.text.trim().isEmpty ? 'Treino ${String.fromCharCode(65 + _treinos.length)}' : sNomeCtrl.text.trim();
                 setState(() {
                   if (isEditing) {
                     _treinos[index].nome = newName;
                     _treinos[index].diaSemana = diaSemana;
                     _treinos[index].orientacoes = orientCtrl.text.trim();
                   } else {
-                    _treinos.add(
-                      _TreinoData(
-                        nome: newName,
-                        diaSemana: diaSemana,
-                        orientacoes: orientCtrl.text.trim(),
-                      ),
-                    );
+                    _treinos.add(_TreinoData(nome: newName, diaSemana: diaSemana, orientacoes: orientCtrl.text.trim()));
                   }
-                  _foiModificado = true;
                 });
                 Navigator.pop(context);
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                elevation: 0,
-                shadowColor: Colors.transparent,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(11),
-                ),
-              ),
-              child: Text(
-                isEditing ? 'Salvar' : 'Adicionar',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  letterSpacing: -0.3,
-                ),
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, padding: const EdgeInsets.symmetric(vertical: 14)),
+              child: Text(isEditing ? 'Salvar' : 'Adicionar', style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black)),
             ),
             const SizedBox(height: 24),
           ],
@@ -478,71 +286,40 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   void _excluirTreino(int index) {
     setState(() {
       _treinos.removeAt(index);
-      _foiModificado = true;
     });
   }
 
-  // --- SALVAR TUDO NO FIREBASE ---
   Future<bool> _salvarRotinaCompleta() async {
-    if (_nome.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Dê um nome à rotina!'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return false;
-    }
-    if (_treinos.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Adicione pelo menos uma sessão!'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return false;
-    }
+    final String nomeParaSalvar = nomeCtrl.text.trim();final String objetivoParaSalvar = objCtrl.text.trim();
 
-    // mark start of save (UI loading indicator removed; saving proceeds)
+    if (nomeParaSalvar.isEmpty || _treinos.isEmpty) return false;
 
     try {
-      List<Map<String, dynamic>> sessoesJson = _treinos
-          .map(
-            (t) => {
-              'nome': t.nome,
-              'diaSemana': t.diaSemana,
-              'orientacoes': t.orientacoes,
-              'exercicios': t.exercicios
-                  .map(
-                    (ex) => {
-                      'nome': ex.nome,
-                      'grupoMuscular': ex.grupoMuscular,
-                      'tipoAlvo': ex.tipoAlvo,
-                      'imagemUrl': ex.imagemUrl,
-                      'personalId': ex
-                          .personalId, // Adicionando para não perder autoria ao salvar!
-                      'series': ex.series
-                          .map(
-                            (s) => {
-                              'tipo': s.tipo.name,
-                              'alvo': s.alvo,
-                              'carga': s.carga,
-                              'descanso': s.descanso,
-                            },
-                          )
-                          .toList(),
-                    },
-                  )
-                  .toList(),
-            },
-          )
-          .toList();
+      // MAPEAMENTO (Verifique se nenhum campo aqui é NULO)
+      List<Map<String, dynamic>> sessoesJson = _treinos.map((t) => {
+        'nome': t.nome,
+        'diaSemana': t.diaSemana ?? '', // Garante que não vá null
+        'orientacoes': t.orientacoes ?? '',
+        'exercicios': t.exercicios.map((ex) => {
+          'nome': ex.nome,
+          'grupoMuscular': ex.grupoMuscular,
+          'tipoAlvo': ex.tipoAlvo,
+          'series': ex.series.map((s) => {
+            'tipo': s.tipo.name,
+            'alvo': s.alvo,
+            'carga': s.carga,
+            'descanso': s.descanso
+          }).toList(),
+        }).toList(),
+      }).toList();
+
+      print('--- [DATABASE] ENVIANDO PARA O FIRESTORE... ---');
 
       if (widget.rotinaId != null) {
         await RotinaService().atualizarRotina(
           rotinaId: widget.rotinaId!,
-          nome: _nome,
-          objetivo: _objetivo,
+          nome: nomeParaSalvar,
+          objetivo: objetivoParaSalvar,
           sessoes: sessoesJson,
           duracaoDias: _duracaoSemanas * 7,
           dataCriacaoOriginal: widget.rotinaData?['dataCriacao'] as Timestamp?,
@@ -550,56 +327,39 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       } else {
         await RotinaService().criarRotina(
           alunoId: widget.alunoId,
-          nome: _nome,
-          objetivo: _objetivo,
+          nome: nomeParaSalvar,
+          objetivo: objetivoParaSalvar,
           sessoes: sessoesJson,
           duracaoDias: _duracaoSemanas * 7,
         );
       }
 
-      setState(() => _foiModificado = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Rotina salva com sucesso!'),
-            backgroundColor: AppTheme.success,
-          ),
-        );
-      }
+      print('--- [DATABASE] SALVO COM SUCESSO! ---');
       return true;
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro: $e'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
+      print('--- [DATABASE ERRO] ---');
+      print('Erro: $e');
+      // Se cair aqui, o erro será impresso no console.
+      // Se for "Permission Denied", o problema são as Rules.
+      // Se for "Network Error", o problema é sua conexão/emulador.
       return false;
-    } finally {
-      // save finished
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isTemplate =
-        widget.rotinaData != null && widget.rotinaData!['alunoId'] == null;
+    final bool isTemplate = widget.rotinaData != null && widget.rotinaData!['alunoId'] == null;
 
     return PopScope(
-      canPop: true,
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        if (_foiModificado) {
-          final sucesso = await _salvarRotinaCompleta();
-          if (sucesso && mounted) {
-            Navigator.of(context).maybePop();
-          }
-          // Se falhar, SnackBar já é exibido e não sai da tela
-          return;
+
+        // Tenta salvar ao detectar o gesto de voltar do sistema
+        bool salvo = await _salvarRotinaCompleta();
+        if (salvo && context.mounted){
+          Navigator.of(context).pop();
         }
-        if (mounted) Navigator.of(context).maybePop();
       },
       child: Scaffold(
         backgroundColor: AppTheme.background,
@@ -608,545 +368,165 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           elevation: 0,
           leading: IconButton(
             padding: const EdgeInsets.only(left: 8),
-            icon: const Icon(
-              Icons.arrow_back_ios_new,
-              color: AppTheme.textPrimary,
-              size: 22,
-            ),
+            icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.textPrimary, size: 22),
             onPressed: () async {
-              if (_foiModificado) {
-                final sucesso = await _salvarRotinaCompleta();
-                if (sucesso && mounted) {
-                  Navigator.of(context).maybePop();
-                }
-                // Se falhar, SnackBar já é exibido e não sai da tela
-              } else {
-                if (mounted) Navigator.of(context).maybePop();
+              // No botão da AppBar, chamamos a função e fechamos manualmente
+              bool salvo = await _salvarRotinaCompleta();
+              if (salvo && context.mounted) {
+                Navigator.of(context).pop();
               }
             },
           ),
-          title: Text(
-            'Gerenciar Planilha',
-            style: TextStyle(
-              color: AppTheme.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          actions: [],
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(1.0),
-            child: Container(
-              height: 0.8,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.white.withAlpha(0),
-                    Colors.white.withAlpha(12),
-                    Colors.white.withAlpha(0),
-                  ],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-              ),
-            ),
-          ),
+          title: const Text('Gerenciar Planilha', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
         ),
         body: SafeArea(
-          top: false,
-          bottom: true,
           child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            physics: const BouncingScrollPhysics(),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.space24,
-                vertical: AppTheme.space24,
-              ),
+              padding: const EdgeInsets.all(AppTheme.space24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Title: more compact and heavier for professional look
-                            Text(
-                              _nome.isEmpty ? 'Nova Rotina' : _nome,
-                              style: TextStyle(
-                                color: AppTheme.textPrimary,
-                                fontSize: 32,
-                                fontWeight: FontWeight.w900,
-                              ),
+                            // Agora escuta o controller diretamente
+                            ValueListenableBuilder(
+                                valueListenable: nomeCtrl,
+                                builder: (context, value, _) {
+                                  return Text(value.text.isEmpty ? 'Nova Rotina' : value.text,
+                                      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 32, fontWeight: FontWeight.w900));
+                                }
                             ),
-                            SizedBox(height: AppTheme.space12),
-                            Text(
-                              _objetivo.isEmpty ? 'Defina o objetivo' : _objetivo,
-                              style: TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                height: 1.35,
-                              ),
+                            const SizedBox(height: 12),
+                            ValueListenableBuilder(
+                                valueListenable: objCtrl,
+                                builder: (context, value, _) {
+                                  return Text(value.text.isEmpty ? 'Defina o objetivo' : value.text,
+                                      style: const TextStyle(color: AppTheme.textSecondary, fontSize: 16, fontWeight: FontWeight.w500));
+                                }
                             ),
-                            SizedBox(height: AppTheme.space8),
+                            const SizedBox(height: 8),
                             Row(
                               children: [
-                                Icon(
-                                  Icons.schedule,
-                                  size: 14,
-                                  color: AppTheme.textSecondary,
-                                ),
-                                SizedBox(width: AppTheme.space6),
-                                Text(
-                                  '$_duracaoSemanas semanas',
-                                  style: TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
+                                const Icon(Icons.schedule, size: 14, color: AppTheme.textSecondary),
+                                const SizedBox(width: 6),
+                                Text('$_duracaoSemanas semanas', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
                               ],
                             ),
                           ],
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8, right: 0),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(24),
-                            splashColor: AppTheme.splash.withAlpha(30),
-                            highlightColor: AppTheme.splash.withAlpha(12),
-                            onTap: () => _exibirModalInfo(context),
-                            child: Container(
-                              width: 48,
-                              height: 48,
-                              alignment: Alignment.center,
-                              child: Icon(
-                                CupertinoIcons.ellipsis_vertical,
-                                size: 28,
-                                color: AppTheme.textSecondary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                      IconButton(onPressed: () => _exibirModalInfo(context), icon: const Icon(CupertinoIcons.ellipsis_vertical, color: AppTheme.textSecondary)),
                     ],
                   ),
-                  SizedBox(height: AppTheme.space32),
-                  if (isTemplate) _buildTemplateBadge() else const SizedBox.shrink(),
-                  if (isTemplate) SizedBox(height: AppTheme.space24) else const SizedBox.shrink(),
-
-                  // Header: Lista de Treinos
+                  const SizedBox(height: 32),
+                  if (isTemplate) _buildTemplateBadge(),
+                  const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'LISTA DE TREINOS',
-                        style: AppTheme.textSectionHeaderDark,
-                      ),
+                      Text('LISTA DE TREINOS', style: AppTheme.textSectionHeaderDark),
                       if (_treinos.isNotEmpty)
-                        GestureDetector(
-                          onTap: () {
-                            if (_treinos.length > 1) {
-                              setState(() => _isReordering = !_isReordering);
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Precisas de pelo menos 2 sessões para reordenar.',
-                                  ),
-                                  backgroundColor: AppTheme.surfaceLight,
-                                ),
-                              );
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _isReordering ? AppTheme.primary.withAlpha(30) : Colors.transparent,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  _isReordering ? Icons.check_rounded : Icons.swap_vert_outlined,
-                                  size: 16,
-                                  color: _isReordering ? AppTheme.primary : AppTheme.textSecondary,
-                                ),
-                                SizedBox(width: AppTheme.space4),
-                                Text(
-                                  _isReordering ? 'Concluir' : 'Reordenar',
-                                  style: TextStyle(
-                                    color: _isReordering ? AppTheme.primary : AppTheme.textSecondary,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                        TextButton.icon(
+                          onPressed: () => setState(() => _isReordering = !_isReordering),
+                          icon: Icon(_isReordering ? Icons.check : Icons.swap_vert),
+                          label: Text(_isReordering ? 'Concluir' : 'Reordenar'),
                         ),
                     ],
                   ),
-                  SizedBox(height: AppTheme.space12),
-
+                  const SizedBox(height: 12),
                   if (_treinos.isEmpty)
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 60),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.fitness_center,
-                              size: 60,
-                              color: Colors.white.withAlpha(20),
-                            ),
-                            SizedBox(height: AppTheme.space16),
-                            Text(
-                              'Nenhuma sessão',
-                              style: TextStyle(
-                                color: AppTheme.textSecondary.withAlpha(180),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
+                    const Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 60), child: Text('Nenhuma sessão', style: TextStyle(color: AppTheme.textSecondary))))
                   else if (_isReordering)
                     ReorderableListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      buildDefaultDragHandles: false,
                       itemCount: _treinos.length,
                       onReorder: (oldIndex, newIndex) {
                         setState(() {
                           if (newIndex > oldIndex) newIndex -= 1;
                           final item = _treinos.removeAt(oldIndex);
                           _treinos.insert(newIndex, item);
-                          _foiModificado = true;
                         });
                       },
-                      proxyDecorator: (child, index, animation) {
-                        return Transform.scale(
-                          scale: 1.0,
-                          child: Material(
-                            elevation: 0,
-                            color: Colors.transparent,
-                            child: child,
-                          ),
-                        );
-                      },
-                      itemBuilder: (context, index) {
-                        var sessao = _treinos[index];
-                        return Container(
-                          key: ValueKey(sessao),
-                          child: _buildSessaoCard(
-                            sessao,
-                            index,
-                            isReordering: true,
-                          ),
-                        );
-                      },
+                      itemBuilder: (context, index) => _buildSessaoCard(_treinos[index], index, isReordering: true, key: ValueKey(_treinos[index])),
                     )
                   else
-                    ..._treinos.asMap().entries.map(
-                      (entry) => _buildSessaoCard(
-                        entry.value,
-                        entry.key,
-                        isReordering: false,
-                      ),
-                    ),
-                  SizedBox(height: AppTheme.space8),
+                    ..._treinos.asMap().entries.map((entry) => _buildSessaoCard(entry.value, entry.key, isReordering: false, key: ValueKey(entry.value))),
+                  const SizedBox(height: 8),
                   if (!_isReordering) _buildAddSessaoButton(),
                 ],
               ),
             ),
           ),
         ),
-        bottomNavigationBar: null,
       ),
     );
   }
 
-  // BOTÃO ADICIONAR SESSÃO - REFINADO (OUTLINE PILL)
+  // --- MÉTODOS DE WIDGETS AUXILIARES ---
+
   Widget _buildAddSessaoButton() {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _exibirModalSessao(),
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        splashColor: AppTheme.splash.withAlpha(30),
-        highlightColor: AppTheme.splash.withAlpha(12),
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppTheme.space16,
-            vertical: AppTheme.space16,
-          ),
-          decoration: BoxDecoration(
-            color: AppTheme.primary,
-            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-            border: Border.all(
-              color: AppTheme.primary.withAlpha(120),
-              width: 1.5,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.add_circle_outline, color: Colors.black, size: 22),
-              SizedBox(width: AppTheme.space8),
-              const Text(
-                'Novo Treino',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ],
-          ),
-        ),
+    return InkWell(
+      onTap: () => _exibirModalSessao(),
+      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(AppTheme.radiusLarge)),
+        child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.add_circle_outline, color: Colors.black), SizedBox(width: 8), Text('Novo Treino', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600))]),
       ),
     );
   }
 
   Widget _buildTemplateBadge() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppTheme.primary.withAlpha(15),
-        borderRadius: BorderRadius.circular(24), // Ajustado para Pill Style
-        border: Border.all(color: AppTheme.primary.withAlpha(30)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.collections_bookmark, color: AppTheme.primary, size: 18),
-          SizedBox(width: AppTheme.space12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: AppTheme.primary.withAlpha(15), borderRadius: BorderRadius.circular(24), border: Border.all(color: AppTheme.primary.withAlpha(30))),
+      child: const Row(children: [Icon(Icons.collections_bookmark, color: AppTheme.primary, size: 18), SizedBox(width: 12), Text('Template de Biblioteca', style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w600))]),
+    );
+  }
+
+  Widget _buildSessaoCard(_TreinoData sessao, int index, {required bool isReordering, required Key key}) {
+    return Container(
+      key: key,
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Material(
+        color: AppTheme.surfaceDark,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusLarge), side: BorderSide(color: Colors.white.withAlpha(14))),
+        child: InkWell(
+          onTap: isReordering ? null : () async {
+            final dynamic result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ConfigurarExerciciosPage(nomeTreino: sessao.nome, exercicios: sessao.exercicios))
+            );
+
+            if (mounted && result is String) {
+              setState(() {
+                sessao.nome = result;
+              });
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
-                Text(
-                  'Template de Biblioteca',
-                  style: TextStyle(
-                    color: AppTheme.primary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
-                ),
-                SizedBox(height: AppTheme.space4),
-                Text(
-                  'Sem data de vencimento até ser atribuído.',
-                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                CircleAvatar(backgroundColor: AppTheme.surfaceLight, child: Text(String.fromCharCode(65 + index), style: const TextStyle(color: AppTheme.primary))),
+                const SizedBox(width: 16),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(sessao.nome, style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)), Text('${sessao.exercicios.length} exercícios', style: const TextStyle(color: AppTheme.textSecondary))])),
+                if (isReordering) const Icon(Icons.drag_indicator, color: AppTheme.textSecondary)
+                else PopupMenuButton(
+                  onSelected: (v) { if (v == 'edit') _exibirModalSessao(index: index); if (v == 'delete') _excluirTreino(index); },
+                  itemBuilder: (c) => [const PopupMenuItem(value: 'edit', child: Text('Editar')), const PopupMenuItem(value: 'delete', child: Text('Excluir'))],
                 ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSessaoCard(
-    _TreinoData sessao,
-    int index, {
-    required bool isReordering,
-  }) {
-    String letra = String.fromCharCode(65 + index);
-
-    // Widget que contém o conteúdo do card (Material > InkWell para splash funcionar)
-    final cardContent = Material(
-      elevation: 2.0,
-      shadowColor: Colors.black.withAlpha(153),
-      color: AppTheme.surfaceDark,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        side: BorderSide(color: Colors.white.withAlpha(14), width: 1),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        splashColor: AppTheme.splash.withAlpha(30),
-        highlightColor: AppTheme.splash.withAlpha(12),
-        onTap: isReordering
-            ? null
-            : () async {
-                final String? novoNomeTreino = await Navigator.push<String?>(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ConfigurarExerciciosPage(
-                      nomeTreino: sessao.nome,
-                      exercicios: sessao.exercicios,
-                    ),
-                  ),
-                );
-                if (!mounted) return;
-                setState(() {
-                  _foiModificado = true;
-                  final novoNomeTrim = novoNomeTreino?.trim() ?? '';
-                  if (novoNomeTrim.isNotEmpty && novoNomeTrim != sessao.nome) {
-                    sessao.nome = novoNomeTrim;
-                  }
-                });
-              },
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppTheme.paddingCard,
-            vertical: AppTheme.space14,
-          ),
-
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceLight,
-                  shape: BoxShape.circle, // Avatar agora é 100% redondo
-                  border: Border.all(color: AppTheme.primary.withAlpha(30)),
-                ),
-                child: Center(
-                  child: Text(
-                    letra,
-                    style: const TextStyle(
-                      color: AppTheme.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: AppTheme.space16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      sessao.nome,
-                      style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 18,
-                        height: 1.3,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: AppTheme.space6),
-                    Text(
-                      '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}',
-                      style: TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 0.1,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 44,
-                height: 44,
-                child: isReordering
-                    ? ReorderableDragStartListener(
-                        index: index,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppTheme.primary.withAlpha(20),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            Icons.drag_indicator, // Ícone elegante de drag
-                            color: AppTheme.textSecondary.withAlpha(80),
-                            size: 20,
-                          ),
-                        ),
-                      )
-                    : PopupMenuButton<String>(
-                        padding: EdgeInsets.zero,
-                        color: AppTheme.surfaceLight,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        position: PopupMenuPosition.under,
-                        icon: Icon(
-                          Icons.chevron_right,
-                          color: AppTheme.textSecondary.withAlpha(160),
-                          size: 28,
-                        ),
-                        onSelected: (value) {
-                          if (value == 'edit') _exibirModalSessao(index: index);
-                          if (value == 'delete') _excluirTreino(index);
-                        },
-                        itemBuilder: (context) => [
-                          PopupMenuItem(
-                            value: 'edit',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.edit_outlined,
-                                  color: AppTheme.textSecondary.withAlpha(200),
-                                  size: 18,
-                                ),
-                                SizedBox(width: AppTheme.space8),
-                                Text(
-                                  'Editar',
-                                  style: TextStyle(
-                                    color: AppTheme.textPrimary,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.delete_outline,
-                                  color: Colors.redAccent,
-                                  size: 18,
-                                ),
-                                SizedBox(width: AppTheme.space8),
-                                Text(
-                                  'Excluir',
-                                  style: TextStyle(
-                                    color: AppTheme.textPrimary,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
-            ],
-          ),
         ),
       ),
-    );
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: cardContent,
     );
   }
 }
