@@ -775,7 +775,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(left: 8, right: 4),
+                        padding: const EdgeInsets.only(left: 8, right: 8),
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
@@ -786,8 +786,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                               height: 48,
                               alignment: Alignment.center,
                               child: Icon(
-                                Icons.edit,
-                                size: 30,
+                                Icons.edit_note,
+                                size: 44,
                                 color: AppTheme.textSecondary,
                               ),
                             ),
