@@ -72,13 +72,16 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
   void _preencherDados() {
     if (widget.rotinaData != null) {
-      if (widget.rotinaData!['dataCriacao'] != null &&
-          widget.rotinaData!['dataVencimento'] != null) {
-        DateTime criacao = (widget.rotinaData!['dataCriacao'] as Timestamp).toDate();
-        DateTime vencimento = (widget.rotinaData!['dataVencimento'] as Timestamp).toDate();
-        int dias = vencimento.difference(criacao).inDays;
-        if (dias > 0) _duracaoSemanas = (dias / 7).round();
+      _tipoVencimento = widget.rotinaData!['tipoVencimento'] ?? 'data';
+
+      if (_tipoVencimento == 'sessoes') {
+        _vencimentoSessoes = widget.rotinaData!['vencimentoSessoes'] ?? 20;
+      } else {
+        if (widget.rotinaData!['dataVencimento'] != null) {
+          _vencimentoData = (widget.rotinaData!['dataVencimento'] as Timestamp).toDate();
+        }
       }
+
 
       List<dynamic> sessoesRaw = widget.rotinaData!['sessoes'] ?? [];
       for (var sessao in sessoesRaw) {
