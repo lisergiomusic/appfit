@@ -2,10 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../core/services/rotina_service.dart';
 import 'configurar_exercicios_page.dart';
 import 'models/exercicio_model.dart';
+import 'widgets/rotina_modern_input.dart';
+import 'widgets/rotina_input_decoration.dart';
 
 // Modelo local para gerir as sessões durante a edição
 class _TreinoData {
@@ -133,70 +134,6 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     return TipoSerie.trabalho;
   }
 
-  // --- WIDGET AUXILIAR PARA INPUTS (APPLE NATIVE) ---
-  Widget _buildModernInput({
-    required String label,
-    required IconData icon,
-    required Widget child,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.only(left: 0, bottom: AppTheme.space12),
-          child: Row(
-            children: [
-              Icon(icon, size: 16, color: AppTheme.primary),
-              SizedBox(width: AppTheme.space8),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ],
-          ),
-        ),
-        child,
-      ],
-    );
-  }
-
-  // --- BUILD CUSTOM INPUT DECORATION (APPLE NATIVE) ---
-  InputDecoration _buildInputDecoration({required String hintText}) {
-    return InputDecoration(
-      hintText: hintText,
-      hintStyle: GoogleFonts.inter(
-        color: AppTheme.textSecondary.withAlpha(128),
-        fontSize: 13,
-      ),
-      filled: true,
-      fillColor: AppTheme.surfaceDark,
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: AppTheme.space14,
-        vertical: AppTheme.space12,
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        borderSide: BorderSide(color: Colors.white.withAlpha(20), width: 0.5),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        borderSide: BorderSide(color: Colors.white.withAlpha(20), width: 0.5),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        borderSide: BorderSide(
-          color: AppTheme.primary.withAlpha(150),
-          width: 1,
-        ),
-      ),
-    );
-  }
-
   // --- MODAL PARA EDITAR CABEÇALHO (REFINADO) ---
   void _exibirModalInfo(BuildContext context) {
     final nomeCtrl = TextEditingController(text: _nome);
@@ -246,7 +183,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               ),
               const SizedBox(height: 28),
 
-              _buildModernInput(
+              RotinaModernInput(
                 label: 'NOME DA ROTINA',
                 icon: Icons.title,
                 child: TextField(
@@ -257,14 +194,12 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     fontWeight: FontWeight.w400,
                     letterSpacing: -0.3,
                   ),
-                  decoration: _buildInputDecoration(
-                    hintText: 'Ex: Projeto Hipertrofia Mês 1',
-                  ),
+                  decoration: rotinaInputDecoration(hintText: 'Ex: Projeto Hipertrofia Mês 1'),
                 ),
               ),
               const SizedBox(height: 24),
 
-              _buildModernInput(
+              RotinaModernInput(
                 label: 'OBJETIVO PRINCIPAL',
                 icon: Icons.track_changes,
                 child: TextField(
@@ -275,14 +210,12 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     fontWeight: FontWeight.w400,
                     letterSpacing: -0.3,
                   ),
-                  decoration: _buildInputDecoration(
-                    hintText: 'Ex: Ganho de massa e força',
-                  ),
+                  decoration: rotinaInputDecoration(hintText: 'Ex: Ganho de massa e força'),
                 ),
               ),
               const SizedBox(height: 24),
 
-              _buildModernInput(
+              RotinaModernInput(
                 label: 'DURAÇÃO PLANEJADA',
                 icon: Icons.schedule,
                 child: DropdownButtonFormField<int>(
@@ -308,9 +241,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       .toList(),
                   onChanged: (v) =>
                       setStateModal(() => semanasSelecionadas = v!),
-                  decoration: _buildInputDecoration(
-                    hintText: 'Escolha a duração',
-                  ),
+                  decoration: rotinaInputDecoration(hintText: 'Escolha a duração'),
                 ),
               ),
               const SizedBox(height: 32),
@@ -403,7 +334,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             ),
             const SizedBox(height: 28),
 
-            _buildModernInput(
+            RotinaModernInput(
               label: 'NOME DO TREINO',
               icon: Icons.fitness_center,
               child: TextField(
@@ -414,14 +345,12 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   fontWeight: FontWeight.w400,
                   letterSpacing: -0.3,
                 ),
-                decoration: _buildInputDecoration(
-                  hintText: 'Ex: Push, Pull, Costas...',
-                ),
+                decoration: rotinaInputDecoration(hintText: 'Ex: Push, Pull, Costas...'),
               ),
             ),
             const SizedBox(height: 24),
 
-            _buildModernInput(
+            RotinaModernInput(
               label: 'DIA DA SEMANA (OPCIONAL)',
               icon: Icons.calendar_today,
               child: DropdownButtonFormField<String>(
@@ -450,12 +379,12 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                         .map((d) => DropdownMenuItem(value: d, child: Text(d)))
                         .toList(),
                 onChanged: (v) => diaSemana = v,
-                decoration: _buildInputDecoration(hintText: 'Sem dia fixo'),
+                decoration: rotinaInputDecoration(hintText: 'Sem dia fixo'),
               ),
             ),
             const SizedBox(height: 24),
 
-            _buildModernInput(
+            RotinaModernInput(
               label: 'NOTAS GERAIS DA SESSÃO',
               icon: Icons.notes,
               child: Container(
@@ -480,7 +409,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     fontWeight: FontWeight.w400,
                   ),
                   decoration:
-                      _buildInputDecoration(
+                      rotinaInputDecoration(
                         hintText: 'Ex: Aquecer manguito rotador antes...',
                       ).copyWith(
                         border: InputBorder.none,
