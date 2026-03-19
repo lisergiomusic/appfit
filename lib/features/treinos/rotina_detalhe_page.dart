@@ -1005,7 +1005,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             vertical: AppTheme.space16,
           ),
           decoration: BoxDecoration(
-            color: Colors.transparent,
+            color: AppTheme.primary,
             borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
             border: Border.all(
               color: AppTheme.primary.withAlpha(120),
@@ -1015,12 +1015,12 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.add_circle_outline, color: AppTheme.primary, size: 22),
+              Icon(Icons.add_circle_outline, color: Colors.black, size: 22),
               SizedBox(width: AppTheme.space8),
               const Text(
                 'Novo Treino',
                 style: TextStyle(
-                  color: AppTheme.primary,
+                  color: Colors.black,
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
                   letterSpacing: 0.3,
