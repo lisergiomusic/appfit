@@ -306,43 +306,51 @@ class PerfilAlunoPage extends StatelessWidget {
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
+                          child: Material(
                             color: AppTheme.surfaceLight.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                          ),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                            title: Text(
-                              rotina['nome'] ?? 'Rotina',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
                             ),
-                            subtitle: Text(
-                              '$qtdSessoes sessões planejadas',
-                              style: const TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 13,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () => _confirmarAtivacaoTemplate(
+                                context,
+                                doc.id,
+                                rotina['nome'] ?? 'Rotina',
                               ),
-                            ),
-                            trailing: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: AppTheme.primary.withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
+                              splashColor: AppTheme.primary.withValues(alpha: 0.12),
+                              highlightColor: AppTheme.primary.withValues(alpha: 0.06),
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                                title: Text(
+                                  rotina['nome'] ?? 'Rotina',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  '$qtdSessoes sessões planejadas',
+                                  style: const TextStyle(
+                                    color: AppTheme.textSecondary,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                trailing: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primary.withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.add,
+                                    color: AppTheme.primary,
+                                    size: 20,
+                                  ),
+                                ),
+                                onTap: null,
                               ),
-                              child: const Icon(
-                                Icons.add,
-                                color: AppTheme.primary,
-                                size: 20,
-                              ),
-                            ),
-                            onTap: () => _confirmarAtivacaoTemplate(
-                              context,
-                              doc.id,
-                              rotina['nome'] ?? 'Rotina',
                             ),
                           ),
                         );
@@ -506,64 +514,72 @@ class PerfilAlunoPage extends StatelessWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        child: InkWell(
-                          onTap: () => _abrirWhatsApp(context, telefone),
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            decoration: BoxDecoration(
-                              color: AppTheme.surfaceLight.withValues(alpha: 0.3),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                FaIcon(
-                                  FontAwesomeIcons.whatsapp,
-                                  color: Color(0xFF25D366),
-                                  size: 20,
-                                ),
-                                SizedBox(width: 12),
-                                Text(
-                                  'Conversar',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
+                        child: Material(
+                          color: AppTheme.surfaceLight.withValues(alpha: 0.3),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                          ),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () => _abrirWhatsApp(context, telefone),
+                            splashColor: AppTheme.primary.withValues(alpha: 0.12),
+                            highlightColor: AppTheme.primary.withValues(alpha: 0.06),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  FaIcon(
+                                    FontAwesomeIcons.whatsapp,
+                                    color: Color(0xFF25D366),
+                                    size: 20,
                                   ),
-                                ),
-                              ],
+                                  SizedBox(width: 12),
+                                  Text(
+                                    'Conversar',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(width: 12), // Espaçamento entre os botões
                       Expanded(
-                        child: InkWell(
-                          onTap: () => _irParaGerenciarAluno(context),
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            decoration: BoxDecoration(
-                              color: AppTheme.surfaceLight.withValues(alpha: 0.3),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.settings_outlined, color: AppTheme.textSecondary, size: 20),
-                                SizedBox(width: 12),
-                                Text(
-                                  'Gerenciar',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
+                        child: Material(
+                          color: AppTheme.surfaceLight.withValues(alpha: 0.3),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                          ),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () => _irParaGerenciarAluno(context),
+                            splashColor: AppTheme.primary.withValues(alpha: 0.12),
+                            highlightColor: AppTheme.primary.withValues(alpha: 0.06),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.settings_outlined, color: AppTheme.textSecondary, size: 20),
+                                  SizedBox(width: 12),
+                                  Text(
+                                    'Gerenciar',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -777,22 +793,9 @@ class PerfilAlunoPage extends StatelessWidget {
             children: [
               Text('PLANILHA ATUAL', style: AppTheme.textSectionHeaderDark),
               const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => RotinaDetalhePage(
-                        rotinaData: rotina,
-                        rotinaId: treinoDoc.id,
-                        alunoId: alunoId,
-                        alunoNome: alunoNome,
-                      ),
-                    ),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(24),
+              Material(
+                color: Colors.transparent,
+                child: Ink(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -812,100 +815,121 @@ class PerfilAlunoPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(28),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RotinaDetalhePage(
+                            rotinaData: rotina,
+                            rotinaId: treinoDoc.id,
+                            alunoId: alunoId,
+                            alunoNome: alunoNome,
+                          ),
+                        ),
+                      );
+                    },
+                    splashColor: AppTheme.primary.withValues(alpha: 0.08),
+                    highlightColor: AppTheme.primary.withValues(alpha: 0.04),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  rotina['nome'] ?? 'Ficha de Treino',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: -0.5,
-                                  ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      rotina['nome'] ?? 'Ficha de Treino',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: -0.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Vence em ${dataVencimento.day}/${dataVencimento.month}',
+                                      style: TextStyle(
+                                        color: AppTheme.textSecondary.withValues(alpha: 0.7),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Vence em ${dataVencimento.day}/${dataVencimento.month}',
-                                  style: TextStyle(
-                                    color: AppTheme.textSecondary.withValues(alpha: 0.7),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Icon(Icons.fitness_center, color: AppTheme.primary, size: 28),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'PROGRESSO',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                          Text(
-                            '${(progressoAtual * 100).toInt()}%',
-                            style: const TextStyle(
-                              color: AppTheme.primary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Stack(
-                        children: [
-                          Container(
-                            height: 8,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                          FractionallySizedBox(
-                            widthFactor: progressoAtual,
-                            child: Container(
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: AppTheme.primary,
-                                borderRadius: BorderRadius.circular(4),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppTheme.primary.withValues(alpha: 0.3),
-                                    blurRadius: 8,
-                                  ),
-                                ],
                               ),
-                            ),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primary.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: const Icon(Icons.fitness_center, color: AppTheme.primary, size: 28),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 32),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'PROGRESSO',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                              Text(
+                                '${(progressoAtual * 100).toInt()}%',
+                                style: const TextStyle(
+                                  color: AppTheme.primary,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Stack(
+                            children: [
+                              Container(
+                                height: 8,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                              FractionallySizedBox(
+                                widthFactor: progressoAtual,
+                                child: Container(
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primary,
+                                    borderRadius: BorderRadius.circular(4),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppTheme.primary.withValues(alpha: 0.3),
+                                        blurRadius: 8,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -922,33 +946,38 @@ class PerfilAlunoPage extends StatelessWidget {
       children: [
         Text('PLANO ATUAL', style: AppTheme.textSectionHeaderDark),
         const SizedBox(height: 16),
-        InkWell(
-          onTap: () => _exibirOpcoesVincularTreino(context),
-          borderRadius: BorderRadius.circular(24),
-          child: Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: AppTheme.surfaceDark,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: AppTheme.primary.withValues(alpha: 0.3),
-                style: BorderStyle.solid,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.add_circle_outline, color: AppTheme.primary),
-                const SizedBox(width: 12),
-                const Text(
-                  'Prescrever Nova Rotina',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _exibirOpcoesVincularTreino(context),
+            borderRadius: BorderRadius.circular(24),
+            splashColor: AppTheme.primary.withValues(alpha: 0.12),
+            highlightColor: AppTheme.primary.withValues(alpha: 0.06),
+            child: Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceDark,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: AppTheme.primary.withValues(alpha: 0.3),
+                  style: BorderStyle.solid,
                 ),
-              ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.add_circle_outline, color: AppTheme.primary),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Prescrever Nova Rotina',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -962,32 +991,38 @@ class PerfilAlunoPage extends StatelessWidget {
     required String subtitle,
     required VoidCallback onTap,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceDark,
+    return Material(
+      color: AppTheme.surfaceDark,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.03)),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.03)),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppTheme.surfaceLight,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: Colors.white, size: 22),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(color: AppTheme.textSecondary.withValues(alpha: 0.7), fontSize: 12),
-        ),
-        trailing: const Icon(Icons.arrow_forward_ios, color: AppTheme.textSecondary, size: 14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
         onTap: onTap,
+        splashColor: AppTheme.primary.withValues(alpha: 0.12),
+        highlightColor: AppTheme.primary.withValues(alpha: 0.06),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          leading: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceLight,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: Colors.white, size: 22),
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+          ),
+          subtitle: Text(
+            subtitle,
+            style: TextStyle(color: AppTheme.textSecondary.withValues(alpha: 0.7), fontSize: 12),
+          ),
+          trailing: const Icon(Icons.arrow_forward_ios, color: AppTheme.textSecondary, size: 14),
+          onTap: null,
+        ),
       ),
     );
   }

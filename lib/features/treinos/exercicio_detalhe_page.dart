@@ -1590,64 +1590,69 @@ class _ExerciseVideoCard extends StatelessWidget {
     return Semantics(
       label: 'Assistir vídeo de $exerciseTitle',
       button: true,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withAlpha(8),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withAlpha(28), width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(60),
-                blurRadius: 12,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Image.network(
-                      imageUrl ??
-                          'https://lh3.googleusercontent.com/aida-public/AB6AXuAXzEmkEB7BMnRUWQ6iIDF5Oc_gVzBjCjxHaac9LYJyL8KxdAi-mTOKK2v2nO9Vt3-DXPcDcoSM3RkTh-iDX0q8oShyD0TllFVTVsQBP3fKU0HPHHtOlkO5uRRx_yIiMes1tmlEr6VkkMyvhy-LTIzYuWYuJaLsSzeba5FPnNX9_RQjcusWmbIyWrBVLVSmLZjDaMcPJMKiSSY6S-RSZFaAzRzHQdDbWnPbv1aUP1akkwSiPE9Rriwmdn8VrF3w0ZIWei1Cxfd7B2Ut',
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: AppTheme.surfaceDark,
-                        child: Center(
-                          child: Icon(
-                            Icons.videocam_off,
-                            color: AppTheme.textSecondary,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(22),
+          splashColor: AppTheme.primary.withAlpha(30),
+          highlightColor: AppTheme.primary.withAlpha(18),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(8),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withAlpha(28), width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(60),
+                  blurRadius: 12,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Image.network(
+                        imageUrl ??
+                            'https://lh3.googleusercontent.com/aida-public/AB6AXuAXzEmkEB7BMnRUWQ6iIDF5Oc_gVzBjCjxHaac9LYJyL8KxdAi-mTOKK2v2nO9Vt3-DXPcDcoSM3RkTh-iDX0q8oShyD0TllFVTVsQBP3fKU0HPHHtOlkO5uRRx_yIiMes1tmlEr6VkkMyvhy-LTIzYuWYuJaLsSzeba5FPnNX9_RQjcusWmbIyWrBVLVSmLZjDaMcPJMKiSSY6S-RSZFaAzRzHQdDbWnPbv1aUP1akkwSiPE9Rriwmdn8VrF3w0ZIWei1Cxfd7B2Ut',
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: AppTheme.surfaceDark,
+                          child: Center(
+                            child: Icon(
+                              Icons.videocam_off,
+                              color: AppTheme.textSecondary,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  Center(
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withAlpha(64),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withAlpha(38),
-                          width: 0.9,
+                    Center(
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withAlpha(64),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withAlpha(38),
+                            width: 0.9,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow,
+                          color: Colors.white,
+                          size: 26,
                         ),
                       ),
-                      child: const Icon(
-                        Icons.play_arrow,
-                        color: Colors.white,
-                        size: 26,
-                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

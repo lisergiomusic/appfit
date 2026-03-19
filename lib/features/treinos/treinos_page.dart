@@ -159,74 +159,74 @@ class TreinosPage extends StatelessWidget {
                 // --- CARTÃO DA LISTA (REFINADO) ---
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 12),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RotinaDetalhePage(
-                            rotinaData: rotina,
-                            rotinaId: doc.id,
-                          ),
-                        ),
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppTheme.surfaceDark,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.white.withAlpha(10),
-                          width: 1.0,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: AppTheme.primary.withAlpha(20),
-                              shape: BoxShape.circle, // Ícone num círculo
+                  child: Material(
+                    elevation: 1.0,
+                    color: AppTheme.surfaceDark,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: Colors.white.withAlpha(10), width: 1.0),
+                    ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RotinaDetalhePage(
+                              rotinaData: rotina,
+                              rotinaId: doc.id,
                             ),
-                            child: const Icon(
-                              Icons.fitness_center,
-                              color: AppTheme.primary,
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: AppTheme.primary.withAlpha(20),
+                                shape: BoxShape.circle, // Ícone num círculo
+                              ),
+                              child: const Icon(
+                                Icons.fitness_center,
+                                color: AppTheme.primary,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    rotina['nome'] ?? 'Sem título',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '$qtdSessoes sessões de treino',
+                                    style: const TextStyle(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right,
+                              color: AppTheme.textSecondary.withAlpha(100),
                               size: 20,
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  rotina['nome'] ?? 'Sem título',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '$qtdSessoes sessões de treino',
-                                  style: const TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Icon(
-                            Icons.chevron_right,
-                            color: AppTheme.textSecondary.withAlpha(100),
-                            size: 20,
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
