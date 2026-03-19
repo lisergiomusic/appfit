@@ -594,6 +594,8 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+          splashColor: AppTheme.splash.withAlpha(30),
+          highlightColor: AppTheme.splash.withAlpha(12),
           onTap: () async {
             await Navigator.push(
               context,

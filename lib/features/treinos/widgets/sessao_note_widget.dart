@@ -45,9 +45,9 @@ class _SessaoNoteWidgetState extends State<SessaoNoteWidget> {
       child: InkWell(
         onTap: _openEditModal,
         borderRadius: BorderRadius.circular(18),
-        hoverColor: Colors.white.withAlpha(13),
-        splashColor: Colors.white.withAlpha(26),
-        highlightColor: Colors.white.withAlpha(13),
+        hoverColor: AppTheme.splash.withAlpha(13),
+        splashColor: AppTheme.splash.withAlpha(30),
+        highlightColor: AppTheme.splash.withAlpha(12),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
