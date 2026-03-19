@@ -396,7 +396,6 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Agora escuta o controller diretamente
                             ValueListenableBuilder(
                                 valueListenable: nomeCtrl,
                                 builder: (context, value, _) {

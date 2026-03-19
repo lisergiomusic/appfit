@@ -8,6 +8,7 @@ import 'feedback_historico_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart';
 
 class PerfilAlunoPage extends StatelessWidget {
   final String alunoId;
@@ -787,6 +788,7 @@ class PerfilAlunoPage extends StatelessWidget {
           if (totalDias <= 0) totalDias = 1;
           int diasPassados = hoje.difference(dataCriacao).inDays;
           double progressoAtual = (diasPassados / totalDias).clamp(0.0, 1.0);
+          String dataFormatada = DateFormat('dd/MM').format(dataVencimento);
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -855,7 +857,7 @@ class PerfilAlunoPage extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      'Vence em ${dataVencimento.day}/${dataVencimento.month}',
+                                      'Vence em $dataFormatada',
                                       style: TextStyle(
                                         color: AppTheme.textSecondary.withValues(alpha: 0.7),
                                         fontSize: 13,
