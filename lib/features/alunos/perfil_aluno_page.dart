@@ -780,15 +780,29 @@ class PerfilAlunoPage extends StatelessWidget {
           var treinoDoc = snapshot.data!.docs.first;
           var rotina = treinoDoc.data() as Map<String, dynamic>;
 
-          DateTime hoje = DateTime.now();
-          DateTime dataCriacao = (rotina['dataCriacao'] as Timestamp?)?.toDate() ?? hoje;
-          DateTime dataVencimento = (rotina['dataVencimento'] as Timestamp?)?.toDate() ?? hoje.add(const Duration(days: 28));
+          String tipoVencimento = rotina['tipoVencimento'] ?? 'data'; // Fallback para data
+          double progressoAtual = 0.0;
+          String legendaVencimento = '';
 
-          int totalDias = dataVencimento.difference(dataCriacao).inDays;
-          if (totalDias <= 0) totalDias = 1;
-          int diasPassados = hoje.difference(dataCriacao).inDays;
-          double progressoAtual = (diasPassados / totalDias).clamp(0.0, 1.0);
-          String dataFormatada = DateFormat('dd/MM').format(dataVencimento);
+          if (tipoVencimento == 'sessoes') {
+            int totalSessoes = rotina['vencimentoSessoes'] ?? 1;
+            int concluidas = rotina['sessoesConcluidas'] ?? 0;
+
+            progressoAtual = (concluidas / totalSessoes).clamp(0.0, 1.0);
+            legendaVencimento = '$concluidas de $totalSessoes treinos realizados';
+          } else {
+            // Lógica por Data
+            DateTime hoje = DateTime.now();
+            DateTime dataCriacao = (rotina['dataCriacao'] as Timestamp?)?.toDate() ?? hoje;
+            DateTime dataVencimento = (rotina['dataVencimento'] as Timestamp?)?.toDate() ?? hoje.add(const Duration(days: 30));
+
+            int totalDias = dataVencimento.difference(dataCriacao).inDays;
+            if (totalDias <= 0) totalDias = 1;
+            int diasPassados = hoje.difference(dataCriacao).inDays;
+
+            progressoAtual = (diasPassados / totalDias).clamp(0.0, 1.0);
+            legendaVencimento = 'Vence em ${DateFormat('dd/MM').format(dataVencimento)}';
+          }
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -857,7 +871,7 @@ class PerfilAlunoPage extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      'Vence em $dataFormatada',
+                                      legendaVencimento,
                                       style: TextStyle(
                                         color: AppTheme.textSecondary.withValues(alpha: 0.7),
                                         fontSize: 13,
