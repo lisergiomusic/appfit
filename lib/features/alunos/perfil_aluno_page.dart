@@ -615,19 +615,19 @@ class PerfilAlunoPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       _buildMenuOption(
-                        icon: Icons.analytics_outlined,
-                        title: 'Avaliação Física',
-                        subtitle: 'Dobras, medidas e fotos',
-                        onTap: () {},
-                      ),
-                      const SizedBox(height: 12),
-                      _buildMenuOption(
                         icon: Icons.list_alt_rounded,
                         title: 'Planilhas de Treino',
                         subtitle: 'Ver todas as planilhas do aluno',
                         onTap: () {
                           // TODO: Implementar navegação para histórico de planilhas
                         },
+                      ),
+                      const SizedBox(height: 12),
+                      _buildMenuOption(
+                        icon: Icons.analytics_outlined,
+                        title: 'Avaliação Física',
+                        subtitle: 'Dobras, medidas e fotos',
+                        onTap: () {},
                       ),
                     ],
                   ),
