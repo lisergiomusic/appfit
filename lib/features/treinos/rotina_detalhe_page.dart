@@ -56,7 +56,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   @override
   void initState() {
     super.initState();
-    // Inicializamos os controladores com os dados vindos do Firebase ou vazios
+
     nomeCtrl = TextEditingController(text: widget.rotinaData?['nome'] ?? '');
     objCtrl = TextEditingController(text: widget.rotinaData?['objetivo'] ?? '');
 
@@ -141,18 +141,13 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
   void _exibirModalInfo(BuildContext context) {
-    // Estados temporários para o modal
     String tipoTemp = _tipoVencimento;
     int sessoesTemp = _vencimentoSessoes;
     DateTime dataTemp = _vencimentoData;
-
-    // Usamos os controllers existentes (nomeCtrl e objCtrl) diretamente
-    // ou criamos temporários se quisermos "cancelar" a edição.
-    // Aqui usaremos os reais para persistência imediata.
-
+    
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // Importante para o teclado não cobrir
+      isScrollControlled: true, 
       backgroundColor: AppTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
@@ -245,8 +240,16 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 ),
                 child: Row(
                   children: [
-                    _buildTabOption(setStateModal, 'Sessões', 'sessoes', tipoTemp),
-                    _buildTabOption(setStateModal, 'Data Fixa', 'data', tipoTemp),
+                    _buildTabOption(
+                      label: 'Sessões',
+                      isSelected: tipoTemp == 'sessoes',
+                      onTap: () => setStateModal(() => tipoTemp = 'sessoes'),
+                    ),
+                    _buildTabOption(
+                      label: 'Data Fixa',
+                      isSelected: tipoTemp == 'data',
+                      onTap: () => setStateModal(() => tipoTemp = 'data'),
+                    ),
                   ],
                 ),
               ),
@@ -319,11 +322,14 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
 // Widget auxiliar para as abas de Sessão/Data
-  Widget _buildTabOption(StateSetter setStateModal, String label, String value, String current) {
-    bool isSelected = current == value;
+  Widget _buildTabOption({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
     return Expanded(
       child: GestureDetector(
-        onTap: () => setStateModal(() => _tipoVencimento = value), // Note: use tipoTemp se estiver usando local
+        onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 12),
