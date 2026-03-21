@@ -595,10 +595,15 @@ class PerfilAlunoPage extends StatelessWidget {
                 _buildFichaAtivaHeroCard(context),
 
                 const SizedBox(height: 32),
+                
+                // SEÇÃO DE GERENCIAMENTO (REFATORADA)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text('GERENCIAMENTO', style: AppTheme.textSectionHeaderDark),
+                      const SizedBox(height: 16),
                       _buildMenuOption(
                         icon: Icons.history_rounded,
                         title: 'Histórico de Feedbacks',
@@ -1019,34 +1024,73 @@ class PerfilAlunoPage extends StatelessWidget {
     return Material(
       color: AppTheme.surfaceDark,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: Colors.white.withValues(alpha: 0.03)),
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.04)),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         onTap: onTap,
         splashColor: AppTheme.primary.withValues(alpha: 0.12),
         highlightColor: AppTheme.primary.withValues(alpha: 0.06),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          leading: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppTheme.surfaceLight,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: Colors.white, size: 22),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.surfaceLight,
+                      AppTheme.surfaceLight.withValues(alpha: 0.5),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Icon(icon, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: AppTheme.textSecondary.withValues(alpha: 0.6),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: AppTheme.textSecondary,
+                size: 10,
+              ),
+            ],
           ),
-          title: Text(
-            title,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
-          ),
-          subtitle: Text(
-            subtitle,
-            style: TextStyle(color: AppTheme.textSecondary.withValues(alpha: 0.7), fontSize: 12),
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios, color: AppTheme.textSecondary, size: 14),
-          onTap: null,
         ),
       ),
     );
