@@ -8,12 +8,16 @@ class GerenciarPlanilhasPage extends StatelessWidget {
   final String alunoId;
   final String alunoNome;
   final String? photoUrl;
+  final String peso;
+  final String idade;
 
   const GerenciarPlanilhasPage({
     super.key,
     required this.alunoId,
     required this.alunoNome,
     required this.photoUrl,
+    required this.peso,
+    required this.idade
   });
 
   @override

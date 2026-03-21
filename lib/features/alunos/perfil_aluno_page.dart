@@ -433,7 +433,7 @@ class PerfilAlunoPage extends StatelessWidget {
           final telefone = alunoData['telefone'] as String?;
           final dataNascimento = alunoData['dataNascimento'] as Timestamp?;
           final peso = alunoData['pesoAtual']?.toString() ?? '--';
-          final idade = dataNascimento != null ? calcularIdade(dataNascimento) : '--';
+          final idade = dataNascimento != null ? calcularIdade(dataNascimento).toString() : '--';
 
 
           return SingleChildScrollView(
@@ -501,7 +501,7 @@ class PerfilAlunoPage extends StatelessWidget {
                             const SizedBox(height: 8),
                             Row(
                               children: [
-                                _buildInfoChip(Icons.cake_outlined, '$idade'),
+                                _buildInfoChip(Icons.cake_outlined, idade),
                                 const SizedBox(width: 8),
                                 _buildInfoChip(Icons.monitor_weight_outlined, '$peso kg'),
                               ],
@@ -635,6 +635,8 @@ class PerfilAlunoPage extends StatelessWidget {
                                 alunoId: alunoId,
                                 alunoNome: alunoNome,
                                 photoUrl: photoUrl,
+                                peso: peso,
+                                idade: idade,
                               ),
                             ),
                           );
