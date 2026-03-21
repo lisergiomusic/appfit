@@ -145,10 +145,10 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     String tipoTemp = _tipoVencimento;
     int sessoesTemp = _vencimentoSessoes;
     DateTime dataTemp = _vencimentoData;
-    
+
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, 
+      isScrollControlled: true,
       backgroundColor: AppTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
@@ -608,7 +608,12 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                               children: [
                                 const Icon(Icons.schedule, size: 14, color: AppTheme.textSecondary),
                                 const SizedBox(width: 6),
-                                Text('x semanas', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
+                                Text(
+                                  _tipoVencimento == 'sessoes'
+                                      ? '$_vencimentoSessoes sessões'
+                                      : 'Vence em ${DateFormat('dd/MM/yyyy').format(_vencimentoData)}',
+                                  style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.w500),
+                                ),
                               ],
                             ),
                           ],
