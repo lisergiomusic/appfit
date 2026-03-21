@@ -794,7 +794,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.bold,
                                   letterSpacing: 0.5,
                                 ),
                                 maxLines: 1,
@@ -804,7 +804,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                               Text(
                                 objetivo,
                                 style: TextStyle(
-                                  color: AppTheme.textSecondary.withValues(alpha: 0.7),
+                                  color: AppTheme.textSecondary,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -838,7 +838,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            const Icon(Icons.chevron_right_rounded, color: Colors.white24, size: 20),
+                            const Icon(Icons.chevron_right_rounded, color: AppTheme.textSecondary, size: 24),
                           ],
                         ),
                       ],
