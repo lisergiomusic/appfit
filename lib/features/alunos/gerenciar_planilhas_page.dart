@@ -27,10 +27,7 @@ class GerenciarPlanilhasPage extends StatefulWidget {
 }
 
 class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
-  // Variável para controlar qual card está expandido
   String? _idPlanilhaExpandida;
-
-  // Stream declarada aqui para evitar flickering no build
   late final Stream<QuerySnapshot> _planilhasStream;
 
   @override
@@ -45,26 +42,38 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
   void _showAddOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surfaceDark,
+      backgroundColor: AppTheme.background,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       builder: (context) => Container(
-        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 40),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
             const Text(
               'Nova Planilha',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 24,
                 fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
               ),
             ),
             const SizedBox(height: 24),
-            ListTile(
+            _buildOptionTile(
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -77,24 +86,13 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                   ),
                 );
               },
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppTheme.primary.withAlpha(20),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.add_rounded, color: AppTheme.primary),
-              ),
-              title: const Text('Criar do zero',
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold)),
-              subtitle: const Text('Comece uma planilha em branco',
-                  style: TextStyle(color: AppTheme.textSecondary)),
-              trailing:
-              const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+              icon: Icons.add_rounded,
+              color: AppTheme.primary,
+              title: 'Criar do zero',
+              subtitle: 'Comece uma planilha personalizada agora',
             ),
-            const Divider(color: Colors.white10, height: 32),
-            ListTile(
+            const SizedBox(height: 12),
+            _buildOptionTile(
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -107,24 +105,68 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                   ),
                 );
               },
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppTheme.iosBlue.withAlpha(20),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.collections_bookmark_rounded,
-                    color: AppTheme.iosBlue),
-              ),
-              title: const Text('Usar da Biblioteca',
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold)),
-              subtitle: const Text('Escolha um template pronto',
-                  style: TextStyle(color: AppTheme.textSecondary)),
-              trailing:
-              const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+              icon: Icons.auto_awesome_motion_rounded,
+              color: AppTheme.iosBlue,
+              title: 'Usar da Biblioteca',
+              subtitle: 'Escolha um template pronto e economize tempo',
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionTile({
+    required VoidCallback onTap,
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String subtitle,
+  }) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.05),
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: AppTheme.textSecondary.withValues(alpha: 0.7),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: Colors.white.withValues(alpha: 0.2)),
+            ],
+          ),
         ),
       ),
     );
@@ -134,34 +176,10 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Gerenciar Planilhas',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddOptions(context),
-        backgroundColor: AppTheme.primary,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: const Icon(Icons.add, color: Colors.black, size: 28),
-      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _planilhasStream,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: AppTheme.primary));
-          }
-
           final allDocs = snapshot.data?.docs ?? [];
-
           final planilhas = allDocs.toList()
             ..sort((a, b) {
               final da = (a.data() as Map<String, dynamic>)['dataCriacao'] as Timestamp?;
@@ -174,57 +192,98 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
           final ativa = planilhas.where((doc) => (doc.data() as Map<String, dynamic>)['ativa'] == true).toList();
           final historico = planilhas.where((doc) => (doc.data() as Map<String, dynamic>)['ativa'] != true).toList();
 
+          // Mock data for visual completeness as requested by user's original code
           final List<Map<String, dynamic>> mockHistorico = [
-            {'nome': 'Treino Verão 2023', 'dataCriacao': Timestamp.fromDate(DateTime(2023, 11, 10)), 'ativa': false},
-            {'nome': 'Foco em Hipertrofia v2', 'dataCriacao': Timestamp.fromDate(DateTime(2024, 01, 15)), 'ativa': false}
+            {'nome': 'Ciclo de Força 2024', 'dataCriacao': Timestamp.fromDate(DateTime(2024, 02, 10)), 'ativa': false},
+            {'nome': 'Hipertrofia ABC', 'dataCriacao': Timestamp.fromDate(DateTime(2023, 12, 05)), 'ativa': false}
           ];
-
           final List<Map<String, dynamic>> mockFuturas = [
             {
-              'nome': 'Pós-Carnaval 2026',
-              'dataCriacao': Timestamp.fromDate(DateTime.now().add(const Duration(days: 45))),
+              'nome': 'Preparação Verão',
+              'dataCriacao': Timestamp.fromDate(DateTime.now().add(const Duration(days: 15))),
               'ativa': false,
               'isProgramada': true,
             }
           ];
 
-          return SingleChildScrollView(
+          return CustomScrollView(
             physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 24),
-                AlunoHeaderSection(
-                  alunoId: widget.alunoId,
-                  alunoNome: widget.alunoNome,
-                  photoUrl: widget.photoUrl,
-                  idade: widget.idade,
-                  peso: widget.peso,
+            slivers: [
+              SliverAppBar(
+                expandedHeight: 0,
+                floating: true,
+                pinned: true,
+                backgroundColor: AppTheme.background,
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                  onPressed: () => Navigator.pop(context),
                 ),
-                const SizedBox(height: 32),
+                centerTitle: true,
+                title: const Text(
+                  'PLANILHAS',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 2,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 12),
+                    AlunoHeaderSection(
+                      alunoId: widget.alunoId,
+                      alunoNome: widget.alunoNome,
+                      photoUrl: widget.photoUrl,
+                      idade: widget.idade,
+                      peso: widget.peso,
+                    ),
+                    const SizedBox(height: 40),
 
-                if (ativa.isNotEmpty) ...[
-                  _buildSectionLabel('PLANILHA ATIVA'),
-                  const SizedBox(height: 16),
-                  ...ativa.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id, isAtiva: true)),
-                  const SizedBox(height: 32),
-                ],
+                    if (ativa.isNotEmpty) ...[
+                      _buildSectionLabel('EM CURSO'),
+                      const SizedBox(height: 16),
+                      ...ativa.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id, isAtiva: true)),
+                      const SizedBox(height: 32),
+                    ],
 
-                _buildSectionLabel('PLANILHAS FUTURAS'),
-                const SizedBox(height: 16),
-                ...mockFuturas.map((m) => _buildPlanilhaItem(context, m, 'mock_f', isProgramada: true)),
-                const SizedBox(height: 32),
+                    _buildSectionLabel('PLANEJADAS'),
+                    const SizedBox(height: 16),
+                    ...mockFuturas.map((m) => _buildPlanilhaItem(context, m, 'mock_f', isProgramada: true)),
+                    const SizedBox(height: 32),
 
-                _buildSectionLabel('HISTÓRICO'),
-                const SizedBox(height: 16),
-                ...historico.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id)),
-                ...mockHistorico.map((m) => _buildPlanilhaItem(context, m, 'mock_${m['nome']}')),
+                    _buildSectionLabel('ANTERIORES'),
+                    const SizedBox(height: 16),
+                    ...historico.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id)),
+                    ...mockHistorico.map((m) => _buildPlanilhaItem(context, m, 'mock_${m['nome']}')),
 
-                const SizedBox(height: 100),
-              ],
-            ),
+                    const SizedBox(height: 120),
+                  ],
+                ),
+              ),
+            ],
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAddOptions(context),
+        backgroundColor: AppTheme.primary,
+        elevation: 10,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+        icon: const Icon(Icons.add_rounded, color: Colors.black, size: 24),
+        label: const Text(
+          'NOVA PLANILHA',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.w800,
+            fontSize: 13,
+            letterSpacing: 0.5,
+          ),
+        ),
       ),
     );
   }
@@ -232,96 +291,99 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
   Widget _buildSectionLabel(String label) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Row(
-        children: [
-          Container(width: 4, height: 14, decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(width: 8),
-          Text(label, style: AppTheme.textSectionHeaderDark.copyWith(color: Colors.white.withValues(alpha: 0.9), letterSpacing: 2)),
-        ],
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppTheme.textSecondary,
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 1.5,
+        ),
       ),
     );
   }
 
   Widget _buildPlanilhaItem(BuildContext context, Map<String, dynamic> data, String id, {bool isAtiva = false, bool isProgramada = false}) {
     final bool isExpanded = _idPlanilhaExpandida == id;
-    String legenda = '';
-    double progresso = 0.0;
+    String statusLabel = '';
+    String infoLabel = '';
+    double progress = 0.0;
 
     if (isAtiva) {
+      statusLabel = 'ATIVA';
       if (data['tipoVencimento'] == 'sessoes') {
         int total = data['vencimentoSessoes'] ?? 1;
         int concluidas = data['sessoesConcluidas'] ?? 0;
-        progresso = (concluidas / total).clamp(0.0, 1.0);
-        legenda = '$concluidas de $total treinos realizados';
+        progress = (concluidas / total).clamp(0.0, 1.0);
+        infoLabel = '$concluidas / $total treinos';
       } else {
         DateTime hoje = DateTime.now();
         DateTime criacao = (data['dataCriacao'] as Timestamp?)?.toDate() ?? hoje;
         DateTime venc = (data['dataVencimento'] as Timestamp?)?.toDate() ?? hoje.add(const Duration(days: 30));
-        int total = venc.difference(criacao).inDays;
-        progresso = (hoje.difference(criacao).inDays / (total > 0 ? total : 1)).clamp(0.0, 1.0);
-        legenda = 'Vence em ${DateFormat('dd/MM').format(venc)}';
+        int totalDays = venc.difference(criacao).inDays;
+        progress = (hoje.difference(criacao).inDays / (totalDays > 0 ? totalDays : 1)).clamp(0.0, 1.0);
+        infoLabel = 'Vence em ${DateFormat('dd/MM').format(venc)}';
       }
     } else if (isProgramada) {
+      statusLabel = 'AGENDADA';
       DateTime dataC = (data['dataCriacao'] as Timestamp?)?.toDate() ?? DateTime.now();
-      legenda = 'Inicia em ${DateFormat('dd/MM').format(dataC)}';
+      infoLabel = 'Inicia ${DateFormat('dd/MM').format(dataC)}';
     } else {
+      statusLabel = 'FINALIZADA';
       DateTime dataC = (data['dataCriacao'] as Timestamp?)?.toDate() ?? DateTime.now();
-      legenda = 'Finalizada em ${DateFormat('dd/MM/yyyy').format(dataC)}';
+      infoLabel = DateFormat('dd MMM yyyy').format(dataC);
     }
 
-    final Color statusColor = isAtiva ? AppTheme.primary : (isProgramada ? AppTheme.iosBlue : AppTheme.textSecondary);
+    final Color accentColor = isAtiva ? AppTheme.primary : (isProgramada ? AppTheme.iosBlue : AppTheme.textSecondary);
 
     return AnimatedContainer(
-      key: ValueKey('card_$id'),
       duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      margin: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(28),
+        color: isExpanded ? Colors.white.withValues(alpha: 0.04) : AppTheme.surfaceDark,
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isExpanded
-              ? AppTheme.primary.withValues(alpha: 0.3)
-              : Colors.white.withValues(alpha: 0.05),
-          width: 1.5,
+          color: isExpanded ? accentColor.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.05),
+          width: 1,
         ),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(28),
-        onTap: () {
-          setState(() {
-            _idPlanilhaExpandida = isExpanded ? null : id;
-          });
-        },
+        onTap: () => setState(() => _idPlanilhaExpandida = isExpanded ? null : id),
+        borderRadius: BorderRadius.circular(24),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            if (isAtiva)
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-                child: LinearProgressIndicator(
-                  value: progresso,
-                  backgroundColor: AppTheme.primary.withValues(alpha: 0.05),
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primary),
-                  minHeight: 4,
-                ),
-              ),
-
             Padding(
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
                   Container(
-                    width: 52,
-                    height: 52,
+                    width: 56,
+                    height: 56,
                     decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.1),
+                      color: accentColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(18),
                     ),
-                    child: Icon(
-                      isAtiva ? Icons.fitness_center : (isProgramada ? Icons.calendar_today : Icons.history),
-                      color: statusColor,
-                      size: 26,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        if (isAtiva)
+                          SizedBox(
+                            width: 44,
+                            height: 44,
+                            child: CircularProgressIndicator(
+                              value: progress,
+                              strokeWidth: 3,
+                              valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+                              backgroundColor: accentColor.withValues(alpha: 0.1),
+                              strokeCap: StrokeCap.round,
+                            ),
+                          ),
+                        Icon(
+                          isAtiva ? Icons.bolt_rounded : (isProgramada ? Icons.calendar_today_rounded : Icons.history_rounded),
+                          color: accentColor,
+                          size: 24,
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -329,78 +391,96 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Row(
+                          children: [
+                            Text(
+                              statusLabel,
+                              style: TextStyle(
+                                color: accentColor,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            if (!isAtiva && !isProgramada)
+                              Container(
+                                width: 4,
+                                height: 4,
+                                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
+                              ),
+                            const SizedBox(width: 8),
+                            Text(
+                              infoLabel,
+                              style: TextStyle(
+                                color: AppTheme.textSecondary.withValues(alpha: 0.6),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
                         Text(
                           (data['nome'] ?? 'Planilha').toUpperCase(),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 14,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          legenda,
-                          style: TextStyle(
-                            color: AppTheme.textSecondary.withValues(alpha: 0.7),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                            letterSpacing: -0.2,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  AnimatedRotation(
-                    turns: isExpanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 300),
-                    child: const Icon(Icons.expand_more, color: Colors.white24),
+                  Icon(
+                    isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                    color: Colors.white.withValues(alpha: 0.2),
                   ),
                 ],
               ),
             ),
-
-            // AnimatedSize substitui o AnimatedCrossFade para uma transição de altura muito mais fluida
             AnimatedSize(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
               child: isExpanded
                   ? Column(
-                children: [
-                  Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildActionButton(
-                          icon: Icons.edit_note_rounded,
-                          label: 'DETALHES',
-                          color: Colors.white70,
-                          onTap: () => _navegarParaDetalhes(context, data, id),
-                        ),
-                        _buildActionButton(
-                          icon: Icons.auto_graph_rounded,
-                          label: 'EVOLUÇÃO',
-                          color: isProgramada ? Colors.white24 : AppTheme.primary,
-                          onTap: () {
-                            if (isProgramada) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Disponível após o início do treino'), behavior: SnackBarBehavior.floating),
-                              );
-                            }
-                          },
-                        ),
-                        _buildActionButton(
-                          icon: isAtiva ? Icons.pause_circle : Icons.play_circle,
-                          label: isAtiva ? 'PAUSAR' : 'ATIVAR',
-                          color: isAtiva ? Colors.orangeAccent : AppTheme.primary,
-                          onTap: () {},
+                        Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: _buildActionBtn(
+                                  label: 'EDITAR',
+                                  icon: Icons.edit_note_rounded,
+                                  onTap: () => _navegarParaDetalhes(context, data, id),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _buildActionBtn(
+                                  label: 'STATS',
+                                  icon: Icons.bar_chart_rounded,
+                                  onTap: () {},
+                                  disabled: isProgramada,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _buildActionBtn(
+                                  label: isAtiva ? 'PAUSAR' : 'ATIVAR',
+                                  icon: isAtiva ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                  color: isAtiva ? Colors.orangeAccent : AppTheme.primary,
+                                  onTap: () {},
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
-                    ),
-                  ),
-                ],
-              )
+                    )
                   : const SizedBox(width: double.infinity, height: 0),
             ),
           ],
@@ -409,20 +489,35 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
     );
   }
 
-  Widget _buildActionButton({required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
+  Widget _buildActionBtn({
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+    Color color = Colors.white,
+    bool disabled = false,
+  }) {
+    final finalColor = disabled ? Colors.white.withValues(alpha: 0.1) : color;
     return Material(
-      color: Colors.transparent,
+      color: Colors.white.withValues(alpha: 0.03),
+      borderRadius: BorderRadius.circular(12),
       child: InkWell(
-        onTap: onTap,
+        onTap: disabled ? null : onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: color, size: 22),
-              const SizedBox(height: 6),
-              Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+              Icon(icon, color: finalColor, size: 20),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: finalColor,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
+                ),
+              ),
             ],
           ),
         ),
@@ -432,6 +527,16 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
 
   void _navegarParaDetalhes(BuildContext context, Map<String, dynamic> data, String id) {
     if (id.startsWith('mock')) return;
-    Navigator.push(context, MaterialPageRoute(builder: (context) => RotinaDetalhePage(rotinaData: data, rotinaId: id, alunoId: widget.alunoId, alunoNome: widget.alunoNome)));
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RotinaDetalhePage(
+          rotinaData: data,
+          rotinaId: id,
+          alunoId: widget.alunoId,
+          alunoNome: widget.alunoNome,
+        ),
+      ),
+    );
   }
 }
