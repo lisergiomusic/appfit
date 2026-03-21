@@ -146,13 +146,13 @@ class GerenciarPlanilhasPage extends StatelessWidget {
                 _buildEmptyState(),
               ] else ...[
                 if (ativa.isNotEmpty) ...[
-                  Text('PLANILHA ATUAL', style: AppTheme.textSectionHeaderDark),
+                  Text('PLANILHA ATIVA', style: AppTheme.textSectionHeaderDark),
                   const SizedBox(height: 16),
                   ...ativa.map((d) => _buildPlanilhaAtivaCard(context, d)),
                   const SizedBox(height: 32),
                 ],
                 if (historico.isNotEmpty) ...[
-                  Text('HISTÓRICO DE TREINOS', style: AppTheme.textSectionHeaderDark),
+                  Text('PLANILHAS CONCLUIDAS', style: AppTheme.textSectionHeaderDark),
                   const SizedBox(height: 16),
                   ...historico.map((d) => _buildPlanilhaHistoricoCard(context, d)),
                 ],

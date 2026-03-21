@@ -431,6 +431,10 @@ class PerfilAlunoPage extends StatelessWidget {
               snapshot.data?.data() as Map<String, dynamic>? ?? {};
           final photoUrl = alunoData['photoUrl'] as String?;
           final telefone = alunoData['telefone'] as String?;
+          final dataNascimento = alunoData['dataNascimento'] as Timestamp?;
+          final peso = alunoData['pesoAtual']?.toString() ?? '--';
+          final idade = dataNascimento != null ? calcularIdade(dataNascimento) : '--';
+
 
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -497,9 +501,9 @@ class PerfilAlunoPage extends StatelessWidget {
                             const SizedBox(height: 8),
                             Row(
                               children: [
-                                _buildInfoChip(Icons.cake_outlined, '28 anos'),
+                                _buildInfoChip(Icons.cake_outlined, '$idade'),
                                 const SizedBox(width: 8),
-                                _buildInfoChip(Icons.monitor_weight_outlined, '82kg'),
+                                _buildInfoChip(Icons.monitor_weight_outlined, '$peso kg'),
                               ],
                             ),
                           ],
@@ -1104,4 +1108,15 @@ class PerfilAlunoPage extends StatelessWidget {
       ),
     );
   }
+}
+
+int calcularIdade(Timestamp? dataNascimento) {
+  if (dataNascimento == null) return 0;
+  DateTime nascimento = dataNascimento.toDate();
+  DateTime hoje = DateTime.now();
+  int idade = hoje.year - nascimento.year;
+  if (hoje.month < nascimento.month || (hoje.month == nascimento.month && hoje.day < nascimento.day)) {
+    idade--;
+  }
+  return idade;
 }
