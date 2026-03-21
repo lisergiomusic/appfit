@@ -6,7 +6,14 @@ import '../../core/widgets/appfit_simple_app_bar.dart';
 import 'rotina_detalhe_page.dart';
 
 class TreinosPage extends StatelessWidget {
-  const TreinosPage({super.key});
+  final String? alunoId;
+  final String? alunoNome;
+
+  const TreinosPage({
+    super.key,
+    this.alunoId,
+    this.alunoNome,
+  });
 
   Future<void> _deletarTreino(String id) async {
     await FirebaseFirestore.instance.collection('rotinas').doc(id).delete();
@@ -15,15 +22,16 @@ class TreinosPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String? personalId = FirebaseAuth.instance.currentUser?.uid;
+    final bool isSelecting = alunoId != null;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: const AppFitSimpleAppBar(
-        title: 'Sua Biblioteca',
+      appBar: AppFitSimpleAppBar(
+        title: isSelecting ? 'Escolher Template' : 'Sua Biblioteca',
         centerTitle: true,
       ),
-      // --- FAB FLUTUANTE PREMIUM ---
-      floatingActionButton: FloatingActionButton.extended(
+      // --- FAB Oculto se estiver selecionando ---
+      floatingActionButton: isSelecting ? null : FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
@@ -100,7 +108,7 @@ class TreinosPage extends StatelessWidget {
 
               return Dismissible(
                 key: Key(doc.id),
-                direction: DismissDirection.endToStart,
+                direction: isSelecting ? DismissDirection.none : DismissDirection.endToStart,
                 confirmDismiss: (direction) async {
                   return await showDialog(
                     context: context,
@@ -156,7 +164,7 @@ class TreinosPage extends StatelessWidget {
                 ),
                 onDismissed: (direction) => _deletarTreino(doc.id),
 
-                // --- CARTÃO DA LISTA (REFINADO) ---
+                // --- CARTÃO DA LISTA ---
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   child: Material(
@@ -169,15 +177,30 @@ class TreinosPage extends StatelessWidget {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(16),
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => RotinaDetalhePage(
-                              rotinaData: rotina,
-                              rotinaId: doc.id,
+                        if (isSelecting) {
+                          // Abre para criar uma NOVA rotina para o aluno baseada no template (passando rotinaData mas sem rotinaId)
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RotinaDetalhePage(
+                                rotinaData: rotina,
+                                alunoId: alunoId,
+                                alunoNome: alunoNome,
+                              ),
                             ),
-                          ),
-                        );
+                          );
+                        } else {
+                          // Fluxo normal: Editar template
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RotinaDetalhePage(
+                                rotinaData: rotina,
+                                rotinaId: doc.id,
+                              ),
+                            ),
+                          );
+                        }
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -187,12 +210,12 @@ class TreinosPage extends StatelessWidget {
                               width: 44,
                               height: 44,
                               decoration: BoxDecoration(
-                                color: AppTheme.primary.withAlpha(20),
-                                shape: BoxShape.circle, // Ícone num círculo
+                                color: (isSelecting ? AppTheme.iosBlue : AppTheme.primary).withAlpha(20),
+                                shape: BoxShape.circle,
                               ),
-                              child: const Icon(
-                                Icons.fitness_center,
-                                color: AppTheme.primary,
+                              child: Icon(
+                                isSelecting ? Icons.add_task : Icons.fitness_center,
+                                color: isSelecting ? AppTheme.iosBlue : AppTheme.primary,
                                 size: 20,
                               ),
                             ),

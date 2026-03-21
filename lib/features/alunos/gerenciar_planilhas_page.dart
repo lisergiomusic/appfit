@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../treinos/rotina_detalhe_page.dart';
+import '../treinos/treinos_page.dart';
 
 class GerenciarPlanilhasPage extends StatelessWidget {
   final String alunoId;
@@ -20,6 +21,85 @@ class GerenciarPlanilhasPage extends StatelessWidget {
     required this.peso,
     required this.idade
   });
+
+  void _showAddOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Nova Planilha',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ListTile(
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RotinaDetalhePage(
+                      alunoId: alunoId,
+                      alunoNome: alunoNome,
+                    ),
+                  ),
+                );
+              },
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withAlpha(20),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.add_rounded, color: AppTheme.primary),
+              ),
+              title: const Text('Criar do zero', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              subtitle: const Text('Comece uma planilha em branco', style: TextStyle(color: AppTheme.textSecondary)),
+              trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+            ),
+            const Divider(color: Colors.white10, height: 32),
+            ListTile(
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TreinosPage(
+                      alunoId: alunoId,
+                      alunoNome: alunoNome,
+                    ),
+                  ),
+                );
+              },
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.iosBlue.withAlpha(20),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.collections_bookmark_rounded, color: AppTheme.iosBlue),
+              ),
+              title: const Text('Usar da Biblioteca', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              subtitle: const Text('Escolha um template pronto', style: TextStyle(color: AppTheme.textSecondary)),
+              trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +133,12 @@ class GerenciarPlanilhasPage extends StatelessWidget {
             ),
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAddOptions(context),
+        backgroundColor: AppTheme.primary,
+        icon: const Icon(Icons.add, color: Colors.black),
+        label: const Text('ADICIONAR', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, letterSpacing: 1)),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -109,7 +195,7 @@ class GerenciarPlanilhasPage extends StatelessWidget {
 
           return ListView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            padding: const EdgeInsets.fromLTRB(24, 32, 24, 100), // Padding extra no bottom para o FAB
             children: [
               // Header Aluno (Inalterado)
               Row(
