@@ -10,16 +10,34 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'gerenciar_planilhas_page.dart';
+import '../../core/services/aluno_service.dart';
 
-class PerfilAlunoPage extends StatelessWidget {
+class PerfilAlunoPage extends StatefulWidget {
   final String alunoId;
   final String alunoNome;
+
 
   const PerfilAlunoPage({
     super.key,
     required this.alunoId,
     required this.alunoNome,
   });
+
+  @override
+  State<PerfilAlunoPage> createState() => _PerfilAlunoPageState();
+}
+
+class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
+  late final AlunoService _alunoService;
+
+  @override
+  void initState() {
+    super.initState();
+    _alunoService = AlunoService();
+  }
+
+
+
 
   Future<void> _abrirWhatsApp(BuildContext context, String? telefone) async {
     if (telefone == null || telefone.isEmpty) {
@@ -58,7 +76,7 @@ class PerfilAlunoPage extends StatelessWidget {
 
       final rotinasAntigas = await FirebaseFirestore.instance
           .collection('rotinas')
-          .where('alunoId', isEqualTo: alunoId)
+          .where('alunoId', isEqualTo: widget.alunoId)
           .where('ativa', isEqualTo: true)
           .get();
 
@@ -68,7 +86,7 @@ class PerfilAlunoPage extends StatelessWidget {
 
       final rotinaData = templateDoc.data() as Map<String, dynamic>;
 
-      rotinaData['alunoId'] = alunoId;
+      rotinaData['alunoId'] = widget.alunoId;
       rotinaData['ativa'] = true;
       rotinaData['dataCriacao'] = FieldValue.serverTimestamp();
       rotinaData['dataVencimento'] = Timestamp.fromDate(
@@ -117,7 +135,7 @@ class PerfilAlunoPage extends StatelessWidget {
               mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Defina a duração da rotina "$titulo" para $alunoNome:',
+                  'Defina a duração da rotina "$titulo" para $widget.alunoNome:',
                   style: const TextStyle(color: AppTheme.textSecondary),
                 ),
                 const SizedBox(height: 20),
@@ -232,8 +250,8 @@ class PerfilAlunoPage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => RotinaDetalhePage(
-                        alunoId: alunoId,
-                        alunoNome: alunoNome,
+                        alunoId: widget.alunoId,
+                        alunoNome: widget.alunoNome,
                       ),
                     ),
                   );
@@ -373,8 +391,8 @@ class PerfilAlunoPage extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder: (context) => GerenciarAlunoPage(
-          alunoId: alunoId,
-          alunoNome: alunoNome,
+          alunoId: widget.alunoId,
+          alunoNome: widget.alunoNome,
         ),
       ),
     );
@@ -417,10 +435,7 @@ class PerfilAlunoPage extends StatelessWidget {
         ),
       ),
       body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('usuarios')
-            .doc(alunoId)
-            .snapshots(),
+        stream: _alunoService.getAlunoStream(widget.alunoId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -447,7 +462,7 @@ class PerfilAlunoPage extends StatelessWidget {
                   child: Row(
                     children: [
                       Hero(
-                        tag: 'avatar_$alunoId',
+                        tag: 'avatar_$widget.alunoId',
                         child: Container(
                           width: 88,
                           height: 88,
@@ -473,7 +488,7 @@ class PerfilAlunoPage extends StatelessWidget {
                                 : null,
                             child: photoUrl == null || photoUrl.isEmpty
                                 ? Text(
-                                    alunoNome.isNotEmpty ? alunoNome[0].toUpperCase() : '?',
+                                    widget.alunoNome.isNotEmpty ? widget.alunoNome[0].toUpperCase() : '?',
                                     style: const TextStyle(
                                       fontSize: 28,
                                       fontWeight: FontWeight.w900,
@@ -490,7 +505,7 @@ class PerfilAlunoPage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              alunoNome,
+                              widget.alunoNome,
                               style: const TextStyle(
                                 fontSize: 26,
                                 fontWeight: FontWeight.w900,
@@ -626,7 +641,7 @@ class PerfilAlunoPage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
-                                  FeedbackHistoricoPage(alunoNome: alunoNome),
+                                  FeedbackHistoricoPage(alunoNome: widget.alunoNome),
                             ),
                           );
                         },
@@ -641,8 +656,8 @@ class PerfilAlunoPage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (context) => GerenciarPlanilhasPage(
-                                alunoId: alunoId,
-                                alunoNome: alunoNome,
+                                alunoId: widget.alunoId,
+                                alunoNome: widget.alunoNome,
                                 photoUrl: photoUrl,
                                 peso: peso,
                                 idade: idade,
@@ -794,7 +809,7 @@ class PerfilAlunoPage extends StatelessWidget {
       child: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('rotinas')
-            .where('alunoId', isEqualTo: alunoId)
+            .where('alunoId', isEqualTo: widget.alunoId)
             .where('ativa', isEqualTo: true)
             .snapshots(),
         builder: (context, snapshot) {
@@ -869,8 +884,8 @@ class PerfilAlunoPage extends StatelessWidget {
                           builder: (context) => RotinaDetalhePage(
                             rotinaData: rotina,
                             rotinaId: treinoDoc.id,
-                            alunoId: alunoId,
-                            alunoNome: alunoNome,
+                            alunoId: widget.alunoId,
+                            alunoNome: widget.alunoNome,
                           ),
                         ),
                       );
