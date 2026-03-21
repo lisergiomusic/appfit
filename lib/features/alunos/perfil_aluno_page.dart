@@ -150,7 +150,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<int>(
-                  initialValue: semanasSelecionadas,
+                  value: semanasSelecionadas,
                   dropdownColor: AppTheme.surfaceLight,
                   style: const TextStyle(color: Colors.white),
                   items: [4, 5, 6, 8, 10, 12]
@@ -985,6 +985,84 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                           Icons.chevron_right_rounded,
                           color: AppTheme.textSecondary,
                           size: 24,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Botão de Evolução - Estética Apple/Strava
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    // Implementação futura: Navigator para ProgressoCargasPage
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Análise de progressão em desenvolvimento'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                      border: Border.all(
+                        color: AppTheme.primary.withValues(alpha: 0.15),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.auto_graph_rounded,
+                            color: AppTheme.primary,
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'EVOLUÇÃO DE CARGAS',
+                                style: TextStyle(
+                                  color: AppTheme.primary,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Analisar progressão e performance',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          color: AppTheme.primary.withValues(alpha: 0.5),
+                          size: 20,
                         ),
                       ],
                     ),
