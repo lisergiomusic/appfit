@@ -47,7 +47,7 @@ class AlunoHeaderSection extends StatelessWidget {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    _buildInfoChip('$idade anos'),
+                    _buildInfoChip('$idade Anos'),
                     const SizedBox(width: 8),
                     _buildDot(),
                     const SizedBox(width: 8),
@@ -68,8 +68,8 @@ class AlunoHeaderSection extends StatelessWidget {
 
   Widget _buildAvatar() {
     return Container(
-      width: 88,
-      height: 88,
+      width: 90,
+      height: 90,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(color: AppTheme.primary, width:2),
