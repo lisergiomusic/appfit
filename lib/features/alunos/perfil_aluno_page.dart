@@ -462,81 +462,52 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                   photoUrl: photoUrl,
                   idade: idade,
                   peso: peso,
-                ),
-                const SizedBox(height: 24),
-                // BOTÕES DE AÇÃO HORIZONTAIS (WHATSAPP E GERENCIAR)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
+                  actions: Row(
                     children: [
-                      Expanded(
-                        child: Material(
-                          color: AppTheme.surfaceLight.withValues(alpha: 0.3),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                      GestureDetector(
+                        onTap: () => _abrirWhatsApp(context, telefone),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(100),
                           ),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
-                            onTap: () => _abrirWhatsApp(context, telefone),
-                            splashColor: AppTheme.primary.withValues(alpha: 0.12),
-                            highlightColor: AppTheme.primary.withValues(alpha: 0.06),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  FaIcon(
-                                    FontAwesomeIcons.whatsapp,
-                                    color: Color(0xFF25D366),
-                                    size: 20,
-                                  ),
-                                  SizedBox(width: 12),
-                                  Text(
-                                    'Conversar',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              FaIcon(
+                                FontAwesomeIcons.whatsapp,
+                                color: AppTheme.primary,
+                                size: 14,
                               ),
-                            ),
+                              SizedBox(width: 8),
+                              Text(
+                                'CONVERSAR',
+                                style: TextStyle(
+                                  color: AppTheme.primary,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12), // Espaçamento entre os botões
-                      Expanded(
-                        child: Material(
-                          color: AppTheme.surfaceLight.withValues(alpha: 0.3),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                      const SizedBox(width: 12),
+                      GestureDetector(
+                        onTap: () => _irParaGerenciarAluno(context),
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.05),
+                            shape: BoxShape.circle,
                           ),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
-                            onTap: () => _irParaGerenciarAluno(context),
-                            splashColor: AppTheme.primary.withValues(alpha: 0.12),
-                            highlightColor: AppTheme.primary.withValues(alpha: 0.06),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.settings_outlined, color: AppTheme.textSecondary, size: 20),
-                                  SizedBox(width: 12),
-                                  Text(
-                                    'Gerenciar',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                          child: const Icon(
+                            Icons.settings_outlined,
+                            color: Colors.white70,
+                            size: 16,
                           ),
                         ),
                       ),

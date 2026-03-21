@@ -8,6 +8,7 @@ class AlunoHeaderSection extends StatelessWidget {
   final String? photoUrl;
   final String idade;
   final String peso;
+  final Widget? actions;
 
   const AlunoHeaderSection({
     super.key,
@@ -16,6 +17,7 @@ class AlunoHeaderSection extends StatelessWidget {
     this.photoUrl,
     required this.idade,
     required this.peso,
+    this.actions,
   });
 
   @override
@@ -52,6 +54,10 @@ class AlunoHeaderSection extends StatelessWidget {
                     _buildInfoChip('$peso kg'),
                   ],
                 ),
+                if (actions != null) ...[
+                  const SizedBox(height: 12),
+                  actions!,
+                ],
               ],
             ),
           ),
@@ -66,7 +72,7 @@ class AlunoHeaderSection extends StatelessWidget {
       height: 88,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: AppTheme.primary, width: 2),
+        border: Border.all(color: AppTheme.primary, width:2),
         boxShadow: [
           BoxShadow(
             color: AppTheme.primary.withValues(alpha: 0.2),
