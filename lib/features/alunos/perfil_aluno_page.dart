@@ -15,11 +15,13 @@ import 'widgets/aluno_header_section.dart';
 class PerfilAlunoPage extends StatefulWidget {
   final String alunoId;
   final String alunoNome;
+  final String? photoUrl;
 
   const PerfilAlunoPage({
     super.key,
     required this.alunoId,
     required this.alunoNome,
+    this.photoUrl,
   });
 
   @override
@@ -38,7 +40,9 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
   Future<void> _abrirWhatsApp(BuildContext context, String? telefone) async {
     if (telefone == null || telefone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Telefone não cadastrado para este aluno.')),
+        const SnackBar(
+          content: Text('Telefone não cadastrado para este aluno.'),
+        ),
       );
       return;
     }
@@ -58,11 +62,11 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
   }
 
   Future<void> _atribuirTreinoAoAluno(
-      BuildContext context,
-      String templateId,
-      String nomeRotina,
-      int duracaoSemanas,
-      ) async {
+    BuildContext context,
+    String templateId,
+    String nomeRotina,
+    int duracaoSemanas,
+  ) async {
     try {
       final templateDoc = await FirebaseFirestore.instance
           .collection('rotinas')
@@ -106,10 +110,10 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
   }
 
   void _confirmarAtivacaoTemplate(
-      BuildContext context,
-      String templateId,
-      String titulo,
-      ) {
+    BuildContext context,
+    String templateId,
+    String titulo,
+  ) {
     int semanasSelecionadas = 4;
     showDialog(
       context: context,
@@ -143,10 +147,10 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                   items: [4, 5, 6, 8, 10, 12]
                       .map(
                         (w) => DropdownMenuItem(
-                      value: w,
-                      child: Text('$w semanas'),
-                    ),
-                  )
+                          value: w,
+                          child: Text('$w semanas'),
+                        ),
+                      )
                       .toList(),
                   onChanged: (v) =>
                       setStateDialog(() => semanasSelecionadas = v!),
@@ -305,8 +309,10 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                         child: Text(
                           'Sua biblioteca está vazia.',
                           style: TextStyle(
-                              color: AppTheme.textSecondary
-                                  .withValues(alpha: 0.5)),
+                            color: AppTheme.textSecondary.withValues(
+                              alpha: 0.5,
+                            ),
+                          ),
                         ),
                       );
                     }
@@ -327,7 +333,8 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                               side: BorderSide(
-                                  color: Colors.white.withValues(alpha: 0.05)),
+                                color: Colors.white.withValues(alpha: 0.05),
+                              ),
                             ),
                             child: InkWell(
                               borderRadius: BorderRadius.circular(16),
@@ -336,13 +343,17 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                                 doc.id,
                                 rotina['nome'] ?? 'Rotina',
                               ),
-                              splashColor:
-                              AppTheme.primary.withValues(alpha: 0.12),
-                              highlightColor:
-                              AppTheme.primary.withValues(alpha: 0.06),
+                              splashColor: AppTheme.primary.withValues(
+                                alpha: 0.12,
+                              ),
+                              highlightColor: AppTheme.primary.withValues(
+                                alpha: 0.06,
+                              ),
                               child: ListTile(
                                 contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 4),
+                                  horizontal: 20,
+                                  vertical: 4,
+                                ),
                                 title: Text(
                                   rotina['nome'] ?? 'Rotina',
                                   style: const TextStyle(
@@ -360,8 +371,9 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                                 trailing: Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color:
-                                    AppTheme.primary.withValues(alpha: 0.1),
+                                    color: AppTheme.primary.withValues(
+                                      alpha: 0.1,
+                                    ),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -413,9 +425,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
           'Perfil do Aluno',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
         ),
-        actions: const [
-          SizedBox(width: 48),
-        ],
+        actions: const [SizedBox(width: 48)],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
           child: Container(
@@ -460,7 +470,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                 AlunoHeaderSection(
                   alunoId: widget.alunoId,
                   alunoNome: widget.alunoNome,
-                  photoUrl: photoUrl,
+                  photoUrl: widget.photoUrl ?? photoUrl,
                   idade: idade,
                   peso: peso,
                   actions: Row(
@@ -469,7 +479,9 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                         onTap: () => _abrirWhatsApp(context, telefone),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: AppTheme.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(100),
@@ -527,21 +539,43 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'GESTÃO',
-                        style: AppTheme.textSectionHeaderDark,
-                      ),
+                      Text('GESTÃO', style: AppTheme.textSectionHeaderDark),
                       const SizedBox(height: 16),
                       Container(
                         decoration: BoxDecoration(
                           color: AppTheme.surfaceDark,
-                          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusLarge,
+                          ),
                           border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.05)),
+                            color: Colors.white.withValues(alpha: 0.05),
+                          ),
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: Column(
                           children: [
+                            _buildManagementItem(
+                              context,
+                              icon: Icons.description_outlined,
+                              title: 'Planilhas de Treino',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        GerenciarPlanilhasPage(
+                                          alunoId: widget.alunoId,
+                                          alunoNome: widget.alunoNome,
+                                          photoUrl: photoUrl,
+                                          peso: peso,
+                                          idade: idade,
+                                        ),
+                                  ),
+                                );
+                              },
+                              showBorder: true,
+                            ),
+
                             _buildManagementItem(
                               context,
                               icon: Icons.history_edu_rounded,
@@ -551,32 +585,14 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => FeedbackHistoricoPage(
-                                        alunoNome: widget.alunoNome),
-                                  ),
-                                );
-                              },
-                              showBorder: true,
-                            ),
-                            _buildManagementItem(
-                              context,
-                              icon: Icons.description_outlined,
-                              title: 'Planilhas de Treino',
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => GerenciarPlanilhasPage(
-                                      alunoId: widget.alunoId,
                                       alunoNome: widget.alunoNome,
-                                      photoUrl: photoUrl,
-                                      peso: peso,
-                                      idade: idade,
                                     ),
                                   ),
                                 );
                               },
                               showBorder: true,
                             ),
+
                             _buildManagementItem(
                               context,
                               icon: Icons.query_stats_rounded,
@@ -601,14 +617,14 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
   }
 
   Widget _buildManagementItem(
-      BuildContext context, {
-        required IconData icon,
-        required String title,
-        required VoidCallback onTap,
-        required bool showBorder,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    required bool showBorder,
+  }) {
     return Material(
-      color: AppTheme.surfaceDark, // A cor de fundo DEVE estar no Material
+      color: AppTheme.surfaceDark,
       child: InkWell(
         onTap: onTap,
         splashColor: AppTheme.splash,
@@ -616,18 +632,16 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            // A borda interna continua aqui
             border: showBorder
                 ? Border(
-              bottom: BorderSide(
-                color: Colors.white.withValues(alpha: 0.05),
-              ),
-            )
+                    bottom: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.05),
+                    ),
+                  )
                 : null,
           ),
           child: Row(
             children: [
-              // Ícone com fundo escuro (Estilo HTML)
               Container(
                 width: 40,
                 height: 40,
@@ -729,35 +743,43 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                       color: isFeito
                           ? AppTheme.primary
                           : (isFalta
-                          ? Colors.redAccent.withValues(alpha: 0.2)
-                          : Colors.transparent),
+                                ? Colors.redAccent.withValues(alpha: 0.2)
+                                : Colors.transparent),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: isFeito
                             ? AppTheme.primary
                             : (isFalta
-                            ? Colors.redAccent.withValues(alpha: 0.5)
-                            : AppTheme.textSecondary
-                            .withValues(alpha: 0.15)),
+                                  ? Colors.redAccent.withValues(alpha: 0.5)
+                                  : AppTheme.textSecondary.withValues(
+                                      alpha: 0.15,
+                                    )),
                         width: 1.5,
                       ),
                     ),
                     child: Center(
                       child: isFeito
-                          ? const Icon(Icons.check,
-                          color: Colors.black, size: 20)
+                          ? const Icon(
+                              Icons.check,
+                              color: Colors.black,
+                              size: 20,
+                            )
                           : (isFalta
-                          ? const Icon(Icons.close,
-                          color: Colors.redAccent, size: 18)
-                          : Container(
-                        width: 4,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: AppTheme.textSecondary
-                              .withValues(alpha: 0.3),
-                          shape: BoxShape.circle,
-                        ),
-                      )),
+                                ? const Icon(
+                                    Icons.close,
+                                    color: Colors.redAccent,
+                                    size: 18,
+                                  )
+                                : Container(
+                                    width: 4,
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.textSecondary.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  )),
                     ),
                   ),
                 ],
@@ -781,7 +803,9 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const SizedBox(
-                height: 100, child: Center(child: CircularProgressIndicator()));
+              height: 100,
+              child: Center(child: CircularProgressIndicator()),
+            );
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -807,13 +831,13 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                 (rotina['dataCriacao'] as Timestamp?)?.toDate() ?? hoje;
             DateTime dataVencimento =
                 (rotina['dataVencimento'] as Timestamp?)?.toDate() ??
-                    hoje.add(const Duration(days: 30));
+                hoje.add(const Duration(days: 30));
             int totalDias = dataVencimento.difference(dataCriacao).inDays;
             if (totalDias <= 0) totalDias = 1;
             int diasPassados = hoje.difference(dataCriacao).inDays;
             progressoAtual = (diasPassados / totalDias).clamp(0.0, 1.0);
             legendaVencimento =
-            'Venc: ${DateFormat('dd/MM').format(dataVencimento)}';
+                'Venc: ${DateFormat('dd/MM').format(dataVencimento)}';
           }
 
           return Column(
@@ -841,10 +865,13 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 20),
+                      horizontal: 16,
+                      vertical: 20,
+                    ),
                     decoration: BoxDecoration(
                       border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.05)),
+                        color: Colors.white.withValues(alpha: 0.05),
+                      ),
                     ),
                     child: Row(
                       children: [
@@ -857,10 +884,12 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                               child: CircularProgressIndicator(
                                 value: progressoAtual,
                                 strokeWidth: 4,
-                                backgroundColor:
-                                Colors.white.withValues(alpha: 0.05),
+                                backgroundColor: Colors.white.withValues(
+                                  alpha: 0.05,
+                                ),
                                 valueColor: const AlwaysStoppedAnimation<Color>(
-                                    AppTheme.primary),
+                                  AppTheme.primary,
+                                ),
                                 strokeCap: StrokeCap.round,
                               ),
                             ),
@@ -871,8 +900,11 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                                 color: AppTheme.primary.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.fitness_center_rounded,
-                                  color: AppTheme.primary, size: 20),
+                              child: const Icon(
+                                Icons.fitness_center_rounded,
+                                color: AppTheme.primary,
+                                size: 20,
+                              ),
                             ),
                           ],
                         ),
@@ -909,10 +941,13 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 2),
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color:
-                                      Colors.white.withValues(alpha: 0.05),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.05,
+                                      ),
                                       borderRadius: BorderRadius.circular(100),
                                     ),
                                     child: Text(
@@ -930,8 +965,11 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Icon(Icons.chevron_right_rounded,
-                            color: AppTheme.textSecondary, size: 24),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          color: AppTheme.textSecondary,
+                          size: 24,
+                        ),
                       ],
                     ),
                   ),
@@ -961,7 +999,8 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
               padding: const EdgeInsets.symmetric(vertical: 20),
               decoration: BoxDecoration(
                 border: Border.all(
-                    color: AppTheme.primary.withValues(alpha: 0.1)),
+                  color: AppTheme.primary.withValues(alpha: 0.1),
+                ),
               ),
               child: Column(
                 children: [
@@ -971,8 +1010,11 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                       color: AppTheme.primary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.add_rounded,
-                        color: AppTheme.primary, size: 22),
+                    child: const Icon(
+                      Icons.add_rounded,
+                      color: AppTheme.primary,
+                      size: 22,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   const Text(
