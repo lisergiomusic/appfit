@@ -189,14 +189,14 @@ class GerenciarPlanilhasPage extends StatelessWidget {
               ] else ...[
                 // Seção: Planilha Ativa
                 if (ativa.isNotEmpty) ...[
-                  _buildSectionLabel('ATUAL'),
+                  _buildSectionLabel('PLANILHA ATIVA'),
                   const SizedBox(height: 12),
                   ...ativa.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id, isAtiva: true)),
                   const SizedBox(height: 32),
                 ],
 
                 // Seção: Programadas
-                _buildSectionLabel('PROGRAMADAS'),
+                _buildSectionLabel('PLANILHAS FUTURAS'),
                 const SizedBox(height: 12),
                 ...mockFuturas.map((m) => _buildPlanilhaItem(context, m, 'mock_f', isProgramada: true)),
                 const SizedBox(height: 32),
@@ -219,12 +219,7 @@ class GerenciarPlanilhasPage extends StatelessWidget {
   Widget _buildSectionLabel(String label) {
     return Text(
       label,
-      style: TextStyle(
-        color: AppTheme.textSecondary.withValues(alpha: 0.5),
-        fontSize: 11,
-        fontWeight: FontWeight.w800,
-        letterSpacing: 1.5,
-      ),
+      style: AppTheme.textSectionHeaderDark,
     );
   }
 
@@ -261,7 +256,7 @@ class GerenciarPlanilhasPage extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: ClipRRect(

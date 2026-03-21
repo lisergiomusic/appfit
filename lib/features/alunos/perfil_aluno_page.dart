@@ -726,7 +726,7 @@ class PerfilAlunoPage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           decoration: BoxDecoration(
             color: AppTheme.surfaceDark,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: Row(
@@ -850,7 +850,7 @@ class PerfilAlunoPage extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(28),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
                     border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
                     boxShadow: [
                       BoxShadow(
@@ -861,7 +861,7 @@ class PerfilAlunoPage extends StatelessWidget {
                     ],
                   ),
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(28),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -1039,7 +1039,7 @@ class PerfilAlunoPage extends StatelessWidget {
     return Material(
       color: AppTheme.surfaceDark,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         side: BorderSide(color: Colors.white.withValues(alpha: 0.04)),
       ),
       child: InkWell(
