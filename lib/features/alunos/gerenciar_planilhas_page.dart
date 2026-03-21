@@ -1,8 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../treinos/rotina_detalhe_page.dart';
+
 
 class GerenciarPlanilhasPage extends StatelessWidget {
   final String alunoId;
@@ -90,25 +92,35 @@ class GerenciarPlanilhasPage extends StatelessWidget {
                   Hero(
                     tag: 'avatar_$alunoId',
                     child: Container(
-                      width: 52,
-                      height: 52,
+                      width: 88,
+                      height: 88,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        // ADICIONE A LINHA ABAIXO:
-                        image: photoUrl != null && photoUrl!.isNotEmpty
-                            ? DecorationImage(image: NetworkImage(photoUrl!), fit: BoxFit.cover)
-                            : null,
                         border: Border.all(
-                          color: AppTheme.primary.withValues(alpha: 0.2),
-                          width: 1,
+                          color: AppTheme.primary,
+                          width: 2,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.primary.withValues(alpha: 0.2),
+                            blurRadius: 15,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                        image: photoUrl != null && photoUrl!.isNotEmpty
+                            ? DecorationImage(
+                            image: CachedNetworkImageProvider(photoUrl!),
+                            fit: BoxFit.cover,
+                        )
+                            : null,
+
                       ),
-                      child: photoUrl == null || photoUrl!.isEmpty
-                          ? Center( // Adicionei um Center para o texto ficar alinhado
+                      child: (photoUrl == null || photoUrl!.isEmpty)
+                          ? Center(
                         child: Text(
                           alunoNome.isNotEmpty ? alunoNome[0].toUpperCase() : '?',
                           style: const TextStyle(
-                            fontSize: 24, // Diminuí um pouco para caber melhor no círculo
+                            fontSize: 28,
                             fontWeight: FontWeight.w900,
                             color: AppTheme.primary,
                           ),
@@ -117,7 +129,7 @@ class GerenciarPlanilhasPage extends StatelessWidget {
                           : null,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 20),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,12 +143,13 @@ class GerenciarPlanilhasPage extends StatelessWidget {
                             letterSpacing: -0.5,
                           ),
                         ),
-                        Text(
-                          'Gerenciando planilhas',
-                          style: TextStyle(
-                            color: AppTheme.textSecondary.withValues(alpha: 0.7),
-                            fontSize: 13,
-                          ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            _buildInfoChip(Icons.cake_outlined, idade),
+                            const SizedBox(width: 8),
+                            _buildInfoChip(Icons.monitor_weight_outlined, '$peso kg'),
+                          ],
                         ),
                       ],
                     ),
@@ -296,6 +309,31 @@ class GerenciarPlanilhasPage extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(IconData icon, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceLight.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: AppTheme.textSecondary),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }
