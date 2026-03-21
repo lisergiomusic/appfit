@@ -5,12 +5,12 @@ import '../../core/theme/app_theme.dart';
 import '../treinos/rotina_detalhe_page.dart';
 import 'gerenciar_aluno_page.dart';
 import 'feedback_historico_page.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'gerenciar_planilhas_page.dart';
 import '../../core/services/aluno_service.dart';
+import 'widgets/aluno_header_section.dart';
 
 class PerfilAlunoPage extends StatefulWidget {
   final String alunoId;
@@ -456,85 +456,12 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
             child: Column(
               children: [
                 const SizedBox(height: 24),
-                // Section 1: Profile Header
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
-                    children: [
-                      Hero(
-                        tag: 'avatar_$widget.alunoId',
-                        child: Container(
-                          width: 88,
-                          height: 88,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppTheme.primary,
-                              width: 2,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppTheme.primary.withValues(alpha: 0.2),
-                                blurRadius: 15,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                          ),
-                          child: CircleAvatar(
-                            radius: 40,
-                            backgroundColor: AppTheme.surfaceLight,
-                            backgroundImage: photoUrl != null && photoUrl.isNotEmpty
-                                ? CachedNetworkImageProvider(photoUrl)
-                                : null,
-                            child: photoUrl == null || photoUrl.isEmpty
-                                ? Text(
-                                    widget.alunoNome.isNotEmpty ? widget.alunoNome[0].toUpperCase() : '?',
-                                    style: const TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w900,
-                                      color: AppTheme.primary,
-                                    ),
-                                  )
-                                : null,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.alunoNome,
-                              style: const TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                letterSpacing: -1,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                _buildInfoChip('$idade anos'),
-                                const SizedBox(width: 8),
-                                Container(
-                                  width: 5,
-                                  height: 5,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.textSecondary.withAlpha(100),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                _buildInfoChip('$peso kg'),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                AlunoHeaderSection(
+                  alunoId: widget.alunoId,
+                  alunoNome: widget.alunoNome,
+                  photoUrl: photoUrl,
+                  idade: idade,
+                  peso: peso,
                 ),
                 const SizedBox(height: 24),
                 // BOTÕES DE AÇÃO HORIZONTAIS (WHATSAPP E GERENCIAR)
@@ -686,21 +613,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
     );
   }
 
-  Widget _buildInfoChip(String text) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          text,
-          style: const TextStyle(
-            fontSize: 12,
-            color: AppTheme.textSecondary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
+
 
   Widget _buildRitmoDaSemana() {
     final dias = [

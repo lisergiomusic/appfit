@@ -1,10 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../treinos/rotina_detalhe_page.dart';
 import '../treinos/treinos_page.dart';
+import 'widgets/aluno_header_section.dart';
 
 class GerenciarPlanilhasPage extends StatelessWidget {
   final String alunoId;
@@ -193,82 +193,21 @@ class GerenciarPlanilhasPage extends StatelessWidget {
             }
           ];
 
-          return ListView(
+          return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(24, 32, 24, 100), // Padding extra no bottom para o FAB
+            child: Column (
+              crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Aluno (Inalterado)
-              Row(
-                children: [
-                  Hero(
-                    tag: 'avatar_$alunoId',
-                    child: Container(
-                      width: 88,
-                      height: 88,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppTheme.primary,
-                          width: 2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.primary.withValues(alpha: 0.2),
-                            blurRadius: 15,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                        image: photoUrl != null && photoUrl!.isNotEmpty
-                            ? DecorationImage(
-                            image: CachedNetworkImageProvider(photoUrl!),
-                            fit: BoxFit.cover,
-                        )
-                            : null,
-
-                      ),
-                      child: (photoUrl == null || photoUrl!.isEmpty)
-                          ? Center(
-                        child: Text(
-                          alunoNome.isNotEmpty ? alunoNome[0].toUpperCase() : '?',
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                            color: AppTheme.primary,
-                          ),
-                        ),
-                      )
-                          : null,
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          alunoNome,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            _buildInfoChip(Icons.cake_outlined, idade),
-                            const SizedBox(width: 8),
-                            _buildInfoChip(Icons.monitor_weight_outlined, '$peso kg'),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 24),
+              AlunoHeaderSection(
+                alunoId: alunoId,
+                alunoNome: alunoNome,
+                photoUrl: photoUrl,
+                idade: idade,
+                peso: peso,
               ),
 
-              const SizedBox(height: 48),
+              const SizedBox(height: 32),
 
               if (planilhas.isEmpty && mockHistorico.isEmpty && mockFuturas.isEmpty) ...[
                 _buildEmptyState(),
@@ -296,6 +235,7 @@ class GerenciarPlanilhasPage extends StatelessWidget {
                 ],
               ],
             ],
+            )
           );
         },
       ),
@@ -303,9 +243,17 @@ class GerenciarPlanilhasPage extends StatelessWidget {
   }
 
   Widget _buildSectionLabel(String label) {
-    return Text(
-      label,
-      style: AppTheme.textSectionHeaderDark,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24), // Alinha com a margem dos cartões
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start, // Garante alinhamento à esquerda
+        children: [
+          Text(
+            label,
+            style: AppTheme.textSectionHeaderDark,
+          ),
+        ],
+      ),
     );
   }
 
@@ -339,7 +287,7 @@ class GerenciarPlanilhasPage extends StatelessWidget {
     final IconData icon = isAtiva ? Icons.fitness_center_rounded : (isProgramada ? Icons.calendar_today_rounded : Icons.history_rounded);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(left: 24, right: 24, bottom: 12),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
@@ -408,31 +356,6 @@ class GerenciarPlanilhasPage extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoChip(IconData icon, String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceLight.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: AppTheme.textSecondary),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
       ),
     );
   }
