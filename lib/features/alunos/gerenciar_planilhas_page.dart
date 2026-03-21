@@ -5,7 +5,6 @@ import '../../core/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../treinos/rotina_detalhe_page.dart';
 
-
 class GerenciarPlanilhasPage extends StatelessWidget {
   final String alunoId;
   final String alunoNome;
@@ -83,10 +82,36 @@ class GerenciarPlanilhasPage extends StatelessWidget {
           final ativa = planilhas.where((doc) => (doc.data() as Map<String, dynamic>)['ativa'] == true).toList();
           final historico = planilhas.where((doc) => (doc.data() as Map<String, dynamic>)['ativa'] != true).toList();
 
+          // --- MOCKS PARA TESTE VISUAL ---
+          final List<Map<String, dynamic>> mockHistorico = [
+            {
+              'nome': 'Treino Verão 2023',
+              'dataCriacao': Timestamp.fromDate(DateTime(2023, 11, 10)),
+              'ativa': false,
+            },
+            {
+              'nome': 'Foco em Hipertrofia v2',
+              'dataCriacao': Timestamp.fromDate(DateTime(2024, 01, 15)),
+              'ativa': false,
+            }
+          ];
+
+          final List<Map<String, dynamic>> mockFuturas = [
+            {
+              'nome': 'Pós-Carnaval 2025',
+              'dataCriacao': Timestamp.fromDate(DateTime.now().add(const Duration(days: 45))),
+              'dataVencimento': Timestamp.fromDate(DateTime.now().add(const Duration(days: 75))),
+              'ativa': false,
+              'isProgramada': true,
+              'tipoVencimento': 'data',
+            }
+          ];
+
           return ListView(
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             children: [
+              // Header Aluno (Inalterado)
               Row(
                 children: [
                   Hero(
@@ -157,21 +182,31 @@ class GerenciarPlanilhasPage extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(height: 40),
+              const SizedBox(height: 48),
 
-              if (planilhas.isEmpty) ...[
+              if (planilhas.isEmpty && mockHistorico.isEmpty && mockFuturas.isEmpty) ...[
                 _buildEmptyState(),
               ] else ...[
+                // Seção: Planilha Ativa
                 if (ativa.isNotEmpty) ...[
-                  Text('PLANILHA ATIVA', style: AppTheme.textSectionHeaderDark),
-                  const SizedBox(height: 16),
-                  ...ativa.map((d) => _buildPlanilhaAtivaCard(context, d)),
+                  _buildSectionLabel('ATUAL'),
+                  const SizedBox(height: 12),
+                  ...ativa.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id, isAtiva: true)),
                   const SizedBox(height: 32),
                 ],
-                if (historico.isNotEmpty) ...[
-                  Text('PLANILHAS CONCLUIDAS', style: AppTheme.textSectionHeaderDark),
-                  const SizedBox(height: 16),
-                  ...historico.map((d) => _buildPlanilhaHistoricoCard(context, d)),
+
+                // Seção: Programadas
+                _buildSectionLabel('PROGRAMADAS'),
+                const SizedBox(height: 12),
+                ...mockFuturas.map((m) => _buildPlanilhaItem(context, m, 'mock_f', isProgramada: true)),
+                const SizedBox(height: 32),
+
+                // Seção: Histórico
+                if (historico.isNotEmpty || mockHistorico.isNotEmpty) ...[
+                  _buildSectionLabel('HISTÓRICO'),
+                  const SizedBox(height: 12),
+                  ...historico.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id)),
+                  ...mockHistorico.map((m) => _buildPlanilhaItem(context, m, 'mock_h')),
                 ],
               ],
             ],
@@ -181,130 +216,113 @@ class GerenciarPlanilhasPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPlanilhaAtivaCard(BuildContext context, DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  Widget _buildSectionLabel(String label) {
+    return Text(
+      label,
+      style: TextStyle(
+        color: AppTheme.textSecondary.withValues(alpha: 0.5),
+        fontSize: 11,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 1.5,
+      ),
+    );
+  }
 
-    // Lógica de progresso idêntica à PerfilAlunoPage
-    String tipoVencimento = data['tipoVencimento'] ?? 'data';
-    double progressoAtual = 0.0;
-    String legendaVencimento = '';
+  Widget _buildPlanilhaItem(BuildContext context, Map<String, dynamic> data, String id, {bool isAtiva = false, bool isProgramada = false}) {
+    String legenda = '';
+    double progresso = 0.0;
 
-    if (tipoVencimento == 'sessoes') {
-      int totalSessoes = data['vencimentoSessoes'] ?? 1;
-      int concluidas = data['sessoesConcluidas'] ?? 0;
-      progressoAtual = (concluidas / totalSessoes).clamp(0.0, 1.0);
-      legendaVencimento = '$concluidas de $totalSessoes treinos realizados';
+    if (isAtiva) {
+      if (data['tipoVencimento'] == 'sessoes') {
+        int total = data['vencimentoSessoes'] ?? 1;
+        int concluidas = data['sessoesConcluidas'] ?? 0;
+        progresso = (concluidas / total).clamp(0.0, 1.0);
+        legenda = '$concluidas de $total treinos realizados';
+      } else {
+        DateTime hoje = DateTime.now();
+        DateTime criacao = (data['dataCriacao'] as Timestamp?)?.toDate() ?? hoje;
+        DateTime venc = (data['dataVencimento'] as Timestamp?)?.toDate() ?? hoje.add(const Duration(days: 30));
+        int total = venc.difference(criacao).inDays;
+        progresso = (hoje.difference(criacao).inDays / (total > 0 ? total : 1)).clamp(0.0, 1.0);
+        legenda = 'Vence em ${DateFormat('dd/MM').format(venc)}';
+      }
+    } else if (isProgramada) {
+      DateTime dataC = (data['dataCriacao'] as Timestamp?)?.toDate() ?? DateTime.now();
+      legenda = 'Inicia em ${DateFormat('dd/MM').format(dataC)}';
     } else {
-      DateTime hoje = DateTime.now();
-      DateTime dataCriacao = (data['dataCriacao'] as Timestamp?)?.toDate() ?? hoje;
-      DateTime dataVencimento = (data['dataVencimento'] as Timestamp?)?.toDate() ?? hoje.add(const Duration(days: 30));
-
-      int totalDias = dataVencimento.difference(dataCriacao).inDays;
-      if (totalDias <= 0) totalDias = 1;
-      int diasPassados = hoje.difference(dataCriacao).inDays;
-      progressoAtual = (diasPassados / totalDias).clamp(0.0, 1.0);
-      legendaVencimento = 'Vence em ${DateFormat('dd/MM').format(dataVencimento)}';
+      DateTime dataC = (data['dataCriacao'] as Timestamp?)?.toDate() ?? DateTime.now();
+      legenda = 'Criada em ${DateFormat('dd/MM/yyyy').format(dataC)}';
     }
 
+    final Color statusColor = isAtiva ? AppTheme.primary : (isProgramada ? AppTheme.iosBlue : AppTheme.textSecondary);
+    final IconData icon = isAtiva ? Icons.fitness_center_rounded : (isProgramada ? Icons.calendar_today_rounded : Icons.history_rounded);
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.surfaceDark,
-            AppTheme.surfaceDark.withValues(alpha: 0.8),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withValues(alpha: 0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        color: AppTheme.surfaceDark,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(28),
-          onTap: () => _navegarParaDetalhes(context, data, doc.id),
-          splashColor: AppTheme.primary.withValues(alpha: 0.1),
-          highlightColor: AppTheme.primary.withValues(alpha: 0.05),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _navegarParaDetalhes(context, data, id),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Icon(Icons.fitness_center_rounded, color: AppTheme.primary, size: 24),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            data['nome'] ?? 'Planilha de Treino',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          Text(
-                            legendaVencimento,
-                            style: TextStyle(
-                              color: AppTheme.textSecondary.withValues(alpha: 0.7),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios, color: AppTheme.primary, size: 14),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Stack(
-                  children: [
-                    Container(
-                      height: 6,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    ),
-                    FractionallySizedBox(
-                      widthFactor: progressoAtual,
-                      child: Container(
-                        height: 6,
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: AppTheme.primary,
-                          borderRadius: BorderRadius.circular(3),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.primary.withValues(alpha: 0.3),
-                              blurRadius: 6,
+                          color: statusColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(icon, color: statusColor, size: 20),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              data['nome'] ?? 'Planilha',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              legenda,
+                              style: TextStyle(
+                                color: AppTheme.textSecondary.withValues(alpha: 0.6),
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                  ],
+                      const Icon(Icons.arrow_forward_ios, color: AppTheme.textSecondary, size: 12),
+                    ],
+                  ),
                 ),
+                if (isAtiva)
+                  Container(
+                    height: 2,
+                    width: double.infinity,
+                    color: Colors.white.withValues(alpha: 0.05),
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: progresso,
+                      child: Container(color: AppTheme.primary),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -334,70 +352,6 @@ class GerenciarPlanilhasPage extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPlanilhaHistoricoCard(BuildContext context, DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    final dataCriacao = (data['dataCriacao'] as Timestamp?)?.toDate();
-    final String dataFormatada = dataCriacao != null
-        ? DateFormat('dd/MM/yyyy').format(dataCriacao)
-        : '--/--/----';
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: AppTheme.surfaceDark,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.white.withValues(alpha: 0.04)),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => _navegarParaDetalhes(context, data, doc.id),
-          splashColor: AppTheme.primary.withValues(alpha: 0.12),
-          highlightColor: AppTheme.primary.withValues(alpha: 0.06),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceLight.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.history_rounded, color: AppTheme.textSecondary, size: 20),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        data['nome'] ?? 'Planilha Antiga',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                        ),
-                      ),
-                      Text(
-                        'Criada em $dataFormatada',
-                        style: TextStyle(
-                          color: AppTheme.textSecondary.withValues(alpha: 0.6),
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.arrow_forward_ios, color: AppTheme.textSecondary, size: 12),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
