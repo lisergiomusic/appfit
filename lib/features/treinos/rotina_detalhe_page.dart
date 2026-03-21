@@ -52,6 +52,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
   final List<_TreinoData> _treinos = [];
   bool _isReordering = false;
+  bool _isDeleting = false;
 
   @override
   void initState() {
@@ -260,13 +261,13 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: tipoTemp == 'sessoes'
-                    ? TextField(
+                    ? TextFormField(
                   key: const ValueKey('inputSessoes'),
                   keyboardType: TextInputType.number,
+                  initialValue: sessoesTemp.toString(),
                   style: const TextStyle(color: Colors.white),
                   decoration: rotinaInputDecoration(
                     hintText: 'Quantas sessões de treino?',
-
                   ),
                   onChanged: (v) => sessoesTemp = int.tryParse(v) ?? 20,
                 )
@@ -314,9 +315,57 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, letterSpacing: 1)),
                 ),
               ),
+
+              if (widget.rotinaId != null) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: OutlinedButton(
+                    onPressed: () => _confirmarExclusao(context),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.redAccent,
+                      side: const BorderSide(color: Colors.redAccent, width: 1),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    child: const Text('REMOVER PLANILHA',
+                        style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1)),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _confirmarExclusao(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surfaceDark,
+        title: const Text('Remover Planilha?', style: TextStyle(color: Colors.white)),
+        content: const Text('Esta ação não pode ser desfeita e todos os dados desta planilha serão perdidos.',
+            style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCELAR', style: TextStyle(color: Colors.white70)),
+          ),
+          TextButton(
+            onPressed: () async {
+              _isDeleting = true;
+              await RotinaService().excluirRotina(widget.rotinaId!);
+              if (mounted) {
+                Navigator.pop(context); // Fecha dialog
+                Navigator.pop(context); // Fecha modal
+                Navigator.pop(context); // Volta para a tela anterior
+              }
+            },
+            child: const Text('REMOVER', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }
@@ -384,7 +433,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               label: 'DIA DA SEMANA',
               icon: Icons.calendar_today,
               child: DropdownButtonFormField<String>(
-                initialValue: diaSemana,
+                value: diaSemana,
                 dropdownColor: AppTheme.surfaceLight,
                 items: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
                 onChanged: (v) => diaSemana = v,
@@ -429,6 +478,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
   Future<bool> _salvarRotinaCompleta() async {
+    if (_isDeleting) return true;
+
     final String nomeParaSalvar = nomeCtrl.text.trim();
     final String objetivoParaSalvar = objCtrl.text.trim();
 

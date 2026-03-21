@@ -92,4 +92,8 @@ class RotinaService {
 
     await _db.collection('rotinas').doc(rotinaId).update(updateData);
   }
+
+  Future<void> excluirRotina(String rotinaId) async {
+    await _db.collection('rotinas').doc(rotinaId).delete();
+  }
 }
