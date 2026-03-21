@@ -10,7 +10,7 @@
     // everywhere for ripple/splash colors so changing it here updates all spots.
     static const Color splash = primary;
     static const Color background = Color(0xFF121212); // Google Material Dark
-  
+
     static const Color iosBlue = Color(0xFF007AFF);
     static const Color silverGrey = Color.fromRGBO(255, 255, 255, 0.5);
 
@@ -33,7 +33,7 @@
     static TextStyle textSectionHeaderDark = TextStyle(
       color: Color(0xFF64748b),
       fontSize: 12,
-      fontWeight: FontWeight.w600,
+      fontWeight: FontWeight.w700,
       letterSpacing: 1.2,
     );
 

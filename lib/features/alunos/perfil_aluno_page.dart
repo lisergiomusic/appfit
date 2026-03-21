@@ -501,9 +501,18 @@ class PerfilAlunoPage extends StatelessWidget {
                             const SizedBox(height: 8),
                             Row(
                               children: [
-                                _buildInfoChip(Icons.cake_outlined, idade),
+                                _buildInfoChip('$idade anos'),
                                 const SizedBox(width: 8),
-                                _buildInfoChip(Icons.monitor_weight_outlined, '$peso kg'),
+                                Container(
+                                  width: 5,
+                                  height: 5,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.textSecondary.withAlpha(100),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                _buildInfoChip('$peso kg'),
                               ],
                             ),
                           ],
@@ -662,28 +671,19 @@ class PerfilAlunoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceLight.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: AppTheme.textSecondary),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
+  Widget _buildInfoChip(String text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          text,
+          style: const TextStyle(
+            fontSize: 12,
+            color: AppTheme.textSecondary,
+            fontWeight: FontWeight.w600,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
