@@ -607,45 +607,54 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
         required VoidCallback onTap,
         required bool showBorder,
       }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: showBorder
-              ? Border(
+    return Material(
+      color: AppTheme.surfaceDark, // A cor de fundo DEVE estar no Material
+      child: InkWell(
+        onTap: onTap,
+        splashColor: AppTheme.splash,
+        highlightColor: AppTheme.splash.withValues(alpha: 0.2),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            // A borda interna continua aqui
+            border: showBorder
+                ? Border(
               bottom: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.05)))
-              : null,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: AppTheme.textSecondary, size: 20),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+            )
+                : null,
+          ),
+          child: Row(
+            children: [
+              // Ícone com fundo escuro (Estilo HTML)
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: AppTheme.textSecondary, size: 20),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-            ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: AppTheme.textSecondary,
-              size: 20,
-            ),
-          ],
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppTheme.textSecondary,
+                size: 20,
+              ),
+            ],
+          ),
         ),
       ),
     );
