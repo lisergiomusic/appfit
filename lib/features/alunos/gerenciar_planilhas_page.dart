@@ -6,9 +6,7 @@ import '../treinos/rotina_detalhe_page.dart';
 import '../treinos/treinos_page.dart';
 import 'widgets/aluno_header_section.dart';
 
-/// Tela responsável por gerenciar as planilhas de um aluno específico.
-/// Permite visualizar planilhas ativas, programadas e o histórico.
-class GerenciarPlanilhasPage extends StatelessWidget {
+class GerenciarPlanilhasPage extends StatefulWidget {
   final String alunoId;
   final String alunoNome;
   final String? photoUrl;
@@ -21,10 +19,29 @@ class GerenciarPlanilhasPage extends StatelessWidget {
     required this.alunoNome,
     required this.photoUrl,
     required this.peso,
-    required this.idade
+    required this.idade,
   });
 
-  /// Exibe as opções para adicionar uma nova planilha (do zero ou biblioteca).
+  @override
+  State<GerenciarPlanilhasPage> createState() => _GerenciarPlanilhasPageState();
+}
+
+class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
+  // Variável para controlar qual card está expandido
+  String? _idPlanilhaExpandida;
+
+  // Stream declarada aqui para evitar flickering no build
+  late final Stream<QuerySnapshot> _planilhasStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _planilhasStream = FirebaseFirestore.instance
+        .collection('rotinas')
+        .where('alunoId', isEqualTo: widget.alunoId)
+        .snapshots();
+  }
+
   void _showAddOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -54,8 +71,8 @@ class GerenciarPlanilhasPage extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => RotinaDetalhePage(
-                      alunoId: alunoId,
-                      alunoNome: alunoNome,
+                      alunoId: widget.alunoId,
+                      alunoNome: widget.alunoNome,
                     ),
                   ),
                 );
@@ -68,9 +85,13 @@ class GerenciarPlanilhasPage extends StatelessWidget {
                 ),
                 child: const Icon(Icons.add_rounded, color: AppTheme.primary),
               ),
-              title: const Text('Criar do zero', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              subtitle: const Text('Comece uma planilha em branco', style: TextStyle(color: AppTheme.textSecondary)),
-              trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+              title: const Text('Criar do zero',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold)),
+              subtitle: const Text('Comece uma planilha em branco',
+                  style: TextStyle(color: AppTheme.textSecondary)),
+              trailing:
+              const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
             ),
             const Divider(color: Colors.white10, height: 32),
             ListTile(
@@ -80,8 +101,8 @@ class GerenciarPlanilhasPage extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => TreinosPage(
-                      alunoId: alunoId,
-                      alunoNome: alunoNome,
+                      alunoId: widget.alunoId,
+                      alunoNome: widget.alunoNome,
                     ),
                   ),
                 );
@@ -92,11 +113,16 @@ class GerenciarPlanilhasPage extends StatelessWidget {
                   color: AppTheme.iosBlue.withAlpha(20),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.collections_bookmark_rounded, color: AppTheme.iosBlue),
+                child: const Icon(Icons.collections_bookmark_rounded,
+                    color: AppTheme.iosBlue),
               ),
-              title: const Text('Usar da Biblioteca', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              subtitle: const Text('Escolha um template pronto', style: TextStyle(color: AppTheme.textSecondary)),
-              trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+              title: const Text('Usar da Biblioteca',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold)),
+              subtitle: const Text('Escolha um template pronto',
+                  style: TextStyle(color: AppTheme.textSecondary)),
+              trailing:
+              const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
             ),
           ],
         ),
@@ -119,47 +145,23 @@ class GerenciarPlanilhasPage extends StatelessWidget {
           'Gerenciar Planilhas',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
-          child: Container(
-            height: 1.0,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.white.withAlpha(0),
-                  Colors.white.withAlpha(25),
-                  Colors.white.withAlpha(0),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-            ),
-          ),
-        ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddOptions(context),
         backgroundColor: AppTheme.primary,
-        icon: const Icon(Icons.add, color: Colors.black),
-        label: const Text('ADICIONAR', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, letterSpacing: 1)),
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: const Icon(Icons.add, color: Colors.black, size: 28),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('rotinas')
-            .where('alunoId', isEqualTo: alunoId)
-            .snapshots(),
+        stream: _planilhasStream,
         builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(child: Text('Erro: ${snapshot.error}', style: const TextStyle(color: Colors.red)));
-          }
-
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator(color: AppTheme.primary));
           }
 
           final allDocs = snapshot.data?.docs ?? [];
 
-          /// Ordenação manual: planilhas mais recentes primeiro (dataCriacao desc).
           final planilhas = allDocs.toList()
             ..sort((a, b) {
               final da = (a.data() as Map<String, dynamic>)['dataCriacao'] as Timestamp?;
@@ -169,104 +171,79 @@ class GerenciarPlanilhasPage extends StatelessWidget {
               return db.compareTo(da);
             });
 
-          /// Filtros para separação das seções na UI.
           final ativa = planilhas.where((doc) => (doc.data() as Map<String, dynamic>)['ativa'] == true).toList();
           final historico = planilhas.where((doc) => (doc.data() as Map<String, dynamic>)['ativa'] != true).toList();
 
-          /// Mocks temporários para visualização durante o desenvolvimento.
-          /// Devem ser removidos após a implementação completa das flags no Firestore.
           final List<Map<String, dynamic>> mockHistorico = [
-            {
-              'nome': 'Treino Verão 2023',
-              'dataCriacao': Timestamp.fromDate(DateTime(2023, 11, 10)),
-              'ativa': false,
-            },
-            {
-              'nome': 'Foco em Hipertrofia v2',
-              'dataCriacao': Timestamp.fromDate(DateTime(2024, 01, 15)),
-              'ativa': false,
-            }
+            {'nome': 'Treino Verão 2023', 'dataCriacao': Timestamp.fromDate(DateTime(2023, 11, 10)), 'ativa': false},
+            {'nome': 'Foco em Hipertrofia v2', 'dataCriacao': Timestamp.fromDate(DateTime(2024, 01, 15)), 'ativa': false}
           ];
 
           final List<Map<String, dynamic>> mockFuturas = [
             {
               'nome': 'Pós-Carnaval 2026',
               'dataCriacao': Timestamp.fromDate(DateTime.now().add(const Duration(days: 45))),
-              'dataVencimento': Timestamp.fromDate(DateTime.now().add(const Duration(days: 75))),
               'ativa': false,
               'isProgramada': true,
-              'tipoVencimento': 'data',
             }
           ];
 
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            child: Column (
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 24),
-              AlunoHeaderSection(
-                alunoId: alunoId,
-                alunoNome: alunoNome,
-                photoUrl: photoUrl,
-                idade: idade,
-                peso: peso,
-              ),
+              children: [
+                const SizedBox(height: 24),
+                AlunoHeaderSection(
+                  alunoId: widget.alunoId,
+                  alunoNome: widget.alunoNome,
+                  photoUrl: widget.photoUrl,
+                  idade: widget.idade,
+                  peso: widget.peso,
+                ),
+                const SizedBox(height: 32),
 
-              const SizedBox(height: 32),
-
-              if (planilhas.isEmpty && mockHistorico.isEmpty && mockFuturas.isEmpty) ...[
-                _buildEmptyState(),
-              ] else ...[
-                /// Seção de Planilha Ativa: Apenas uma deve estar marcada como 'ativa: true'.
                 if (ativa.isNotEmpty) ...[
                   _buildSectionLabel('PLANILHA ATIVA'),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   ...ativa.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id, isAtiva: true)),
                   const SizedBox(height: 32),
                 ],
 
-                /// Seção de Planilhas Futuras: Planilhas com data de início posterior a hoje.
                 _buildSectionLabel('PLANILHAS FUTURAS'),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 ...mockFuturas.map((m) => _buildPlanilhaItem(context, m, 'mock_f', isProgramada: true)),
                 const SizedBox(height: 32),
 
-                /// Seção de Histórico: Planilhas finalizadas ou inativas.
-                if (historico.isNotEmpty || mockHistorico.isNotEmpty) ...[
-                  _buildSectionLabel('HISTÓRICO'),
-                  const SizedBox(height: 12),
-                  ...historico.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id)),
-                  ...mockHistorico.map((m) => _buildPlanilhaItem(context, m, 'mock_h')),
-                ],
+                _buildSectionLabel('HISTÓRICO'),
+                const SizedBox(height: 16),
+                ...historico.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id)),
+                ...mockHistorico.map((m) => _buildPlanilhaItem(context, m, 'mock_${m['nome']}')),
+
+                const SizedBox(height: 100),
               ],
-            ],
-            )
+            ),
           );
         },
       ),
     );
   }
 
-  /// Constrói o label do cabeçalho de cada seção (ex: HISTÓRICO).
   Widget _buildSectionLabel(String label) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(
-            label,
-            style: AppTheme.textSectionHeaderDark,
-          ),
+          Container(width: 4, height: 14, decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(2))),
+          const SizedBox(width: 8),
+          Text(label, style: AppTheme.textSectionHeaderDark.copyWith(color: Colors.white.withValues(alpha: 0.9), letterSpacing: 2)),
         ],
       ),
     );
   }
 
-  /// Renderiza o card individual de cada planilha.
-  /// Calcula o progresso e a legenda baseada no tipo de vencimento (sessões ou data).
   Widget _buildPlanilhaItem(BuildContext context, Map<String, dynamic> data, String id, {bool isAtiva = false, bool isProgramada = false}) {
+    final bool isExpanded = _idPlanilhaExpandida == id;
     String legenda = '';
     double progresso = 0.0;
 
@@ -289,127 +266,172 @@ class GerenciarPlanilhasPage extends StatelessWidget {
       legenda = 'Inicia em ${DateFormat('dd/MM').format(dataC)}';
     } else {
       DateTime dataC = (data['dataCriacao'] as Timestamp?)?.toDate() ?? DateTime.now();
-      legenda = 'Criada em ${DateFormat('dd/MM/yyyy').format(dataC)}';
+      legenda = 'Finalizada em ${DateFormat('dd/MM/yyyy').format(dataC)}';
     }
 
     final Color statusColor = isAtiva ? AppTheme.primary : (isProgramada ? AppTheme.iosBlue : AppTheme.textSecondary);
-    final IconData icon = isAtiva ? Icons.fitness_center_rounded : (isProgramada ? Icons.calendar_today_rounded : Icons.history_rounded);
 
-    return Container(
-      margin: const EdgeInsets.only(left: 24, right: 24, bottom: 12),
+    return AnimatedContainer(
+      key: ValueKey('card_$id'),
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      margin: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: isExpanded
+              ? AppTheme.primary.withValues(alpha: 0.3)
+              : Colors.white.withValues(alpha: 0.05),
+          width: 1.5,
+        ),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => _navegarParaDetalhes(context, data, id),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: statusColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(icon, color: statusColor, size: 20),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              data['nome'] ?? 'Planilha',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              legenda,
-                              style: TextStyle(
-                                color: AppTheme.textSecondary.withValues(alpha: 0.6),
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.arrow_forward_ios, color: AppTheme.textSecondary, size: 12),
-                    ],
-                  ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(28),
+        onTap: () {
+          setState(() {
+            _idPlanilhaExpandida = isExpanded ? null : id;
+          });
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isAtiva)
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                child: LinearProgressIndicator(
+                  value: progresso,
+                  backgroundColor: AppTheme.primary.withValues(alpha: 0.05),
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                  minHeight: 4,
                 ),
-                if (isAtiva)
+              ),
+
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
                   Container(
-                    height: 2,
-                    width: double.infinity,
-                    color: Colors.white.withValues(alpha: 0.05),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: progresso,
-                      child: Container(color: AppTheme.primary),
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Icon(
+                      isAtiva ? Icons.fitness_center : (isProgramada ? Icons.calendar_today : Icons.history),
+                      color: statusColor,
+                      size: 26,
                     ),
                   ),
-              ],
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          (data['nome'] ?? 'Planilha').toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 14,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          legenda,
+                          style: TextStyle(
+                            color: AppTheme.textSecondary.withValues(alpha: 0.7),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  AnimatedRotation(
+                    turns: isExpanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 300),
+                    child: const Icon(Icons.expand_more, color: Colors.white24),
+                  ),
+                ],
+              ),
             ),
+
+            // AnimatedSize substitui o AnimatedCrossFade para uma transição de altura muito mais fluida
+            AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              child: isExpanded
+                  ? Column(
+                children: [
+                  Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildActionButton(
+                          icon: Icons.edit_note_rounded,
+                          label: 'DETALHES',
+                          color: Colors.white70,
+                          onTap: () => _navegarParaDetalhes(context, data, id),
+                        ),
+                        _buildActionButton(
+                          icon: Icons.auto_graph_rounded,
+                          label: 'EVOLUÇÃO',
+                          color: isProgramada ? Colors.white24 : AppTheme.primary,
+                          onTap: () {
+                            if (isProgramada) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Disponível após o início do treino'), behavior: SnackBarBehavior.floating),
+                              );
+                            }
+                          },
+                        ),
+                        _buildActionButton(
+                          icon: isAtiva ? Icons.pause_circle : Icons.play_circle,
+                          label: isAtiva ? 'PAUSAR' : 'ATIVAR',
+                          color: isAtiva ? Colors.orangeAccent : AppTheme.primary,
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              )
+                  : const SizedBox(width: double.infinity, height: 0),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: color, size: 22),
+              const SizedBox(height: 6),
+              Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+            ],
           ),
         ),
       ),
     );
   }
 
-  /// Exibe estado vazio caso não existam planilhas vinculadas.
-  Widget _buildEmptyState() {
-    return Column(
-      children: [
-        const SizedBox(height: 60),
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: AppTheme.surfaceDark,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            Icons.description_outlined,
-            size: 40,
-            color: AppTheme.textSecondary.withValues(alpha: 0.2)
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Nenhuma planilha encontrada',
-          style: TextStyle(
-            color: AppTheme.textSecondary.withValues(alpha: 0.8),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Navega para a página de detalhes da rotina.
   void _navegarParaDetalhes(BuildContext context, Map<String, dynamic> data, String id) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => RotinaDetalhePage(
-          rotinaData: data,
-          rotinaId: id,
-          alunoId: alunoId,
-          alunoNome: alunoNome,
-        ),
-      ),
-    );
+    if (id.startsWith('mock')) return;
+    Navigator.push(context, MaterialPageRoute(builder: (context) => RotinaDetalhePage(rotinaData: data, rotinaId: id, alunoId: widget.alunoId, alunoNome: widget.alunoNome)));
   }
 }
