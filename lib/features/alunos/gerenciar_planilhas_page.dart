@@ -6,6 +6,8 @@ import '../treinos/rotina_detalhe_page.dart';
 import '../treinos/treinos_page.dart';
 import 'widgets/aluno_header_section.dart';
 
+/// Tela responsável por gerenciar as planilhas de um aluno específico.
+/// Permite visualizar planilhas ativas, programadas e o histórico.
 class GerenciarPlanilhasPage extends StatelessWidget {
   final String alunoId;
   final String alunoNome;
@@ -22,6 +24,7 @@ class GerenciarPlanilhasPage extends StatelessWidget {
     required this.idade
   });
 
+  /// Exibe as opções para adicionar uma nova planilha (do zero ou biblioteca).
   void _showAddOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -156,6 +159,7 @@ class GerenciarPlanilhasPage extends StatelessWidget {
 
           final allDocs = snapshot.data?.docs ?? [];
 
+          /// Ordenação manual: planilhas mais recentes primeiro (dataCriacao desc).
           final planilhas = allDocs.toList()
             ..sort((a, b) {
               final da = (a.data() as Map<String, dynamic>)['dataCriacao'] as Timestamp?;
@@ -165,10 +169,12 @@ class GerenciarPlanilhasPage extends StatelessWidget {
               return db.compareTo(da);
             });
 
+          /// Filtros para separação das seções na UI.
           final ativa = planilhas.where((doc) => (doc.data() as Map<String, dynamic>)['ativa'] == true).toList();
           final historico = planilhas.where((doc) => (doc.data() as Map<String, dynamic>)['ativa'] != true).toList();
 
-          // --- MOCKS PARA TESTE VISUAL ---
+          /// Mocks temporários para visualização durante o desenvolvimento.
+          /// Devem ser removidos após a implementação completa das flags no Firestore.
           final List<Map<String, dynamic>> mockHistorico = [
             {
               'nome': 'Treino Verão 2023',
@@ -184,7 +190,7 @@ class GerenciarPlanilhasPage extends StatelessWidget {
 
           final List<Map<String, dynamic>> mockFuturas = [
             {
-              'nome': 'Pós-Carnaval 2025',
+              'nome': 'Pós-Carnaval 2026',
               'dataCriacao': Timestamp.fromDate(DateTime.now().add(const Duration(days: 45))),
               'dataVencimento': Timestamp.fromDate(DateTime.now().add(const Duration(days: 75))),
               'ativa': false,
@@ -212,7 +218,7 @@ class GerenciarPlanilhasPage extends StatelessWidget {
               if (planilhas.isEmpty && mockHistorico.isEmpty && mockFuturas.isEmpty) ...[
                 _buildEmptyState(),
               ] else ...[
-                // Seção: Planilha Ativa
+                /// Seção de Planilha Ativa: Apenas uma deve estar marcada como 'ativa: true'.
                 if (ativa.isNotEmpty) ...[
                   _buildSectionLabel('PLANILHA ATIVA'),
                   const SizedBox(height: 12),
@@ -220,13 +226,13 @@ class GerenciarPlanilhasPage extends StatelessWidget {
                   const SizedBox(height: 32),
                 ],
 
-                // Seção: Programadas
+                /// Seção de Planilhas Futuras: Planilhas com data de início posterior a hoje.
                 _buildSectionLabel('PLANILHAS FUTURAS'),
                 const SizedBox(height: 12),
                 ...mockFuturas.map((m) => _buildPlanilhaItem(context, m, 'mock_f', isProgramada: true)),
                 const SizedBox(height: 32),
 
-                // Seção: Histórico
+                /// Seção de Histórico: Planilhas finalizadas ou inativas.
                 if (historico.isNotEmpty || mockHistorico.isNotEmpty) ...[
                   _buildSectionLabel('HISTÓRICO'),
                   const SizedBox(height: 12),
@@ -242,11 +248,12 @@ class GerenciarPlanilhasPage extends StatelessWidget {
     );
   }
 
+  /// Constrói o label do cabeçalho de cada seção (ex: HISTÓRICO).
   Widget _buildSectionLabel(String label) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24), // Alinha com a margem dos cartões
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start, // Garante alinhamento à esquerda
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
@@ -257,6 +264,8 @@ class GerenciarPlanilhasPage extends StatelessWidget {
     );
   }
 
+  /// Renderiza o card individual de cada planilha.
+  /// Calcula o progresso e a legenda baseada no tipo de vencimento (sessões ou data).
   Widget _buildPlanilhaItem(BuildContext context, Map<String, dynamic> data, String id, {bool isAtiva = false, bool isProgramada = false}) {
     String legenda = '';
     double progresso = 0.0;
@@ -360,6 +369,7 @@ class GerenciarPlanilhasPage extends StatelessWidget {
     );
   }
 
+  /// Exibe estado vazio caso não existam planilhas vinculadas.
   Widget _buildEmptyState() {
     return Column(
       children: [
@@ -388,6 +398,7 @@ class GerenciarPlanilhasPage extends StatelessWidget {
     );
   }
 
+  /// Navega para a página de detalhes da rotina.
   void _navegarParaDetalhes(BuildContext context, Map<String, dynamic> data, String id) {
     Navigator.push(
       context,

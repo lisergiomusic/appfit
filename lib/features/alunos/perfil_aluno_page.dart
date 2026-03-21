@@ -12,6 +12,8 @@ import 'gerenciar_planilhas_page.dart';
 import '../../core/services/aluno_service.dart';
 import 'widgets/aluno_header_section.dart';
 
+/// Tela de perfil detalhado do aluno.
+/// Concentra informações de saúde, frequência semanal e gestão de planilhas.
 class PerfilAlunoPage extends StatefulWidget {
   final String alunoId;
   final String alunoNome;
@@ -37,6 +39,8 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
     _alunoService = AlunoService();
   }
 
+  /// Tenta abrir o WhatsApp do aluno com uma mensagem pré-definida.
+  /// Limpa caracteres não numéricos e adiciona o prefixo do país (55).
   Future<void> _abrirWhatsApp(BuildContext context, String? telefone) async {
     if (telefone == null || telefone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -61,6 +65,8 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
     }
   }
 
+  /// Clona um template de rotina da biblioteca e atribui ao aluno atual.
+  /// Define a planilha como ativa e desativa planilhas anteriores.
   Future<void> _atribuirTreinoAoAluno(
     BuildContext context,
     String templateId,
@@ -74,6 +80,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
           .get();
       if (!templateDoc.exists) return;
 
+      // Desativa todas as rotinas que estavam marcadas como ativas para este aluno.
       final rotinasAntigas = await FirebaseFirestore.instance
           .collection('rotinas')
           .where('alunoId', isEqualTo: widget.alunoId)
@@ -86,6 +93,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
 
       final rotinaData = templateDoc.data() as Map<String, dynamic>;
 
+      // Atualiza os metadados para o novo aluno.
       rotinaData['alunoId'] = widget.alunoId;
       rotinaData['ativa'] = true;
       rotinaData['dataCriacao'] = FieldValue.serverTimestamp();
@@ -109,6 +117,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
     }
   }
 
+  /// Exibe diálogo para confirmar a ativação de um template e definir sua duração.
   void _confirmarAtivacaoTemplate(
     BuildContext context,
     String templateId,
@@ -206,6 +215,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
     );
   }
 
+  /// Modal de "Nova Rotina": Oferece opção de criar do zero ou listar templates da biblioteca.
   void _exibirOpcoesVincularTreino(BuildContext context) {
     final String? personalId = FirebaseAuth.instance.currentUser?.uid;
     showModalBottomSheet(
@@ -616,6 +626,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
     );
   }
 
+  /// Constrói um item de menu para a seção de Gestão.
   Widget _buildManagementItem(
     BuildContext context, {
     required IconData icon,
@@ -674,6 +685,8 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
     );
   }
 
+  /// Exibe o componente visual de frequência semanal do aluno.
+  /// No momento utiliza dados mockados para exibição.
   Widget _buildRitmoDaSemana() {
     final dias = [
       {'dia': 'S', 'status': 'feito'},
@@ -791,6 +804,8 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
     );
   }
 
+  /// Card em destaque que mostra a planilha atualmente ativa do aluno.
+  /// Calcula e exibe o progresso visual (circular) baseado no tempo ou sessões concluídas.
   Widget _buildFichaAtivaHeroCard(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -820,6 +835,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
           String legendaVencimento = '';
           String objetivo = rotina['objetivo'] ?? 'Objetivo não definido';
 
+          // Lógica de cálculo de progresso para a barra circular.
           if (tipoVencimento == 'sessoes') {
             int totalSessoes = rotina['vencimentoSessoes'] ?? 1;
             int concluidas = rotina['sessoesConcluidas'] ?? 0;
@@ -982,6 +998,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
     );
   }
 
+  /// Estado exibido quando o aluno não possui nenhuma planilha ativa.
   Widget _buildEmptyRoutineState(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1035,6 +1052,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
   }
 }
 
+/// Função utilitária para calcular a idade do aluno a partir do seu nascimento.
 int calcularIdade(Timestamp? dataNascimento) {
   if (dataNascimento == null) return 0;
   DateTime nascimento = dataNascimento.toDate();
