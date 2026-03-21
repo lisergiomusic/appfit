@@ -24,43 +24,40 @@ class AlunoHeaderSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              _buildAvatar(),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          _buildAvatar(),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  alunoNome,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
                   children: [
-                    Text(
-                      alunoNome,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        _buildBadge(Icons.calendar_today_rounded, '$idade anos'),
-                        const SizedBox(width: 8),
-                        _buildBadge(Icons.fitness_center_rounded, '$peso kg'),
-                      ],
-                    ),
+                    _buildBadge(Icons.calendar_today_rounded, '$idade anos'),
+                    const SizedBox(width: 8),
+                    _buildBadge(Icons.fitness_center_rounded, '$peso kg'),
                   ],
                 ),
-              ),
-            ],
+                if (actions != null) ...[
+                  const SizedBox(height: 16),
+                  actions!,
+                ],
+              ],
+            ),
           ),
-          if (actions != null) ...[
-            const SizedBox(height: 20),
-            actions!,
-          ],
         ],
       ),
     );
