@@ -9,6 +9,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
+import 'gerenciar_planilhas_page.dart';
 
 class PerfilAlunoPage extends StatelessWidget {
   final String alunoId;
@@ -395,7 +396,7 @@ class PerfilAlunoPage extends StatelessWidget {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
         ),
         actions: const [
-          SizedBox(width: 48), // Equilíbrio visual (ou ajuste conforme necessário)
+          SizedBox(width: 48),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
@@ -426,7 +427,6 @@ class PerfilAlunoPage extends StatelessWidget {
               child: CircularProgressIndicator(color: AppTheme.primary),
             );
           }
-
           final alunoData =
               snapshot.data?.data() as Map<String, dynamic>? ?? {};
           final photoUrl = alunoData['photoUrl'] as String?;
@@ -595,7 +595,7 @@ class PerfilAlunoPage extends StatelessWidget {
                 _buildFichaAtivaHeroCard(context),
 
                 const SizedBox(height: 32),
-                
+
                 // SEÇÃO DE GERENCIAMENTO (REFATORADA)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -624,7 +624,16 @@ class PerfilAlunoPage extends StatelessWidget {
                         title: 'Planilhas de Treino',
                         subtitle: 'Ver todas as planilhas do aluno',
                         onTap: () {
-                          // TODO: Implementar navegação para histórico de planilhas
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => GerenciarPlanilhasPage(
+                                alunoId: alunoId,
+                                alunoNome: alunoNome,
+                                photoUrl: photoUrl,
+                              ),
+                            ),
+                          );
                         },
                       ),
                       const SizedBox(height: 12),
