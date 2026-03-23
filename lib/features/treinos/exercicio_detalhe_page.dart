@@ -1472,16 +1472,16 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   alignment: Alignment.bottomLeft,
                   child: Padding(
                     padding: const EdgeInsets.only(
-                      left: AppTheme.space16,
-                      right: AppTheme.space16,
+                      left: AppTheme.paddingScreen,
+                      right: AppTheme.paddingScreen,
                       bottom: 10,
                     ),
                     child: Text(
                       exerciseTitle,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 34,
+                        fontSize: 30,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                         height: 1.14,
