@@ -343,7 +343,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                       const SessaoNoteWidget(),
                       const SizedBox(height: 24),
                       Text(
-                        'LISTA DE EXERCÍCIOS',
+                        'Lista de exercícios',
                         style: AppTheme.textSectionHeaderDark,
                       ),
                     ],

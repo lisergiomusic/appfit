@@ -289,7 +289,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
   }
 
-  TextStyle _microLabelStyle() => const TextStyle(color: AppTheme.silverGrey, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 0.8);
+  TextStyle _microLabelStyle() => const TextStyle(color: AppTheme.textSecondary, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 0.8);
   TextStyle _sectionEyebrowStyle() => const TextStyle(color: AppTheme.textSecondary, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 1.0);
 
   InputDecoration _editableFieldDecoration() {
@@ -353,7 +353,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   color: flashColor,
                   child: Row(
                     children: [
-                      Expanded(flex: 3, child: Padding(padding: const EdgeInsets.only(left: 18), child: Text('$visualNumber', style: const TextStyle(color: AppTheme.silverGrey, fontSize: 14, fontWeight: FontWeight.w700)))),
+                      Expanded(flex: 3, child: Padding(padding: const EdgeInsets.only(left: 18), child: Text('$visualNumber', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14, fontWeight: FontWeight.w700)))),
                       const SizedBox(width: AppTheme.space8),
                       Expanded(flex: 3, child: _buildEditableField(repsController, (val) => _handleFieldChanged(fieldKey: 'reps_$realIndex', controller: repsController, value: val, emptyFallback: '0', onSave: (s) => serie.alvo = s, serieHash: serie.hashCode))),
                       const SizedBox(width: AppTheme.space8),
