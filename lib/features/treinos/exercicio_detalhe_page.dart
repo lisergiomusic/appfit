@@ -395,9 +395,28 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 10),
-            child: Row(children: [
-              Text(title, style: TextStyle(color: titleColor ?? Colors.white, fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: 0.5,)),
-            ]),
+              child: Row(
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: titleColor ?? Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.more_vert, color: AppTheme.textSecondary, size: 18),
+                    onPressed: null, // Apenas exibe o ícone, sem ação
+                    splashRadius: 20,
+                    tooltip: 'Mais opções',
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(),
+                  ),
+                ],
+              ),
           ),
           Container(
             decoration: BoxDecoration(
