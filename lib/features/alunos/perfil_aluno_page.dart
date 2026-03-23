@@ -130,7 +130,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                 ),
                 const SizedBox(height: 16),
                 _buildActions(context, telefone),
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
                 const RitmoDaSemanaCard(),
                 const SizedBox(height: 32),
                 FichaAtivaHeroCard(
