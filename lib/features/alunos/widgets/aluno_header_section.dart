@@ -43,7 +43,7 @@ class AlunoHeaderSection extends StatelessWidget {
                     letterSpacing: -0.5,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     _buildBadge(Icons.calendar_today_rounded, '$idade anos'),

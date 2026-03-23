@@ -9,15 +9,15 @@
     // Splash color token (uses the same green by default). Use this token
     // everywhere for ripple/splash colors so changing it here updates all spots.
     static const Color splash = primary;
-    static const Color background = Color(0xFF121212); // Google Material Dark
+    static const Color background = Color(0xFF101010);
 
     static const Color iosBlue = Color(0xFF007AFF);
     static const Color silverGrey = Color.fromRGBO(255, 255, 255, 0.5);
 
-    static const Color surfaceDark = Color(0xFF1E1E1E);
+    static const Color surfaceDark = Color(0xFF1D1D1D);
     static const Color surfaceLight = Color(0xFF2C2C2E);
     static const Color buttonSurface = Color(0xFF1E1E1E);
-    static const Color textPrimary = Colors.white;
+    static const Color textPrimary = Color(0xFFF7FBFF);
     static const Color textSecondary = Color(0xFF94A3B8);
     static const Color accentMetrics = Color(0xFFFF9F0A);
     static const Color success = Color(0xFF4CAF50);
@@ -73,9 +73,7 @@
         textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
         colorScheme: const ColorScheme.dark(
           primary: primary,
-          background: background,
           surface: surfaceDark,
-          onBackground: textPrimary,
           onSurface: textPrimary,
         ),
         appBarTheme: const AppBarTheme(

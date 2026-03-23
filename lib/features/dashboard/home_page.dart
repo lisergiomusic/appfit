@@ -184,21 +184,23 @@ class HomePage extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _buildStatCard(
-                      label: 'ALUNOS ATIVOS',
+                      label: 'Alunos Ativos',
                       value: '42',
                       trendText: '+12% este mês',
                       trendIcon: Icons.trending_up,
                       trendColor: AppTheme.primary,
+                      onTap: () {},
                     ),
                   ),
                   const SizedBox(width: AppTheme.space16),
                   Expanded(
                     child: _buildStatCard(
-                      label: 'ATENÇÃO NECESSÁRIA',
+                      label: 'Atenção necessária',
                       value: '05',
                       trendText: 'Pendentes',
                       trendIcon: Icons.error_outline,
                       trendColor: AppTheme.accentMetrics,
+                      onTap: () {},
                     ),
                   ),
                 ],
@@ -217,7 +219,6 @@ class HomePage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('AÇÕES RÁPIDAS', style: AppTheme.textSectionHeaderDark),
-                      const Icon(Icons.keyboard_arrow_right, color: AppTheme.textSecondary, size: 18),
                     ],
                   ),
                   const SizedBox(height: AppTheme.space16),
@@ -306,9 +307,15 @@ class HomePage extends StatelessWidget {
     return 'Boa noite';
   }
 
-  Widget _buildStatCard({required String label, required String value, required String trendText, required IconData trendIcon, required Color trendColor}) {
+  Widget _buildStatCard({
+    required String label,
+    required String value,
+    required String trendText,
+    required IconData trendIcon,
+    required Color trendColor,
+    VoidCallback? onTap,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(AppTheme.space16),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
@@ -317,28 +324,62 @@ class HomePage extends StatelessWidget {
           BoxShadow(color: Colors.black.withAlpha(50), blurRadius: 10, offset: const Offset(0, 4))
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: AppTheme.microLabelTextStyle.copyWith(color: AppTheme.textSecondary)),
-          const SizedBox(height: AppTheme.space8),
-          Text(value, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -1.5)),
-          const SizedBox(height: AppTheme.space12),
-          Row(
-            children: [
-              Icon(trendIcon, size: 14, color: trendColor),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  trendText,
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: trendColor),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+          child: Padding(
+            padding: const EdgeInsets.all(AppTheme.space16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textSecondary.withAlpha(200),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+
+                      ),
+                      const SizedBox(height: AppTheme.space8),
+                      Text(value, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -1.5)),
+                      const SizedBox(height: AppTheme.space12),
+                      Row(
+                        children: [
+                          Icon(trendIcon, size: 14, color: trendColor),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              trendText,
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: trendColor),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                if (onTap != null) ...[
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: AppTheme.textSecondary.withAlpha(80),
+                  ),
+                ],
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -349,7 +390,6 @@ class HomePage extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        border: Border.all(color: AppTheme.primary.withAlpha(40)),
       ),
       child: Material(
         color: Colors.transparent,
