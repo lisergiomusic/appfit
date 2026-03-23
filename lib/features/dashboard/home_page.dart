@@ -84,36 +84,25 @@ class HomePage extends StatelessWidget {
                   Stack(
                     alignment: Alignment.bottomRight,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(2.5),
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [AppTheme.primary, AppTheme.iosBlue],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                        ),
-                        child: FutureBuilder<DocumentSnapshot>(
-                          future: FirebaseFirestore.instance
-                              .collection('usuarios')
-                              .doc(user?.uid)
-                              .get(),
-                          builder: (context, snapshot) {
-                            String? photoUrl;
-                            if (snapshot.hasData && snapshot.data!.exists) {
-                              photoUrl = (snapshot.data!.data() as Map<String, dynamic>)['photoUrl'];
-                            }
-                            return CircleAvatar(
-                              radius: 32,
-                              backgroundColor: AppTheme.surfaceLight,
-                              backgroundImage: photoUrl != null && photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
-                              child: photoUrl == null || photoUrl.isEmpty
-                                  ? const Icon(Icons.person_rounded, color: AppTheme.textSecondary, size: 32)
-                                  : null,
-                            );
-                          },
-                        ),
+                      FutureBuilder<DocumentSnapshot>(
+                        future: FirebaseFirestore.instance
+                            .collection('usuarios')
+                            .doc(user?.uid)
+                            .get(),
+                        builder: (context, snapshot) {
+                          String? photoUrl;
+                          if (snapshot.hasData && snapshot.data!.exists) {
+                            photoUrl = (snapshot.data!.data() as Map<String, dynamic>)['photoUrl'];
+                          }
+                          return CircleAvatar(
+                            radius: 34,
+                            backgroundColor: AppTheme.surfaceLight,
+                            backgroundImage: photoUrl != null && photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                            child: photoUrl == null || photoUrl.isEmpty
+                                ? const Icon(Icons.person_rounded, color: AppTheme.textSecondary, size: 34)
+                                : null,
+                          );
+                        },
                       ),
                       Container(
                         width: 20,
@@ -215,16 +204,11 @@ class HomePage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(left: 4, bottom: 16),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 16),
                     child: Text(
                       'Ações rápidas',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.textPrimary,
-                        letterSpacing: -0.5,
-                      ),
+                      style: AppTheme.textSectionHeaderDark,
                     ),
                   ),
                   Row(
@@ -263,16 +247,11 @@ class HomePage extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(left: 4),
+                   Padding(
+                    padding: const EdgeInsets.only(left: 4),
                     child: Text(
                       'Atividade recente',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.textPrimary,
-                        letterSpacing: -0.5,
-                      ),
+                      style: AppTheme.textSectionHeaderDark,
                     ),
                   ),
                   TextButton(
