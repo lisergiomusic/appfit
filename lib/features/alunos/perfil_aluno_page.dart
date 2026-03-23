@@ -71,6 +71,32 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        elevation: 0,
+        centerTitle: true,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppTheme.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Perfil do Aluno',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textPrimary,
+            letterSpacing: -0.3,
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(
+            height: 0.5,
+            color: Colors.white.withAlpha(20),
+          ),
+        ),
+      ),
       body: StreamBuilder<AlunoPerfilData>(
         stream: _alunoService.getAlunoPerfilCompletoStream(widget.alunoId),
         builder: (context, snapshot) {
@@ -90,75 +116,39 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
           final peso = alunoData['pesoAtual']?.toString() ?? '--';
           final idade = dataNascimento != null ? _calcularIdade(dataNascimento).toString() : '--';
 
-          return CustomScrollView(
+          return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverAppBar(
-                backgroundColor: AppTheme.background,
-                elevation: 0,
-                pinned: true,
-                expandedHeight: 120,
-                centerTitle: true,
-                surfaceTintColor: Colors.transparent,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppTheme.textPrimary),
-                  onPressed: () => Navigator.pop(context),
+            child: Column(
+              children: [
+                const SizedBox(height: 16),
+                AlunoHeaderSection(
+                  alunoId: widget.alunoId,
+                  alunoNome: widget.alunoNome,
+                  photoUrl: widget.photoUrl ?? photoUrl,
+                  idade: idade,
+                  peso: peso,
                 ),
-                flexibleSpace: const FlexibleSpaceBar(
-                  centerTitle: true,
-                  expandedTitleScale: 1.2,
-                  title: Text(
-                    'Perfil do Aluno',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
+                const SizedBox(height: 16),
+                _buildActions(context, telefone),
+                const SizedBox(height: 32),
+                const RitmoDaSemanaCard(),
+                const SizedBox(height: 32),
+                FichaAtivaHeroCard(
+                  alunoId: widget.alunoId,
+                  alunoNome: widget.alunoNome,
+                  onPrescreverTreino: () => _exibirOpcoesVincularTreino(context),
                 ),
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(1.0),
-                  child: Container(
-                    height: 0.5,
-                    color: Colors.white.withAlpha(20),
-                  ),
+                const SizedBox(height: 32),
+                GestaoSection(
+                  alunoId: widget.alunoId,
+                  alunoNome: widget.alunoNome,
+                  photoUrl: photoUrl,
+                  peso: peso,
+                  idade: idade,
                 ),
-              ),
-              SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 16),
-                    AlunoHeaderSection(
-                      alunoId: widget.alunoId,
-                      alunoNome: widget.alunoNome,
-                      photoUrl: widget.photoUrl ?? photoUrl,
-                      idade: idade,
-                      peso: peso,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildActions(context, telefone),
-                    const SizedBox(height: 32),
-                    const RitmoDaSemanaCard(),
-                    const SizedBox(height: 32),
-                    FichaAtivaHeroCard(
-                      alunoId: widget.alunoId,
-                      alunoNome: widget.alunoNome,
-                      onPrescreverTreino: () => _exibirOpcoesVincularTreino(context),
-                    ),
-                    const SizedBox(height: 32),
-                    GestaoSection(
-                      alunoId: widget.alunoId,
-                      alunoNome: widget.alunoNome,
-                      photoUrl: photoUrl,
-                      peso: peso,
-                      idade: idade,
-                    ),
-                    const SizedBox(height: 48),
-                  ],
-                ),
-              ),
-            ],
+                const SizedBox(height: 48),
+              ],
+            ),
           );
         },
       ),
@@ -169,63 +159,50 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
     return Shimmer.fromColors(
       baseColor: Colors.white.withAlpha(5),
       highlightColor: Colors.white.withAlpha(10),
-      child: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            backgroundColor: AppTheme.background,
-            elevation: 0,
-            pinned: true,
-            expandedHeight: 120,
-            flexibleSpace: const FlexibleSpaceBar(
-              title: Text('Perfil do Aluno', style: TextStyle(color: Colors.white)),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                children: [
+                  Container(width: 80, height: 80, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(width: 80, height: 80, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(width: 150, height: 24, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
-                          const SizedBox(height: 8),
-                          Container(width: 100, height: 16, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
-                        ],
-                      ),
+                      Container(width: 150, height: 24, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
+                      const SizedBox(height: 8),
+                      Container(width: 100, height: 16, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
                     ],
                   ),
-                ),
-                const SizedBox(height: 32),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
-                    children: [
-                      Expanded(child: Container(height: 46, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)))),
-                      const SizedBox(width: 12),
-                      Expanded(child: Container(height: 46, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)))),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Container(width: double.infinity, height: 120, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
-                ),
-                const SizedBox(height: 32),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Container(width: double.infinity, height: 150, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 32),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                children: [
+                  Expanded(child: Container(height: 46, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)))),
+                  const SizedBox(width: 12),
+                  Expanded(child: Container(height: 46, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)))),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Container(width: double.infinity, height: 120, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
+            ),
+            const SizedBox(height: 32),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Container(width: double.infinity, height: 150, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
+            ),
+          ],
+        ),
       ),
     );
   }
