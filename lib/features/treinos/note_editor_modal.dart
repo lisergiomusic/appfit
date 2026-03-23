@@ -80,7 +80,7 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
 
             // Cabeçalho
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -155,7 +155,7 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   // Adicionado padding para a caixa de texto não tocar nas laterais do ecrã
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                   padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
                   child: TextField(
                     controller: _controller,
                     focusNode: _focusNode,

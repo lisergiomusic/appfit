@@ -92,7 +92,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
 
     try {
       await _exerciseService.criarExercicioCustomizado(
-        novoEx, 
+        novoEx,
         forPublico: _isAdmin && _isPublico,
       );
       if (mounted) {
@@ -349,8 +349,8 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                           color: AppTheme.surfaceDark,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: _isPublico 
-                                ? AppTheme.primary.withAlpha(100) 
+                            color: _isPublico
+                                ? AppTheme.primary.withAlpha(100)
                                 : Colors.white.withAlpha(10),
                             width: 1,
                           ),

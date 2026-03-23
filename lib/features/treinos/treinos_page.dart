@@ -154,7 +154,7 @@ class TreinosPage extends StatelessWidget {
                 },
                 background: Container(
                   alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 24),
+                  padding: const EdgeInsets.only(right: 16),
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
                     color: Colors.redAccent,

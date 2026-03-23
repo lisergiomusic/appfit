@@ -23,7 +23,7 @@ class AlunoHeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen, vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

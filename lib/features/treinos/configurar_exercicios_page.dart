@@ -486,7 +486,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                             bottom: AppTheme.space12,
                           ),
                           child: Container(
-                            padding: const EdgeInsets.only(right: 24),
+                             padding: const EdgeInsets.only(right: 16),
                             alignment: Alignment.centerRight,
                             decoration: BoxDecoration(
                               color: Colors.redAccent,
@@ -696,7 +696,7 @@ class _MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
         borderRadius: BorderRadius.circular(24),
@@ -862,7 +862,7 @@ class _HintingExercicioAnimatorState extends State<_HintingExercicioAnimator>
                         width: bgWidth,
                         color: Colors.redAccent,
                         alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 24),
+                         padding: const EdgeInsets.only(right: 16),
                         child: Opacity(
                           opacity: (bgWidth / 72.0).clamp(0.0, 1.0),
                           child: const Icon(

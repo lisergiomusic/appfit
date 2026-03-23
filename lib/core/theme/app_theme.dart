@@ -38,7 +38,7 @@
     );
 
     // --- 3. ESPAÇAMENTOS GLOBAIS (Novo Padrão Compacto) ---
-    static const double paddingScreen = 20.0;
+    static const double paddingScreen = 16;
     static const double paddingCard = 16.0;
     static const double space0 = 0;
     static const double space4 = 4.0;

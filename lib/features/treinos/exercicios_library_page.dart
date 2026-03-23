@@ -149,7 +149,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.75,
             ),
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -297,7 +297,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
           final isSelected = _selecionados.contains(ex);
 
           return Padding(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,

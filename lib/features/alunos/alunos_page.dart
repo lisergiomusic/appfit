@@ -330,18 +330,18 @@ class _AlunosPageState extends State<AlunosPage> {
               )
             else if (_alunosDocs.isEmpty)
               SliverFillRemaining(
-                child: _searchQuery.isNotEmpty || _statusFilter != "todos" 
-                  ? _buildNoResultsState() 
+                child: _searchQuery.isNotEmpty || _statusFilter != "todos"
+                  ? _buildNoResultsState()
                   : _buildEmptyState(),
               )
             else
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
+                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       if (index == _alunosDocs.length) {
-                        return _hasMore 
+                        return _hasMore
                           ? const Padding(
                               padding: EdgeInsets.symmetric(vertical: 32),
                               child: Center(child: CircularProgressIndicator(color: AppTheme.primary)),
@@ -407,7 +407,7 @@ class _AlunosPageState extends State<AlunosPage> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+       padding: const EdgeInsets.fromLTRB(16, 32, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -433,7 +433,7 @@ class _AlunosPageState extends State<AlunosPage> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Container(
         height: 52,
         decoration: BoxDecoration(
@@ -475,7 +475,7 @@ class _AlunosPageState extends State<AlunosPage> {
 
   Widget _buildFilterChips() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+       padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
       child: Row(
         children: [
           Expanded(child: _buildChip(label: 'Todos', count: _totalCount, value: 'todos')),
@@ -561,7 +561,7 @@ class _AlunosPageState extends State<AlunosPage> {
       },
       background: Container(
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 24),
+        padding: const EdgeInsets.only(right: 16),
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: Colors.redAccent.withAlpha(30),

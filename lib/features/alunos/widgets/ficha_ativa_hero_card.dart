@@ -93,7 +93,7 @@ class FichaAtivaHeroCard extends StatelessWidget {
                     },
                     borderRadius: BorderRadius.circular(24),
                     child: Padding(
-                      padding: const EdgeInsets.all(24),
+                       padding: const EdgeInsets.all(16),
                       child: Row(
                         children: [
                           Stack(

@@ -164,7 +164,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
           children: [
             const SizedBox(height: 16),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
                   Container(width: 80, height: 80, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
@@ -182,7 +182,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
             ),
             const SizedBox(height: 32),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
                   Expanded(child: Container(height: 46, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)))),
@@ -193,12 +193,12 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
             ),
             const SizedBox(height: 32),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(width: double.infinity, height: 120, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
             ),
             const SizedBox(height: 32),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(width: double.infinity, height: 150, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
             ),
           ],

@@ -46,7 +46,7 @@ class FeedbackHistoricoPage extends StatelessWidget {
       body: historico.isEmpty
           ? _buildEmptyState()
           : ListView.builder(
-              padding: const EdgeInsets.all(24),
+               padding: const EdgeInsets.all(16),
               itemCount: historico.length,
               itemBuilder: (context, index) => _buildTimelineItem(
                 historico[index],
