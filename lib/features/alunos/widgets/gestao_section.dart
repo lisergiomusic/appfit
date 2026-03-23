@@ -28,7 +28,7 @@ class GestaoSection extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 8),
-            child: Text('GESTÃO', style: AppTheme.textSectionHeaderDark),
+            child: Text('Gestão', style: AppTheme.textSectionHeaderDark),
           ),
           Container(
             decoration: BoxDecoration(

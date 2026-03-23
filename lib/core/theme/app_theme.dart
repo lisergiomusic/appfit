@@ -34,6 +34,7 @@
       fontSize: 16,
       fontWeight: FontWeight.w600,
       color: AppTheme.textPrimary,
+      letterSpacing: -0.5,
     );
 
     // --- 3. ESPAÇAMENTOS GLOBAIS (Novo Padrão Compacto) ---

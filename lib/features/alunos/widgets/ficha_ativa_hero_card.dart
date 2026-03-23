@@ -62,11 +62,11 @@ class FichaAtivaHeroCard extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(left: 4, bottom: 12),
                 child: Text(
                   'Planilha atual',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary, letterSpacing: -0.5),
+                  style: AppTheme.textSectionHeaderDark,
                 ),
               ),
               Container(
