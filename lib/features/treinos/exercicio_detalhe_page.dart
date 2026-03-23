@@ -33,16 +33,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     TipoSerie.trabalho: GlobalKey<AnimatedListState>(),
   };
   final ScrollController _scrollController = ScrollController();
-  final Map<int, GlobalKey> _rowKeys = {};
   final Map<int, AnimationController> _swipeHintControllers = {};
   final Map<int, AnimationController> _rippleControllers = {};
-  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _activeSnackBar;
   Timer? _undoSnackTimer;
   final Map<String, TextEditingController> _controllers = {};
   final Map<String, String> _lastValues = {};
   final Map<String, bool> _hasUserEdited = {};
   final Set<String> _suppressNextOnChanged = {};
-  final Set<String> _hapticTriggeredDismissKeys = {};
   final Map<int, AnimationController> _flashControllers = {};
 
   @override
@@ -109,12 +106,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
   }
 
-  void _startEditingField(String fieldKey, TextEditingController controller) {
-    _lastValues[fieldKey] = controller.text;
-    _hasUserEdited[fieldKey] = false;
-    controller.selection = TextSelection.collapsed(offset: controller.text.length);
-  }
-
   void _playFlashAnimation(int serieHash) {
     _flashControllers[serieHash]?.dispose();
     final flashController = AnimationController(
@@ -128,29 +119,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         _flashControllers.remove(serieHash);
       }
     });
-  }
-
-  void _restorePreviousIfNoChange({
-    required String fieldKey,
-    required TextEditingController controller,
-    required void Function(String) onRestore,
-    void Function(String)? onCommitEdited,
-    required int serieHash,
-  }) {
-    final hasEdited = _hasUserEdited[fieldKey] ?? false;
-    if (!hasEdited) {
-      final previousValue = _lastValues[fieldKey] ?? controller.text;
-      _setControllerText(fieldKey, controller, previousValue);
-      onRestore(previousValue);
-      widget.onChanged();
-    } else if (onCommitEdited != null) {
-      final committed = controller.text.isEmpty ? '' : controller.text;
-      onCommitEdited(committed);
-      widget.onChanged();
-      _playFlashAnimation(serieHash);
-    }
-    _lastValues.remove(fieldKey);
-    _hasUserEdited.remove(fieldKey);
   }
 
   void _handleFieldChanged({
@@ -194,16 +162,12 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     return digits.isEmpty ? '' : '${digits}s';
   }
 
-  void _startSwipeHintAndRipple(int serieHash) {
-    // Implementação de animação de feedback mantida via hashes
-  }
-
   Future<void> _adicionarSerie() async {
     final TipoSerie? tipoEscolhido = await showModalBottomSheet<TipoSerie>(
       context: context,
       backgroundColor: AppTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
       builder: (context) {
         return SafeArea(
@@ -319,7 +283,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             ),
           ),
         ),
-        if (showDivider) const Divider(height: 1, thickness: 0.5, color: Colors.black45),
+        if (showDivider) Divider(height: 1, thickness: 0.5, color: Colors.white.withAlpha(20)),
       ],
     );
   }
@@ -343,7 +307,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     final cargaController = _getController('carga_$stableId', _formatCargaInputValue(serie.carga));
     final descansoController = _getController('descanso_$stableId', _formatDescansoInputValue(serie.descanso));
 
-    final radius = Radius.circular(AppTheme.radiusLarge);
+    final radius = Radius.circular(AppTheme.radiusMedium);
     final borderRadius = BorderRadius.only(
       topLeft: isFirst ? radius : Radius.zero,
       topRight: isFirst ? radius : Radius.zero,
@@ -402,7 +366,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             ),
           ),
         ),
-        if (!isLast) Divider(height: 1, thickness: 1, color: Colors.white.withAlpha(10), indent: 16, endIndent: 16),
+        if (!isLast) Divider(height: 1, thickness: 0.5, color: Colors.white.withAlpha(15), indent: 16, endIndent: 16),
       ],
     );
   }
@@ -429,19 +393,16 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 10),
+            padding: const EdgeInsets.only(bottom: 10),
             child: Row(children: [
-              if (showDot) Container(width: 6, height: 6, decoration: BoxDecoration(color: titleColor ?? Colors.white, shape: BoxShape.circle)),
-              const SizedBox(width: 10),
-              Text(title, style: TextStyle(color: titleColor ?? Colors.white, fontWeight: FontWeight.w700, fontSize: 11)),
+              Text(title, style: TextStyle(color: titleColor ?? Colors.white, fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: 0.5,)),
             ]),
           ),
           Container(
             decoration: BoxDecoration(
               color: AppTheme.surfaceDark,
-              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-              border: Border.all(color: Colors.white.withAlpha(14), width: 1),
-              boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 12, offset: Offset(0, 2))],
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              border: Border.all(color: Colors.white.withAlpha(20), width: 0.5),
             ),
             child: Column(
               children: [
@@ -510,7 +471,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                       Text(muscleGroupsText, style: _sectionEyebrowStyle()),
                       const SizedBox(height: AppTheme.space16),
 
-                      // RESTAURADO: Thumbnail do Vídeo com URL original
+                      // Thumbnail do Vídeo
                       _ExerciseVideoCard(
                         imageUrl: ex.imagemUrl,
                         exerciseTitle: exerciseTitle,
@@ -528,9 +489,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           OrangeGlassActionButton(label: 'Adicionar Série', onTap: _adicionarSerie, bottomMargin: 0),
                         ])
                       else ...[
-                        _buildSeriesSection(title: 'AQUECIMENTO', entries: warmup, titleColor: AppTheme.iosBlue, showDot: true),
-                        _buildSeriesSection(title: 'FEEDER', entries: feeder, titleColor: AppTheme.accentMetrics, showDot: true),
-                        _buildSeriesSection(title: 'SÉRIES DE TRABALHO', entries: work, titleColor: AppTheme.primary, showDot: true),
+                        _buildSeriesSection(title: 'Aquecimento', entries: warmup, titleColor: Color(0xFF00B4D8), showDot: true),
+                        _buildSeriesSection(title: 'Séries de aproximação', entries: feeder, titleColor: Color(0xFFFFB703), showDot: true),
+                        _buildSeriesSection(title: 'Séries de trabalho', entries: work, titleColor: Color(0xFFFF3366), showDot: true),
                         const SizedBox(height: 12),
                         Center(child: OrangeGlassActionButton(label: 'Adicionar Série', onTap: _adicionarSerie, bottomMargin: 0)),
                       ],
@@ -559,11 +520,11 @@ class _ExerciseVideoCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withAlpha(8),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withAlpha(28), width: 1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withAlpha(30), width: 0.5),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         child: AspectRatio(
           aspectRatio: 16 / 9,
           child: Stack(
@@ -572,7 +533,7 @@ class _ExerciseVideoCard extends StatelessWidget {
                 child: Image.network(
                   imageUrl ?? 'https://lh3.googleusercontent.com/aida-public/AB6AXuAXzEmkEB7BMnRUWQ6iIDF5Oc_gVzBjCjxHaac9LYJyL8KxdAi-mTOKK2v2nO9Vt3-DXPcDcoSM3RkTh-iDX0q8oShyD0TllFVTVsQBP3fKU0HPHHtOlkO5uRRx_yIiMes1tmlEr6VkkMyvhy-LTIzYuWYuJaLsSzeba5FPnNX9_RQjcusWmbIyWrBVLVSmLZjDaMcPJMKiSSY6S-RSZFaAzRzHQdDbWnPbv1aUP1akkwSiPE9Rriwmdn8VrF3w0ZIWei1Cxfd7B2Ut',
                   fit: BoxFit.cover,
-                  errorBuilder: (context, _, __) => Container(color: AppTheme.surfaceDark, child: const Icon(Icons.videocam_off, color: Colors.white38)),
+                  errorBuilder: (context, _, _) => Container(color: AppTheme.surfaceDark, child: const Icon(Icons.videocam_off, color: Colors.white38)),
                 ),
               ),
               Center(
