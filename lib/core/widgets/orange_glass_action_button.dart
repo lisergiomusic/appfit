@@ -7,6 +7,7 @@ class OrangeGlassActionButton extends StatefulWidget {
   final VoidCallback onTap;
   final IconData icon;
   final double bottomMargin;
+  final bool showGlow;
 
   const OrangeGlassActionButton({
     super.key,
@@ -14,6 +15,7 @@ class OrangeGlassActionButton extends StatefulWidget {
     required this.onTap,
     this.icon = Icons.add_circle_outline_rounded,
     this.bottomMargin = 8,
+    this.showGlow = true,
   });
 
   @override
@@ -26,23 +28,25 @@ class _OrangeGlassActionButtonState extends State<OrangeGlassActionButton> {
 
   @override
   Widget build(BuildContext context) {
-    final glowShadows = _isPressed
-        ? <BoxShadow>[
-            BoxShadow(
-              color: AppTheme.primary.withAlpha(97),
-              blurRadius: 12,
-              spreadRadius: 0.6,
-              offset: const Offset(0, 2),
-            ),
-          ]
-        : <BoxShadow>[
-            BoxShadow(
-              color: AppTheme.primary.withAlpha(87),
-              blurRadius: 12,
-              spreadRadius: 0.4,
-              offset: const Offset(0, 2),
-            ),
-          ];
+    final glowShadows = widget.showGlow
+        ? (_isPressed
+            ? <BoxShadow>[
+                BoxShadow(
+                  color: AppTheme.primary.withAlpha(97),
+                  blurRadius: 12,
+                  spreadRadius: 0.6,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : <BoxShadow>[
+                BoxShadow(
+                  color: AppTheme.primary.withAlpha(87),
+                  blurRadius: 12,
+                  spreadRadius: 0.4,
+                  offset: const Offset(0, 2),
+                ),
+              ])
+        : null;
 
     final buttonWidth = MediaQuery.sizeOf(context).width - 32;
 
@@ -51,7 +55,7 @@ class _OrangeGlassActionButtonState extends State<OrangeGlassActionButton> {
       margin: EdgeInsets.only(bottom: widget.bottomMargin),
       decoration: BoxDecoration(
         color: AppTheme.primary,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         boxShadow: glowShadows,
       ),
       child: Material(
