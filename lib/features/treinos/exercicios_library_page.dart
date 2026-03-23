@@ -450,8 +450,13 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
         backgroundColor: AppTheme.background,
         elevation: 0,
         title: const Text(
-          'Biblioteca',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          'Biblioteca de exercícios',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textPrimary,
+            letterSpacing: -0.3,
+          ),
         ),
         centerTitle: false,
         actions: [
@@ -476,7 +481,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
               },
               icon: const Icon(Icons.add, color: AppTheme.primary, size: 20),
               label: const Text(
-                'Novo Exercício',
+                'Criar',
                 style: TextStyle(
                   color: AppTheme.primary,
                   fontSize: 16,
@@ -496,7 +501,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: TextField(
               controller: _searchController,
               style: const TextStyle(color: Colors.white),
@@ -519,7 +524,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                 fillColor: AppTheme.surfaceDark,
                 contentPadding: const EdgeInsets.symmetric(vertical: 0),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
                 ),
               ),
@@ -587,7 +592,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   )
                 : ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
+                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 100),
                     itemCount: _listaExercicios.length + (_hasMore ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == _listaExercicios.length) {
@@ -730,7 +735,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
       floatingActionButton: _selecionados.isNotEmpty
           ? Container(
               height: 64,
-              margin: const EdgeInsets.symmetric(horizontal: 24),
+              margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: AppTheme.surfaceDark,
@@ -851,17 +856,17 @@ class _StaticImageState extends State<_StaticImage> {
   void _getImage() {
     _cleanup();
     if (widget.url.isEmpty) return;
-    
+
     _hasError = false;
     _imageInfo = null;
-    
+
     final videoId = _getYoutubeIdStatic(widget.url);
-    final finalUrl = videoId != null 
-        ? 'https://img.youtube.com/vi/$videoId/0.jpg' 
+    final finalUrl = videoId != null
+        ? 'https://img.youtube.com/vi/$videoId/0.jpg'
         : widget.url;
 
     _imageStream = CachedNetworkImageProvider(finalUrl).resolve(createLocalImageConfiguration(context));
-    
+
     _listener = ImageStreamListener(
       (info, _) {
         if (mounted && _imageInfo == null) {
