@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -412,7 +413,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                     Expanded(flex: 3, child: Align(alignment: Alignment.centerLeft, child: Padding(padding: const EdgeInsets.only(left: 8), child: Text('SÉRIE', style: _microLabelStyle())))),
                     Expanded(flex: 3, child: Center(child: Text('REPS', style: _microLabelStyle()))),
                     Expanded(flex: 3, child: Center(child: Text('PESO', style: _microLabelStyle()))),
-                    Expanded(flex: 3, child: Center(child: Text('DESCANSO', style: _microLabelStyle()))),
+                    Expanded(flex: 3, child: Center(child: Text('PAUSA', style: _microLabelStyle()))),
                   ]),
                 ),
                 AnimatedList(
@@ -432,6 +433,136 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInstructionsField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Instruções', style: AppTheme.textSectionHeaderDark),
+        const SizedBox(height: 10),
+        GestureDetector(
+          onTap: _showEditInstructionsSheet,
+          child: Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(minHeight: 80),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceDark.withAlpha(180),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              border: Border.all(color: Colors.white.withAlpha(15), width: 0.5),
+            ),
+            child: Text(
+              ex.instrucoes?.isEmpty ?? true
+                  ? 'Toque para adicionar orientações técnicas...'
+                  : ex.instrucoes!,
+              style: TextStyle(
+                color: ex.instrucoes?.isEmpty ?? true
+                    ? AppTheme.textSecondary.withAlpha(80)
+                    : Colors.white,
+                fontSize: 14,
+                height: 1.5,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showEditInstructionsSheet() {
+    final ctrl = TextEditingController(text: ex.instrucoes ?? '');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppTheme.background.withAlpha(235),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              boxShadow: [BoxShadow(color: Colors.black.withAlpha(100), blurRadius: 40, spreadRadius: 10)],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header do Modal
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text('Cancelar', style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 15)),
+                      ),
+                      const Text('Instruções', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                      TextButton(
+                        onPressed: () {
+                          setState(() { ex.instrucoes = ctrl.text.trim(); });
+                          widget.onChanged();
+                          Navigator.pop(context);
+                        },
+                        child: const Text('OK', style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w800, fontSize: 15)),
+                      ),
+                    ],
+                  ),
+                ),
+                Divider(height: 1, thickness: 0.5, color: Colors.white.withAlpha(20)),
+                // Campo de Texto
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: ctrl,
+                        maxLines: 8,
+                        maxLength: 250,
+                        autofocus: true,
+                        cursorColor: AppTheme.primary,
+                        style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.5),
+                        decoration: InputDecoration(
+                          hintText: 'Ex: "Mantenha o cotovelo fixo e faça o movimento de forma controlada."',
+                          hintStyle: TextStyle(color: Colors.white.withAlpha(40), fontSize: 15),
+                          border: InputBorder.none,
+                          counterText: '', // Ocultamos para usar o nosso personalizado
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: ctrl,
+                        builder: (context, value, child) {
+                          final remaining = 250 - value.text.length;
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                '$remaining caracteres disponíveis',
+                                style: TextStyle(
+                                  color: remaining < 20 ? Colors.redAccent.withAlpha(200) : Colors.white.withAlpha(60),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -477,6 +608,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         exerciseTitle: exerciseTitle,
                         onTap: () {},
                       ),
+                      const SizedBox(height: AppTheme.space24),
+
+                      // Campo de Instruções
+                      _buildInstructionsField(),
                       const SizedBox(height: AppTheme.space32),
 
                       if (ex.series.isEmpty)

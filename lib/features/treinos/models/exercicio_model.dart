@@ -25,6 +25,7 @@ class ExercicioItem {
   String tipoAlvo;
   String? imagemUrl;
   String? personalId;
+  String? instrucoes;
   List<SerieItem> series;
 
   ExercicioItem({
@@ -34,6 +35,7 @@ class ExercicioItem {
     this.tipoAlvo = 'Reps',
     this.imagemUrl,
     this.personalId,
+    this.instrucoes,
     required this.series,
   });
 
@@ -44,6 +46,7 @@ class ExercicioItem {
       'imagemUrl': imagemUrl,
       'tipoAlvo': tipoAlvo,
       'personalId': personalId,
+      'instrucoes': instrucoes,
     };
   }
 
@@ -65,6 +68,7 @@ class ExercicioItem {
       imagemUrl: data['imagemUrl'],
       tipoAlvo: data['tipoAlvo'] ?? 'Reps',
       personalId: data['personalId'],
+      instrucoes: data['instrucoes'],
       series: [],
     );
   }
@@ -77,6 +81,7 @@ class ExercicioItem {
       tipoAlvo: tipoAlvo,
       imagemUrl: imagemUrl,
       personalId: personalId,
+      instrucoes: instrucoes,
       series: series.map((s) => s.clone()).toList(),
     );
   }
