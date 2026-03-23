@@ -35,7 +35,7 @@ class RitmoDaSemanaCard extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 8),
+
         Container(
           margin: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
           padding: const EdgeInsets.all(20),
