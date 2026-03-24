@@ -304,7 +304,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                             const SizedBox(width: 12),
                             const Expanded(
                               child: _MetricCard(
-                                label: 'Tempo Estimado',
+                                label: 'Tempo',
                                 value: '45m',
                               ),
                             ),
@@ -313,9 +313,24 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                         const SizedBox(height: 24),
                         const SessaoNoteWidget(),
                         const SizedBox(height: 24),
-                        Text(
-                          'Lista de exercícios',
-                          style: AppTheme.textSectionHeaderDark,
+                        Row(
+                          children: [
+                            Text(
+                              'Lista de exercícios',
+                              style: AppTheme.textSectionHeaderDark,
+                            ),
+                            const Spacer(),
+                            TextButton(
+                              onPressed: () {
+                                // TODO: Implementar ação de edição
+                              },
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppTheme.primary,
+                                padding: const EdgeInsets.symmetric(horizontal: AppTheme.space8),
+                              ),
+                              child: const Text('Editar'),
+                            ),
+                          ],
                         ),
                       ],
                     ),
