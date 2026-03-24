@@ -1,8 +1,14 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
 import 'models/exercicio_model.dart';
 
 class ExercicioDetalheController {
   final ExercicioItem exercicio;
   final Set<String> _newSeriesIds = {};
+
+  SerieItem? _lastRemovedItem;
+  int? _lastRemovedIndex;
+  Timer? _snackBarTimer;
 
   ExercicioDetalheController(this.exercicio);
 
@@ -46,8 +52,44 @@ class ExercicioDetalheController {
 
   int indexOf(SerieItem serie) => exercicio.series.indexOf(serie);
 
+  void deleteSerie(SerieItem serie) {
+    _lastRemovedIndex = exercicio.series.indexOf(serie);
+    if (_lastRemovedIndex != -1) {
+      _lastRemovedItem = exercicio.series.removeAt(_lastRemovedIndex!);
+    }
+  }
+
+  int? undoDelete() {
+    if (_lastRemovedItem != null && _lastRemovedIndex != null) {
+      final index = _lastRemovedIndex!;
+      exercicio.series.insert(index, _lastRemovedItem!);
+      _lastRemovedItem = null;
+      _lastRemovedIndex = null;
+      return index;
+    }
+    return null;
+  }
+
+  void clearUndoState() {
+    _lastRemovedItem = null;
+    _lastRemovedIndex = null;
+  }
+
+  void startSnackBarTimer(VoidCallback onTimeout) {
+    _snackBarTimer?.cancel();
+    _snackBarTimer = Timer(const Duration(seconds: 4), onTimeout);
+  }
+
+  void cancelSnackBarTimer() {
+    _snackBarTimer?.cancel();
+  }
+
   SerieItem removeAt(int index) => exercicio.series.removeAt(index);
 
   void insertAt(int index, SerieItem serie) =>
       exercicio.series.insert(index, serie);
+      
+  void dispose() {
+    _snackBarTimer?.cancel();
+  }
 }

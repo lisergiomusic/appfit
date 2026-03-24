@@ -36,7 +36,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   final ScrollController _scrollController = ScrollController();
   final Map<int, AnimationController> _swipeHintControllers = {};
   final Map<int, AnimationController> _rippleControllers = {};
-  Timer? _undoSnackTimer;
+  final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   final Map<String, TextEditingController> _controllers = {};
   final Map<String, String> _lastValues = {};
   final Map<String, bool> _hasUserEdited = {};
@@ -55,7 +55,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     _disposeControllers();
     _disposeCardAnimationControllers();
     _disposeFlashControllers();
-    _undoSnackTimer?.cancel();
+    controller.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -344,14 +344,52 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             key: ValueKey(serie.id),
             direction: DismissDirection.endToStart,
             onDismissed: (_) {
-              final idx = ex.series.indexOf(serie);
-              if (idx == -1) return;
               final sectionIndex = controller.sectionIndexOf(serie);
-              setState(() { controller.removeAt(idx); _clearEditingState(); });
+              
+              controller.deleteSerie(serie);
+              setState(() { _clearEditingState(); });
+              
               _animatedListKeys[serie.tipo]?.currentState?.removeItem(
                 sectionIndex,
-                    (context, animation) => SizeTransition(sizeFactor: animation, child: Container()),
+                (context, animation) => SizeTransition(sizeFactor: animation, child: Container()),
               );
+
+              controller.cancelSnackBarTimer();
+              _scaffoldMessengerKey.currentState?.removeCurrentSnackBar();
+
+              final snackBar = SnackBar(
+                content: const Text('Série removida'),
+                action: SnackBarAction(
+                  label: 'DESFAZER',
+                  textColor: AppTheme.primary,
+                  onPressed: () {
+                    controller.cancelSnackBarTimer();
+                    _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+                    final restoredIndex = controller.undoDelete();
+                    if (restoredIndex != null) {
+                      final restoredSerie = ex.series[restoredIndex];
+                      final restoredSectionIndex = controller.sectionIndexOf(restoredSerie);
+                      setState(() {});
+                      _animatedListKeys[restoredSerie.tipo]?.currentState?.insertItem(
+                        restoredSectionIndex,
+                        duration: const Duration(milliseconds: 300),
+                      );
+                    }
+                  },
+                ),
+                duration: const Duration(days: 365),
+                behavior: SnackBarBehavior.floating,
+              );
+
+              final snackBarController = _scaffoldMessengerKey.currentState?.showSnackBar(snackBar);
+
+              if (snackBarController != null) {
+                controller.startSnackBarTimer(() {
+                  snackBarController.close();
+                  controller.clearUndoState();
+                });
+              }
+
               widget.onChanged();
             },
             background: Container(
@@ -626,63 +664,66 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        backgroundColor: AppTheme.background,
-        body: SafeArea(
-          child: CustomScrollView(
-            slivers: [
-              AppFitSliverAppBar(
-                  title: exerciseTitle,
-                  background: Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Text(exerciseTitle, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white))
-                      )
-                  )
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(muscleGroupsText, style: _sectionEyebrowStyle()),
-                      const SizedBox(height: AppTheme.space16),
-
-                      // Thumbnail do Vídeo
-                      _ExerciseVideoCard(
-                        imageUrl: ex.imagemUrl,
-                        exerciseTitle: exerciseTitle,
-                        onTap: () {},
-                      ),
-                      const SizedBox(height: AppTheme.space24),
-
-                      // Campo de Instruções
-                      _buildInstructionsField(),
-                      const SizedBox(height: AppTheme.space32),
-
-                      if (ex.series.isEmpty)
-                        Column(children: [
-                          const SizedBox(height: 48),
-                          const Icon(Icons.fitness_center_rounded, size: 50, color: AppTheme.primary),
-                          const SizedBox(height: 24),
-                          const Text('Prescreva o exercício', style: TextStyle(color: AppTheme.textPrimary, fontSize: 22, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 32),
-                          OrangeGlassActionButton(label: 'Adicionar Série', onTap: _adicionarSerie, bottomMargin: 0, showGlow: false),
-                        ])
-                      else ...[
-                        _buildSeriesSection(title: 'Aquecimento', entries: warmup, titleColor: const Color(0xFF00B4D8), showDot: true),
-                        _buildSeriesSection(title: 'Séries de aproximação', entries: feeder, titleColor: const Color(0xFFFFB703), showDot: true),
-                        _buildSeriesSection(title: 'Séries de trabalho', entries: work, titleColor: const Color(0xFFFF3366), showDot: true),
-                        const SizedBox(height: 12),
-                        Center(child: OrangeGlassActionButton(label: 'Adicionar Série', onTap: _adicionarSerie, bottomMargin: 0, showGlow: false)),
+      child: ScaffoldMessenger(
+        key: _scaffoldMessengerKey,
+        child: Scaffold(
+          backgroundColor: AppTheme.background,
+          body: SafeArea(
+            child: CustomScrollView(
+              slivers: [
+                AppFitSliverAppBar(
+                    title: exerciseTitle,
+                    background: Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Text(exerciseTitle, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white))
+                        )
+                    )
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(muscleGroupsText, style: _sectionEyebrowStyle()),
+                        const SizedBox(height: AppTheme.space16),
+        
+                        // Thumbnail do Vídeo
+                        _ExerciseVideoCard(
+                          imageUrl: ex.imagemUrl,
+                          exerciseTitle: exerciseTitle,
+                          onTap: () {},
+                        ),
+                        const SizedBox(height: AppTheme.space24),
+        
+                        // Campo de Instruções
+                        _buildInstructionsField(),
+                        const SizedBox(height: AppTheme.space32),
+        
+                        if (ex.series.isEmpty)
+                          Column(children: [
+                            const SizedBox(height: 48),
+                            const Icon(Icons.fitness_center_rounded, size: 50, color: AppTheme.primary),
+                            const SizedBox(height: 24),
+                            const Text('Prescreva o exercício', style: TextStyle(color: AppTheme.textPrimary, fontSize: 22, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 32),
+                            OrangeGlassActionButton(label: 'Adicionar Série', onTap: _adicionarSerie, bottomMargin: 0, showGlow: false),
+                          ])
+                        else ...[
+                          _buildSeriesSection(title: 'Aquecimento', entries: warmup, titleColor: const Color(0xFF00B4D8), showDot: true),
+                          _buildSeriesSection(title: 'Séries de aproximação', entries: feeder, titleColor: const Color(0xFFFFB703), showDot: true),
+                          _buildSeriesSection(title: 'Séries de trabalho', entries: work, titleColor: const Color(0xFFFF3366), showDot: true),
+                          const SizedBox(height: 12),
+                          Center(child: OrangeGlassActionButton(label: 'Adicionar Série', onTap: _adicionarSerie, bottomMargin: 0, showGlow: false)),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
