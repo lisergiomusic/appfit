@@ -1,6 +1,7 @@
+import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
+import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/exercise_service.dart';
@@ -89,10 +90,10 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
 
   void _limparBusca() {
     if (_searchController.text.isEmpty && _termoBusca.isEmpty) return;
-    
+
     _searchController.clear();
     if (_debounce?.isActive ?? false) _debounce?.cancel();
-    
+
     if (_termoBusca.isNotEmpty) {
       setState(() {
         _termoBusca = '';
@@ -527,6 +528,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                         color: AppTheme.textSecondary,
                         size: 20,
                       ),
+
                       suffixIcon: ValueListenableBuilder<TextEditingValue>(
                         valueListenable: _searchController,
                         builder: (context, value, _) {
@@ -550,7 +552,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                       fillColor: AppTheme.surfaceDark,
                       contentPadding: const EdgeInsets.symmetric(vertical: 0),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
                     ),
@@ -625,7 +627,9 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                           ? FontWeight.bold
                           : FontWeight.normal,
                     ),
-                    shape: const StadiumBorder(),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadiusGeometry.circular(AppTheme.radiusSmall),
+                    ),
                     side: BorderSide.none,
                     showCheckmark: false,
                   ),

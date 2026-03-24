@@ -1,11 +1,9 @@
 import 'dart:async';
-
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
-
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/orange_glass_action_button.dart';
 import '../../core/widgets/sliver_safe_title.dart';
