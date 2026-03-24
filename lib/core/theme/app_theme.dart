@@ -93,9 +93,9 @@ class AppTheme {
   static const double space48 = 48.0;
 
   // --- 4. ARREDONDAMENTOS (Radii) ---
-  static const double radiusSmall = 8.0;
-  static const double radiusMedium = 12.0;
-  static const double radiusLarge = 18.0;
+  static const double radiusSmall = 12.0;
+  static const double radiusMedium = 16.0;
+  static const double radiusLarge = 24.0;
   static const double radiusFull = 9999.0;
 
   // --- 5. TEMA GLOBAL DO FLUTTER ---

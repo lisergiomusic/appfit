@@ -294,11 +294,18 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                 value: '${controller.exercicios.length}',
                               ),
                             ),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: _MetricCard(
-                                label: 'Total de Séries',
+                                label: 'Séries',
                                 value: '${controller.totalSeries}',
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: _MetricCard(
+                                label: 'Tempo Estimado',
+                                value: '45m',
                               ),
                             ),
                           ],
@@ -689,7 +696,7 @@ class _MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
@@ -705,16 +712,18 @@ class _MetricCard extends StatelessWidget {
             label,
             style: const TextStyle(
               color: AppTheme.textSecondary,
-              fontSize: 14,
+              fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 8),
           Text(
             value,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 30,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               height: 1.1,
             ),

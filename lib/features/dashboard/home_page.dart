@@ -81,7 +81,7 @@ class HomePage extends StatelessWidget {
               builder: (context, snapshot) {
                 String nome = "...";
                 String? photoUrl;
-                
+
                 if (snapshot.hasData && snapshot.data != null) {
                   final data = snapshot.data!;
                   nome = data['nome']?.toString().split(' ')[0] ?? "Usuário";
@@ -321,7 +321,7 @@ class HomePage extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         border: Border.all(color: Colors.white.withAlpha(5)),
         boxShadow: [
           BoxShadow(
@@ -335,7 +335,7 @@ class HomePage extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -412,7 +412,7 @@ class HomePage extends StatelessWidget {
     return Expanded(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         child: Column(
           children: [
             Container(
@@ -420,7 +420,7 @@ class HomePage extends StatelessWidget {
               height: 64,
               decoration: BoxDecoration(
                 color: color.withAlpha(20),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
               ),
               child: Icon(icon, color: color, size: 28),
             ),
@@ -450,6 +450,7 @@ class HomePage extends StatelessWidget {
   }) {
     return Material(
       color: Colors.transparent,
+      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
       child: InkWell(
         onTap: () {},
         child: Column(

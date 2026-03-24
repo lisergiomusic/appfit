@@ -27,14 +27,14 @@ class OrangeGlassActionButton extends StatelessWidget {
       margin: EdgeInsets.only(bottom: bottomMargin),
       decoration: BoxDecoration(
         color: AppTheme.primary,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
         boxShadow: [AppTheme.cardShadow]
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
           splashColor: Colors.white.withAlpha(41),
           highlightColor: const Color.fromARGB(
             255,
