@@ -610,18 +610,19 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                             onTap: () => _mostrarPreviewExercicio(ex),
                             child: Padding(
-                              padding: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.all(8),
                               child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Container(
                                     width: 56,
                                     height: 56,
                                     decoration: BoxDecoration(
-                                      color: AppTheme.surfaceLight,
-                                      borderRadius: BorderRadius.circular(12),
+                                      color: AppTheme.surfaceDark,
+                                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                                       border: ex.personalId != null
                                           ? Border.all(
                                               color: AppTheme.accentMetrics
@@ -641,13 +642,13 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                         : (ex.imagemUrl != null &&
                                               ex.imagemUrl!.isNotEmpty)
                                         ? ClipRRect(
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                                             child: _StaticImage(url: ex.imagemUrl!),
                                           )
                                         : const Center(
                                             child: Icon(
                                               Icons.fitness_center,
-                                              color: AppTheme.textSecondary,
+                                              color: AppTheme.primary,
                                             ),
                                           ),
                                   ),
@@ -660,17 +661,20 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                         Text(
                                           ex.nome,
                                           style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
+                                            color: AppTheme.textPrimary,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 17,
+                                            letterSpacing: -0.1,
                                           ),
                                         ),
-                                        const SizedBox(height: 4),
+
                                         Text(
                                           ex.grupoMuscular.join(' • '),
                                           style: const TextStyle(
                                             color: AppTheme.textSecondary,
-                                            fontSize: 13,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            letterSpacing: 0.0,
                                           ),
                                         ),
                                       ],
@@ -726,84 +730,94 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
       floatingActionButton: _selecionados.isNotEmpty
           ? Container(
               height: 64,
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.all(6),
+              margin: const EdgeInsets.symmetric(horizontal: AppTheme.space16),
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.space16, vertical: AppTheme.space8),
               decoration: BoxDecoration(
                 color: AppTheme.surfaceDark,
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
                 border: Border.all(
-                  color: Colors.white.withAlpha(15),
+                  color: Colors.white.withAlpha(20), // ~8% opacity
                   width: 0.5,
                 ),
                 boxShadow: [
-                  AppTheme.cardShadow,
+                  BoxShadow(
+                    color: Colors.black.withAlpha(25), // ~10% opacity
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
                 ],
               ),
               child: Row(
                 children: [
                   Expanded(
                     flex: 1,
-                    child: InkWell(
-                      onTap: _abrirResumoSelecao,
-                      borderRadius: BorderRadius.circular(28),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: AppTheme.surfaceLight,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(
-                              '${_selecionados.length}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                height: 1,
+                    child: Material(
+                      color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                      child: InkWell(
+                        onTap: _abrirResumoSelecao,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                        splashColor: AppTheme.primary.withAlpha(30), // ~12% opacity
+                        highlightColor: AppTheme.primary.withAlpha(20), // ~8% opacity
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(AppTheme.space8),
+                              decoration: const BoxDecoration(
+                                color: AppTheme.surfaceLight,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                '${_selecionados.length}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  height: 1,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Ver lista',
-                            style: TextStyle(
-                              color: AppTheme.textSecondary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
+                            const SizedBox(width: AppTheme.space8),
+                            const Text(
+                              'Ver lista',
+                              style: TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
                             ),
-                          ),
-                          const Icon(
-                            Icons.keyboard_arrow_up_rounded,
-                            color: AppTheme.textSecondary,
-                            size: 20,
-                          ),
-                        ],
+                            const Icon(
+                              Icons.keyboard_arrow_up_rounded,
+                              color: AppTheme.textSecondary,
+                              size: 20,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
+                  const SizedBox(width: AppTheme.space16),
                   Expanded(
                     flex: 1,
-                    child: ElevatedButton(
+                    child: ElevatedButton.icon(
                       onPressed: _confirmarSelecao,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primary,
                         foregroundColor: Colors.black,
-                        elevation: 0,
+                        elevation: 1,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                         ),
-                        padding: EdgeInsets.zero,
-                      ),
-                      child: const Text(
-                        'Salvar',
-                        style: TextStyle(
+                        padding: const EdgeInsets.symmetric(vertical: AppTheme.space12),
+                        textStyle: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                           letterSpacing: 0.2,
                         ),
                       ),
+                      icon: const Icon(Icons.check, size: 20, color: Colors.black),
+                      label: const Text('Salvar'),
                     ),
                   ),
                 ],

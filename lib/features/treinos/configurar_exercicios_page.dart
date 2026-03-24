@@ -606,7 +606,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                 children: [
                   // Thumbnail do Exercício
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                     child: Container(
                       width: 56,
                       height: 56,
