@@ -158,7 +158,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       builder: (context) => StatefulBuilder(
         builder: (context, setStateModal) => Container(
           padding: EdgeInsets.only(
-            left: 24, right: 24, top: 12,
+            left: AppTheme.paddingScreen, right: AppTheme.paddingScreen, top: 12,
             bottom: MediaQuery.of(context).viewInsets.bottom + 24,
           ),
           child: SingleChildScrollView(
@@ -180,7 +180,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 const Text('Configurações da Planilha',
                     style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 24),
-    
+
                 // 1. NOME DA PLANILHA
                 RotinaModernInput(
                   label: 'NOME DA PLANILHA',
@@ -192,7 +192,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-    
+
                 // 2. OBJETIVO COM CHIPS DE SUGESTÃO
                 RotinaModernInput(
                   label: 'OBJETIVO PRINCIPAL',
@@ -231,7 +231,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-    
+
                 // 3. TIPO DE VENCIMENTO (Sessões vs Data)
                 const Text('VALIDADE DA PLANILHA',
                     style: TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
@@ -257,9 +257,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     ],
                   ),
                 ),
-    
+
                 const SizedBox(height: 16),
-    
+
                 // 4. INPUT DINÂMICO DE VENCIMENTO
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
@@ -294,9 +294,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     },
                   ),
                 ),
-    
+
                 const SizedBox(height: 32),
-    
+
                 // BOTÃO CONFIRMAR
                 SizedBox(
                   width: double.infinity,
@@ -318,7 +318,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                         style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, letterSpacing: 1)),
                   ),
                 ),
-    
+
                 if (widget.rotinaId != null) ...[
                   const SizedBox(height: 12),
                   SizedBox(
@@ -599,7 +599,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             child: Padding(
-              padding: const EdgeInsets.all(AppTheme.space24),
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen, vertical: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -649,7 +649,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('LISTA DE TREINOS', style: AppTheme.textSectionHeaderDark),
+                      Text('Lista de treinos', style: AppTheme.textSectionHeaderDark),
                       if (_treinos.isNotEmpty)
                         TextButton.icon(
                           onPressed: () => setState(() => _isReordering = !_isReordering),
