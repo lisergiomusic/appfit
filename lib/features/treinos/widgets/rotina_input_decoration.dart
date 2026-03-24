@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 
 InputDecoration rotinaInputDecoration({required String hintText}) {
   return InputDecoration(
     hintText: hintText,
-    hintStyle: GoogleFonts.figtree(
+    hintStyle: TextStyle(
       color: AppTheme.textSecondary.withAlpha(128),
       fontSize: 13,
     ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // --- 1. CORES ---
@@ -37,8 +36,6 @@ class AppTheme {
     letterSpacing: 0.0,
   );
 
-
-
   static const TextStyle bodyText = TextStyle(
     color: textPrimary,
     fontSize: 17,
@@ -61,7 +58,6 @@ class AppTheme {
     blurRadius: 1,
     offset: const Offset(1, 1),
   );
-
 
   static const  TextStyle pageTitle = TextStyle(
     fontSize: 17,
@@ -110,7 +106,6 @@ class AppTheme {
       primaryColor: primary,
       scaffoldBackgroundColor: background,
       canvasColor: surfaceDark,
-
       colorScheme: const ColorScheme.dark(
         primary: primary,
         surface: surfaceDark,
@@ -135,7 +130,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMedium),
           ),
-          textStyle: GoogleFonts.figtree(
+          textStyle: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -148,8 +143,8 @@ class AppTheme {
           vertical: 14,
           horizontal: 16,
         ),
-        labelStyle: GoogleFonts.figtree(color: textSecondary, fontSize: 13),
-        hintStyle: GoogleFonts.figtree(
+        labelStyle: const TextStyle(color: textSecondary, fontSize: 13),
+        hintStyle: TextStyle(
           color: textSecondary.withAlpha(128),
           fontSize: 13,
         ),
