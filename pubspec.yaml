@@ -23,6 +23,7 @@ dependencies:
   intl: ^0.20.2
   shimmer: ^3.0.0 # Adicionado para placeholders de carregamento
   rxdart: ^0.28.0 # Adicionado para combinar Streams de dados
+  flutter_inset_shadow: ^2.0.3
 
 dev_dependencies:
   flutter_test:

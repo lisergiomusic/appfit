@@ -552,122 +552,126 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppTheme.space12),
-      child: Material(
-        elevation: 0,
-        color: flashColor ?? AppTheme.surfaceDark,
-        shape: RoundedRectangleBorder(
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceDark,
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          side: BorderSide(color: Colors.white.withAlpha(15), width: 0.75),
+          boxShadow: [AppTheme.cardShadow],
+          border: AppTheme.cardBorder,
         ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          splashColor: AppTheme.splash.withAlpha(30),
-          highlightColor: AppTheme.splash.withAlpha(12),
-          onTap: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ExercicioDetalhePage(
-                  exercicio: ex,
-                  onChanged: () => controller.onExercicioChanged(),
+        child: Material(
+          type: MaterialType.transparency,
+          elevation: 0,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+            splashColor: AppTheme.splash.withAlpha(50),
+            highlightColor: AppTheme.splash.withAlpha(30),
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ExercicioDetalhePage(
+                    exercicio: ex,
+                    onChanged: () => controller.onExercicioChanged(),
+                  ),
                 ),
-              ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Thumbnail do Exercício
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    width: 64,
-                    height: 64,
-                    color: Colors.black.withAlpha(40),
-                    child: Image.network(
-                      (ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty)
-                          ? ex.imagemUrl!
-                          : defaultThumbnail,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Center(
-                        child: Icon(
-                          Icons.fitness_center,
-                          color: AppTheme.primary,
-                        ),
-                      ),
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Center(
-                          child: CircularProgressIndicator(
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                                : null,
-                            strokeWidth: 2,
-                            color: AppTheme.primary.withAlpha(100),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Thumbnail do Exercício
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      width: 64,
+                      height: 64,
+                      color: Colors.black.withAlpha(40),
+                      child: Image.network(
+                        (ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty)
+                            ? ex.imagemUrl!
+                            : defaultThumbnail,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Center(
+                          child: Icon(
+                            Icons.fitness_center,
+                            color: AppTheme.primary,
                           ),
-                        );
-                      },
+                        ),
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                              strokeWidth: 2,
+                              color: AppTheme.primary.withAlpha(100),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        ex.nome,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                          height: 1.2,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      RichText(
-                        text: TextSpan(
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          ex.nome,
                           style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: 0.1,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            height: 1.2,
                           ),
-                          children: [
-                            TextSpan(
-                              text:
-                                  '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
-                              style: const TextStyle(
-                                color: AppTheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 6),
+                        RichText(
+                          text: TextSpan(
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              letterSpacing: 0.1,
                             ),
-                            if (ex.grupoMuscular.isNotEmpty)
+                            children: [
                               TextSpan(
-                                text: ' • ${ex.grupoMuscular.join(' • ')}',
+                                text:
+                                    '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
                                 style: const TextStyle(
-                                  color: AppTheme.textSecondary,
+                                  color: AppTheme.primary,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                          ],
+                              if (ex.grupoMuscular.isNotEmpty)
+                                TextSpan(
+                                  text: ' • ${ex.grupoMuscular.join(' • ')}',
+                                  style: const TextStyle(
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  CupertinoIcons.chevron_right,
-                  color: AppTheme.textSecondary.withAlpha(100),
-                  size: 20.0,
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Icon(
+                    CupertinoIcons.chevron_right,
+                    color: AppTheme.textSecondary.withAlpha(100),
+                    size: 20.0,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -691,11 +695,7 @@ class _MetricCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         border: AppTheme.cardBorder,
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(50),
-            blurRadius: 1,
-            offset: const Offset(1, 1),
-          ),
+          AppTheme.cardShadow,
         ],
       ),
       child: Column(

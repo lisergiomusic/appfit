@@ -37,7 +37,7 @@
       color: AppTheme.textPrimary,
     );
 
-    static final Border cardBorder = Border.all(color: Colors.white.withAlpha(15), width: 0.75);
+    static final Border cardBorder = Border.all(color: Colors.white.withAlpha(15), width: 0.5);
 
     static final BoxShadow cardShadow = BoxShadow(
       color: Colors.black.withAlpha(50),
