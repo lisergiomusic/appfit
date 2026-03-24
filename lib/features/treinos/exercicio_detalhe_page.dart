@@ -432,40 +432,75 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
           color: flashColor ?? editFlashColor,
           child: Row(
             children: [
-              if (isEditingSection)
-                IconButton(
-                  icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent, size: 20),
-                  onPressed: () => _onDeleteSerie(serie),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  splashRadius: 20,
+              // Botão de Deletar (Animado)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOutCubic,
+                width: isEditingSection ? 28 : 0,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: isEditingSection ? 1.0 : 0.0,
+                  child: IconButton(
+                    icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent, size: 20),
+                    onPressed: () => _onDeleteSerie(serie),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    splashRadius: 20,
+                  ),
                 ),
-              if (isEditingSection) const SizedBox(width: 8),
-              Expanded(flex: 3, child: Padding(padding: EdgeInsets.only(left: isEditingSection ? 0 : 18), child: Text('$visualNumber', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14, fontWeight: FontWeight.w700)))),
+              ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOutCubic,
+                width: isEditingSection ? 8 : 0,
+              ),
+              Expanded(
+                flex: 3,
+                child: AnimatedPadding(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOutCubic,
+                  padding: EdgeInsets.only(left: isEditingSection ? 0 : 18),
+                  child: Text('$visualNumber', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14, fontWeight: FontWeight.w700)),
+                ),
+              ),
               const SizedBox(width: AppTheme.space8),
               Expanded(flex: 3, child: _buildEditableField(repsController, (val) => _handleFieldChanged(fieldKey: 'reps_$realIndex', controller: repsController, value: val, emptyFallback: '0', onSave: (s) => serie.alvo = s, serieHash: serie.hashCode))),
               const SizedBox(width: AppTheme.space8),
               Expanded(flex: 3, child: _buildEditableField(cargaController, (val) => _handleFieldChanged(fieldKey: 'carga_$realIndex', controller: cargaController, value: val, emptyFallback: '-', onSave: (s) => serie.carga = s, serieHash: serie.hashCode), inputFormatters: [const _CargaKgInputFormatter()])),
               const SizedBox(width: AppTheme.space8),
               Expanded(flex: 3, child: _buildEditableField(descansoController, (val) => _handleFieldChanged(fieldKey: 'descanso_$realIndex', controller: descansoController, value: val, emptyFallback: '0', onSave: (s) => serie.descanso = s, serieHash: serie.hashCode), inputFormatters: [const _DescansoSecondsInputFormatter()])),
-              if (isEditingSection) const SizedBox(width: 8),
-              if (isEditingSection)
-                IconButton(
-                  icon: const Icon(Icons.copy_rounded, color: AppTheme.primary, size: 18),
-                  onPressed: () {
-                    final sectionIndex = controller.sectionIndexOf(serie);
-                    controller.duplicateSerie(serie);
-                    setState(() {});
-                    _animatedListKeys[serie.tipo]?.currentState?.insertItem(
-                      sectionIndex + 1,
-                      duration: const Duration(milliseconds: 300),
-                    );
-                    widget.onChanged();
-                  },
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  splashRadius: 20,
+              
+              // Botão de Duplicar (Animado)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOutCubic,
+                width: isEditingSection ? 8 : 0,
+              ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOutCubic,
+                width: isEditingSection ? 26 : 0,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: isEditingSection ? 1.0 : 0.0,
+                  child: IconButton(
+                    icon: const Icon(Icons.copy_rounded, color: AppTheme.primary, size: 18),
+                    onPressed: () {
+                      final sectionIndex = controller.sectionIndexOf(serie);
+                      controller.duplicateSerie(serie);
+                      setState(() {});
+                      _animatedListKeys[serie.tipo]?.currentState?.insertItem(
+                        sectionIndex + 1,
+                        duration: const Duration(milliseconds: 300),
+                      );
+                      widget.onChanged();
+                    },
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    splashRadius: 20,
+                  ),
                 ),
+              ),
             ],
           ),
         );
@@ -541,12 +576,31 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                   child: Row(children: [
-                    if (isEditingSection) const SizedBox(width: 28),
-                    Expanded(flex: 3, child: Align(alignment: Alignment.centerLeft, child: Padding(padding: const EdgeInsets.only(left: 8), child: Text('SÉRIE', style: _microLabelStyle())))),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOutCubic,
+                      width: isEditingSection ? 28 : 0,
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: AnimatedPadding(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOutCubic,
+                          padding: EdgeInsets.only(left: isEditingSection ? 0 : 8),
+                          child: Text('SÉRIE', style: _microLabelStyle()),
+                        ),
+                      ),
+                    ),
                     Expanded(flex: 3, child: Center(child: Text('REPS', style: _microLabelStyle()))),
                     Expanded(flex: 3, child: Center(child: Text('PESO', style: _microLabelStyle()))),
                     Expanded(flex: 3, child: Center(child: Text('PAUSA', style: _microLabelStyle()))),
-                    if (isEditingSection) const SizedBox(width: 26),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOutCubic,
+                      width: isEditingSection ? 26 : 0,
+                    ),
                   ]),
                 ),
                 AnimatedList(
