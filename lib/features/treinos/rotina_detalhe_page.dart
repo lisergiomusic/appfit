@@ -54,7 +54,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   bool _isReordering = false;
   bool _isDeleting = false;
   bool _isSaving = false;
-  bool _canPopNow = true;
+  bool _canPopNow = false;
 
   @override
   void initState() {
@@ -64,6 +64,60 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     objCtrl = TextEditingController(text: widget.rotinaData?['objetivo'] ?? '');
 
     _preencherDados();
+  }
+
+  bool _verificarAlteracoes() {
+    if (widget.rotinaId == null) {
+      // Nova rotina: tem alterações se campos não estão vazios ou tem treinos
+      return nomeCtrl.text.trim().isNotEmpty || objCtrl.text.trim().isNotEmpty || _treinos.isNotEmpty;
+    }
+
+    final data = widget.rotinaData!;
+    if (nomeCtrl.text.trim() != (data['nome'] ?? '')) return true;
+    if (objCtrl.text.trim() != (data['objetivo'] ?? '')) return true;
+    if (_tipoVencimento != (data['tipoVencimento'] ?? 'data')) return true;
+    
+    if (_tipoVencimento == 'sessoes') {
+      if (_vencimentoSessoes != (data['vencimentoSessoes'] ?? 20)) return true;
+    } else {
+      final oldDate = (data['dataVencimento'] as Timestamp?)?.toDate();
+      if (oldDate == null || _vencimentoData.day != oldDate.day || _vencimentoData.month != oldDate.month || _vencimentoData.year != oldDate.year) return true;
+    }
+
+    // Comparação simplificada das sessões (quantidade e nomes)
+    List<dynamic> sessoesRaw = data['sessoes'] ?? [];
+    if (_treinos.length != sessoesRaw.length) return true;
+    
+    for (int i = 0; i < _treinos.length; i++) {
+      if (_treinos[i].nome != sessoesRaw[i]['nome']) return true;
+      if (_treinos[i].diaSemana != sessoesRaw[i]['diaSemana']) return true;
+      if (_treinos[i].orientacoes != sessoesRaw[i]['orientacoes']) return true;
+      if (_treinos[i].exercicios.length != (sessoesRaw[i]['exercicios'] as List).length) return true;
+    }
+
+    return false;
+  }
+
+  Future<bool> _showDescartarDialog() async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surfaceDark,
+        title: const Text('Descartar alterações?', style: TextStyle(color: Colors.white)),
+        content: const Text('Os dados preenchidos não são válidos para salvar e serão perdidos.',
+            style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('CONTINUAR EDITANDO', style: TextStyle(color: AppTheme.primary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('DESCARTAR', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      )
+    ) ?? false;
   }
 
   @override
@@ -570,14 +624,42 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         if (didPop) return;
         if (_isSaving) return;
 
-        _isSaving = true;
-        bool salvo = await _salvarRotinaCompleta();
-
-        if (salvo && context.mounted) {
+        // 1. Se não houver alterações, sai direto
+        if (!_verificarAlteracoes()) {
           setState(() => _canPopNow = true);
           Navigator.of(context).pop();
-        } else {
-          _isSaving = true;
+          return;
+        }
+
+        // 2. Se houver alterações, tenta salvar
+        setState(() => _isSaving = true);
+        
+        try {
+          bool salvo = await _salvarRotinaCompleta();
+
+          if (salvo && mounted) {
+            setState(() {
+              _isSaving = false;
+              _canPopNow = true;
+            });
+            // Pequeno delay para garantir que o frame do setState foi processado
+            Future.microtask(() {
+              if (mounted) Navigator.of(context).pop();
+            });
+          } else {
+            // Se não salvou (falta nome, etc), pergunta se quer descartar ou continuar
+            if (mounted) {
+              setState(() => _isSaving = false);
+              final descartar = await _showDescartarDialog();
+              if (descartar && mounted) {
+                setState(() => _canPopNow = true);
+                Navigator.of(context).pop();
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint('Erro crítico no PopScope: $e');
+          if (mounted) setState(() => _isSaving = false);
         }
       },
       child: Scaffold(
