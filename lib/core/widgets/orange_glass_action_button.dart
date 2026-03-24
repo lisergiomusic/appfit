@@ -28,6 +28,7 @@ class OrangeGlassActionButton extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.primary,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        boxShadow: [AppTheme.cardShadow]
       ),
       child: Material(
         color: Colors.transparent,
@@ -53,9 +54,9 @@ class OrangeGlassActionButton extends StatelessWidget {
                   label,
                   style: const TextStyle(
                     color: Colors.black,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 15,
-                    letterSpacing: 0.2,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+
                   ),
                 ),
               ],
