@@ -710,7 +710,9 @@ class _MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final bool isTempo = label == 'Tempo';
+
+    Widget card = Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
@@ -723,15 +725,27 @@ class _MetricCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppTheme.textSecondary,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          Row(
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (isTempo) ...[
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.info_outline,
+                  size: 14,
+                  color: AppTheme.textSecondary.withAlpha(180),
+                ),
+              ],
+            ],
           ),
           const SizedBox(height: 8),
           Text(
@@ -746,6 +760,37 @@ class _MetricCard extends StatelessWidget {
         ],
       ),
     );
+
+    if (isTempo) {
+      return Tooltip(
+        message: 'Tempo estimado com base nas séries e descanso',
+        triggerMode: TooltipTriggerMode.tap,
+        showDuration: Duration(seconds: 3),
+        preferBelow: false,
+        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.symmetric(horizontal: 24),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceDark,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.primary.withAlpha(100)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(100),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        textStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
+        child: card,
+      );
+    }
+
+    return card;
   }
 }
 

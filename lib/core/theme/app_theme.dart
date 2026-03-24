@@ -102,7 +102,7 @@ class AppTheme {
   // --- 5. TEMA GLOBAL DO FLUTTER ---
   static ThemeData get themeData {
     return ThemeData(
-      useMaterial3: false,
+      useMaterial3: true,
       brightness: Brightness.dark,
       primaryColor: primary,
       scaffoldBackgroundColor: background,
