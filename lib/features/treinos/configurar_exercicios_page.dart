@@ -636,10 +636,10 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
-                          fontSize: 18,
+                          fontSize: 14,
                           height: 1.3,
                         ),
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: AppTheme.space6),

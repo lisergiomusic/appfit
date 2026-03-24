@@ -54,7 +54,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   bool _isReordering = false;
   bool _isDeleting = false;
   bool _isSaving = false;
-  bool _canPopNow = false;
+  bool _canPopNow = true;
 
   @override
   void initState() {
@@ -577,7 +577,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           setState(() => _canPopNow = true);
           Navigator.of(context).pop();
         } else {
-          _isSaving = false;
+          _isSaving = true;
         }
       },
       child: Scaffold(
