@@ -474,36 +474,39 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
-            child: TextButton.icon(
-              onPressed: () async {
-                final dynamic result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CriarExercicioPage(),
-                  ),
-                );
+            child: Tooltip(
+              message: 'Criar novo exercício',
+              child: TextButton.icon(
+                onPressed: () async {
+                  final dynamic result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CriarExercicioPage(),
+                    ),
+                  );
 
-                if (result != null && result is ExercicioItem && mounted) {
-                  // Ao criar um novo, adicionamos à seleção e recarregamos a lista
-                  setState(() {
-                    _selecionados.add(result);
-                  });
-                  _carregarDados(reset: true);
-                }
-              },
-              icon: const Icon(Icons.add, color: AppTheme.primary, size: 20),
-              label: const Text(
-                'Criar',
-                style: TextStyle(
-                  color: AppTheme.primary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                  if (result != null && result is ExercicioItem && mounted) {
+                    // Ao criar um novo, adicionamos à seleção e recarregamos a lista
+                    setState(() {
+                      _selecionados.add(result);
+                    });
+                    _carregarDados(reset: true);
+                  }
+                },
+                icon: const Icon(Icons.add, color: AppTheme.primary, size: 20),
+                label: const Text(
+                  'Criar',
+                  style: TextStyle(
+                    color: AppTheme.primary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
               ),
             ),
