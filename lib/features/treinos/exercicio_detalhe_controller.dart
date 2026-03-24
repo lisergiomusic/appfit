@@ -10,9 +10,16 @@ class ExercicioDetalheController {
   int? _lastRemovedIndex;
   Timer? _snackBarTimer;
 
+  bool _isEditing = false;
+  bool get isEditing => _isEditing;
+
   ExercicioDetalheController(this.exercicio);
 
   Set<String> get newSeriesIds => _newSeriesIds;
+
+  void toggleEditing() {
+    _isEditing = !_isEditing;
+  }
 
   void markAsNew(String id) {
     _newSeriesIds.add(id);
@@ -56,6 +63,15 @@ class ExercicioDetalheController {
     _lastRemovedIndex = exercicio.series.indexOf(serie);
     if (_lastRemovedIndex != -1) {
       _lastRemovedItem = exercicio.series.removeAt(_lastRemovedIndex!);
+    }
+  }
+
+  void duplicateSerie(SerieItem serie) {
+    final index = exercicio.series.indexOf(serie);
+    if (index != -1) {
+      final newSerie = serie.clone(sameId: false);
+      exercicio.series.insert(index + 1, newSerie);
+      markAsNew(newSerie.id);
     }
   }
 

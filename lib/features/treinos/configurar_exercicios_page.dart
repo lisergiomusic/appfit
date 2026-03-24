@@ -274,8 +274,8 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                   safeTreinoTitle,
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 45,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 34,
                                     letterSpacing: -0.5,
                                   ),
                                   maxLines: 1,

@@ -21,8 +21,14 @@ class SerieItem {
     return '${DateTime.now().microsecondsSinceEpoch}_${Random().nextInt(10000)}';
   }
 
-  SerieItem clone() {
-    return SerieItem(id: id, tipo: tipo, alvo: alvo, carga: carga, descanso: descanso);
+  SerieItem clone({bool sameId = true}) {
+    return SerieItem(
+      id: sameId ? id : null,
+      tipo: tipo,
+      alvo: alvo,
+      carga: carga,
+      descanso: descanso,
+    );
   }
 }
 

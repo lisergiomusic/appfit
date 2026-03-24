@@ -163,6 +163,60 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     return digits.isEmpty ? '' : '${digits}s';
   }
 
+  void _onDeleteSerie(SerieItem serie) {
+    final sectionIndex = controller.sectionIndexOf(serie);
+    controller.deleteSerie(serie);
+    setState(() {
+      _clearEditingState();
+    });
+
+    _animatedListKeys[serie.tipo]?.currentState?.removeItem(
+      sectionIndex,
+      (context, animation) => SizeTransition(
+        sizeFactor: animation,
+        child: Container(),
+      ),
+    );
+
+    controller.cancelSnackBarTimer();
+    _scaffoldMessengerKey.currentState?.removeCurrentSnackBar();
+
+    final snackBar = SnackBar(
+      content: const Text('Série removida'),
+      action: SnackBarAction(
+        label: 'DESFAZER',
+        textColor: AppTheme.primary,
+        onPressed: () {
+          controller.cancelSnackBarTimer();
+          _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+          final restoredIndex = controller.undoDelete();
+          if (restoredIndex != null) {
+            final restoredSerie = ex.series[restoredIndex];
+            final restoredSectionIndex = controller.sectionIndexOf(restoredSerie);
+            setState(() {});
+            _animatedListKeys[restoredSerie.tipo]?.currentState?.insertItem(
+              restoredSectionIndex,
+              duration: const Duration(milliseconds: 300),
+            );
+          }
+        },
+      ),
+      duration: const Duration(seconds: 4),
+      behavior: SnackBarBehavior.floating,
+    );
+
+    final snackBarController = _scaffoldMessengerKey.currentState?.showSnackBar(snackBar);
+
+    if (snackBarController != null) {
+      controller.startSnackBarTimer(() {
+        snackBarController.close();
+        controller.clearUndoState();
+      });
+    }
+
+    widget.onChanged();
+  }
+
   Future<void> _adicionarSerie() async {
     final TipoSerie? tipoEscolhido = await showModalBottomSheet<TipoSerie>(
       context: context,
@@ -343,55 +397,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
           child: Dismissible(
             key: ValueKey(serie.id),
             direction: DismissDirection.endToStart,
-            onDismissed: (_) {
-              final sectionIndex = controller.sectionIndexOf(serie);
-              
-              controller.deleteSerie(serie);
-              setState(() { _clearEditingState(); });
-              
-              _animatedListKeys[serie.tipo]?.currentState?.removeItem(
-                sectionIndex,
-                (context, animation) => SizeTransition(sizeFactor: animation, child: Container()),
-              );
-
-              controller.cancelSnackBarTimer();
-              _scaffoldMessengerKey.currentState?.removeCurrentSnackBar();
-
-              final snackBar = SnackBar(
-                content: const Text('Série removida'),
-                action: SnackBarAction(
-                  label: 'DESFAZER',
-                  textColor: AppTheme.primary,
-                  onPressed: () {
-                    controller.cancelSnackBarTimer();
-                    _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
-                    final restoredIndex = controller.undoDelete();
-                    if (restoredIndex != null) {
-                      final restoredSerie = ex.series[restoredIndex];
-                      final restoredSectionIndex = controller.sectionIndexOf(restoredSerie);
-                      setState(() {});
-                      _animatedListKeys[restoredSerie.tipo]?.currentState?.insertItem(
-                        restoredSectionIndex,
-                        duration: const Duration(milliseconds: 300),
-                      );
-                    }
-                  },
-                ),
-                duration: const Duration(days: 365),
-                behavior: SnackBarBehavior.floating,
-              );
-
-              final snackBarController = _scaffoldMessengerKey.currentState?.showSnackBar(snackBar);
-
-              if (snackBarController != null) {
-                controller.startSnackBarTimer(() {
-                  snackBarController.close();
-                  controller.clearUndoState();
-                });
-              }
-
-              widget.onChanged();
-            },
+            onDismissed: (_) => _onDeleteSerie(serie),
             background: Container(
                 color: Colors.redAccent,
                 alignment: Alignment.centerRight,
@@ -425,13 +431,40 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
           color: flashColor ?? editFlashColor,
           child: Row(
             children: [
-              Expanded(flex: 3, child: Padding(padding: const EdgeInsets.only(left: 18), child: Text('$visualNumber', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14, fontWeight: FontWeight.w700)))),
+              if (controller.isEditing)
+                IconButton(
+                  icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent, size: 20),
+                  onPressed: () => _onDeleteSerie(serie),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  splashRadius: 20,
+                ),
+              if (controller.isEditing) const SizedBox(width: 8),
+              Expanded(flex: 3, child: Padding(padding: EdgeInsets.only(left: controller.isEditing ? 0 : 18), child: Text('$visualNumber', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14, fontWeight: FontWeight.w700)))),
               const SizedBox(width: AppTheme.space8),
               Expanded(flex: 3, child: _buildEditableField(repsController, (val) => _handleFieldChanged(fieldKey: 'reps_$realIndex', controller: repsController, value: val, emptyFallback: '0', onSave: (s) => serie.alvo = s, serieHash: serie.hashCode))),
               const SizedBox(width: AppTheme.space8),
               Expanded(flex: 3, child: _buildEditableField(cargaController, (val) => _handleFieldChanged(fieldKey: 'carga_$realIndex', controller: cargaController, value: val, emptyFallback: '-', onSave: (s) => serie.carga = s, serieHash: serie.hashCode), inputFormatters: [const _CargaKgInputFormatter()])),
               const SizedBox(width: AppTheme.space8),
               Expanded(flex: 3, child: _buildEditableField(descansoController, (val) => _handleFieldChanged(fieldKey: 'descanso_$realIndex', controller: descansoController, value: val, emptyFallback: '0', onSave: (s) => serie.descanso = s, serieHash: serie.hashCode), inputFormatters: [const _DescansoSecondsInputFormatter()])),
+              if (controller.isEditing) const SizedBox(width: 8),
+              if (controller.isEditing)
+                IconButton(
+                  icon: const Icon(Icons.copy_rounded, color: AppTheme.primary, size: 18),
+                  onPressed: () {
+                    final sectionIndex = controller.sectionIndexOf(serie);
+                    controller.duplicateSerie(serie);
+                    setState(() {});
+                    _animatedListKeys[serie.tipo]?.currentState?.insertItem(
+                      sectionIndex + 1,
+                      duration: const Duration(milliseconds: 300),
+                    );
+                    widget.onChanged();
+                  },
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  splashRadius: 20,
+                ),
             ],
           ),
         );
@@ -475,12 +508,20 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.more_vert, color: AppTheme.textSecondary, size: 18),
-                    onPressed: null, // Apenas exibe o ícone, sem ação
+                    icon: Icon(
+                      controller.isEditing ? Icons.check_circle_rounded : Icons.more_vert,
+                      color: controller.isEditing ? AppTheme.primary : AppTheme.textSecondary,
+                      size: 18,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        controller.toggleEditing();
+                      });
+                    },
                     splashRadius: 20,
                     tooltip: 'Mais opções',
                     padding: EdgeInsets.zero,
-                    constraints: BoxConstraints(),
+                    constraints: const BoxConstraints(),
                   ),
                 ],
               ),
@@ -496,10 +537,12 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                   child: Row(children: [
+                    if (controller.isEditing) const SizedBox(width: 28),
                     Expanded(flex: 3, child: Align(alignment: Alignment.centerLeft, child: Padding(padding: const EdgeInsets.only(left: 8), child: Text('SÉRIE', style: _microLabelStyle())))),
                     Expanded(flex: 3, child: Center(child: Text('REPS', style: _microLabelStyle()))),
                     Expanded(flex: 3, child: Center(child: Text('PESO', style: _microLabelStyle()))),
                     Expanded(flex: 3, child: Center(child: Text('PAUSA', style: _microLabelStyle()))),
+                    if (controller.isEditing) const SizedBox(width: 26),
                   ]),
                 ),
                 AnimatedList(
