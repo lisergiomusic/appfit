@@ -469,7 +469,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
               Expanded(flex: 3, child: _buildEditableField(cargaController, (val) => _handleFieldChanged(fieldKey: 'carga_$realIndex', controller: cargaController, value: val, emptyFallback: '-', onSave: (s) => serie.carga = s, serieHash: serie.hashCode), inputFormatters: [const _CargaKgInputFormatter()])),
               const SizedBox(width: AppTheme.space8),
               Expanded(flex: 3, child: _buildEditableField(descansoController, (val) => _handleFieldChanged(fieldKey: 'descanso_$realIndex', controller: descansoController, value: val, emptyFallback: '0', onSave: (s) => serie.descanso = s, serieHash: serie.hashCode), inputFormatters: [const _DescansoSecondsInputFormatter()])),
-              
+
               // Botão de Duplicar (Animado)
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
@@ -778,7 +778,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         alignment: Alignment.bottomLeft,
                         child: Padding(
                             padding: const EdgeInsets.all(16),
-                            child: Text(exerciseTitle, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white))
+                            child: Text(exerciseTitle, style: AppTheme.bigTitle),
                         )
                     )
                 ),

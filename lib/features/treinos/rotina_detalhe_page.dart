@@ -572,7 +572,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               }
             },
           ),
-          title: const Text('Gerenciar Planilha', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
+          title: const Text('Gerenciar Planilha', style: AppTheme.pageTitle),
         ),
         body: SafeArea(
           child: SingleChildScrollView(

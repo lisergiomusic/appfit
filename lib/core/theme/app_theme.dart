@@ -30,6 +30,20 @@
       letterSpacing: 0.8,
     );
 
+    static const TextStyle bigTitle = TextStyle(
+      fontSize: 32,
+      fontWeight: FontWeight.w700,
+      letterSpacing: -0.4,
+      color: AppTheme.textPrimary,
+    );
+
+    static const  TextStyle pageTitle = TextStyle(
+      fontSize: 17,
+      fontWeight: FontWeight.w600,
+      letterSpacing: -0.4,
+      color: AppTheme.textPrimary,
+    );
+
     static TextStyle textSectionHeaderDark = TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w600,

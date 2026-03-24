@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:appfit/core/theme/app_theme.dart';
 
 class SliverSafeTitle extends StatelessWidget {
   final String title;
@@ -11,11 +12,7 @@ class SliverSafeTitle extends StatelessWidget {
     super.key,
     required this.title,
     required this.isVisible,
-    this.style = const TextStyle(
-      color: Colors.white,
-      fontWeight: FontWeight.w700,
-      fontSize: 18,
-    ),
+    this.style = AppTheme.pageTitle,
     this.reservedHorizontalSpace = 220,
     this.duration = const Duration(milliseconds: 200),
   });

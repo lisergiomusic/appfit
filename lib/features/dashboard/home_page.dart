@@ -137,7 +137,7 @@ class HomePage extends StatelessWidget {
                                 fontSize: 28,
                                 fontWeight: FontWeight.w800,
                                 color: AppTheme.textPrimary,
-                                letterSpacing: -1.2,
+                                letterSpacing: -0.5,
                               ),
                             );
                           },
