@@ -553,11 +553,11 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppTheme.space12),
       child: Material(
-        elevation: 1.0,
+        elevation: 0,
         color: flashColor ?? AppTheme.surfaceDark,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          side: BorderSide(color: Colors.white.withAlpha(14), width: 1),
+          side: BorderSide(color: Colors.white.withAlpha(15), width: 0.75),
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
