@@ -17,7 +17,8 @@ class AppTheme {
   static const Color surfaceLight = Color(0xFF2C2C2E);
   static const Color buttonSurface = Color(0xFF1E1E1E);
   static const Color textPrimary = Color(0xFFF2F2F7);
-  static const Color textSecondary = Color(0xFFE5E5EA);
+  static const Color textSecondary = Color(0x99EBEBF5); // O '99' no início é 60% alpha
+  static const Color textTertiary = Color(0x4DEBEBF5); // O '4D' no início é 30% alpha
   static const Color textLabel = Color(0xFF8E8E93);
   static const Color accentMetrics = Color(0xFFFF9F0A);
   static const Color success = Color(0xFF4CAF50);

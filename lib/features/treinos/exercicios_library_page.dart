@@ -191,7 +191,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     const Text(
                       'Exercícios Selecionados',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppTheme.textPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -247,7 +247,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                   Text(
                                     ex.grupoMuscular.join(' • '),
                                     style: const TextStyle(
-                                      color: AppTheme.textSecondary,
+                                      color: AppTheme.textLabel,
                                       fontSize: 12,
                                     ),
                                   ),
@@ -520,7 +520,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   child: TextField(
                     controller: _searchController,
                     focusNode: _searchFocusNode,
-                    style: const TextStyle(color: Colors.white, fontSize: 15),
+                    style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15),
                     decoration: InputDecoration(
                       hintText: 'Buscar exercícios...',
                       prefixIcon: const Icon(
@@ -623,9 +623,9 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     backgroundColor: AppTheme.surfaceDark,
                     labelStyle: TextStyle(
                       color: isSelected ? Colors.black : AppTheme.textSecondary,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                      letterSpacing: 0.0,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadiusGeometry.circular(AppTheme.radiusSmall),
