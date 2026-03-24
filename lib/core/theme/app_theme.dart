@@ -6,7 +6,7 @@ class AppTheme {
     0xFF30D158,
   ); // Verde para interações principais
   // Splash color token (uses the same green by default). Use this token
-  // everywhere for ripple/splash colors so changing it here updates all spots.
+  // everywhere for ripple/splash colors so changing it updates all spots.
   static const Color splash = primary;
   static const Color background = Color(0xFF121212);
 
@@ -99,7 +99,34 @@ class AppTheme {
   static const double radiusLarge = 24.0;
   static const double radiusFull = 9999.0;
 
-  // --- 5. TEMA GLOBAL DO FLUTTER ---
+  // --- 5. COMPONENTES (Tokens) ---
+  static TooltipThemeData get tooltipTheme => TooltipThemeData(
+    decoration: BoxDecoration(
+      color: surfaceDark,
+      borderRadius: BorderRadius.circular(radiusSmall),
+      border: Border.all(color: primary.withAlpha(100)),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withAlpha(100),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    textStyle: const TextStyle(
+      color: Colors.white,
+      fontSize: 13,
+      fontWeight: FontWeight.w500,
+    ),
+    padding: const EdgeInsets.all(12),
+    margin: const EdgeInsets.symmetric(horizontal: 24),
+    preferBelow: false,
+    triggerMode: TooltipTriggerMode.tap,
+    waitDuration: Duration.zero,
+    showDuration: const Duration(seconds: 3),
+  );
+
+  // --- 6. TEMA GLOBAL DO FLUTTER ---
   static ThemeData get themeData {
     return ThemeData(
       useMaterial3: true,
@@ -158,6 +185,7 @@ class AppTheme {
           borderSide: const BorderSide(color: primary, width: 1.0),
         ),
       ),
+      tooltipTheme: tooltipTheme,
     );
   }
 }
