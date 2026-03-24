@@ -668,7 +668,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   )
                 : ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 100),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                     itemCount: _listaExercicios.length + (_hasMore ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == _listaExercicios.length) {
