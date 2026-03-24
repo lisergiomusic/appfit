@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'core/config/firebase_options.dart';
 import 'core/theme/app_theme.dart';
+import 'core/services/auth_service.dart';
 import 'features/auth/login_page.dart';
 import 'features/dashboard/dashboard_page.dart';
 
@@ -29,13 +29,20 @@ class AppFit extends StatelessWidget {
   }
 }
 
-class ChecagemPagina extends StatelessWidget {
+class ChecagemPagina extends StatefulWidget {
   const ChecagemPagina({super.key});
+
+  @override
+  State<ChecagemPagina> createState() => _ChecagemPaginaState();
+}
+
+class _ChecagemPaginaState extends State<ChecagemPagina> {
+  final AuthService _authService = AuthService();
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
+      stream: _authService.authStateChanges,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
@@ -46,14 +53,10 @@ class ChecagemPagina extends StatelessWidget {
         }
 
         if (snapshot.hasData && snapshot.data != null) {
-          return FutureBuilder<DocumentSnapshot>(
-            future: FirebaseFirestore.instance
-                .collection('usuarios')
-                .doc(snapshot.data!.uid)
-                .get(),
-            builder: (context, firestoreSnapshot) {
-              if (firestoreSnapshot.connectionState ==
-                  ConnectionState.waiting) {
+          return FutureBuilder<String?>(
+            future: _authService.getUserType(snapshot.data!.uid),
+            builder: (context, typeSnapshot) {
+              if (typeSnapshot.connectionState == ConnectionState.waiting) {
                 return const Scaffold(
                   body: Center(
                     child: CircularProgressIndicator(color: AppTheme.primary),
@@ -61,9 +64,8 @@ class ChecagemPagina extends StatelessWidget {
                 );
               }
 
-              if (firestoreSnapshot.hasData && firestoreSnapshot.data!.exists) {
-                String tipo = firestoreSnapshot.data!.get('tipoUsuario');
-                return DashboardPage(userType: tipo);
+              if (typeSnapshot.hasData && typeSnapshot.data != null) {
+                return DashboardPage(userType: typeSnapshot.data!);
               }
 
               return const SelecaoPerfilScreen();

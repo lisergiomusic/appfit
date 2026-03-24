@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../core/theme/app_theme.dart';
 import '../treinos/rotina_detalhe_page.dart';
@@ -267,7 +266,6 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
   }
 
   void _exibirOpcoesVincularTreino(BuildContext context) {
-    final String? personalId = FirebaseAuth.instance.currentUser?.uid;
     showModalBottomSheet(
       context: context,
       backgroundColor: AppTheme.surfaceDark,
@@ -332,7 +330,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
               const SizedBox(height: 20),
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: _alunoService.getRotinasTemplates(personalId ?? ''),
+                  stream: _alunoService.getRotinasTemplates(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator(color: AppTheme.primary));

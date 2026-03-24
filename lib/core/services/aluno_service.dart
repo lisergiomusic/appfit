@@ -1,9 +1,132 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../features/alunos/models/aluno_perfil_data.dart';
 
+class PaginatedAlunos {
+  final List<DocumentSnapshot> docs;
+  final DocumentSnapshot? lastDoc;
+  final bool hasMore;
+
+  PaginatedAlunos({
+    required this.docs,
+    this.lastDoc,
+    required this.hasMore,
+  });
+}
+
+class ContagemAlunos {
+  final int total;
+  final int ativos;
+  final int inativos;
+  final int risco;
+
+  ContagemAlunos({
+    required this.total,
+    required this.ativos,
+    required this.inativos,
+    required this.risco,
+  });
+}
+
 class AlunoService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  String? get _currentPersonalId => _auth.currentUser?.uid;
+
+  Future<void> salvarAluno(String nome, String email) async {
+    final personalId = _currentPersonalId;
+    if (personalId == null) throw Exception('Personal não autenticado');
+
+    await _firestore.collection('usuarios').add({
+      'nome': nome,
+      'email': email,
+      'tipoUsuario': 'aluno',
+      'status': 'ativo',
+      'personalId': personalId,
+      'dataCriacao': FieldValue.serverTimestamp(),
+      'ultimoTreino': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> deletarAluno(String alunoId) async {
+    await _firestore.collection('usuarios').doc(alunoId).delete();
+  }
+
+  Future<ContagemAlunos> fetchContagens() async {
+    final personalId = _currentPersonalId;
+    if (personalId == null) throw Exception('Personal não autenticado');
+
+    final baseQuery = _firestore
+        .collection('usuarios')
+        .where('tipoUsuario', isEqualTo: 'aluno')
+        .where('personalId', isEqualTo: personalId);
+
+    final total = await baseQuery.count().get();
+    final ativos = await baseQuery.where('status', isEqualTo: 'ativo').count().get();
+    final inativos = await baseQuery.where('status', isEqualTo: 'inativo').count().get();
+
+    final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
+    final risco = await baseQuery
+        .where('status', isEqualTo: 'ativo')
+        .where('ultimoTreino', isLessThanOrEqualTo: Timestamp.fromDate(sevenDaysAgo))
+        .count()
+        .get();
+
+    return ContagemAlunos(
+      total: total.count ?? 0,
+      ativos: ativos.count ?? 0,
+      inativos: inativos.count ?? 0,
+      risco: risco.count ?? 0,
+    );
+  }
+
+  Future<PaginatedAlunos> fetchAlunosPaginado({
+    required String statusFilter,
+    required String searchQuery,
+    DocumentSnapshot? lastDoc,
+    int limit = 20,
+  }) async {
+    final personalId = _currentPersonalId;
+    if (personalId == null) throw Exception('Personal não autenticado');
+
+    Query query = _firestore
+        .collection('usuarios')
+        .where('tipoUsuario', isEqualTo: 'aluno')
+        .where('personalId', isEqualTo: personalId);
+
+    if (statusFilter == "ativo") {
+      query = query.where('status', isEqualTo: 'ativo');
+    } else if (statusFilter == "inativo") {
+      query = query.where('status', isEqualTo: 'inativo');
+    } else if (statusFilter == "risco") {
+      final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
+      query = query
+          .where('status', isEqualTo: 'ativo')
+          .where('ultimoTreino', isLessThanOrEqualTo: Timestamp.fromDate(sevenDaysAgo));
+    }
+
+    if (searchQuery.isNotEmpty) {
+      query = query
+          .where('nome', isGreaterThanOrEqualTo: searchQuery)
+          .where('nome', isLessThanOrEqualTo: '$searchQuery\uf8ff');
+    }
+
+    query = query.orderBy('nome').limit(limit);
+
+    if (lastDoc != null) {
+      query = query.startAfterDocument(lastDoc);
+    }
+
+    final snapshot = await query.get();
+
+    return PaginatedAlunos(
+      docs: snapshot.docs,
+      lastDoc: snapshot.docs.isNotEmpty ? snapshot.docs.last : null,
+      hasMore: snapshot.docs.length == limit,
+    );
+  }
 
   Stream<DocumentSnapshot> getAlunoStream(String alunoId) {
     return _firestore
@@ -42,11 +165,29 @@ class AlunoService {
     );
   }
 
-  Stream<QuerySnapshot> getRotinasTemplates(String personalId) {
+  Stream<QuerySnapshot> getRotinasTemplates() {
+    final personalId = _currentPersonalId;
+    if (personalId == null) throw Exception('Personal não autenticado');
+
     return _firestore
         .collection('rotinas')
         .where('personalId', isEqualTo: personalId)
         .where('alunoId', isNull: true)
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> getPlanilhasStream(String alunoId) {
+    return _firestore
+        .collection('rotinas')
+        .where('alunoId', isEqualTo: alunoId)
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> getRotinaAtivaStream(String alunoId) {
+    return _firestore
+        .collection('rotinas')
+        .where('alunoId', isEqualTo: alunoId)
+        .where('ativa', isEqualTo: true)
         .snapshots();
   }
 

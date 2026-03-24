@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../treinos/rotina_detalhe_page.dart';
 import '../treinos/treinos_page.dart';
 import 'widgets/aluno_header_section.dart';
+import '../../core/services/aluno_service.dart';
 
 class GerenciarPlanilhasPage extends StatefulWidget {
   final String alunoId;
@@ -29,14 +30,12 @@ class GerenciarPlanilhasPage extends StatefulWidget {
 class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
   String? _idPlanilhaExpandida;
   late final Stream<QuerySnapshot> _planilhasStream;
+  final AlunoService _alunoService = AlunoService();
 
   @override
   void initState() {
     super.initState();
-    _planilhasStream = FirebaseFirestore.instance
-        .collection('rotinas')
-        .where('alunoId', isEqualTo: widget.alunoId)
-        .snapshots();
+    _planilhasStream = _alunoService.getPlanilhasStream(widget.alunoId);
   }
 
   void _showAddOptions(BuildContext context) {

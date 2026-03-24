@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../treinos/rotina_detalhe_page.dart';
+import '../../../core/services/aluno_service.dart';
 
 class FichaAtivaHeroCard extends StatelessWidget {
   final String alunoId;
@@ -18,14 +19,12 @@ class FichaAtivaHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AlunoService alunoService = AlunoService();
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
       child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('rotinas')
-            .where('alunoId', isEqualTo: alunoId)
-            .where('ativa', isEqualTo: true)
-            .snapshots(),
+        stream: alunoService.getRotinaAtivaStream(alunoId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const SizedBox(height: 100, child: Center(child: CircularProgressIndicator()));

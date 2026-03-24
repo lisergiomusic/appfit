@@ -1,10 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/exercise_service.dart';
-import '../../core/models/user_model.dart';
+import '../../core/services/auth_service.dart';
 import 'models/exercicio_model.dart';
 
 class CriarExercicioPage extends StatefulWidget {
@@ -16,8 +14,7 @@ class CriarExercicioPage extends StatefulWidget {
 
 class _CriarExercicioPageState extends State<CriarExercicioPage> {
   final ExerciseService _exerciseService = ExerciseService();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final AuthService _authService = AuthService();
 
   final TextEditingController _nomeCtrl = TextEditingController();
   final TextEditingController _midiaCtrl =
@@ -47,15 +44,11 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
   }
 
   Future<void> _checkAdminStatus() async {
-    final user = _auth.currentUser;
-    if (user != null) {
-      final doc = await _db.collection('usuarios').doc(user.uid).get();
-      if (doc.exists) {
-        final userModel = UserModel.fromFirestore(doc);
-        setState(() {
-          _isAdmin = userModel.isAdmin;
-        });
-      }
+    final isAdmin = await _authService.isAdmin();
+    if (mounted) {
+      setState(() {
+        _isAdmin = isAdmin;
+      });
     }
   }
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Importação da Autenticação
 import '../../core/theme/app_theme.dart';
+import '../../core/services/auth_service.dart';
 import 'cadastro_page.dart';
 import '../dashboard/dashboard_page.dart';
 
@@ -14,16 +14,14 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  // 1. Controladores para ler o que o usuário digita
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
+  final AuthService _authService = AuthService();
 
   bool _obscurePassword = true;
-  bool _isLoading = false; // 2. Controle da bolinha de carregamento
+  bool _isLoading = false;
 
-  // 3. Função que conversa com o Firebase para fazer o Login
   Future<void> _fazerLogin() async {
-    // Validação básica para não enviar campos vazios
     if (_emailController.text.trim().isEmpty ||
         _senhaController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -39,13 +37,11 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      // Tenta fazer o login no Google
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _senhaController.text.trim(),
+      await _authService.signIn(
+        _emailController.text.trim(),
+        _senhaController.text.trim(),
       );
 
-      // Se passou da linha de cima, o login deu certo! Vai para a Dashboard.
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -54,22 +50,11 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
       }
-    } on FirebaseAuthException catch (e) {
-      // Tratamento de erros comuns de login
-      String mensagemErro = 'Erro ao fazer login. Tente novamente.';
-
-      if (e.code == 'user-not-found' ||
-          e.code == 'wrong-password' ||
-          e.code == 'invalid-credential') {
-        mensagemErro = 'E-mail ou senha incorretos.';
-      } else if (e.code == 'invalid-email') {
-        mensagemErro = 'Formato de e-mail inválido.';
-      }
-
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(mensagemErro),
+            content: Text(e.toString().replaceAll('Exception: ', '')),
             backgroundColor: Colors.redAccent,
           ),
         );

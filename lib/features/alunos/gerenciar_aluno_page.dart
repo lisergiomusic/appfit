@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/services/aluno_service.dart';
 
 class GerenciarAlunoPage extends StatelessWidget {
   final String alunoId;
@@ -76,10 +76,8 @@ class GerenciarAlunoPage extends StatelessWidget {
 
     if (confirmar == true) {
       try {
-        await FirebaseFirestore.instance
-            .collection('usuarios')
-            .doc(alunoId)
-            .delete();
+        final AlunoService alunoService = AlunoService();
+        await alunoService.deletarAluno(alunoId);
         if (context.mounted) {
           // Volta duas telas (fecha gerenciar e fecha perfil) para voltar à lista de alunos
           Navigator.popUntil(context, (route) => route.isFirst);

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/services/aluno_service.dart';
 import 'perfil_aluno_page.dart';
 
 class AlunosPage extends StatefulWidget {
@@ -14,6 +14,7 @@ class AlunosPage extends StatefulWidget {
 class _AlunosPageState extends State<AlunosPage> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final AlunoService _alunoService = AlunoService();
 
   String _searchQuery = "";
   String _statusFilter = "todos"; // "todos", "ativo", "inativo", "risco"
@@ -72,34 +73,14 @@ class _AlunosPageState extends State<AlunosPage> {
   }
 
   Future<void> _updateSummaryCounts() async {
-    final String? personalId = FirebaseAuth.instance.currentUser?.uid;
-    if (personalId == null) return;
-
-    final baseQuery = FirebaseFirestore.instance
-        .collection('usuarios')
-        .where('tipoUsuario', isEqualTo: 'aluno')
-        .where('personalId', isEqualTo: personalId);
-
     try {
-      // Usando Aggregate Queries para eficiência (custo de 1 leitura por 1000 índices)
-      final total = await baseQuery.count().get();
-      final ativos = await baseQuery.where('status', isEqualTo: 'ativo').count().get();
-      final inativos = await baseQuery.where('status', isEqualTo: 'inativo').count().get();
-
-      // Cálculo de risco: Ativo e sem treino há mais de 7 dias
-      final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
-      final risco = await baseQuery
-          .where('status', isEqualTo: 'ativo')
-          .where('ultimoTreino', isLessThanOrEqualTo: Timestamp.fromDate(sevenDaysAgo))
-          .count()
-          .get();
-
+      final contagens = await _alunoService.fetchContagens();
       if (mounted) {
         setState(() {
-          _totalCount = total.count ?? 0;
-          _ativosCount = ativos.count ?? 0;
-          _inativosCount = inativos.count ?? 0;
-          _riscoCount = risco.count ?? 0;
+          _totalCount = contagens.total;
+          _ativosCount = contagens.ativos;
+          _inativosCount = contagens.inativos;
+          _riscoCount = contagens.risco;
         });
       }
     } catch (e) {
@@ -112,51 +93,20 @@ class _AlunosPageState extends State<AlunosPage> {
 
     if (!isInitial) setState(() => _isLoadingMore = true);
 
-    final String? personalId = FirebaseAuth.instance.currentUser?.uid;
-    if (personalId == null) return;
-
     try {
-      Query query = FirebaseFirestore.instance
-          .collection('usuarios')
-          .where('tipoUsuario', isEqualTo: 'aluno')
-          .where('personalId', isEqualTo: personalId);
-
-      // Filtro de Status no Servidor
-      if (_statusFilter == "ativo") {
-        query = query.where('status', isEqualTo: 'ativo');
-      } else if (_statusFilter == "inativo") {
-        query = query.where('status', isEqualTo: 'inativo');
-      } else if (_statusFilter == "risco") {
-        final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
-        query = query
-            .where('status', isEqualTo: 'ativo')
-            .where('ultimoTreino', isLessThanOrEqualTo: Timestamp.fromDate(sevenDaysAgo));
-      }
-
-      // Busca por Nome (Prefix matching) - requer que o nome comece com a query
-      if (_searchQuery.isNotEmpty) {
-        query = query
-            .where('nome', isGreaterThanOrEqualTo: _searchQuery)
-            .where('nome', isLessThanOrEqualTo: '$_searchQuery\uf8ff');
-      }
-
-      query = query.orderBy('nome').limit(_limit);
-
-      if (_lastDocument != null) {
-        query = query.startAfterDocument(_lastDocument!);
-      }
-
-      final snapshot = await query.get();
+      final result = await _alunoService.fetchAlunosPaginado(
+        statusFilter: _statusFilter,
+        searchQuery: _searchQuery,
+        lastDoc: _lastDocument,
+        limit: _limit,
+      );
 
       if (mounted) {
         setState(() {
-          if (snapshot.docs.length < _limit) {
-            _hasMore = false;
-          }
-
-          if (snapshot.docs.isNotEmpty) {
-            _lastDocument = snapshot.docs.last;
-            _alunosDocs.addAll(snapshot.docs);
+          _hasMore = result.hasMore;
+          if (result.docs.isNotEmpty) {
+            _lastDocument = result.lastDoc;
+            _alunosDocs.addAll(result.docs);
           }
           _isLoadingMore = false;
         });
@@ -190,7 +140,7 @@ class _AlunosPageState extends State<AlunosPage> {
     );
 
     if (confirmar == true) {
-      await FirebaseFirestore.instance.collection('usuarios').doc(id).delete();
+      await _alunoService.deletarAluno(id);
       _fetchInitialData();
     }
   }
@@ -198,19 +148,8 @@ class _AlunosPageState extends State<AlunosPage> {
   Future<void> _salvarAluno(BuildContext context, String nome, String email) async {
     if (nome.isEmpty || email.isEmpty) return;
 
-    final String? personalId = FirebaseAuth.instance.currentUser?.uid;
-    if (personalId == null) return;
-
     try {
-      await FirebaseFirestore.instance.collection('usuarios').add({
-        'nome': nome,
-        'email': email,
-        'tipoUsuario': 'aluno',
-        'status': 'ativo',
-        'personalId': personalId,
-        'dataCriacao': FieldValue.serverTimestamp(),
-        'ultimoTreino': FieldValue.serverTimestamp(),
-      });
+      await _alunoService.salvarAluno(nome, email);
       if (context.mounted) {
         Navigator.pop(context);
         _fetchInitialData();

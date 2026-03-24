@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // <-- Nova importação do Firestore!
 import '../../core/theme/app_theme.dart';
+import '../../core/services/auth_service.dart';
 import '../dashboard/dashboard_page.dart';
 
 class CadastroPage extends StatefulWidget {
@@ -18,6 +17,7 @@ class _CadastroPageState extends State<CadastroPage> {
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
   final _confirmarSenhaController = TextEditingController();
+  final AuthService _authService = AuthService();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -31,7 +31,6 @@ class _CadastroPageState extends State<CadastroPage> {
       return;
     }
 
-    // Validação extra para garantir que o nome foi preenchido
     if (_nomeController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, introduza o seu nome.')),
@@ -44,26 +43,13 @@ class _CadastroPageState extends State<CadastroPage> {
     });
 
     try {
-      // 1. Cria a conta no Firebase Auth (E-mail e Palavra-passe)
-      UserCredential userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
-            email: _emailController.text.trim(),
-            password: _senhaController.text.trim(),
-          );
+      await _authService.signUp(
+        email: _emailController.text.trim(),
+        password: _senhaController.text.trim(),
+        nome: _nomeController.text.trim(),
+        tipoUsuario: widget.userType,
+      );
 
-      // 2. Apanha o ID único gerado pelo Google para este utilizador
-      String uid = userCredential.user!.uid;
-
-      // 3. Guarda os dados completos no Firestore na coleção 'usuarios'
-      await FirebaseFirestore.instance.collection('usuarios').doc(uid).set({
-        'nome': _nomeController.text.trim(),
-        'email': _emailController.text.trim(),
-        'tipoUsuario': widget.userType, // 'personal' ou 'aluno'
-        'dataCriacao':
-            FieldValue.serverTimestamp(), // Regista a data e hora exata
-      });
-
-      // Se tudo correu bem, navega para a Dashboard
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -72,28 +58,11 @@ class _CadastroPageState extends State<CadastroPage> {
           ),
         );
       }
-    } on FirebaseAuthException catch (e) {
-      String mensagemErro = 'Ocorreu um erro no registo.';
-      if (e.code == 'weak-password') {
-        mensagemErro = 'A palavra-passe fornecida é muito fraca.';
-      } else if (e.code == 'email-already-in-use') {
-        mensagemErro = 'Já existe uma conta com este e-mail.';
-      }
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(mensagemErro),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
     } catch (e) {
-      // Caso ocorra um erro ao guardar no Firestore
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao guardar os dados: $e'),
+            content: Text(e.toString().replaceAll('Exception: ', '')),
             backgroundColor: Colors.redAccent,
           ),
         );

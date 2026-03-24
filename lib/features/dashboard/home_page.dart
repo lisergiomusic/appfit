@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/services/auth_service.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final User? user = FirebaseAuth.instance.currentUser;
+    final AuthService authService = AuthService();
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -77,61 +76,51 @@ class HomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Perfil e Boas-vindas
-            Padding(
-              padding: const EdgeInsets.all(AppTheme.paddingScreen),
-              child: Row(
-                children: [
-                  Stack(
-                    alignment: Alignment.bottomRight,
+            FutureBuilder<Map<String, dynamic>?>(
+              future: authService.getCurrentUserData(),
+              builder: (context, snapshot) {
+                String nome = "...";
+                String? photoUrl;
+                
+                if (snapshot.hasData && snapshot.data != null) {
+                  final data = snapshot.data!;
+                  nome = data['nome']?.toString().split(' ')[0] ?? "Usuário";
+                  photoUrl = data['photoUrl'] as String?;
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.all(AppTheme.paddingScreen),
+                  child: Row(
                     children: [
-                      FutureBuilder<DocumentSnapshot>(
-                        future: FirebaseFirestore.instance
-                            .collection('usuarios')
-                            .doc(user?.uid)
-                            .get(),
-                        builder: (context, snapshot) {
-                          String? photoUrl;
-                          if (snapshot.hasData && snapshot.data!.exists) {
-                            photoUrl = (snapshot.data!.data() as Map<String, dynamic>)['photoUrl'];
-                          }
-                          return CircleAvatar(
+                      Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          CircleAvatar(
                             radius: 34,
                             backgroundColor: AppTheme.surfaceLight,
                             backgroundImage: photoUrl != null && photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
                             child: photoUrl == null || photoUrl.isEmpty
                                 ? const Icon(Icons.person_rounded, color: AppTheme.textSecondary, size: 34)
                                 : null,
-                          );
-                        },
+                          ),
+                          Container(
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primary,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: AppTheme.background, width: 2.5),
+                            ),
+                            child: const Icon(Icons.check_rounded, size: 10, color: Colors.black),
+                          ),
+                        ],
                       ),
-                      Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: AppTheme.background, width: 2.5),
-                        ),
-                        child: const Icon(Icons.check_rounded, size: 10, color: Colors.black),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        FutureBuilder<DocumentSnapshot>(
-                          future: FirebaseFirestore.instance
-                              .collection('usuarios')
-                              .doc(user?.uid)
-                              .get(),
-                          builder: (context, snapshot) {
-                            String nome = "...";
-                            if (snapshot.hasData && snapshot.data!.exists) {
-                              nome = snapshot.data!.get('nome').toString().split(' ')[0];
-                            }
-                            return Text(
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
                               '${_getSaudacao()}, $nome',
                               style: const TextStyle(
                                 fontSize: 28,
@@ -139,31 +128,31 @@ class HomePage extends StatelessWidget {
                                 color: AppTheme.textPrimary,
                                 letterSpacing: -0.5,
                               ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primary.withAlpha(25),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Text(
-                            'Plano Premium',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.primary,
-                              letterSpacing: 0.5,
                             ),
-                          ),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primary.withAlpha(25),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'Plano Premium',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.primary,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
 
             // Stats Row

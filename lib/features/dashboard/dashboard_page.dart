@@ -1,7 +1,7 @@
 import '../treinos/treinos_page.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/services/auth_service.dart';
 import 'home_page.dart';
 import '../alunos/alunos_page.dart';
 import '../../main.dart';
@@ -16,9 +16,10 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   int _indiceAtual = 0;
+  final AuthService _authService = AuthService();
 
   Future<void> _sair(BuildContext context) async {
-    await FirebaseAuth.instance.signOut();
+    await _authService.signOut();
     if (context.mounted) {
       Navigator.pushAndRemoveUntil(
         context,

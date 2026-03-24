@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/appfit_simple_app_bar.dart';
+import '../../core/services/aluno_service.dart';
+import '../../core/services/rotina_service.dart';
 import 'rotina_detalhe_page.dart';
 
 class TreinosPage extends StatelessWidget {
@@ -16,13 +17,13 @@ class TreinosPage extends StatelessWidget {
   });
 
   Future<void> _deletarTreino(String id) async {
-    await FirebaseFirestore.instance.collection('rotinas').doc(id).delete();
+    await RotinaService().excluirRotina(id);
   }
 
   @override
   Widget build(BuildContext context) {
-    final String? personalId = FirebaseAuth.instance.currentUser?.uid;
     final bool isSelecting = alunoId != null;
+    final AlunoService alunoService = AlunoService();
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -51,11 +52,7 @@ class TreinosPage extends StatelessWidget {
         ),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('rotinas')
-            .where('personalId', isEqualTo: personalId)
-            .where('alunoId', isNull: true)
-            .snapshots(),
+        stream: alunoService.getRotinasTemplates(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
