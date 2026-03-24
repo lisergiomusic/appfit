@@ -5,7 +5,7 @@ import '../../../core/theme/app_theme.dart';
 InputDecoration rotinaInputDecoration({required String hintText}) {
   return InputDecoration(
     hintText: hintText,
-    hintStyle: GoogleFonts.inter(
+    hintStyle: GoogleFonts.figtree(
       color: AppTheme.textSecondary.withAlpha(128),
       fontSize: 13,
     ),

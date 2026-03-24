@@ -243,7 +243,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   ),
                 ),
                 const Text(
-                  'Adicionar Nova Série',
+                  'Selecione o tipo de série',
                   style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 16),
@@ -263,7 +263,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         subtitle: 'Prepara articulações e ativa músculos.',
                       ),
                       _buildModalOption(
-                        title: 'Feeder Set',
+                        title: 'Série de Aproximação',
                         icon: Icons.flash_on,
                         color: Colors.blueAccent,
                         onTap: () => Navigator.pop(context, TipoSerie.feeder),
@@ -332,7 +332,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                     children: [
                       Text(title, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)),
                       const SizedBox(height: 2),
-                      Text(subtitle, style: TextStyle(color: AppTheme.textSecondary.withAlpha(160), fontSize: 11), maxLines: 1),
+
                     ],
                   ),
                 ),

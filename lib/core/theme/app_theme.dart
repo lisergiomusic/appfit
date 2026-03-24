@@ -30,8 +30,25 @@ class AppTheme {
     letterSpacing: 0.8,
   );
 
+  static const TextStyle caption = TextStyle(
+    color: textSecondary,
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.0,
+  );
+
+
+
+  static const TextStyle bodyText = TextStyle(
+    color: textPrimary,
+    fontSize: 17,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.1,
+    height: 1.4,
+  );
+
   static const TextStyle bigTitle = TextStyle(
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.4,
     color: AppTheme.textPrimary,
@@ -49,15 +66,15 @@ class AppTheme {
   static const  TextStyle pageTitle = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
-    letterSpacing: -0.4,
+    letterSpacing: -0.2,
     color: AppTheme.textPrimary,
   );
 
   static TextStyle textSectionHeaderDark = TextStyle(
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: FontWeight.w600,
     color: AppTheme.textPrimary,
-    letterSpacing: -0.5,
+    letterSpacing: -0.3,
   );
 
   // --- 3. ESPAÇAMENTOS GLOBAIS (Novo Padrão Compacto) ---
@@ -93,7 +110,7 @@ class AppTheme {
       primaryColor: primary,
       scaffoldBackgroundColor: background,
       canvasColor: surfaceDark,
-      textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
+
       colorScheme: const ColorScheme.dark(
         primary: primary,
         surface: surfaceDark,
@@ -118,7 +135,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMedium),
           ),
-          textStyle: GoogleFonts.outfit(
+          textStyle: GoogleFonts.figtree(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -131,8 +148,8 @@ class AppTheme {
           vertical: 14,
           horizontal: 16,
         ),
-        labelStyle: GoogleFonts.outfit(color: textSecondary, fontSize: 13),
-        hintStyle: GoogleFonts.outfit(
+        labelStyle: GoogleFonts.figtree(color: textSecondary, fontSize: 13),
+        hintStyle: GoogleFonts.figtree(
           color: textSecondary.withAlpha(128),
           fontSize: 13,
         ),

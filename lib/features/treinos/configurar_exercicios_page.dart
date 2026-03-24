@@ -586,8 +586,8 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
-                      width: 64,
-                      height: 64,
+                      width: 56,
+                      height: 56,
                       color: Colors.black.withAlpha(40),
                       child: Image.network(
                         (ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty)
@@ -628,8 +628,8 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                            height: 1.2,
+                            fontSize: 17,
+                            letterSpacing: -0.1,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -638,9 +638,9 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                         RichText(
                           text: TextSpan(
                             style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w400,
-                              letterSpacing: 0.1,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.0,
                             ),
                             children: [
                               TextSpan(
