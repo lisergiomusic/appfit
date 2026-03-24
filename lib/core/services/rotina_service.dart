@@ -11,7 +11,6 @@ class RotinaService {
     required String nome,
     required String objetivo,
     required List<Map<String, dynamic>> sessoes,
-    // Novos parâmetros para suportar as duas opções:
     required String tipoVencimento, // 'sessoes' ou 'data'
     int? sessoesAlvo,               // Ex: 20
     DateTime? dataVencimento,       // Ex: 20/12/2024
@@ -45,7 +44,7 @@ class RotinaService {
       'sessoes': sessoes,
       'ativa': true,
       'dataCriacao': FieldValue.serverTimestamp(),
-      'tipoVencimento': tipoVencimento, // Salva se é 'sessoes' ou 'data'
+      'tipoVencimento': tipoVencimento,
     };
 
     if (tipoVencimento == 'sessoes') {
@@ -78,7 +77,6 @@ class RotinaService {
       'nome': nome,
       'objetivo': objetivo,
       'sessoes': sessoes,
-      'dataUltimaAlteracao': FieldValue.serverTimestamp(),
     };
 
     if (tipoVencimento != null) {

@@ -53,6 +53,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   final List<_TreinoData> _treinos = [];
   bool _isReordering = false;
   bool _isDeleting = false;
+  bool _isSaving = false;
+  bool _canPopNow = false;
 
   @override
   void initState() {
@@ -159,181 +161,183 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             left: 24, right: 24, top: 12,
             bottom: MediaQuery.of(context).viewInsets.bottom + 24,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Handle de arrastar
-              Center(
-                child: Container(
-                  width: 40, height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(2),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Handle de arrastar
+                Center(
+                  child: Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              const Text('Configurações da Planilha',
-                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 24),
-
-              // 1. NOME DA PLANILHA
-              RotinaModernInput(
-                label: 'NOME DA PLANILHA',
-                icon: Icons.edit_note,
-                child: TextField(
-                  controller: nomeCtrl,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: rotinaInputDecoration(hintText: 'Ex: Protocolo Y'),
+                const SizedBox(height: 24),
+                const Text('Configurações da Planilha',
+                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 24),
+    
+                // 1. NOME DA PLANILHA
+                RotinaModernInput(
+                  label: 'NOME DA PLANILHA',
+                  icon: Icons.edit_note,
+                  child: TextField(
+                    controller: nomeCtrl,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: rotinaInputDecoration(hintText: 'Ex: Protocolo Y'),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-
-              // 2. OBJETIVO COM CHIPS DE SUGESTÃO
-              RotinaModernInput(
-                label: 'OBJETIVO PRINCIPAL',
-                icon: Icons.ads_click,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      controller: objCtrl,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: rotinaInputDecoration(hintText: 'Ex: Hipertrofia Máxima'),
-                    ),
-                    const SizedBox(height: 8),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: _sugestoesObjetivo.map((obj) => Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: ChoiceChip(
-                            label: Text(obj),
-                            selected: objCtrl.text == obj,
-                            onSelected: (selected) {
-                              if (selected) setStateModal(() => objCtrl.text = obj);
-                            },
-                            backgroundColor: AppTheme.surfaceLight,
-                            selectedColor: AppTheme.primary,
-                            labelStyle: TextStyle(
-                              color: objCtrl.text == obj ? Colors.black : Colors.white70,
-                              fontSize: 12,
-                            ),
-                          ),
-                        )).toList(),
+                const SizedBox(height: 20),
+    
+                // 2. OBJETIVO COM CHIPS DE SUGESTÃO
+                RotinaModernInput(
+                  label: 'OBJETIVO PRINCIPAL',
+                  icon: Icons.ads_click,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: objCtrl,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: rotinaInputDecoration(hintText: 'Ex: Hipertrofia Máxima'),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // 3. TIPO DE VENCIMENTO (Sessões vs Data)
-              const Text('VALIDADE DA PLANILHA',
-                  style: TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceLight,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    _buildTabOption(
-                      label: 'Sessões',
-                      isSelected: tipoTemp == 'sessoes',
-                      onTap: () => setStateModal(() => tipoTemp = 'sessoes'),
-                    ),
-                    _buildTabOption(
-                      label: 'Data Fixa',
-                      isSelected: tipoTemp == 'data',
-                      onTap: () => setStateModal(() => tipoTemp = 'data'),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // 4. INPUT DINÂMICO DE VENCIMENTO
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: tipoTemp == 'sessoes'
-                    ? TextFormField(
-                  key: const ValueKey('inputSessoes'),
-                  keyboardType: TextInputType.number,
-                  initialValue: sessoesTemp.toString(),
-                  style: const TextStyle(color: Colors.white),
-                  decoration: rotinaInputDecoration(
-                    hintText: 'Quantas sessões de treino?',
+                      const SizedBox(height: 8),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: _sugestoesObjetivo.map((obj) => Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ChoiceChip(
+                              label: Text(obj),
+                              selected: objCtrl.text == obj,
+                              onSelected: (selected) {
+                                if (selected) setStateModal(() => objCtrl.text = obj);
+                              },
+                              backgroundColor: AppTheme.surfaceLight,
+                              selectedColor: AppTheme.primary,
+                              labelStyle: TextStyle(
+                                color: objCtrl.text == obj ? Colors.black : Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                          )).toList(),
+                        ),
+                      ),
+                    ],
                   ),
-                  onChanged: (v) => sessoesTemp = int.tryParse(v) ?? 20,
-                )
-                    : ListTile(
-                  key: const ValueKey('inputData'),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  tileColor: AppTheme.surfaceLight,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  leading: const Icon(Icons.calendar_month, color: AppTheme.primary),
-                  title: const Text('Vence em:', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                  trailing: Text(DateFormat('dd/MM/yyyy').format(dataTemp),
-                      style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 16)),
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: dataTemp,
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 365)),
-                    );
-                    if (picked != null) setStateModal(() => dataTemp = picked);
-                  },
                 ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // BOTÃO CONFIRMAR
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _tipoVencimento = tipoTemp;
-                      _vencimentoSessoes = sessoesTemp;
-                      _vencimentoData = dataTemp;
-                    });
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
-                  child: const Text('SALVAR CONFIGURAÇÕES',
-                      style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, letterSpacing: 1)),
-                ),
-              ),
-
-              if (widget.rotinaId != null) ...[
+                const SizedBox(height: 20),
+    
+                // 3. TIPO DE VENCIMENTO (Sessões vs Data)
+                const Text('VALIDADE DA PLANILHA',
+                    style: TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
                 const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceLight,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      _buildTabOption(
+                        label: 'Sessões',
+                        isSelected: tipoTemp == 'sessoes',
+                        onTap: () => setStateModal(() => tipoTemp = 'sessoes'),
+                      ),
+                      _buildTabOption(
+                        label: 'Data Fixa',
+                        isSelected: tipoTemp == 'data',
+                        onTap: () => setStateModal(() => tipoTemp = 'data'),
+                      ),
+                    ],
+                  ),
+                ),
+    
+                const SizedBox(height: 16),
+    
+                // 4. INPUT DINÂMICO DE VENCIMENTO
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: tipoTemp == 'sessoes'
+                      ? TextFormField(
+                    key: const ValueKey('inputSessoes'),
+                    keyboardType: TextInputType.number,
+                    initialValue: sessoesTemp.toString(),
+                    style: const TextStyle(color: Colors.white),
+                    decoration: rotinaInputDecoration(
+                      hintText: 'Quantas sessões de treino?',
+                    ),
+                    onChanged: (v) => sessoesTemp = int.tryParse(v) ?? 20,
+                  )
+                      : ListTile(
+                    key: const ValueKey('inputData'),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    tileColor: AppTheme.surfaceLight,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    leading: const Icon(Icons.calendar_month, color: AppTheme.primary),
+                    title: const Text('Vence em:', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                    trailing: Text(DateFormat('dd/MM/yyyy').format(dataTemp),
+                        style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 16)),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: dataTemp,
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                      );
+                      if (picked != null) setStateModal(() => dataTemp = picked);
+                    },
+                  ),
+                ),
+    
+                const SizedBox(height: 32),
+    
+                // BOTÃO CONFIRMAR
                 SizedBox(
                   width: double.infinity,
                   height: 56,
-                  child: OutlinedButton(
-                    onPressed: () => _confirmarExclusao(context),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.redAccent,
-                      side: const BorderSide(color: Colors.redAccent, width: 1),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _tipoVencimento = tipoTemp;
+                        _vencimentoSessoes = sessoesTemp;
+                        _vencimentoData = dataTemp;
+                      });
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
-                    child: const Text('REMOVER PLANILHA',
-                        style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1)),
+                    child: const Text('SALVAR CONFIGURAÇÕES',
+                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, letterSpacing: 1)),
                   ),
                 ),
+    
+                if (widget.rotinaId != null) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: OutlinedButton(
+                      onPressed: () => _confirmarExclusao(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.redAccent,
+                        side: const BorderSide(color: Colors.redAccent, width: 1),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: const Text('REMOVER PLANILHA',
+                          style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1)),
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -358,6 +362,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               _isDeleting = true;
               await RotinaService().excluirRotina(widget.rotinaId!);
               if (mounted) {
+                setState(() {
+                  _canPopNow = true;
+                });
                 Navigator.pop(context); // Fecha dialog
                 Navigator.pop(context); // Fecha modal
                 Navigator.pop(context); // Volta para a tela anterior
@@ -411,61 +418,63 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (_) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 24, right: 24, top: 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 40, height: 4, margin: const EdgeInsets.only(bottom: 24),
-                decoration: BoxDecoration(color: Colors.white.withAlpha(30), borderRadius: BorderRadius.circular(2)),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40, height: 4, margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(color: Colors.white.withAlpha(30), borderRadius: BorderRadius.circular(2)),
+                ),
               ),
-            ),
-            Text(isEditing ? 'Editar Sessão' : 'Nova Sessão', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 28),
-            RotinaModernInput(
-              label: 'NOME DO TREINO',
-              icon: Icons.fitness_center,
-              child: TextField(controller: sNomeCtrl, style: const TextStyle(color: Colors.white, fontSize: 16), decoration: rotinaInputDecoration(hintText: 'Ex: Push, Pull...')),
-            ),
-            const SizedBox(height: 24),
-            RotinaModernInput(
-              label: 'DIA DA SEMANA',
-              icon: Icons.calendar_today,
-              child: DropdownButtonFormField<String>(
-                value: diaSemana,
-                dropdownColor: AppTheme.surfaceLight,
-                items: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
-                onChanged: (v) => diaSemana = v,
-                decoration: rotinaInputDecoration(hintText: 'Sem dia fixo'),
+              Text(isEditing ? 'Editar Sessão' : 'Nova Sessão', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 28),
+              RotinaModernInput(
+                label: 'NOME DO TREINO',
+                icon: Icons.fitness_center,
+                child: TextField(controller: sNomeCtrl, style: const TextStyle(color: Colors.white, fontSize: 16), decoration: rotinaInputDecoration(hintText: 'Ex: Push, Pull...')),
               ),
-            ),
-            const SizedBox(height: 24),
-            RotinaModernInput(
-              label: 'NOTAS',
-              icon: Icons.notes,
-              child: TextField(controller: orientCtrl, maxLines: 3, style: const TextStyle(color: Colors.white, fontSize: 16), decoration: rotinaInputDecoration(hintText: 'Ex: Aquecer...')),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () {
-                final newName = sNomeCtrl.text.trim().isEmpty ? 'Treino ${String.fromCharCode(65 + _treinos.length)}' : sNomeCtrl.text.trim();
-                setState(() {
-                  if (isEditing) {
-                    _treinos[index].nome = newName;
-                    _treinos[index].diaSemana = diaSemana;
-                    _treinos[index].orientacoes = orientCtrl.text.trim();
-                  } else {
-                    _treinos.add(_TreinoData(nome: newName, diaSemana: diaSemana, orientacoes: orientCtrl.text.trim()));
-                  }
-                });
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, padding: const EdgeInsets.symmetric(vertical: 14)),
-              child: Text(isEditing ? 'Salvar' : 'Adicionar', style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black)),
-            ),
-            const SizedBox(height: 24),
-          ],
+              const SizedBox(height: 24),
+              RotinaModernInput(
+                label: 'DIA DA SEMANA',
+                icon: Icons.calendar_today,
+                child: DropdownButtonFormField<String>(
+                  value: diaSemana,
+                  dropdownColor: AppTheme.surfaceLight,
+                  items: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                  onChanged: (v) => diaSemana = v,
+                  decoration: rotinaInputDecoration(hintText: 'Sem dia fixo'),
+                ),
+              ),
+              const SizedBox(height: 24),
+              RotinaModernInput(
+                label: 'NOTAS',
+                icon: Icons.notes,
+                child: TextField(controller: orientCtrl, maxLines: 3, style: const TextStyle(color: Colors.white, fontSize: 16), decoration: rotinaInputDecoration(hintText: 'Ex: Aquecer...')),
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: () {
+                  final newName = sNomeCtrl.text.trim().isEmpty ? 'Treino ${String.fromCharCode(65 + _treinos.length)}' : sNomeCtrl.text.trim();
+                  setState(() {
+                    if (isEditing) {
+                      _treinos[index].nome = newName;
+                      _treinos[index].diaSemana = diaSemana;
+                      _treinos[index].orientacoes = orientCtrl.text.trim();
+                    } else {
+                      _treinos.add(_TreinoData(nome: newName, diaSemana: diaSemana, orientacoes: orientCtrl.text.trim()));
+                    }
+                  });
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, padding: const EdgeInsets.symmetric(vertical: 14)),
+                child: Text(isEditing ? 'Salvar' : 'Adicionar', style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black)),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );
@@ -483,7 +492,19 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     final String nomeParaSalvar = nomeCtrl.text.trim();
     final String objetivoParaSalvar = objCtrl.text.trim();
 
-    if (nomeParaSalvar.isEmpty || _treinos.isEmpty) return false;
+    // Se estiver totalmente vazio e for criação, deixa sair sem salvar
+    if (widget.rotinaId == null && nomeParaSalvar.isEmpty && _treinos.isEmpty) {
+      return true;
+    }
+
+    if (nomeParaSalvar.isEmpty || _treinos.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Dê um nome e adicione pelo menos um treino.')),
+        );
+      }
+      return false;
+    }
 
     try {
       // 1. Mapeamento das sessões para JSON
@@ -504,7 +525,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         }).toList(),
       }).toList();
 
-      print('--- [DATABASE] SALVANDO COM TIPO: $_tipoVencimento ---');
+      debugPrint('--- [DATABASE] SALVANDO PLANILHA: $nomeParaSalvar ---');
 
       // 2. Chamada do serviço tratando as duas opções
       if (widget.rotinaId != null) {
@@ -533,7 +554,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
       return true;
     } catch (e) {
-      print('Erro ao salvar rotina: $e');
+      debugPrint('Erro ao salvar rotina: $e');
       return false;
     }
   }
@@ -543,14 +564,19 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     final bool isTemplate = widget.rotinaData != null && widget.rotinaData!['alunoId'] == null;
 
     return PopScope(
-      canPop: false,
+      canPop: _canPopNow,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
+        if (_isSaving) return;
 
-        // Tenta salvar ao detectar o gesto de voltar do sistema
+        _isSaving = true;
         bool salvo = await _salvarRotinaCompleta();
-        if (salvo && context.mounted){
+
+        if (salvo && context.mounted) {
+          setState(() => _canPopNow = true);
           Navigator.of(context).pop();
+        } else {
+          _isSaving = false;
         }
       },
       child: Scaffold(
@@ -565,12 +591,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 color: AppTheme.textPrimary,
                 size: 24
             ),
-            onPressed: () async {
-              bool salvo = await _salvarRotinaCompleta();
-              if (salvo && context.mounted) {
-                Navigator.of(context).pop();
-              }
-            },
+            onPressed: () => Navigator.of(context).maybePop(),
           ),
           title: const Text('Gerenciar Planilha', style: AppTheme.pageTitle),
         ),
