@@ -1,20 +1,28 @@
+import 'dart:math';
+
 enum TipoSerie { aquecimento, feeder, trabalho }
 
 class SerieItem {
+  final String id;
   TipoSerie tipo;
   String alvo;
   String carga;
   String descanso;
 
   SerieItem({
+    String? id,
     this.tipo = TipoSerie.trabalho,
     this.alvo = '10',
     this.carga = '-',
     this.descanso = '60s',
-  });
+  }) : id = id ?? _generateId();
+
+  static String _generateId() {
+    return '${DateTime.now().microsecondsSinceEpoch}_${Random().nextInt(10000)}';
+  }
 
   SerieItem clone() {
-    return SerieItem(tipo: tipo, alvo: alvo, carga: carga, descanso: descanso);
+    return SerieItem(id: id, tipo: tipo, alvo: alvo, carga: carga, descanso: descanso);
   }
 }
 

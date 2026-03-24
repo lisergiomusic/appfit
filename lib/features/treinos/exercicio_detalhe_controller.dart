@@ -2,8 +2,19 @@ import 'models/exercicio_model.dart';
 
 class ExercicioDetalheController {
   final ExercicioItem exercicio;
+  final Set<String> _newSeriesIds = {};
 
   ExercicioDetalheController(this.exercicio);
+
+  Set<String> get newSeriesIds => _newSeriesIds;
+
+  void markAsNew(String id) {
+    _newSeriesIds.add(id);
+  }
+
+  void markHintAsShown(String id) {
+    _newSeriesIds.remove(id);
+  }
 
   List<MapEntry<int, SerieItem>> entriesForTipo(TipoSerie tipo) {
     final list = <MapEntry<int, SerieItem>>[];

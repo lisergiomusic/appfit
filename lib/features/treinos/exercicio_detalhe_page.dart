@@ -245,6 +245,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       }
 
       final newSerie = SerieItem(tipo: tipoEscolhido, alvo: alvoToClone, carga: cargaToClone, descanso: descansoToClone);
+      controller.markAsNew(newSerie.id);
+      
       final sectionList = controller.entriesForTipo(tipoEscolhido);
       final insertSectionIndex = sectionList.length;
       final insertRealIndex = controller.computeInsertRealIndex(tipoEscolhido);
@@ -298,16 +300,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.space12, vertical: AppTheme.space10),
       focusedBorder: InputBorder.none,
       enabledBorder: InputBorder.none,
+      filled: true,
+      fillColor: Colors.transparent,
     );
   }
 
   // --- WIDGET DE LINHA DA SÉRIE ---
   Widget _buildSerieRow(SerieItem serie, int realIndex, int visualNumber, bool isFirst, bool isLast) {
-    final stableId = serie.hashCode;
-    final repsController = _getController('reps_$stableId', serie.alvo);
-    final cargaController = _getController('carga_$stableId', _formatCargaInputValue(serie.carga));
-    final descansoController = _getController('descanso_$stableId', _formatDescansoInputValue(serie.descanso));
-
+    final isNew = controller.newSeriesIds.contains(serie.id);
     final radius = Radius.circular(AppTheme.radiusMedium);
     final borderRadius = BorderRadius.only(
       topLeft: isFirst ? radius : Radius.zero,
@@ -316,12 +316,32 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       bottomRight: isLast ? radius : Radius.zero,
     );
 
+    Widget rowContent(Color? flashColor) {
+      return _buildSerieRowContent(serie, realIndex, visualNumber, isFirst, isLast, flashColor: flashColor);
+    }
+
+    Widget card;
+    if (isNew) {
+      card = _HintingSerieAnimator(
+        onEnd: () {
+          if (mounted) {
+            setState(() {
+              controller.markHintAsShown(serie.id);
+            });
+          }
+        },
+        builder: (context, color) => rowContent(color),
+      );
+    } else {
+      card = rowContent(null);
+    }
+
     return Column(
       children: [
         ClipRRect(
           borderRadius: borderRadius,
           child: Dismissible(
-            key: ValueKey('${serie.hashCode}'),
+            key: ValueKey(serie.id),
             direction: DismissDirection.endToStart,
             onDismissed: (_) {
               final idx = ex.series.indexOf(serie);
@@ -340,35 +360,44 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                 padding: const EdgeInsets.only(right: 20),
                 child: const Icon(Icons.delete_outline, color: Colors.white)
             ),
-            child: AnimatedBuilder(
-              animation: _flashControllers[serie.hashCode] ?? const AlwaysStoppedAnimation(0.0),
-              builder: (context, child) {
-                final flashCtrl = _flashControllers[serie.hashCode];
-                final flashColor = flashCtrl != null
-                    ? ColorTween(begin: AppTheme.accentMetrics.withAlpha(50), end: Colors.transparent).animate(flashCtrl).value
-                    : Colors.transparent;
-
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: AppTheme.space12, vertical: AppTheme.space4),
-                  color: flashColor,
-                  child: Row(
-                    children: [
-                      Expanded(flex: 3, child: Padding(padding: const EdgeInsets.only(left: 18), child: Text('$visualNumber', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14, fontWeight: FontWeight.w700)))),
-                      const SizedBox(width: AppTheme.space8),
-                      Expanded(flex: 3, child: _buildEditableField(repsController, (val) => _handleFieldChanged(fieldKey: 'reps_$realIndex', controller: repsController, value: val, emptyFallback: '0', onSave: (s) => serie.alvo = s, serieHash: serie.hashCode))),
-                      const SizedBox(width: AppTheme.space8),
-                      Expanded(flex: 3, child: _buildEditableField(cargaController, (val) => _handleFieldChanged(fieldKey: 'carga_$realIndex', controller: cargaController, value: val, emptyFallback: '-', onSave: (s) => serie.carga = s, serieHash: serie.hashCode), inputFormatters: [const _CargaKgInputFormatter()])),
-                      const SizedBox(width: AppTheme.space8),
-                      Expanded(flex: 3, child: _buildEditableField(descansoController, (val) => _handleFieldChanged(fieldKey: 'descanso_$realIndex', controller: descansoController, value: val, emptyFallback: '0', onSave: (s) => serie.descanso = s, serieHash: serie.hashCode), inputFormatters: [const _DescansoSecondsInputFormatter()])),
-                    ],
-                  ),
-                );
-              },
-            ),
+            child: card,
           ),
         ),
         if (!isLast) Divider(height: 1, thickness: 0.5, color: Colors.white.withAlpha(15), indent: 16, endIndent: 16),
       ],
+    );
+  }
+
+  Widget _buildSerieRowContent(SerieItem serie, int realIndex, int visualNumber, bool isFirst, bool isLast, {Color? flashColor}) {
+    final stableId = serie.id;
+    final repsController = _getController('reps_$stableId', serie.alvo);
+    final cargaController = _getController('carga_$stableId', _formatCargaInputValue(serie.carga));
+    final descansoController = _getController('descanso_$stableId', _formatDescansoInputValue(serie.descanso));
+
+    return AnimatedBuilder(
+      animation: _flashControllers[serie.hashCode] ?? const AlwaysStoppedAnimation(0.0),
+      builder: (context, child) {
+        final editFlashCtrl = _flashControllers[serie.hashCode];
+        final editFlashColor = editFlashCtrl != null
+            ? ColorTween(begin: AppTheme.accentMetrics.withAlpha(50), end: Colors.transparent).animate(editFlashCtrl).value
+            : Colors.transparent;
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.space12, vertical: AppTheme.space4),
+          color: flashColor ?? editFlashColor,
+          child: Row(
+            children: [
+              Expanded(flex: 3, child: Padding(padding: const EdgeInsets.only(left: 18), child: Text('$visualNumber', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14, fontWeight: FontWeight.w700)))),
+              const SizedBox(width: AppTheme.space8),
+              Expanded(flex: 3, child: _buildEditableField(repsController, (val) => _handleFieldChanged(fieldKey: 'reps_$realIndex', controller: repsController, value: val, emptyFallback: '0', onSave: (s) => serie.alvo = s, serieHash: serie.hashCode))),
+              const SizedBox(width: AppTheme.space8),
+              Expanded(flex: 3, child: _buildEditableField(cargaController, (val) => _handleFieldChanged(fieldKey: 'carga_$realIndex', controller: cargaController, value: val, emptyFallback: '-', onSave: (s) => serie.carga = s, serieHash: serie.hashCode), inputFormatters: [const _CargaKgInputFormatter()])),
+              const SizedBox(width: AppTheme.space8),
+              Expanded(flex: 3, child: _buildEditableField(descansoController, (val) => _handleFieldChanged(fieldKey: 'descanso_$realIndex', controller: descansoController, value: val, emptyFallback: '0', onSave: (s) => serie.descanso = s, serieHash: serie.hashCode), inputFormatters: [const _DescansoSecondsInputFormatter()])),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -725,5 +754,150 @@ class _DescansoSecondsInputFormatter extends TextInputFormatter {
   TextEditingValue formatEditUpdate(TextEditingValue old, TextEditingValue next) {
     final d = next.text.replaceAll(RegExp(r'[^0-9]'), '');
     return d.isEmpty ? const TextEditingValue(text: '') : TextEditingValue(text: '${d}s', selection: TextSelection.collapsed(offset: d.length));
+  }
+}
+
+class _HintingSerieAnimator extends StatefulWidget {
+  final Widget Function(BuildContext context, Color? color) builder;
+  final VoidCallback onEnd;
+
+  const _HintingSerieAnimator({required this.builder, required this.onEnd});
+
+  @override
+  _HintingSerieAnimatorState createState() =>
+      _HintingSerieAnimatorState();
+}
+
+class _HintingSerieAnimatorState extends State<_HintingSerieAnimator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Color?> _colorAnimation;
+  late Animation<double> _swipeHintAnimation;
+  late Animation<double> _swipeHintBgAnimation;
+
+  static final _swipeHintTween = TweenSequence<double>([
+    TweenSequenceItem(
+      tween: Tween(
+        begin: 0.0,
+        end: -72.0,
+      ).chain(CurveTween(curve: Curves.easeOutCubic)),
+      weight: 35,
+    ),
+    TweenSequenceItem(tween: ConstantTween<double>(-72.0), weight: 15),
+    TweenSequenceItem(
+      tween: Tween(
+        begin: -72.0,
+        end: 0.0,
+      ).chain(CurveTween(curve: Curves.easeInOut)),
+      weight: 50,
+    ),
+  ]);
+
+  static final _swipeHintBgTween = TweenSequence<double>([
+    TweenSequenceItem(
+      tween: Tween(
+        begin: 0.0,
+        end: 72.0,
+      ).chain(CurveTween(curve: Curves.easeOutCubic)),
+      weight: 35,
+    ),
+    TweenSequenceItem(tween: ConstantTween<double>(72.0), weight: 15),
+    TweenSequenceItem(
+      tween: Tween(
+        begin: 72.0,
+        end: 0.0,
+      ).chain(CurveTween(curve: Curves.easeInOut)),
+      weight: 50,
+    ),
+  ]);
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 2600),
+      vsync: this,
+    );
+
+    final highlightColor = AppTheme.primary.withAlpha(30);
+    // Sequência 1: Animação de flash (0ms a 1200ms)
+    _colorAnimation =
+        TweenSequence<Color?>([
+          TweenSequenceItem(
+            tween: ColorTween(begin: Colors.transparent, end: highlightColor),
+            weight: 50.0,
+          ),
+          TweenSequenceItem(
+            tween: ColorTween(begin: highlightColor, end: Colors.transparent),
+            weight: 50.0,
+          ),
+        ]).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.0, 1200 / 2600, curve: Curves.easeOut),
+          ),
+        );
+    final swipeInterval = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.5, 1.0, curve: Curves.linear),
+    );
+    _swipeHintAnimation = _swipeHintTween.animate(swipeInterval);
+    _swipeHintBgAnimation = _swipeHintBgTween.animate(swipeInterval);
+
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) {
+        _controller.forward().whenComplete(() {
+          if (mounted) {
+            widget.onEnd();
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final dx = _swipeHintAnimation.value;
+        final bgWidth = _swipeHintBgAnimation.value;
+
+        return Stack(
+          children: [
+            if (bgWidth > 0)
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    width: bgWidth,
+                    color: Colors.redAccent,
+                    alignment: Alignment.centerRight,
+                     padding: const EdgeInsets.only(right: 16),
+                    child: Opacity(
+                      opacity: (bgWidth / 72.0).clamp(0.0, 1.0),
+                      child: const Icon(
+                        Icons.delete_outline,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            Transform.translate(
+              offset: Offset(dx, 0),
+              child: widget.builder(context, _colorAnimation.value),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
