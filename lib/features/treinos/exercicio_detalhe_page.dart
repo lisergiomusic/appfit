@@ -300,7 +300,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
 
       final newSerie = SerieItem(tipo: tipoEscolhido, alvo: alvoToClone, carga: cargaToClone, descanso: descansoToClone);
       controller.markAsNew(newSerie.id);
-      
+
       final sectionList = controller.entriesForTipo(tipoEscolhido);
       final insertSectionIndex = sectionList.length;
       final insertRealIndex = controller.computeInsertRealIndex(tipoEscolhido);
@@ -417,6 +417,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     final repsController = _getController('reps_$stableId', serie.alvo);
     final cargaController = _getController('carga_$stableId', _formatCargaInputValue(serie.carga));
     final descansoController = _getController('descanso_$stableId', _formatDescansoInputValue(serie.descanso));
+    final isEditingSection = controller.isSectionEditing(serie.tipo);
 
     return AnimatedBuilder(
       animation: _flashControllers[serie.hashCode] ?? const AlwaysStoppedAnimation(0.0),
@@ -431,7 +432,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
           color: flashColor ?? editFlashColor,
           child: Row(
             children: [
-              if (controller.isEditing)
+              if (isEditingSection)
                 IconButton(
                   icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent, size: 20),
                   onPressed: () => _onDeleteSerie(serie),
@@ -439,16 +440,16 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   constraints: const BoxConstraints(),
                   splashRadius: 20,
                 ),
-              if (controller.isEditing) const SizedBox(width: 8),
-              Expanded(flex: 3, child: Padding(padding: EdgeInsets.only(left: controller.isEditing ? 0 : 18), child: Text('$visualNumber', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14, fontWeight: FontWeight.w700)))),
+              if (isEditingSection) const SizedBox(width: 8),
+              Expanded(flex: 3, child: Padding(padding: EdgeInsets.only(left: isEditingSection ? 0 : 18), child: Text('$visualNumber', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14, fontWeight: FontWeight.w700)))),
               const SizedBox(width: AppTheme.space8),
               Expanded(flex: 3, child: _buildEditableField(repsController, (val) => _handleFieldChanged(fieldKey: 'reps_$realIndex', controller: repsController, value: val, emptyFallback: '0', onSave: (s) => serie.alvo = s, serieHash: serie.hashCode))),
               const SizedBox(width: AppTheme.space8),
               Expanded(flex: 3, child: _buildEditableField(cargaController, (val) => _handleFieldChanged(fieldKey: 'carga_$realIndex', controller: cargaController, value: val, emptyFallback: '-', onSave: (s) => serie.carga = s, serieHash: serie.hashCode), inputFormatters: [const _CargaKgInputFormatter()])),
               const SizedBox(width: AppTheme.space8),
               Expanded(flex: 3, child: _buildEditableField(descansoController, (val) => _handleFieldChanged(fieldKey: 'descanso_$realIndex', controller: descansoController, value: val, emptyFallback: '0', onSave: (s) => serie.descanso = s, serieHash: serie.hashCode), inputFormatters: [const _DescansoSecondsInputFormatter()])),
-              if (controller.isEditing) const SizedBox(width: 8),
-              if (controller.isEditing)
+              if (isEditingSection) const SizedBox(width: 8),
+              if (isEditingSection)
                 IconButton(
                   icon: const Icon(Icons.copy_rounded, color: AppTheme.primary, size: 18),
                   onPressed: () {
@@ -488,6 +489,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   Widget _buildSeriesSection({required String title, required List<MapEntry<int, SerieItem>> entries, Color? titleColor, bool showDot = false}) {
     if (entries.isEmpty) return const SizedBox.shrink();
 
+    final tipo = entries.first.value.tipo;
+    final isEditingSection = controller.isSectionEditing(tipo);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: AppTheme.space24),
       child: Column(
@@ -509,13 +513,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   const Spacer(),
                   IconButton(
                     icon: Icon(
-                      controller.isEditing ? Icons.check_circle_rounded : Icons.more_vert,
-                      color: controller.isEditing ? AppTheme.primary : AppTheme.textSecondary,
-                      size: 18,
+                      isEditingSection ? Icons.check : Icons.more_vert,
+                      color: AppTheme.textSecondary,
+                      size: 20,
                     ),
                     onPressed: () {
                       setState(() {
-                        controller.toggleEditing();
+                        controller.toggleEditing(tipo);
                       });
                     },
                     splashRadius: 20,
@@ -537,12 +541,12 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                   child: Row(children: [
-                    if (controller.isEditing) const SizedBox(width: 28),
+                    if (isEditingSection) const SizedBox(width: 28),
                     Expanded(flex: 3, child: Align(alignment: Alignment.centerLeft, child: Padding(padding: const EdgeInsets.only(left: 8), child: Text('SÉRIE', style: _microLabelStyle())))),
                     Expanded(flex: 3, child: Center(child: Text('REPS', style: _microLabelStyle()))),
                     Expanded(flex: 3, child: Center(child: Text('PESO', style: _microLabelStyle()))),
                     Expanded(flex: 3, child: Center(child: Text('PAUSA', style: _microLabelStyle()))),
-                    if (controller.isEditing) const SizedBox(width: 26),
+                    if (isEditingSection) const SizedBox(width: 26),
                   ]),
                 ),
                 AnimatedList(
@@ -732,7 +736,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                       children: [
                         Text(muscleGroupsText, style: _sectionEyebrowStyle()),
                         const SizedBox(height: AppTheme.space16),
-        
+
                         // Thumbnail do Vídeo
                         _ExerciseVideoCard(
                           imageUrl: ex.imagemUrl,
@@ -740,11 +744,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           onTap: () {},
                         ),
                         const SizedBox(height: AppTheme.space24),
-        
+
                         // Campo de Instruções
                         _buildInstructionsField(),
                         const SizedBox(height: AppTheme.space32),
-        
+
                         if (ex.series.isEmpty)
                           Column(children: [
                             const SizedBox(height: 48),

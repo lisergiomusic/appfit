@@ -10,15 +10,21 @@ class ExercicioDetalheController {
   int? _lastRemovedIndex;
   Timer? _snackBarTimer;
 
-  bool _isEditing = false;
-  bool get isEditing => _isEditing;
+  final Set<TipoSerie> _editingSections = {};
+  bool isSectionEditing(TipoSerie tipo) => _editingSections.contains(tipo);
+
+  bool get isEditing => _editingSections.isNotEmpty;
 
   ExercicioDetalheController(this.exercicio);
 
   Set<String> get newSeriesIds => _newSeriesIds;
 
-  void toggleEditing() {
-    _isEditing = !_isEditing;
+  void toggleEditing(TipoSerie tipo) {
+    if (_editingSections.contains(tipo)) {
+      _editingSections.remove(tipo);
+    } else {
+      _editingSections.add(tipo);
+    }
   }
 
   void markAsNew(String id) {
