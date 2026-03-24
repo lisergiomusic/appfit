@@ -30,7 +30,7 @@ class AppFitSliverAppBar extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: CupertinoButton(
             onPressed: onBackPressed ?? () => Navigator.pop(context),
-            padding: const EdgeInsets.only(left: 16),
+            padding: const EdgeInsets.only(left: 8),
             child: const Icon(
               CupertinoIcons.back,
               color: AppTheme.textPrimary,

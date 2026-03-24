@@ -54,6 +54,8 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _addButtonKey = GlobalKey();
+  bool _canPopNow = false;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -68,61 +70,24 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
     });
   }
 
-  Future<void> _onBackPressed(BuildContext context) async {
-    final controller = context.read<ConfigurarTreinoController>();
-    if (!controller.hasChanges) {
-      Navigator.pop(context);
-      return;
-    }
-    final sair = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surfaceLight,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: const Text(
-          'Descartar alterações?',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-        ),
-        content: const Text(
-          'As modificações nesta sessão não foram salvas.',
-          style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text(
-              'Cancelar',
-              style: TextStyle(color: AppTheme.primary, fontSize: 16),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Descartar',
-              style: TextStyle(
-                color: Colors.redAccent,
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-    if (!context.mounted) return;
-    if (sair == true) {
-      Navigator.pop(context);
-    }
-  }
+  void _concluirESalvar(BuildContext context) {
+    if (_isSaving) return;
+    _isSaving = true;
 
-  void _concluirEdicao(BuildContext context) {
     final controller = context.read<ConfigurarTreinoController>();
+
+    // Atualiza a lista original (passagem por referência)
     widget.originalExercicios.clear();
     widget.originalExercicios.addAll(controller.getFinalExercicios());
-    Navigator.pop(context, {
-      'nome': controller.nomeTreinoController.text.trim(),
-      'sessaoNote': controller.sessaoNote,
-    });
+
+    setState(() => _canPopNow = true);
+
+    if (mounted) {
+      Navigator.of(context).pop({
+        'nome': controller.nomeTreinoController.text.trim(),
+        'sessaoNote': controller.sessaoNote,
+      });
+    }
   }
 
   Future<void> _openLibrary(BuildContext context) async {
@@ -168,246 +133,391 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
     final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
     final shouldShowFab = !controller.isEditingTitle && !isKeyboardVisible;
 
-    return ScaffoldMessenger(
-      key: _scaffoldMessengerKey,
-      child: Scaffold(
-        backgroundColor: AppTheme.background,
-        body: CustomScrollView(
-          controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: BouncingScrollPhysics(),
-          ),
-          slivers: [
-            AppFitSliverAppBar(
-              title: safeTreinoTitle,
-              expandedHeight: controller.isEditingTitle ? 160 : 140,
-              onBackPressed: () => _onBackPressed(context),
-              leading: controller.isEditingTitle
-                  ? const SizedBox.shrink()
-                  : null,
-              actions: [
-                if (!controller.isEditingTitle)
-                  TextButton(
-                    onPressed: () => _concluirEdicao(context),
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppTheme.primary,
-                      textStyle: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+    return PopScope(
+      canPop: _canPopNow,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _concluirESalvar(context);
+      },
+      child: ScaffoldMessenger(
+        key: _scaffoldMessengerKey,
+        child: Scaffold(
+          backgroundColor: AppTheme.background,
+          body: CustomScrollView(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            slivers: [
+              AppFitSliverAppBar(
+                title: safeTreinoTitle,
+                expandedHeight: controller.isEditingTitle ? 160 : 140,
+                onBackPressed: () => Navigator.of(context).maybePop(),
+                leading: controller.isEditingTitle
+                    ? const SizedBox.shrink()
+                    : null,
+                actions: const [],
+                background: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      bottom: 16,
+                      right: 16,
                     ),
-                    child: const Text('Salvar'),
-                  ),
-              ],
-              background: Align(
-                alignment: Alignment.bottomLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: 24,
-                    bottom: 16,
-                    right: 24,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: controller.isEditingTitle
-                        ? CrossAxisAlignment.start
-                        : CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: controller.isEditingTitle
-                            ? TextField(
-                                controller: controller.nomeTreinoController,
-                                focusNode: controller.titleFocusNode,
-                                maxLines: 1,
-                                maxLength: 35,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 32,
-                                  letterSpacing: -0.5,
-                                ),
-                                buildCounter:
-                                    (
-                                      context, {
-                                      required currentLength,
-                                      required isFocused,
-                                      maxLength,
-                                    }) {
-                                      final isLimit =
-                                          currentLength == maxLength;
-                                      return Text(
-                                        '$currentLength / $maxLength',
-                                        style: TextStyle(
-                                          color: isLimit
-                                              ? Colors.redAccent
-                                              : AppTheme.textSecondary,
-                                          fontSize: 12,
-                                          fontWeight: isLimit
-                                              ? FontWeight.bold
-                                              : FontWeight.w500,
-                                        ),
-                                      );
-                                    },
-                                decoration: InputDecoration(
-                                  filled: true,
-                                  fillColor: Colors.black.withAlpha(60),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 12,
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    borderSide: BorderSide(
-                                      color: AppTheme.primary.withAlpha(120),
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                ),
-                                cursorColor: AppTheme.primary,
-                                textCapitalization: TextCapitalization.words,
-                                onSubmitted: (_) =>
-                                    controller.toggleEditTitle(),
-                              )
-                            : GestureDetector(
-                                onTap: () {
-                                  HapticFeedback.lightImpact();
-                                  controller.toggleEditTitle();
-                                },
-                                child: Text(
-                                  safeTreinoTitle,
+                    child: Row(
+                      crossAxisAlignment: controller.isEditingTitle
+                          ? CrossAxisAlignment.start
+                          : CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: controller.isEditingTitle
+                              ? TextField(
+                                  controller: controller.nomeTreinoController,
+                                  focusNode: controller.titleFocusNode,
+                                  maxLines: 1,
+                                  maxLength: 35,
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 34,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 32,
                                     letterSpacing: -0.5,
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                  buildCounter:
+                                      (
+                                        context, {
+                                        required currentLength,
+                                        required isFocused,
+                                        maxLength,
+                                      }) {
+                                        final isLimit =
+                                            currentLength == maxLength;
+                                        return Text(
+                                          '$currentLength / $maxLength',
+                                          style: TextStyle(
+                                            color: isLimit
+                                                ? Colors.redAccent
+                                                : AppTheme.textSecondary,
+                                            fontSize: 12,
+                                            fontWeight: isLimit
+                                                ? FontWeight.bold
+                                                : FontWeight.w500,
+                                          ),
+                                        );
+                                      },
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor: Colors.black.withAlpha(60),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 12,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: BorderSide(
+                                        color: AppTheme.primary.withAlpha(120),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                  cursorColor: AppTheme.primary,
+                                  textCapitalization: TextCapitalization.words,
+                                  onSubmitted: (_) =>
+                                      controller.toggleEditTitle(),
+                                )
+                              : GestureDetector(
+                                  onTap: () {
+                                    HapticFeedback.lightImpact();
+                                    controller.toggleEditTitle();
+                                  },
+                                  child: Text(
+                                    safeTreinoTitle,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 34,
+                                      letterSpacing: -0.5,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            controller.toggleEditTitle();
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              top: controller.isEditingTitle ? 8.0 : 0.0,
+                            ),
+                            child: Icon(
+                              controller.isEditingTitle
+                                  ? Icons.check_circle_rounded
+                                  : Icons.edit_note,
+                              color: controller.isEditingTitle
+                                  ? AppTheme.primary
+                                  : Colors.white.withAlpha(80),
+                              size: 44,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SliverOpacity(
+                opacity: controller.isEditingTitle ? 0.3 : 1.0,
+                sliver: SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppTheme.paddingScreen,
+                      AppTheme.space8,
+                      AppTheme.paddingScreen,
+                      0,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _MetricCard(
+                                label: 'Exercícios',
+                                value: '${controller.exercicios.length}',
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _MetricCard(
+                                label: 'Total de Séries',
+                                value: '${controller.totalSeries}',
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        const SessaoNoteWidget(),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Lista de exercícios',
+                          style: AppTheme.textSectionHeaderDark,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              if (controller.exercicios.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Column(
+                      children: [
+                        const Spacer(flex: 2),
+                        Container(
+                          width: 88,
+                          height: 88,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(10),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.fitness_center_outlined,
+                              size: 40,
+                              color: AppTheme.primary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        const Text(
+                          'Nenhum exercício adicionado',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Toque no botão abaixo para começar a\n'
+                          'montar o seu treino.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 14,
+                            height: 1.4,
+                          ),
+                        ),
+                        const Spacer(flex: 2),
+                        IgnorePointer(
+                          ignoring: !shouldShowFab,
+                          child: AnimatedScale(
+                            scale: shouldShowFab ? 1.0 : 0.0,
+                            duration: const Duration(milliseconds: 200),
+                            curve: Curves.easeOutCubic,
+                            child: Container(
+                              key: _addButtonKey,
+                              child: OrangeGlassActionButton(
+                                label: 'Adicionar Exercícios',
+                                onTap: () => _openLibrary(context),
+                                bottomMargin: 0,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const Spacer(flex: 3),
+                      ],
+                    ),
+                  ),
+                ),
+              if (controller.exercicios.isNotEmpty)
+                SliverOpacity(
+                  opacity: controller.isEditingTitle ? 0.3 : 1.0,
+                  sliver: SliverPadding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.paddingScreen,
+                      vertical: AppTheme.space16,
+                    ),
+                    sliver: SliverReorderableList(
+                      itemCount: controller.exercicios.length,
+                      onReorder: controller.onReorder,
+                      proxyDecorator: (child, index, animation) {
+                        final curvedAnimation = CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeInOut,
+                        );
+
+                        return ScaleTransition(
+                          scale: Tween<double>(
+                            begin: 1.0,
+                            end: 1.02,
+                          ).animate(curvedAnimation),
+                          child: Material(
+                            elevation: 6.0,
+                            color: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusLarge,
+                              ),
+                            ),
+                            child: child,
+                          ),
+                        );
+                      },
+                      itemBuilder: (context, index) {
+                        final wrapper = controller.exercicios[index];
+                        final isNew = controller.newExercicios.contains(
+                          wrapper.id,
+                        );
+
+                        Widget card;
+                        if (isNew) {
+                          card = _HintingExercicioAnimator(
+                            onEnd: () {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) {
+                                  controller.markHintAsShown(wrapper.id);
+                                }
+                              });
+                            },
+                            builder: (context, color) {
+                              return _buildCardContent(
+                                context,
+                                index,
+                                flashColor: color,
+                              );
+                            },
+                          );
+                        } else {
+                          card = _buildCardContent(context, index);
+                        }
+
+                        return Dismissible(
+                          key: Key(wrapper.id),
+                          direction: DismissDirection.endToStart,
+                          background: Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: AppTheme.space12,
+                            ),
+                            child: Container(
+                               padding: const EdgeInsets.only(right: 16),
+                              alignment: Alignment.centerRight,
+                              decoration: BoxDecoration(
+                                color: Colors.redAccent,
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusLarge,
                                 ),
                               ),
-                      ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          controller.toggleEditTitle();
-                        },
+                              child: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.white,
+                                size: 28,
+                              ),
+                            ),
+                          ),
+                          onDismissed: (direction) {
+                            final removedItemName =
+                                controller.exercicios[index].item.nome;
+                            controller.deleteExercicio(index);
+
+                            controller.cancelSnackBarTimer();
+                            _scaffoldMessengerKey.currentState
+                                ?.removeCurrentSnackBar();
+
+                            final snackBar = SnackBar(
+                              content: Text('$removedItemName removido'),
+                              action: SnackBarAction(
+                                label: 'DESFAZER',
+                                textColor: AppTheme.primary,
+                                onPressed: () {
+                                  controller.cancelSnackBarTimer();
+                                  _scaffoldMessengerKey.currentState
+                                      ?.hideCurrentSnackBar();
+                                  controller.undoDelete();
+                                },
+                              ),
+                              duration: const Duration(days: 365),
+                              behavior: SnackBarBehavior.floating,
+                            );
+
+                            final snackBarController = _scaffoldMessengerKey
+                                .currentState
+                                ?.showSnackBar(snackBar);
+
+                            if (snackBarController != null) {
+                              controller.startSnackBarTimer(() {
+                                snackBarController.close();
+                                controller.clearUndoState();
+                              });
+                            }
+                          },
+                          child: card,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              if (controller.exercicios.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Center(
+                    child: IgnorePointer(
+                      ignoring: !shouldShowFab,
+                      child: AnimatedScale(
+                        scale: shouldShowFab ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeOutCubic,
                         child: Padding(
-                          padding: EdgeInsets.only(
-                            top: controller.isEditingTitle ? 8.0 : 0.0,
-                          ),
-                          child: Icon(
-                            controller.isEditingTitle
-                                ? Icons.check_circle_rounded
-                                : Icons.edit_note,
-                            color: controller.isEditingTitle
-                                ? AppTheme.primary
-                                : Colors.white.withAlpha(80),
-                            size: 44,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            SliverOpacity(
-              opacity: controller.isEditingTitle ? 0.3 : 1.0,
-              sliver: SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppTheme.paddingScreen,
-                    AppTheme.space8,
-                    AppTheme.paddingScreen,
-                    0,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _MetricCard(
-                              label: 'Exercícios',
-                              value: '${controller.exercicios.length}',
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _MetricCard(
-                              label: 'Total de Séries',
-                              value: '${controller.totalSeries}',
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      const SessaoNoteWidget(),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Lista de exercícios',
-                        style: AppTheme.textSectionHeaderDark,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            if (controller.exercicios.isEmpty)
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: Column(
-                    children: [
-                      const Spacer(flex: 2),
-                      Container(
-                        width: 88,
-                        height: 88,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(10),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.fitness_center_outlined,
-                            size: 40,
-                            color: AppTheme.primary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      const Text(
-                        'Nenhum exercício adicionado',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Toque no botão abaixo para começar a\n'
-                        'montar o seu treino.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: AppTheme.textSecondary,
-                          fontSize: 14,
-                          height: 1.4,
-                        ),
-                      ),
-                      const Spacer(flex: 2),
-                      IgnorePointer(
-                        ignoring: !shouldShowFab,
-                        child: AnimatedScale(
-                          scale: shouldShowFab ? 1.0 : 0.0,
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.easeOutCubic,
+                          padding: const EdgeInsets.only(top: 24.0, bottom: 96.0),
                           child: Container(
                             key: _addButtonKey,
                             child: OrangeGlassActionButton(
@@ -418,164 +528,12 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                           ),
                         ),
                       ),
-                      const Spacer(flex: 3),
-                    ],
-                  ),
-                ),
-              ),
-            if (controller.exercicios.isNotEmpty)
-              SliverOpacity(
-                opacity: controller.isEditingTitle ? 0.3 : 1.0,
-                sliver: SliverPadding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.paddingScreen,
-                    vertical: AppTheme.space16,
-                  ),
-                  sliver: SliverReorderableList(
-                    itemCount: controller.exercicios.length,
-                    onReorder: controller.onReorder,
-                    proxyDecorator: (child, index, animation) {
-                      final curvedAnimation = CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeInOut,
-                      );
-
-                      return ScaleTransition(
-                        scale: Tween<double>(
-                          begin: 1.0,
-                          end: 1.02,
-                        ).animate(curvedAnimation),
-                        child: Material(
-                          elevation: 6.0,
-                          color: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusLarge,
-                            ),
-                          ),
-                          child: child,
-                        ),
-                      );
-                    },
-                    itemBuilder: (context, index) {
-                      final wrapper = controller.exercicios[index];
-                      final isNew = controller.newExercicios.contains(
-                        wrapper.id,
-                      );
-
-                      Widget card;
-                      if (isNew) {
-                        card = _HintingExercicioAnimator(
-                          onEnd: () {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (mounted) {
-                                controller.markHintAsShown(wrapper.id);
-                              }
-                            });
-                          },
-                          builder: (context, color) {
-                            return _buildCardContent(
-                              context,
-                              index,
-                              flashColor: color,
-                            );
-                          },
-                        );
-                      } else {
-                        card = _buildCardContent(context, index);
-                      }
-
-                      return Dismissible(
-                        key: Key(wrapper.id),
-                        direction: DismissDirection.endToStart,
-                        background: Padding(
-                          padding: const EdgeInsets.only(
-                            bottom: AppTheme.space12,
-                          ),
-                          child: Container(
-                             padding: const EdgeInsets.only(right: 16),
-                            alignment: Alignment.centerRight,
-                            decoration: BoxDecoration(
-                              color: Colors.redAccent,
-                              borderRadius: BorderRadius.circular(
-                                AppTheme.radiusLarge,
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.delete_outline,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          ),
-                        ),
-                        onDismissed: (direction) {
-                          final removedItemName =
-                              controller.exercicios[index].item.nome;
-                          controller.deleteExercicio(index);
-
-                          controller.cancelSnackBarTimer();
-                          _scaffoldMessengerKey.currentState
-                              ?.removeCurrentSnackBar();
-
-                          final snackBar = SnackBar(
-                            content: Text('$removedItemName removido'),
-                            action: SnackBarAction(
-                              label: 'DESFAZER',
-                              textColor: AppTheme.primary,
-                              onPressed: () {
-                                controller.cancelSnackBarTimer();
-                                _scaffoldMessengerKey.currentState
-                                    ?.hideCurrentSnackBar();
-                                controller.undoDelete();
-                              },
-                            ),
-                            duration: const Duration(days: 365),
-                            behavior: SnackBarBehavior.floating,
-                          );
-
-                          final snackBarController = _scaffoldMessengerKey
-                              .currentState
-                              ?.showSnackBar(snackBar);
-
-                          if (snackBarController != null) {
-                            controller.startSnackBarTimer(() {
-                              snackBarController.close();
-                              controller.clearUndoState();
-                            });
-                          }
-                        },
-                        child: card,
-                      );
-                    },
-                  ),
-                ),
-              ),
-            if (controller.exercicios.isNotEmpty)
-              SliverToBoxAdapter(
-                child: Center(
-                  child: IgnorePointer(
-                    ignoring: !shouldShowFab,
-                    child: AnimatedScale(
-                      scale: shouldShowFab ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeOutCubic,
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 24.0, bottom: 96.0),
-                        child: Container(
-                          key: _addButtonKey,
-                          child: OrangeGlassActionButton(
-                            label: 'Adicionar Exercícios',
-                            onTap: () => _openLibrary(context),
-                            bottomMargin: 0,
-                          ),
-                        ),
-                      ),
                     ),
                   ),
                 ),
-              ),
-            // (Removido: Sliver de espaçamento extra. SafeArea agora garante o espaçamento correto do botão.)
-          ],
+              // (Removido: Sliver de espaçamento extra. SafeArea agora garante o espaçamento correto do botão.)
+            ],
+          ),
         ),
       ),
     );
@@ -731,14 +689,8 @@ class _MetricCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withAlpha(13), width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(60),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        border: Border.all(color: Colors.white.withAlpha(8), width: 1),
+
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
