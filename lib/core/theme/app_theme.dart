@@ -56,8 +56,8 @@ class AppTheme {
 
   static final BoxShadow cardShadow = BoxShadow(
     color: Colors.black.withAlpha(50),
-    blurRadius: 1,
-    offset: const Offset(1, 1),
+    blurRadius: 2,
+    offset: const Offset(1, 2),
   );
 
   static const  TextStyle pageTitle = TextStyle(

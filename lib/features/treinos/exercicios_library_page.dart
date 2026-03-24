@@ -285,7 +285,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
   }
 
   void _mostrarPreviewExercicio(ExercicioItem ex) async {
-    final exercicioFoiAdicionado = await showModalBottomSheet<bool>(
+    await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppTheme.surfaceDark,
@@ -395,16 +395,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
       ),
     );
 
-    if (exercicioFoiAdicionado == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('"${ex.nome}" adicionado à lista.'),
-          backgroundColor: Colors.green.shade700,
-          behavior: SnackBarBehavior.fixed,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
+
   }
 
   Widget _buildMediaPreview(String url) {
@@ -739,17 +730,13 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: AppTheme.surfaceDark,
-                borderRadius: BorderRadius.circular(32),
+                borderRadius: BorderRadius.circular(30),
                 border: Border.all(
-                  color: AppTheme.primary.withAlpha(40),
-                  width: 1.5,
+                  color: Colors.white.withAlpha(15),
+                  width: 0.5,
                 ),
                 boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(180),
-                    blurRadius: 24,
-                    offset: const Offset(0, 12),
-                  ),
+                  AppTheme.cardShadow,
                 ],
               ),
               child: Row(
