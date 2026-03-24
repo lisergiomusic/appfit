@@ -345,6 +345,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
   void _confirmarExclusao(BuildContext context) {
+    final navigator = Navigator.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -365,9 +366,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 setState(() {
                   _canPopNow = true;
                 });
-                Navigator.pop(context); // Fecha dialog
-                Navigator.pop(context); // Fecha modal
-                Navigator.pop(context); // Volta para a tela anterior
+                navigator.pop(); // Fecha dialog
+                navigator.pop(); // Fecha modal
+                navigator.pop(); // Volta para a tela anterior
               }
             },
             child: const Text('REMOVER', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
@@ -441,7 +442,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 label: 'DIA DA SEMANA',
                 icon: Icons.calendar_today,
                 child: DropdownButtonFormField<String>(
-                  value: diaSemana,
+                  initialValue: diaSemana,
                   dropdownColor: AppTheme.surfaceLight,
                   items: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
                   onChanged: (v) => diaSemana = v,
