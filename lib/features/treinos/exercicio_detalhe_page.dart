@@ -1,9 +1,9 @@
+import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
+import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'dart:ui';
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
-
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/orange_glass_action_button.dart';
 import '../../core/widgets/sliver_safe_title.dart';
@@ -639,7 +639,15 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             decoration: BoxDecoration(
               color: AppTheme.surfaceDark.withAlpha(180),
               borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-              border: Border.all(color: Colors.white.withAlpha(15), width: 0.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(50),
+                    blurRadius: 2,
+                    offset: const Offset(0, 2),
+                    inset: true,
+                  )
+                ]
+
             ),
             child: Text(
               ex.instrucoes?.isEmpty ?? true
@@ -914,79 +922,33 @@ class _HintingSerieAnimatorState extends State<_HintingSerieAnimator>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Color?> _colorAnimation;
-  late Animation<double> _swipeHintAnimation;
-  late Animation<double> _swipeHintBgAnimation;
-
-  static final _swipeHintTween = TweenSequence<double>([
-    TweenSequenceItem(
-      tween: Tween(
-        begin: 0.0,
-        end: -72.0,
-      ).chain(CurveTween(curve: Curves.easeOutCubic)),
-      weight: 35,
-    ),
-    TweenSequenceItem(tween: ConstantTween<double>(-72.0), weight: 15),
-    TweenSequenceItem(
-      tween: Tween(
-        begin: -72.0,
-        end: 0.0,
-      ).chain(CurveTween(curve: Curves.easeInOut)),
-      weight: 50,
-    ),
-  ]);
-
-  static final _swipeHintBgTween = TweenSequence<double>([
-    TweenSequenceItem(
-      tween: Tween(
-        begin: 0.0,
-        end: 72.0,
-      ).chain(CurveTween(curve: Curves.easeOutCubic)),
-      weight: 35,
-    ),
-    TweenSequenceItem(tween: ConstantTween<double>(72.0), weight: 15),
-    TweenSequenceItem(
-      tween: Tween(
-        begin: 72.0,
-        end: 0.0,
-      ).chain(CurveTween(curve: Curves.easeInOut)),
-      weight: 50,
-    ),
-  ]);
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 2600),
+      duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
 
     final highlightColor = AppTheme.primary.withAlpha(30);
-    // Sequência 1: Animação de flash (0ms a 1200ms)
-    _colorAnimation =
-        TweenSequence<Color?>([
-          TweenSequenceItem(
-            tween: ColorTween(begin: Colors.transparent, end: highlightColor),
-            weight: 50.0,
-          ),
-          TweenSequenceItem(
-            tween: ColorTween(begin: highlightColor, end: Colors.transparent),
-            weight: 50.0,
-          ),
-        ]).animate(
-          CurvedAnimation(
-            parent: _controller,
-            curve: const Interval(0.0, 1200 / 2600, curve: Curves.easeOut),
-          ),
-        );
-    final swipeInterval = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.5, 1.0, curve: Curves.linear),
+    _colorAnimation = TweenSequence<Color?>([
+      TweenSequenceItem(
+        tween: ColorTween(begin: Colors.transparent, end: highlightColor),
+        weight: 50.0,
+      ),
+      TweenSequenceItem(
+        tween: ColorTween(begin: highlightColor, end: Colors.transparent),
+        weight: 50.0,
+      ),
+    ]).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOut,
+      ),
     );
-    _swipeHintAnimation = _swipeHintTween.animate(swipeInterval);
-    _swipeHintBgAnimation = _swipeHintBgTween.animate(swipeInterval);
 
-    Future.delayed(const Duration(milliseconds: 600), () {
+    Future.delayed(const Duration(milliseconds: 400), () {
       if (mounted) {
         _controller.forward().whenComplete(() {
           if (mounted) {
@@ -1008,37 +970,7 @@ class _HintingSerieAnimatorState extends State<_HintingSerieAnimator>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
-        final dx = _swipeHintAnimation.value;
-        final bgWidth = _swipeHintBgAnimation.value;
-
-        return Stack(
-          children: [
-            if (bgWidth > 0)
-              Positioned.fill(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Container(
-                    width: bgWidth,
-                    color: Colors.redAccent,
-                    alignment: Alignment.centerRight,
-                     padding: const EdgeInsets.only(right: 16),
-                    child: Opacity(
-                      opacity: (bgWidth / 72.0).clamp(0.0, 1.0),
-                      child: const Icon(
-                        Icons.delete_outline,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            Transform.translate(
-              offset: Offset(dx, 0),
-              child: widget.builder(context, _colorAnimation.value),
-            ),
-          ],
-        );
+        return widget.builder(context, _colorAnimation.value);
       },
     );
   }
