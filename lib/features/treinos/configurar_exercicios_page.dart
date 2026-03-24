@@ -4,6 +4,7 @@ import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/orange_glass_action_button.dart';
@@ -591,11 +592,11 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
         elevation: 1.0,
         color: flashColor ?? AppTheme.surfaceDark,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           side: BorderSide(color: Colors.white.withAlpha(14), width: 1),
         ),
         child: InkWell(
-          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           splashColor: AppTheme.splash.withAlpha(30),
           highlightColor: AppTheme.splash.withAlpha(12),
           onTap: () async {
@@ -610,7 +611,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
             );
           },
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(8),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -675,13 +676,6 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                             letterSpacing: 0.1,
                           ),
                           children: [
-                            if (ex.grupoMuscular.isNotEmpty)
-                              TextSpan(
-                                text: '${ex.grupoMuscular.join(' • ')} • ',
-                                style: const TextStyle(
-                                  color: AppTheme.textSecondary,
-                                ),
-                              ),
                             TextSpan(
                               text:
                                   '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
@@ -690,6 +684,13 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
+                            if (ex.grupoMuscular.isNotEmpty)
+                              TextSpan(
+                                text: ' • ${ex.grupoMuscular.join(' • ')}',
+                                style: const TextStyle(
+                                  color: AppTheme.textSecondary,
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -698,9 +699,9 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                 ),
                 const SizedBox(width: 8),
                 Icon(
-                  Icons.chevron_right,
+                  CupertinoIcons.chevron_right,
                   color: AppTheme.textSecondary.withAlpha(100),
-                  size: 24,
+                  size: 20.0,
                 ),
               ],
             ),
