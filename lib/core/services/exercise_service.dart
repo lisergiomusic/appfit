@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import '../../features/treinos/models/exercicio_model.dart';
 
 class PaginatedExercises {
@@ -60,72 +61,94 @@ class ExerciseService {
     final personalId = _auth.currentUser?.uid;
 
     try {
-      if (busca != null && busca.isNotEmpty) {
-        final termoNormalizado = _normalizar(busca.trim());
-        
-        Query query = _db.collection('exercicios_base');
-        query = query.where(Filter.or(
-          Filter('personalId', isNull: true),
-          Filter('personalId', isEqualTo: personalId),
-        ));
-
-        final snapshot = await query.get();
-        List<ExercicioItem> allItems = snapshot.docs.map((doc) {
-          return ExercicioItem.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
-        }).toList();
-
-        if (categoria != null && categoria != 'Tudo') {
-          if (categoria == 'Meus Exercícios') {
-            allItems = allItems.where((ex) => ex.personalId == personalId).toList();
-          } else {
-            allItems = allItems.where((ex) => ex.grupoMuscular.contains(categoria)).toList();
-          }
-        }
-
-        // Busca com normalização em ambos os lados (Ignora acentos)
-        final filtered = allItems.where((ex) {
-          final nomeNorm = _normalizar(ex.nome);
-          final gruposNorm = ex.grupoMuscular.map((g) => _normalizar(g)).toList();
-          
-          return nomeNorm.contains(termoNormalizado) || 
-                 gruposNorm.any((g) => g.contains(termoNormalizado));
-        }).toList();
-
-        filtered.sort((a, b) => a.nome.compareTo(b.nome));
-
-        return PaginatedExercises(
-          items: filtered,
-          lastDoc: null,
-          hasMore: false,
-        );
-      }
-
-      Query query = _db.collection('exercicios_base');
-      Filter identityFilter = categoria == 'Meus Exercícios' 
-          ? Filter('personalId', isEqualTo: personalId)
-          : Filter.or(Filter('personalId', isNull: true), Filter('personalId', isEqualTo: personalId));
+      // 1. Buscamos os dados. Para evitar problemas com Filter.or e limitações do Firestore,
+      // fazemos buscas simples e combinamos.
       
-      query = query.where(identityFilter);
+      List<DocumentSnapshot> allDocs = [];
+      
+      if (categoria == 'Meus Exercícios') {
+        if (personalId != null) {
+          final snap = await _db.collection('exercicios_base')
+              .where('personalId', isEqualTo: personalId)
+              .get()
+              .timeout(const Duration(seconds: 10));
+          allDocs = snap.docs;
+        }
+      } else {
+        // Busca exercícios públicos (personalId == null)
+        final snapPublic = await _db.collection('exercicios_base')
+            .where('personalId', isNull: true)
+            .get()
+            .timeout(const Duration(seconds: 10));
+        
+        allDocs.addAll(snapPublic.docs);
 
-      if (categoria != null && categoria != 'Tudo' && categoria != 'Meus Exercícios') {
-        query = query.where('grupoMuscular', arrayContains: categoria);
+        // Busca exercícios privados do personal logado
+        if (personalId != null) {
+          final snapPrivate = await _db.collection('exercicios_base')
+              .where('personalId', isEqualTo: personalId)
+              .get()
+              .timeout(const Duration(seconds: 10));
+          allDocs.addAll(snapPrivate.docs);
+        }
       }
 
-      query = query.orderBy('nome');
-      if (lastDoc != null) query = query.startAfterDocument(lastDoc);
-
-      final snapshot = await query.limit(limit).get();
-      final items = snapshot.docs.map((doc) {
+      // Converte para objetos de modelo
+      List<ExercicioItem> allItems = allDocs.map((doc) {
         return ExercicioItem.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
       }).toList();
 
+      // Remove duplicatas (caso um exercício tenha personalId e também caia em outra regra por erro de dados)
+      final seenIds = <String>{};
+      allItems = allItems.where((ex) => seenIds.add(ex.id ?? '')).toList();
+
+      // 2. Filtro de Categoria em memória
+      if (categoria != null && categoria != 'Tudo' && categoria != 'Meus Exercícios') {
+        allItems = allItems.where((ex) => ex.grupoMuscular.contains(categoria)).toList();
+      }
+
+      // 3. Filtro de Busca em memória (Fuzzy Search)
+      if (busca != null && busca.trim().isNotEmpty) {
+        final termo = _normalizar(busca.trim());
+        allItems = allItems.where((ex) {
+          final nomeNorm = _normalizar(ex.nome);
+          final gruposNorm = ex.grupoMuscular.map((g) => _normalizar(g)).join(' ');
+          return nomeNorm.contains(termo) || gruposNorm.contains(termo);
+        }).toList();
+      }
+
+      // 4. Ordenação por nome
+      allItems.sort((a, b) => a.nome.compareTo(b.nome));
+
+      // 5. Paginação manual em memória
+      int startIndex = 0;
+      if (lastDoc != null) {
+        final lastId = lastDoc.id;
+        startIndex = allItems.indexWhere((ex) => ex.id == lastId) + 1;
+        if (startIndex <= 0) startIndex = 0;
+      }
+
+      final paginatedItems = allItems.skip(startIndex).take(limit).toList();
+      
+      // Encontra o DocumentSnapshot correspondente ao último item paginado
+      DocumentSnapshot? lastDocResult;
+      if (paginatedItems.isNotEmpty) {
+        final lastItem = paginatedItems.last;
+        try {
+          lastDocResult = allDocs.firstWhere((doc) => doc.id == lastItem.id);
+        } catch (_) {
+          lastDocResult = null;
+        }
+      }
+
       return PaginatedExercises(
-        items: items,
-        lastDoc: snapshot.docs.isNotEmpty ? snapshot.docs.last : null,
-        hasMore: items.length == limit,
+        items: paginatedItems,
+        lastDoc: lastDocResult,
+        hasMore: (startIndex + paginatedItems.length) < allItems.length,
       );
     } catch (e) {
-      throw Exception('Erro ao carregar dados: $e');
+      debugPrint('Erro detalhado no ExerciseService: $e');
+      throw Exception('Falha ao carregar biblioteca: $e');
     }
   }
 
