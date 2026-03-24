@@ -18,6 +18,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
   final ExerciseService _exerciseService = ExerciseService();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   Timer? _debounce;
 
   // Estado da lista
@@ -50,12 +51,17 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     super.initState();
     _carregarDados(reset: true);
     _scrollController.addListener(_onScroll);
+    _searchFocusNode.addListener(() {
+      // Força rebuild para mostrar/esconder o botão Cancelar
+      setState(() {});
+    });
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     _searchController.dispose();
+    _searchFocusNode.dispose();
     _debounce?.cancel();
     super.dispose();
   }
@@ -79,6 +85,20 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
         _carregarDados(reset: true);
       }
     });
+  }
+
+  void _limparBusca() {
+    if (_searchController.text.isEmpty && _termoBusca.isEmpty) return;
+    
+    _searchController.clear();
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    
+    if (_termoBusca.isNotEmpty) {
+      setState(() {
+        _termoBusca = '';
+      });
+      _carregarDados(reset: true);
+    }
   }
 
   Future<void> _carregarDados({bool reset = false}) async {
@@ -493,33 +513,88 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: TextField(
-              controller: _searchController,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: 'Buscar exercícios...',
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: AppTheme.textSecondary,
-                ),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, color: AppTheme.textSecondary),
-                        onPressed: () {
-                          _searchController.clear();
-                          _onSearchChanged('');
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    focusNode: _searchFocusNode,
+                    style: const TextStyle(color: Colors.white, fontSize: 15),
+                    decoration: InputDecoration(
+                      hintText: 'Buscar exercícios...',
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: AppTheme.textSecondary,
+                        size: 20,
+                      ),
+                      suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: _searchController,
+                        builder: (context, value, _) {
+                          return AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            child: value.text.isNotEmpty
+                                ? IconButton(
+                                    key: const ValueKey('clear_search'),
+                                    icon: const Icon(
+                                      Icons.close_rounded,
+                                      color: AppTheme.textSecondary,
+                                      size: 20,
+                                    ),
+                                    onPressed: _limparBusca,
+                                  )
+                                : const SizedBox.shrink(),
+                          );
                         },
-                      )
-                    : null,
-                filled: true,
-                fillColor: AppTheme.surfaceDark,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: AppTheme.surfaceDark,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    onChanged: _onSearchChanged,
+                  ),
                 ),
-              ),
-              onChanged: _onSearchChanged,
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  transitionBuilder: (child, animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SizeTransition(
+                        sizeFactor: animation,
+                        axis: Axis.horizontal,
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: _searchFocusNode.hasFocus
+                      ? Padding(
+                          padding: const EdgeInsets.only(left: 12),
+                          child: TextButton(
+                            onPressed: () {
+                              _searchFocusNode.unfocus();
+                              _limparBusca();
+                            },
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: const Text(
+                              'Cancelar',
+                              style: TextStyle(
+                                color: AppTheme.primary,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
             ),
           ),
           SizedBox(
