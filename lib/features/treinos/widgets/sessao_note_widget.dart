@@ -26,9 +26,8 @@ class SessaoNoteWidget extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 80),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceDark.withAlpha(180),
+              color: AppTheme.surfaceDark,
               borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-              border: Border.all(color: Colors.white.withAlpha(15), width: 0.5),
             ),
             child: Text(
               isEmpty

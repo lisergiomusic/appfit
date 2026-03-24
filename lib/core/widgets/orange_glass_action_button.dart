@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 
-class OrangeGlassActionButton extends StatefulWidget {
+class OrangeGlassActionButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
   final IconData icon;
@@ -19,55 +19,21 @@ class OrangeGlassActionButton extends StatefulWidget {
   });
 
   @override
-  State<OrangeGlassActionButton> createState() =>
-      _OrangeGlassActionButtonState();
-}
-
-class _OrangeGlassActionButtonState extends State<OrangeGlassActionButton> {
-  bool _isPressed = false;
-
-  @override
   Widget build(BuildContext context) {
-    final glowShadows = widget.showGlow
-        ? (_isPressed
-            ? <BoxShadow>[
-                BoxShadow(
-                  color: AppTheme.primary.withAlpha(97),
-                  blurRadius: 12,
-                  spreadRadius: 0.6,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-            : <BoxShadow>[
-                BoxShadow(
-                  color: AppTheme.primary.withAlpha(87),
-                  blurRadius: 12,
-                  spreadRadius: 0.4,
-                  offset: const Offset(0, 2),
-                ),
-              ])
-        : null;
-
     final buttonWidth = MediaQuery.sizeOf(context).width - 32;
 
     return Container(
       width: buttonWidth,
-      margin: EdgeInsets.only(bottom: widget.bottomMargin),
+      margin: EdgeInsets.only(bottom: bottomMargin),
       decoration: BoxDecoration(
         color: AppTheme.primary,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        boxShadow: glowShadows,
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: widget.onTap,
-          onHighlightChanged: (isHighlighted) {
-            if (_isPressed != isHighlighted) {
-              setState(() => _isPressed = isHighlighted);
-            }
-          },
-          borderRadius: BorderRadius.circular(18),
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           splashColor: Colors.white.withAlpha(41),
           highlightColor: const Color.fromARGB(
             255,
@@ -81,10 +47,10 @@ class _OrangeGlassActionButtonState extends State<OrangeGlassActionButton> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.max,
               children: [
-                Icon(widget.icon, color: Colors.black, size: 20),
+                Icon(icon, color: Colors.black, size: 20),
                 const SizedBox(width: 8),
                 Text(
-                  widget.label,
+                  label,
                   style: const TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.w900,

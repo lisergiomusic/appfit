@@ -37,6 +37,16 @@
       color: AppTheme.textPrimary,
     );
 
+
+
+    static final Border cardBorder = Border.all(color: Colors.white.withAlpha(15), width: 0.5);
+    static final BoxShadow cardShadow = BoxShadow(
+      color: Colors.black.withAlpha(50),
+      blurRadius: 1,
+      offset: const Offset(1, 1),
+    );
+
+
     static const  TextStyle pageTitle = TextStyle(
       fontSize: 17,
       fontWeight: FontWeight.w600,
