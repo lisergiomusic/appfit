@@ -38,6 +38,11 @@ class ConfigurarTreinoController extends ChangeNotifier {
   ExercicioWrapper? _lastRemovedItem;
   int? _lastRemovedIndex;
 
+  String _sessaoNote = '';
+  String get sessaoNote => _sessaoNote;
+
+  String _initialSessaoNote = '';
+
   // =================================================================================
   // FIM: ESTADO
   // =================================================================================
@@ -45,12 +50,23 @@ class ConfigurarTreinoController extends ChangeNotifier {
   ConfigurarTreinoController({
     required String nomeTreino,
     required List<ExercicioItem> exercicios,
+    String sessaoNote = '',
   }) : nomeTreinoController = TextEditingController(text: nomeTreino) {
     initialNomeTreino = nomeTreino;
+    _sessaoNote = sessaoNote;
+    _initialSessaoNote = sessaoNote;
     _exercicios = exercicios.map((ex) => ExercicioWrapper(ex.clone())).toList();
 
     nomeTreinoController.addListener(_onNomeTreinoChanged);
     titleFocusNode.addListener(_onFocusChanged);
+  }
+
+  void updateSessaoNote(String newNote) {
+    if (_sessaoNote != newNote) {
+      _sessaoNote = newNote;
+      _hasChanges = true;
+      notifyListeners();
+    }
   }
 
   @override

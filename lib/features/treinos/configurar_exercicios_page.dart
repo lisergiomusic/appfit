@@ -18,11 +18,13 @@ import 'widgets/sessao_note_widget.dart';
 class ConfigurarExerciciosPage extends StatelessWidget {
   final String nomeTreino;
   final List<ExercicioItem> exercicios;
+  final String sessaoNote;
 
   const ConfigurarExerciciosPage({
     super.key,
     required this.nomeTreino,
     required this.exercicios,
+    this.sessaoNote = '',
   });
 
   @override
@@ -31,6 +33,7 @@ class ConfigurarExerciciosPage extends StatelessWidget {
       create: (_) => ConfigurarTreinoController(
         nomeTreino: nomeTreino,
         exercicios: exercicios,
+        sessaoNote: sessaoNote,
       ),
       child: _ConfigurarExerciciosView(originalExercicios: exercicios),
     );
@@ -116,7 +119,10 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
     final controller = context.read<ConfigurarTreinoController>();
     widget.originalExercicios.clear();
     widget.originalExercicios.addAll(controller.getFinalExercicios());
-    Navigator.pop(context, controller.nomeTreinoController.text.trim());
+    Navigator.pop(context, {
+      'nome': controller.nomeTreinoController.text.trim(),
+      'sessaoNote': controller.sessaoNote,
+    });
   }
 
   Future<void> _openLibrary(BuildContext context) async {

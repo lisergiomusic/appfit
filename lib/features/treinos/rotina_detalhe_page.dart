@@ -722,12 +722,17 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           onTap: isReordering ? null : () async {
             final dynamic result = await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ConfigurarExerciciosPage(nomeTreino: sessao.nome, exercicios: sessao.exercicios))
+                MaterialPageRoute(builder: (context) => ConfigurarExerciciosPage(
+                  nomeTreino: sessao.nome,
+                  exercicios: sessao.exercicios,
+                  sessaoNote: sessao.orientacoes ?? '',
+                ))
             );
 
-            if (mounted && result is String) {
+            if (mounted && result is Map<String, dynamic>) {
               setState(() {
-                sessao.nome = result;
+                sessao.nome = result['nome'];
+                sessao.orientacoes = result['sessaoNote'];
               });
             }
           },
