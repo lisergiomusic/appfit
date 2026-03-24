@@ -583,6 +583,8 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
     final wrapper = controller.exercicios[exIndex];
     final ex = wrapper.item;
 
+    const String defaultThumbnail = 'https://firebasestorage.googleapis.com/v0/b/appfit-6028c.firebasestorage.app/o/exercicios%2Fplaceholder_exercicio.png?alt=media&token=784e622b-285b-4c91-9549-31c34954060b';
+
     return Padding(
       padding: const EdgeInsets.only(bottom: AppTheme.space12),
       child: Material(
@@ -608,24 +610,46 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
             );
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.paddingCard,
-              vertical: AppTheme.space14,
-            ),
+            padding: const EdgeInsets.all(12),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                ReorderableDragStartListener(
-                  index: exIndex,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Icon(
-                      Icons.drag_indicator,
-                      color: Colors.white.withAlpha(80),
-                      size: 24,
+                // Thumbnail do Exercício
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    color: Colors.black.withAlpha(40),
+                    child: Image.network(
+                      (ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty)
+                          ? ex.imagemUrl!
+                          : defaultThumbnail,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Center(
+                        child: Icon(
+                          Icons.fitness_center,
+                          color: AppTheme.primary,
+                        ),
+                      ),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                            strokeWidth: 2,
+                            color: AppTheme.primary.withAlpha(100),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -635,18 +659,18 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                         ex.nome,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          height: 1.3,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                          height: 1.2,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: AppTheme.space6),
+                      const SizedBox(height: 6),
                       RichText(
                         text: TextSpan(
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
                             fontWeight: FontWeight.w400,
                             letterSpacing: 0.1,
                           ),
@@ -663,7 +687,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                   '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
                               style: const TextStyle(
                                 color: AppTheme.primary,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
@@ -672,11 +696,11 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                     ],
                   ),
                 ),
-                const SizedBox(width: AppTheme.space12),
+                const SizedBox(width: 8),
                 Icon(
                   Icons.chevron_right,
-                  color: AppTheme.textSecondary.withAlpha(160),
-                  size: 28,
+                  color: AppTheme.textSecondary.withAlpha(100),
+                  size: 24,
                 ),
               ],
             ),
