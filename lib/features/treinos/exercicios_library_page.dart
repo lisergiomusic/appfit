@@ -461,6 +461,8 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
       appBar: AppBar(
         backgroundColor: AppTheme.background,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         title: const Text(
           'Biblioteca de exercícios',
           style: TextStyle(
@@ -513,8 +515,9 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
+      body: SafeArea(
+        child: Column(
+          children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
@@ -808,6 +811,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
           ),
         ],
       ),
+    ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: _selecionados.isNotEmpty
           ? Container(
