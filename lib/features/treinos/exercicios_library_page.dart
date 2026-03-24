@@ -465,12 +465,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
         surfaceTintColor: Colors.transparent,
         title: const Text(
           'Biblioteca de exercícios',
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.textPrimary,
-            letterSpacing: -0.3,
-          ),
+          style: AppTheme.pageTitle,
         ),
         centerTitle: false,
         actions: [
@@ -488,28 +483,23 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   );
 
                   if (result != null && result is ExercicioItem && mounted) {
-                    // Ao criar um novo, adicionamos à seleção e recarregamos a lista
                     setState(() {
                       _selecionados.add(result);
                     });
                     _carregarDados(reset: true);
                   }
                 },
-                icon: const Icon(Icons.add, color: AppTheme.primary, size: 20),
+                icon: const Icon(Icons.add, color: AppTheme.primary, size: 18),
                 label: const Text(
                   'Criar',
                   style: TextStyle(
                     color: AppTheme.primary,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
                   ),
                 ),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
+
               ),
             ),
           ),
