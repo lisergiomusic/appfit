@@ -476,7 +476,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             : Colors.transparent;
 
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.space12, vertical: AppTheme.space4),
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.space8, vertical: AppTheme.space4),
           color: flashColor ?? editFlashColor,
           child: Row(
             children: [
@@ -563,7 +563,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       inputFormatters: inputFormatters,
       textAlign: TextAlign.center,
       keyboardType: TextInputType.text,
-      style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: -0.0),
       decoration: _editableFieldDecoration(),
     );
   }
@@ -622,7 +622,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                   child: Row(children: [
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
