@@ -270,7 +270,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           color: const Color(0xFF00B4D8),
                           onTap: () => Navigator.pop(context, TipoSerie.aquecimento),
                           showDivider: true,
-                          subtitle: 'Prepare as articulações e o sistema nervoso.',
+                          subtitle: 'Prepara as articulações e o sistema nervoso.',
                         ),
                         _buildModalOption(
                           title: 'Aproximação',
@@ -278,7 +278,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           color: const Color(0xFFFFB703),
                           onTap: () => Navigator.pop(context, TipoSerie.feeder),
                           showDivider: true,
-                          subtitle: 'Suba a carga progressivamente sem fadiga.',
+                          subtitle: 'Sobe a carga progressivamente sem fadiga.',
                         ),
                         _buildModalOption(
                           title: 'Série de Trabalho',
@@ -382,11 +382,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         ),
         if (showDivider)
           Padding(
-            padding: const EdgeInsets.only(left: 68),
+            padding: const EdgeInsets.only(left: 0),
             child: Divider(
               height: 1,
               thickness: 0.5,
-              color: AppTheme.textLabel.withAlpha(20),
+              color: Colors.white.withAlpha(15),
             ),
           ),
       ],
