@@ -807,10 +807,10 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
           ? Container(
               height: 64,
               margin: const EdgeInsets.symmetric(horizontal: AppTheme.space16),
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.space16, vertical: AppTheme.space8),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: AppTheme.surfaceDark,
-                borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                 border: Border.all(
                   color: Colors.white.withAlpha(20), // ~8% opacity
                   width: 0.5,
@@ -873,7 +873,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: AppTheme.space16),
+
                   Expanded(
                     flex: 1,
                     child: ElevatedButton.icon(
@@ -883,11 +883,11 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                         foregroundColor: Colors.black,
                         elevation: 1,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         padding: const EdgeInsets.symmetric(vertical: AppTheme.space12),
                         textStyle: const TextStyle(
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
                           fontSize: 16,
                           letterSpacing: 0.2,
                         ),
