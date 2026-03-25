@@ -562,7 +562,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       onChanged: onChanged,
       inputFormatters: inputFormatters,
       textAlign: TextAlign.center,
-      keyboardType: TextInputType.number,
+      keyboardType: TextInputType.text,
       style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
       decoration: _editableFieldDecoration(),
     );
