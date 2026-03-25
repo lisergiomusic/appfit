@@ -8,12 +8,10 @@ class AppTheme {
   // Splash color token (uses the same green by default). Use this token
   // everywhere for ripple/splash colors so changing it updates all spots.
   static const Color splash = primary;
-  static const Color background = Color(0xFF121212);
-
+  static const Color background = Color(0xFF131314);
   static const Color iosBlue = Color(0xFF00B4D8);
   static const Color silverGrey = Color.fromRGBO(255, 255, 255, 0.5);
-
-  static const Color surfaceDark = Color(0xFF1D1D1D);
+  static const Color surfaceDark = Color(0xFF1E1F20);
   static const Color surfaceLight = Color(0xFF2C2C2E);
   static const Color buttonSurface = Color(0xFF1E1E1E);
   static const Color textPrimary = Color(0xFFF2F2F7);
@@ -57,8 +55,8 @@ class AppTheme {
 
   static final BoxShadow cardShadow = BoxShadow(
     color: Colors.black.withAlpha(50),
-    blurRadius: 2,
-    offset: const Offset(1, 2),
+    blurRadius: 3,
+    offset: const Offset(0, 2),
   );
 
   static const  TextStyle pageTitle = TextStyle(

@@ -336,77 +336,13 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                 ),
               ),
               if (controller.exercicios.isEmpty)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Column(
-                      children: [
-                        const Spacer(flex: 2),
-                        Container(
-                          width: 88,
-                          height: 88,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(10),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.fitness_center_outlined,
-                              size: 40,
-                              color: AppTheme.primary,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        const Text(
-                          'Nenhum exercício adicionado',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Toque no botão abaixo para começar a\n'
-                          'montar o seu treino.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 14,
-                            height: 1.4,
-                          ),
-                        ),
-                        const Spacer(flex: 2),
-                        IgnorePointer(
-                          ignoring: !shouldShowFab,
-                          child: AnimatedScale(
-                            scale: shouldShowFab ? 1.0 : 0.0,
-                            duration: const Duration(milliseconds: 200),
-                            curve: Curves.easeOutCubic,
-                            child: Container(
-                              key: _addButtonKey,
-                              child: OrangeGlassActionButton(
-                                label: 'Adicionar Exercícios',
-                                onTap: () => _openLibrary(context),
-                                bottomMargin: 0,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const Spacer(flex: 3),
-                      ],
-                    ),
-                  ),
-                ),
+                emptyState(shouldShowFab, context),
               if (controller.exercicios.isNotEmpty)
                 SliverOpacity(
                   opacity: controller.isEditingTitle ? 0.3 : 1.0,
                   sliver: SliverPadding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppTheme.paddingScreen,
-                      vertical: AppTheme.space16,
                     ),
                     sliver: SliverReorderableList(
                       itemCount: controller.exercicios.length,
@@ -537,7 +473,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                         duration: const Duration(milliseconds: 200),
                         curve: Curves.easeOutCubic,
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 24.0, bottom: 96.0),
+                          padding: const EdgeInsets.only(top: 4, bottom: 96.0),
                           child: Container(
                             key: _addButtonKey,
                             child: OrangeGlassActionButton(
@@ -551,12 +487,79 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                     ),
                   ),
                 ),
-              // (Removido: Sliver de espaçamento extra. SafeArea agora garante o espaçamento correto do botão.)
+
             ],
           ),
         ),
       ),
     );
+  }
+
+  SliverFillRemaining emptyState(bool shouldShowFab, BuildContext context) {
+    return SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Column(
+                    children: [
+                      const Spacer(flex: 2),
+                      Container(
+                        width: 88,
+                        height: 88,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(10),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.fitness_center_outlined,
+                            size: 40,
+                            color: AppTheme.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'Nenhum exercício adicionado',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Toque no botão abaixo para começar a\n'
+                        'montar o seu treino.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 14,
+                          height: 1.4,
+                        ),
+                      ),
+                      const Spacer(flex: 2),
+                      IgnorePointer(
+                        ignoring: !shouldShowFab,
+                        child: AnimatedScale(
+                          scale: shouldShowFab ? 1.0 : 0.0,
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeOutCubic,
+                          child: Container(
+                            key: _addButtonKey,
+                            child: OrangeGlassActionButton(
+                              label: 'Adicionar Exercícios',
+                              onTap: () => _openLibrary(context),
+                              bottomMargin: 0,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const Spacer(flex: 3),
+                    ],
+                  ),
+                ),
+              );
   }
 
   Widget _buildCardContent(
@@ -618,7 +621,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                             const Center(
                           child: Icon(
                             Icons.fitness_center,
-                            color: AppTheme.primary,
+                            color: AppTheme.textSecondary,
                           ),
                         ),
                         loadingBuilder: (context, child, loadingProgress) {
