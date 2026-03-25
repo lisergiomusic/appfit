@@ -455,7 +455,15 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             child: card,
           ),
         ),
-        if (!isLast) Divider(height: 1, thickness: 0.5, color: Colors.white.withAlpha(15), indent: 16, endIndent: 16),
+
+        if (!isLast)
+          Divider(
+            height: 1,
+            thickness: 0.5,
+            color: Colors.white.withAlpha(15),
+            indent: AppTheme.space16,
+            endIndent: AppTheme.space16,
+          ),
       ],
     );
   }
