@@ -220,69 +220,79 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   Future<void> _adicionarSerie() async {
     final TipoSerie? tipoEscolhido = await showModalBottomSheet<TipoSerie>(
       context: context,
-      backgroundColor: AppTheme.surfaceDark,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Center(
-                  child: Container(
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppTheme.surfaceDark,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Drag Handle
+                  Container(
                     width: 36,
                     height: 5,
-                    margin: const EdgeInsets.only(bottom: 16),
+                    margin: const EdgeInsets.only(bottom: 24),
                     decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(50),
+                      color: AppTheme.textLabel.withAlpha(50),
                       borderRadius: BorderRadius.circular(2.5),
                     ),
                   ),
-                ),
-                const Text(
-                  'Selecione o tipo de série',
-                  style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceLight,
-                    borderRadius: BorderRadius.circular(12),
+
+                  const Text(
+                    'Tipo de Série',
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.3,
+                    ),
                   ),
-                  child: Column(
-                    children: [
-                      _buildModalOption(
-                        title: 'Série de Aquecimento',
-                        icon: Icons.whatshot,
-                        color: Colors.amber,
-                        onTap: () => Navigator.pop(context, TipoSerie.aquecimento),
-                        showDivider: true,
-                        subtitle: 'Prepara articulações e ativa músculos.',
-                      ),
-                      _buildModalOption(
-                        title: 'Série de Aproximação',
-                        icon: Icons.flash_on,
-                        color: Colors.blueAccent,
-                        onTap: () => Navigator.pop(context, TipoSerie.feeder),
-                        showDivider: true,
-                        subtitle: 'Aproximação progressiva sem fadiga.',
-                      ),
-                      _buildModalOption(
-                        title: 'Série de Trabalho',
-                        icon: Icons.tag,
-                        color: Colors.white,
-                        onTap: () => Navigator.pop(context, TipoSerie.trabalho),
-                        showDivider: false,
-                        subtitle: 'Série efetiva próxima à falha muscular.',
-                      ),
-                    ],
+                  const SizedBox(height: 24),
+
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceLight,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildModalOption(
+                          title: 'Aquecimento',
+                          icon: Icons.whatshot_rounded,
+                          color: const Color(0xFF00B4D8),
+                          onTap: () => Navigator.pop(context, TipoSerie.aquecimento),
+                          showDivider: true,
+                          subtitle: 'Prepare as articulações e o sistema nervoso.',
+                        ),
+                        _buildModalOption(
+                          title: 'Aproximação',
+                          icon: Icons.speed_rounded,
+                          color: const Color(0xFFFFB703),
+                          onTap: () => Navigator.pop(context, TipoSerie.feeder),
+                          showDivider: true,
+                          subtitle: 'Suba a carga progressivamente sem fadiga.',
+                        ),
+                        _buildModalOption(
+                          title: 'Série de Trabalho',
+                          icon: Icons.fitness_center_rounded,
+                          color: const Color(0xFFFF3366),
+                          onTap: () => Navigator.pop(context, TipoSerie.trabalho),
+                          showDivider: false,
+                          subtitle: 'Série efetiva para hipertrofia ou força.',
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -318,29 +328,67 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   Widget _buildModalOption({required String title, required IconData icon, required Color color, required VoidCallback onTap, required bool showDivider, required String subtitle}) {
     return Column(
       children: [
-        GestureDetector(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppTheme.space16, vertical: AppTheme.space16),
-            child: Row(
-              children: [
-                Icon(icon, color: color, size: 20),
-                const SizedBox(width: AppTheme.space16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)),
-                      const SizedBox(height: 2),
-
-                    ],
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: color.withAlpha(30),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, color: color, size: 22),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            color: AppTheme.textTertiary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppTheme.textLabel.withAlpha(40),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-        if (showDivider) Divider(height: 1, thickness: 0.5, color: Colors.white.withAlpha(20)),
+        if (showDivider)
+          Padding(
+            padding: const EdgeInsets.only(left: 68),
+            child: Divider(
+              height: 1,
+              thickness: 0.5,
+              color: AppTheme.textLabel.withAlpha(20),
+            ),
+          ),
       ],
     );
   }
