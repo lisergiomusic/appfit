@@ -76,7 +76,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     if (nomeCtrl.text.trim() != (data['nome'] ?? '')) return true;
     if (objCtrl.text.trim() != (data['objetivo'] ?? '')) return true;
     if (_tipoVencimento != (data['tipoVencimento'] ?? 'data')) return true;
-    
+
     if (_tipoVencimento == 'sessoes') {
       if (_vencimentoSessoes != (data['vencimentoSessoes'] ?? 20)) return true;
     } else {
@@ -87,7 +87,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     // Comparação simplificada das sessões (quantidade e nomes)
     List<dynamic> sessoesRaw = data['sessoes'] ?? [];
     if (_treinos.length != sessoesRaw.length) return true;
-    
+
     for (int i = 0; i < _treinos.length; i++) {
       if (_treinos[i].nome != sessoesRaw[i]['nome']) return true;
       if (_treinos[i].diaSemana != sessoesRaw[i]['diaSemana']) return true;
@@ -633,7 +633,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
         // 2. Se houver alterações, tenta salvar
         setState(() => _isSaving = true);
-        
+
         try {
           bool salvo = await _salvarRotinaCompleta();
 
@@ -696,18 +696,18 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                 valueListenable: nomeCtrl,
                                 builder: (context, value, _) {
                                   return Text(value.text.isEmpty ? 'Nova Rotina' : value.text,
-                                      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 32, fontWeight: FontWeight.w900));
+                                      style: AppTheme.bigTitle);
                                 }
                             ),
-                            const SizedBox(height: 12),
+
                             ValueListenableBuilder(
                                 valueListenable: objCtrl,
                                 builder: (context, value, _) {
                                   return Text(value.text.isEmpty ? 'Defina o objetivo' : value.text,
-                                      style: const TextStyle(color: AppTheme.textSecondary, fontSize: 16, fontWeight: FontWeight.w500));
+                                      style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14, fontWeight: FontWeight.w500, letterSpacing: 0,));
                                 }
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 2),
                             Row(
                               children: [
                                 const Icon(Icons.schedule, size: 14, color: AppTheme.textSecondary),
@@ -728,7 +728,6 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   ),
                   const SizedBox(height: 32),
                   if (isTemplate) _buildTemplateBadge(),
-                  const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -796,41 +795,49 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   Widget _buildSessaoCard(_TreinoData sessao, int index, {required bool isReordering, required Key key}) {
     return Container(
       key: key,
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Material(
-        color: AppTheme.surfaceDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusLarge), side: BorderSide(color: Colors.white.withAlpha(14))),
-        child: InkWell(
-          onTap: isReordering ? null : () async {
-            final dynamic result = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ConfigurarExerciciosPage(
-                  nomeTreino: sessao.nome,
-                  exercicios: sessao.exercicios,
-                  sessaoNote: sessao.orientacoes ?? '',
-                ))
-            );
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceDark,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          boxShadow: [AppTheme.cardShadow],
+          border: AppTheme.cardBorder,
+        ),
+        child: Material(
+          type: MaterialType.transparency,
+          elevation: 0,
+          child: InkWell(
+            onTap: isReordering ? null : () async {
+              final dynamic result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ConfigurarExerciciosPage(
+                    nomeTreino: sessao.nome,
+                    exercicios: sessao.exercicios,
+                    sessaoNote: sessao.orientacoes ?? '',
+                  ))
+              );
 
-            if (mounted && result is Map<String, dynamic>) {
-              setState(() {
-                sessao.nome = result['nome'];
-                sessao.orientacoes = result['sessaoNote'];
-              });
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                CircleAvatar(backgroundColor: AppTheme.surfaceLight, child: Text(String.fromCharCode(65 + index), style: const TextStyle(color: AppTheme.primary))),
-                const SizedBox(width: 16),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(sessao.nome, style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)), Text('${sessao.exercicios.length} exercícios', style: const TextStyle(color: AppTheme.textSecondary))])),
-                if (isReordering) const Icon(Icons.drag_indicator, color: AppTheme.textSecondary)
-                else PopupMenuButton(
-                  onSelected: (v) { if (v == 'edit') _exibirModalSessao(index: index); if (v == 'delete') _excluirTreino(index); },
-                  itemBuilder: (c) => [const PopupMenuItem(value: 'edit', child: Text('Editar')), const PopupMenuItem(value: 'delete', child: Text('Excluir'))],
-                ),
-              ],
+              if (mounted && result is Map<String, dynamic>) {
+                setState(() {
+                  sessao.nome = result['nome'];
+                  sessao.orientacoes = result['sessaoNote'];
+                });
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  CircleAvatar(backgroundColor: AppTheme.surfaceLight, child: Text(String.fromCharCode(65 + index), style: const TextStyle(color: AppTheme.primary))),
+                  const SizedBox(width: 16),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(sessao.nome, style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)), Text('${sessao.exercicios.length} exercícios', style: const TextStyle(color: AppTheme.textSecondary))])),
+                  if (isReordering) const Icon(Icons.drag_indicator, color: AppTheme.textSecondary)
+                  else PopupMenuButton(
+                    onSelected: (v) { if (v == 'edit') _exibirModalSessao(index: index); if (v == 'delete') _excluirTreino(index); },
+                    itemBuilder: (c) => [const PopupMenuItem(value: 'edit', child: Text('Editar')), const PopupMenuItem(value: 'delete', child: Text('Excluir'))],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

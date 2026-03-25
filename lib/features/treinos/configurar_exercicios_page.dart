@@ -325,6 +325,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                               style: TextButton.styleFrom(
                                 foregroundColor: AppTheme.primary,
                                 padding: const EdgeInsets.symmetric(horizontal: AppTheme.space8),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
                               child: const Text('Editar'),
                             ),
