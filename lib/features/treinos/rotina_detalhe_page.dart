@@ -42,16 +42,20 @@ class RotinaDetalhePage extends StatefulWidget {
 }
 
 class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
-  final List<String> _sugestoesObjetivo = ['Hipertrofia', 'Emagrecimento', 'Força', 'RML', 'Cardio'];
+  final List<String> _sugestoesObjetivo = [
+    'Hipertrofia',
+    'Emagrecimento',
+    'Força',
+    'RML',
+    'Cardio',
+  ];
   late TextEditingController nomeCtrl;
   late TextEditingController objCtrl;
   String _tipoVencimento = 'sessoes';
   int _vencimentoSessoes = 20;
   DateTime _vencimentoData = DateTime.now().add(const Duration(days: 30));
 
-
   final List<_TreinoData> _treinos = [];
-  bool _isReordering = false;
   bool _isDeleting = false;
   bool _isSaving = false;
   bool _canPopNow = false;
@@ -69,7 +73,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   bool _verificarAlteracoes() {
     if (widget.rotinaId == null) {
       // Nova rotina: tem alterações se campos não estão vazios ou tem treinos
-      return nomeCtrl.text.trim().isNotEmpty || objCtrl.text.trim().isNotEmpty || _treinos.isNotEmpty;
+      return nomeCtrl.text.trim().isNotEmpty ||
+          objCtrl.text.trim().isNotEmpty ||
+          _treinos.isNotEmpty;
     }
 
     final data = widget.rotinaData!;
@@ -81,7 +87,11 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       if (_vencimentoSessoes != (data['vencimentoSessoes'] ?? 20)) return true;
     } else {
       final oldDate = (data['dataVencimento'] as Timestamp?)?.toDate();
-      if (oldDate == null || _vencimentoData.day != oldDate.day || _vencimentoData.month != oldDate.month || _vencimentoData.year != oldDate.year) return true;
+      if (oldDate == null ||
+          _vencimentoData.day != oldDate.day ||
+          _vencimentoData.month != oldDate.month ||
+          _vencimentoData.year != oldDate.year)
+        return true;
     }
 
     // Comparação simplificada das sessões (quantidade e nomes)
@@ -92,7 +102,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       if (_treinos[i].nome != sessoesRaw[i]['nome']) return true;
       if (_treinos[i].diaSemana != sessoesRaw[i]['diaSemana']) return true;
       if (_treinos[i].orientacoes != sessoesRaw[i]['orientacoes']) return true;
-      if (_treinos[i].exercicios.length != (sessoesRaw[i]['exercicios'] as List).length) return true;
+      if (_treinos[i].exercicios.length !=
+          (sessoesRaw[i]['exercicios'] as List).length)
+        return true;
     }
 
     return false;
@@ -100,24 +112,36 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
   Future<bool> _showDescartarDialog() async {
     return await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surfaceDark,
-        title: const Text('Descartar alterações?', style: TextStyle(color: Colors.white)),
-        content: const Text('Os dados preenchidos não são válidos para salvar e serão perdidos.',
-            style: TextStyle(color: Colors.white70)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('CONTINUAR EDITANDO', style: TextStyle(color: AppTheme.primary)),
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: AppTheme.surfaceDark,
+            title: const Text(
+              'Descartar alterações?',
+              style: TextStyle(color: Colors.white),
+            ),
+            content: const Text(
+              'Os dados preenchidos não são válidos para salvar e serão perdidos.',
+              style: TextStyle(color: Colors.white70),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text(
+                  'CONTINUAR EDITANDO',
+                  style: TextStyle(color: AppTheme.primary),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'DESCARTAR',
+                  style: TextStyle(color: Colors.redAccent),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('DESCARTAR', style: TextStyle(color: Colors.redAccent)),
-          ),
-        ],
-      )
-    ) ?? false;
+        ) ??
+        false;
   }
 
   @override
@@ -135,10 +159,10 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         _vencimentoSessoes = widget.rotinaData!['vencimentoSessoes'] ?? 20;
       } else {
         if (widget.rotinaData!['dataVencimento'] != null) {
-          _vencimentoData = (widget.rotinaData!['dataVencimento'] as Timestamp).toDate();
+          _vencimentoData = (widget.rotinaData!['dataVencimento'] as Timestamp)
+              .toDate();
         }
       }
-
 
       List<dynamic> sessoesRaw = widget.rotinaData!['sessoes'] ?? [];
       for (var sessao in sessoesRaw) {
@@ -192,7 +216,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
   TipoSerie _parseTipoSerie(String? tipo) {
-    if (tipo == 'aquecimento' || tipo == 'TipoSerie.aquecimento') return TipoSerie.aquecimento;
+    if (tipo == 'aquecimento' || tipo == 'TipoSerie.aquecimento')
+      return TipoSerie.aquecimento;
     if (tipo == 'feeder' || tipo == 'TipoSerie.feeder') return TipoSerie.feeder;
     return TipoSerie.trabalho;
   }
@@ -212,7 +237,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       builder: (context) => StatefulBuilder(
         builder: (context, setStateModal) => Container(
           padding: EdgeInsets.only(
-            left: AppTheme.paddingScreen, right: AppTheme.paddingScreen, top: 12,
+            left: AppTheme.paddingScreen,
+            right: AppTheme.paddingScreen,
+            top: 12,
             bottom: MediaQuery.of(context).viewInsets.bottom + 24,
           ),
           child: SingleChildScrollView(
@@ -223,7 +250,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 // Handle de arrastar
                 Center(
                   child: Container(
-                    width: 40, height: 4,
+                    width: 40,
+                    height: 4,
                     decoration: BoxDecoration(
                       color: Colors.white24,
                       borderRadius: BorderRadius.circular(2),
@@ -231,8 +259,14 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                const Text('Configurações da Planilha',
-                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+                const Text(
+                  'Configurações da Planilha',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
                 const SizedBox(height: 24),
 
                 // 1. NOME DA PLANILHA
@@ -242,7 +276,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   child: TextField(
                     controller: nomeCtrl,
                     style: const TextStyle(color: Colors.white),
-                    decoration: rotinaInputDecoration(hintText: 'Ex: Protocolo Y'),
+                    decoration: rotinaInputDecoration(
+                      hintText: 'Ex: Protocolo Y',
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -257,28 +293,37 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       TextField(
                         controller: objCtrl,
                         style: const TextStyle(color: Colors.white),
-                        decoration: rotinaInputDecoration(hintText: 'Ex: Hipertrofia Máxima'),
+                        decoration: rotinaInputDecoration(
+                          hintText: 'Ex: Hipertrofia Máxima',
+                        ),
                       ),
                       const SizedBox(height: 8),
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
-                          children: _sugestoesObjetivo.map((obj) => Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ChoiceChip(
-                              label: Text(obj),
-                              selected: objCtrl.text == obj,
-                              onSelected: (selected) {
-                                if (selected) setStateModal(() => objCtrl.text = obj);
-                              },
-                              backgroundColor: AppTheme.surfaceLight,
-                              selectedColor: AppTheme.primary,
-                              labelStyle: TextStyle(
-                                color: objCtrl.text == obj ? Colors.black : Colors.white70,
-                                fontSize: 12,
-                              ),
-                            ),
-                          )).toList(),
+                          children: _sugestoesObjetivo
+                              .map(
+                                (obj) => Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: ChoiceChip(
+                                    label: Text(obj),
+                                    selected: objCtrl.text == obj,
+                                    onSelected: (selected) {
+                                      if (selected)
+                                        setStateModal(() => objCtrl.text = obj);
+                                    },
+                                    backgroundColor: AppTheme.surfaceLight,
+                                    selectedColor: AppTheme.primary,
+                                    labelStyle: TextStyle(
+                                      color: objCtrl.text == obj
+                                          ? Colors.black
+                                          : Colors.white70,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
                       ),
                     ],
@@ -287,8 +332,15 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 const SizedBox(height: 20),
 
                 // 3. TIPO DE VENCIMENTO (Sessões vs Data)
-                const Text('VALIDADE DA PLANILHA',
-                    style: TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
+                const Text(
+                  'VALIDADE DA PLANILHA',
+                  style: TextStyle(
+                    color: AppTheme.primary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.2,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(4),
@@ -319,34 +371,56 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   duration: const Duration(milliseconds: 300),
                   child: tipoTemp == 'sessoes'
                       ? TextFormField(
-                    key: const ValueKey('inputSessoes'),
-                    keyboardType: TextInputType.number,
-                    initialValue: sessoesTemp.toString(),
-                    style: const TextStyle(color: Colors.white),
-                    decoration: rotinaInputDecoration(
-                      hintText: 'Quantas sessões de treino?',
-                    ),
-                    onChanged: (v) => sessoesTemp = int.tryParse(v) ?? 20,
-                  )
+                          key: const ValueKey('inputSessoes'),
+                          keyboardType: TextInputType.number,
+                          initialValue: sessoesTemp.toString(),
+                          style: const TextStyle(color: Colors.white),
+                          decoration: rotinaInputDecoration(
+                            hintText: 'Quantas sessões de treino?',
+                          ),
+                          onChanged: (v) => sessoesTemp = int.tryParse(v) ?? 20,
+                        )
                       : ListTile(
-                    key: const ValueKey('inputData'),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                    tileColor: AppTheme.surfaceLight,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    leading: const Icon(Icons.calendar_month, color: AppTheme.primary),
-                    title: const Text('Vence em:', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                    trailing: Text(DateFormat('dd/MM/yyyy').format(dataTemp),
-                        style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 16)),
-                    onTap: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: dataTemp,
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
-                      );
-                      if (picked != null) setStateModal(() => dataTemp = picked);
-                    },
-                  ),
+                          key: const ValueKey('inputData'),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                          ),
+                          tileColor: AppTheme.surfaceLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          leading: const Icon(
+                            Icons.calendar_month,
+                            color: AppTheme.primary,
+                          ),
+                          title: const Text(
+                            'Vence em:',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                          trailing: Text(
+                            DateFormat('dd/MM/yyyy').format(dataTemp),
+                            style: const TextStyle(
+                              color: AppTheme.primary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: dataTemp,
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime.now().add(
+                                const Duration(days: 365),
+                              ),
+                            );
+                            if (picked != null)
+                              setStateModal(() => dataTemp = picked);
+                          },
+                        ),
                 ),
 
                 const SizedBox(height: 32),
@@ -366,10 +440,18 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
-                    child: const Text('SALVAR CONFIGURAÇÕES',
-                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, letterSpacing: 1)),
+                    child: const Text(
+                      'SALVAR CONFIGURAÇÕES',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1,
+                      ),
+                    ),
                   ),
                 ),
 
@@ -382,11 +464,21 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       onPressed: () => _confirmarExclusao(context),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.redAccent,
-                        side: const BorderSide(color: Colors.redAccent, width: 1),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        side: const BorderSide(
+                          color: Colors.redAccent,
+                          width: 1,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
-                      child: const Text('REMOVER PLANILHA',
-                          style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1)),
+                      child: const Text(
+                        'REMOVER PLANILHA',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -404,13 +496,21 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.surfaceDark,
-        title: const Text('Remover Planilha?', style: TextStyle(color: Colors.white)),
-        content: const Text('Esta ação não pode ser desfeita e todos os dados desta planilha serão perdidos.',
-            style: TextStyle(color: Colors.white70)),
+        title: const Text(
+          'Remover Planilha?',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          'Esta ação não pode ser desfeita e todos os dados desta planilha serão perdidos.',
+          style: TextStyle(color: Colors.white70),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('CANCELAR', style: TextStyle(color: Colors.white70)),
+            child: const Text(
+              'CANCELAR',
+              style: TextStyle(color: Colors.white70),
+            ),
           ),
           TextButton(
             onPressed: () async {
@@ -425,14 +525,20 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 navigator.pop(); // Volta para a tela anterior
               }
             },
-            child: const Text('REMOVER', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'REMOVER',
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-// Widget auxiliar para as abas de Sessão/Data
+  // Widget auxiliar para as abas de Sessão/Data
   Widget _buildTabOption({
     required String label,
     required bool isSelected,
@@ -448,7 +554,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             color: isSelected ? AppTheme.background : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Text(label,
+          child: Text(
+            label,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: isSelected ? AppTheme.primary : Colors.white38,
@@ -462,17 +569,28 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
   void _exibirModalSessao({int? index}) {
     final bool isEditing = index != null;
-    final sNomeCtrl = TextEditingController(text: isEditing ? _treinos[index].nome : null);
+    final sNomeCtrl = TextEditingController(
+      text: isEditing ? _treinos[index].nome : null,
+    );
     String? diaSemana = isEditing ? _treinos[index].diaSemana : null;
-    final orientCtrl = TextEditingController(text: isEditing ? _treinos[index].orientacoes : null);
+    final orientCtrl = TextEditingController(
+      text: isEditing ? _treinos[index].orientacoes : null,
+    );
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppTheme.surfaceDark,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (_) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 24, right: 24, top: 12),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 24,
+          right: 24,
+          top: 12,
+        ),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -480,16 +598,34 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             children: [
               Center(
                 child: Container(
-                  width: 40, height: 4, margin: const EdgeInsets.only(bottom: 24),
-                  decoration: BoxDecoration(color: Colors.white.withAlpha(30), borderRadius: BorderRadius.circular(2)),
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withAlpha(30),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-              Text(isEditing ? 'Editar Sessão' : 'Nova Sessão', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
+              Text(
+                isEditing ? 'Editar Sessão' : 'Nova Sessão',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               const SizedBox(height: 28),
               RotinaModernInput(
                 label: 'NOME DO TREINO',
                 icon: Icons.fitness_center,
-                child: TextField(controller: sNomeCtrl, style: const TextStyle(color: Colors.white, fontSize: 16), decoration: rotinaInputDecoration(hintText: 'Ex: Push, Pull...')),
+                child: TextField(
+                  controller: sNomeCtrl,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  decoration: rotinaInputDecoration(
+                    hintText: 'Ex: Push, Pull...',
+                  ),
+                ),
               ),
               const SizedBox(height: 24),
               RotinaModernInput(
@@ -498,7 +634,20 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 child: DropdownButtonFormField<String>(
                   initialValue: diaSemana,
                   dropdownColor: AppTheme.surfaceLight,
-                  items: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                  items:
+                      [
+                            'Segunda',
+                            'Terça',
+                            'Quarta',
+                            'Quinta',
+                            'Sexta',
+                            'Sábado',
+                            'Domingo',
+                          ]
+                          .map(
+                            (d) => DropdownMenuItem(value: d, child: Text(d)),
+                          )
+                          .toList(),
                   onChanged: (v) => diaSemana = v,
                   decoration: rotinaInputDecoration(hintText: 'Sem dia fixo'),
                 ),
@@ -507,25 +656,47 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               RotinaModernInput(
                 label: 'NOTAS',
                 icon: Icons.notes,
-                child: TextField(controller: orientCtrl, maxLines: 3, style: const TextStyle(color: Colors.white, fontSize: 16), decoration: rotinaInputDecoration(hintText: 'Ex: Aquecer...')),
+                child: TextField(
+                  controller: orientCtrl,
+                  maxLines: 3,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  decoration: rotinaInputDecoration(hintText: 'Ex: Aquecer...'),
+                ),
               ),
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: () {
-                  final newName = sNomeCtrl.text.trim().isEmpty ? 'Treino ${String.fromCharCode(65 + _treinos.length)}' : sNomeCtrl.text.trim();
+                  final newName = sNomeCtrl.text.trim().isEmpty
+                      ? 'Treino ${String.fromCharCode(65 + _treinos.length)}'
+                      : sNomeCtrl.text.trim();
                   setState(() {
                     if (isEditing) {
                       _treinos[index].nome = newName;
                       _treinos[index].diaSemana = diaSemana;
                       _treinos[index].orientacoes = orientCtrl.text.trim();
                     } else {
-                      _treinos.add(_TreinoData(nome: newName, diaSemana: diaSemana, orientacoes: orientCtrl.text.trim()));
+                      _treinos.add(
+                        _TreinoData(
+                          nome: newName,
+                          diaSemana: diaSemana,
+                          orientacoes: orientCtrl.text.trim(),
+                        ),
+                      );
                     }
                   });
                   Navigator.pop(context);
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, padding: const EdgeInsets.symmetric(vertical: 14)),
-                child: Text(isEditing ? 'Salvar' : 'Adicionar', style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: Text(
+                  isEditing ? 'Salvar' : 'Adicionar',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
               ),
               const SizedBox(height: 24),
             ],
@@ -555,7 +726,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     if (nomeParaSalvar.isEmpty || _treinos.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Dê um nome e adicione pelo menos um treino.')),
+          const SnackBar(
+            content: Text('Dê um nome e adicione pelo menos um treino.'),
+          ),
         );
       }
       return false;
@@ -563,22 +736,34 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
     try {
       // 1. Mapeamento das sessões para JSON
-      List<Map<String, dynamic>> sessoesJson = _treinos.map((t) => {
-        'nome': t.nome,
-        'diaSemana': t.diaSemana ?? '',
-        'orientacoes': t.orientacoes ?? '',
-        'exercicios': t.exercicios.map((ex) => {
-          'nome': ex.nome,
-          'grupoMuscular': ex.grupoMuscular,
-          'tipoAlvo': ex.tipoAlvo,
-          'series': ex.series.map((s) => {
-            'tipo': s.tipo.name,
-            'alvo': s.alvo,
-            'carga': s.carga,
-            'descanso': s.descanso
-          }).toList(),
-        }).toList(),
-      }).toList();
+      List<Map<String, dynamic>> sessoesJson = _treinos
+          .map(
+            (t) => {
+              'nome': t.nome,
+              'diaSemana': t.diaSemana ?? '',
+              'orientacoes': t.orientacoes ?? '',
+              'exercicios': t.exercicios
+                  .map(
+                    (ex) => {
+                      'nome': ex.nome,
+                      'grupoMuscular': ex.grupoMuscular,
+                      'tipoAlvo': ex.tipoAlvo,
+                      'series': ex.series
+                          .map(
+                            (s) => {
+                              'tipo': s.tipo.name,
+                              'alvo': s.alvo,
+                              'carga': s.carga,
+                              'descanso': s.descanso,
+                            },
+                          )
+                          .toList(),
+                    },
+                  )
+                  .toList(),
+            },
+          )
+          .toList();
 
       debugPrint('--- [DATABASE] SALVANDO PLANILHA: $nomeParaSalvar ---');
 
@@ -616,7 +801,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isTemplate = widget.rotinaData != null && widget.rotinaData!['alunoId'] == null;
+    final bool isTemplate =
+        widget.rotinaData != null && widget.rotinaData!['alunoId'] == null;
 
     return PopScope(
       canPop: _canPopNow,
@@ -670,9 +856,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           leading: CupertinoButton(
             padding: const EdgeInsets.only(left: 8),
             child: const Icon(
-                CupertinoIcons.back,
-                color: AppTheme.textPrimary,
-                size: 24
+              CupertinoIcons.back,
+              color: AppTheme.textPrimary,
+              size: 24,
             ),
             onPressed: () => Navigator.of(context).maybePop(),
           ),
@@ -682,7 +868,10 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen, vertical: 24),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.paddingScreen,
+                vertical: 24,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -693,37 +882,64 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ValueListenableBuilder(
-                                valueListenable: nomeCtrl,
-                                builder: (context, value, _) {
-                                  return Text(value.text.isEmpty ? 'Nova Rotina' : value.text,
-                                      style: AppTheme.bigTitle);
-                                }
+                              valueListenable: nomeCtrl,
+                              builder: (context, value, _) {
+                                return Text(
+                                  value.text.isEmpty
+                                      ? 'Nova Rotina'
+                                      : value.text,
+                                  style: AppTheme.bigTitle,
+                                );
+                              },
                             ),
 
                             ValueListenableBuilder(
-                                valueListenable: objCtrl,
-                                builder: (context, value, _) {
-                                  return Text(value.text.isEmpty ? 'Defina o objetivo' : value.text,
-                                      style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14, fontWeight: FontWeight.w500, letterSpacing: 0,));
-                                }
+                              valueListenable: objCtrl,
+                              builder: (context, value, _) {
+                                return Text(
+                                  value.text.isEmpty
+                                      ? 'Defina o objetivo'
+                                      : value.text,
+                                  style: const TextStyle(
+                                    color: AppTheme.textSecondary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: 0,
+                                  ),
+                                );
+                              },
                             ),
                             const SizedBox(height: 2),
                             Row(
                               children: [
-                                const Icon(Icons.schedule, size: 14, color: AppTheme.textSecondary),
+                                const Icon(
+                                  Icons.schedule,
+                                  size: 14,
+                                  color: AppTheme.textSecondary,
+                                ),
                                 const SizedBox(width: 6),
                                 Text(
                                   _tipoVencimento == 'sessoes'
                                       ? '$_vencimentoSessoes sessões'
                                       : 'Vence em ${DateFormat('dd/MM/yyyy').format(_vencimentoData)}',
-                                  style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.w500),
+                                  style: const TextStyle(
+                                    color: AppTheme.textSecondary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ],
                             ),
                           ],
                         ),
                       ),
-                      IconButton(onPressed: () => _exibirModalInfo(context), icon: const Icon(CupertinoIcons.ellipsis_vertical, color: AppTheme.textSecondary)),
+                      IconButton(
+                        onPressed: () => _exibirModalInfo(context),
+                        icon: const Icon(
+                          CupertinoIcons.ellipsis_vertical,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 32),
@@ -731,36 +947,33 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Lista de treinos', style: AppTheme.textSectionHeaderDark),
-                      if (_treinos.isNotEmpty)
-                        TextButton.icon(
-                          onPressed: () => setState(() => _isReordering = !_isReordering),
-                          icon: Icon(_isReordering ? Icons.check : Icons.swap_vert),
-                          label: Text(_isReordering ? 'Concluir' : 'Reordenar'),
-                        ),
+                      Text(
+                        'Lista de treinos',
+                        style: AppTheme.textSectionHeaderDark,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   if (_treinos.isEmpty)
-                    const Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 60), child: Text('Nenhuma sessão', style: TextStyle(color: AppTheme.textSecondary))))
-                  else if (_isReordering)
-                    ReorderableListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _treinos.length,
-                      onReorder: (oldIndex, newIndex) {
-                        setState(() {
-                          if (newIndex > oldIndex) newIndex -= 1;
-                          final item = _treinos.removeAt(oldIndex);
-                          _treinos.insert(newIndex, item);
-                        });
-                      },
-                      itemBuilder: (context, index) => _buildSessaoCard(_treinos[index], index, isReordering: true, key: ValueKey(_treinos[index])),
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 60),
+                        child: Text(
+                          'Nenhuma sessão',
+                          style: TextStyle(color: AppTheme.textSecondary),
+                        ),
+                      ),
                     )
                   else
-                    ..._treinos.asMap().entries.map((entry) => _buildSessaoCard(entry.value, entry.key, isReordering: false, key: ValueKey(entry.value))),
+                    ..._treinos.asMap().entries.map(
+                      (entry) => _buildSessaoCard(
+                        entry.value,
+                        entry.key,
+                        key: ValueKey(entry.value),
+                      ),
+                    ),
                   const SizedBox(height: 8),
-                  if (!_isReordering) _buildAddSessaoButton(),
+                  _buildAddSessaoButton(),
                 ],
               ),
             ),
@@ -778,8 +991,24 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
       child: Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(AppTheme.radiusLarge)),
-        child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.add_circle_outline, color: Colors.black), SizedBox(width: 8), Text('Novo Treino', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600))]),
+        decoration: BoxDecoration(
+          color: AppTheme.primary,
+          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add_circle_outline, color: Colors.black),
+            SizedBox(width: 8),
+            Text(
+              'Novo Treino',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -787,12 +1016,28 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   Widget _buildTemplateBadge() {
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: AppTheme.primary.withAlpha(15), borderRadius: BorderRadius.circular(24), border: Border.all(color: AppTheme.primary.withAlpha(30))),
-      child: const Row(children: [Icon(Icons.collections_bookmark, color: AppTheme.primary, size: 18), SizedBox(width: 12), Text('Template de Biblioteca', style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w600))]),
+      decoration: BoxDecoration(
+        color: AppTheme.primary.withAlpha(15),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.primary.withAlpha(30)),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.collections_bookmark, color: AppTheme.primary, size: 18),
+          SizedBox(width: 12),
+          Text(
+            'Template de Biblioteca',
+            style: TextStyle(
+              color: AppTheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildSessaoCard(_TreinoData sessao, int index, {required bool isReordering, required Key key}) {
+  Widget _buildSessaoCard(_TreinoData sessao, int index, {required Key key}) {
     return Container(
       key: key,
       margin: const EdgeInsets.only(bottom: 12),
@@ -807,14 +1052,19 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           type: MaterialType.transparency,
           elevation: 0,
           child: InkWell(
-            onTap: isReordering ? null : () async {
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+            splashColor: AppTheme.splash.withAlpha(50),
+            highlightColor: AppTheme.splash.withAlpha(30),
+            onTap: () async {
               final dynamic result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ConfigurarExerciciosPage(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ConfigurarExerciciosPage(
                     nomeTreino: sessao.nome,
                     exercicios: sessao.exercicios,
                     sessaoNote: sessao.orientacoes ?? '',
-                  ))
+                  ),
+                ),
               );
 
               if (mounted && result is Map<String, dynamic>) {
@@ -827,14 +1077,63 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             child: Padding(
               padding: const EdgeInsets.all(8),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  CircleAvatar(backgroundColor: AppTheme.surfaceLight, child: Text(String.fromCharCode(65 + index), style: const TextStyle(color: AppTheme.primary))),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      width: 56,
+                      height: 56,
+                      color: Colors.black.withAlpha(40),
+                      child: Center(
+                        child: Text(
+                          String.fromCharCode(65 + index),
+                          style: const TextStyle(color: AppTheme.primary),
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(width: 16),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(sessao.nome, style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)), Text('${sessao.exercicios.length} exercícios', style: const TextStyle(color: AppTheme.textSecondary))])),
-                  if (isReordering) const Icon(Icons.drag_indicator, color: AppTheme.textSecondary)
-                  else PopupMenuButton(
-                    onSelected: (v) { if (v == 'edit') _exibirModalSessao(index: index); if (v == 'delete') _excluirTreino(index); },
-                    itemBuilder: (c) => [const PopupMenuItem(value: 'edit', child: Text('Editar')), const PopupMenuItem(value: 'delete', child: Text('Excluir'))],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          sessao.nome,
+                          style: const TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 17,
+                            letterSpacing: -0.1,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          '${sessao.exercicios.length} exercícios',
+                          style: const TextStyle(color: AppTheme.textSecondary,
+                          fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuButton(
+                    onSelected: (v) {
+                      if (v == 'edit') _exibirModalSessao(index: index);
+                      if (v == 'delete') _excluirTreino(index);
+                    },
+                    itemBuilder: (c) => [
+                      const PopupMenuItem(value: 'edit', child: Text('Editar')),
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Text('Excluir'),
+                      ),
+                    ],
                   ),
                 ],
               ),

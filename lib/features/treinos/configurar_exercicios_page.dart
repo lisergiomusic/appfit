@@ -650,7 +650,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                         Text(
                           ex.nome,
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: AppTheme.textPrimary,
                             fontWeight: FontWeight.w700,
                             fontSize: 17,
                             letterSpacing: -0.1,
