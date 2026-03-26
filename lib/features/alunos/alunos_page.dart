@@ -346,7 +346,7 @@ class _AlunosPageState extends State<AlunosPage> {
 
   Widget _buildHeader() {
     return Padding(
-       padding: const EdgeInsets.fromLTRB(16, 32, 16, 16),
+       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -354,10 +354,14 @@ class _AlunosPageState extends State<AlunosPage> {
             'Meus Alunos',
             style: AppTheme.bigTitle,
           ),
-          const SizedBox(height: 8),
           Text(
             'GERENCIAMENTO DE CLIENTES',
-            style: AppTheme.textSectionHeaderDark.copyWith(fontSize: 10, letterSpacing: 1.5),
+            style: TextStyle(
+            fontSize: 10,
+            letterSpacing: 1.5,
+            color: AppTheme.textSecondary,
+            fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
