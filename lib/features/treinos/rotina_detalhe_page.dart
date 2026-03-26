@@ -326,85 +326,98 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   ),
                   const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: AppTheme.surfaceLight,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _buildTabOption(
-                          label: 'Sessões',
-                          isSelected: tipoTemp == 'sessoes',
-                          onTap: () => setStateModal(() => tipoTemp = 'sessoes'),
+                        Row(
+                          children: [
+                            _buildTabOption(
+                              label: 'Sessões',
+                              isSelected: tipoTemp == 'sessoes',
+                              onTap: () => setStateModal(() => tipoTemp = 'sessoes'),
+                            ),
+                            _buildTabOption(
+                              label: 'Data Fixa',
+                              isSelected: tipoTemp == 'data',
+                              onTap: () => setStateModal(() => tipoTemp = 'data'),
+                            ),
+                          ],
                         ),
-                        _buildTabOption(
-                          label: 'Data Fixa',
-                          isSelected: tipoTemp == 'data',
-                          onTap: () => setStateModal(() => tipoTemp = 'data'),
+                        const SizedBox(height: 16),
+                        // 4. INPUT DINÂMICO DE VENCIMENTO
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: tipoTemp == 'sessoes'
+                              ? SizedBox(
+                                  key: const ValueKey('inputSessoes'),
+                                  height: 56,
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    initialValue: sessoesTemp.toString(),
+                                    style: const TextStyle(color: AppTheme.textPrimary),
+                                    decoration: rotinaInputDecoration(
+                                      hintText: 'Quantas sessões de treino?',
+                                    ),
+                                    onChanged: (v) => sessoesTemp = int.tryParse(v) ?? 20,
+                                  ),
+                                )
+                              : SizedBox(
+                                  key: const ValueKey('inputData'),
+                                  height: 56,
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    tileColor: AppTheme.surfaceDark,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                                      side: BorderSide(
+                                        color: Colors.white.withAlpha(20),
+                                        width: 0.5,
+                                      ),
+                                    ),
+                                    leading: const Icon(
+                                      Icons.calendar_month,
+                                      color: AppTheme.primary,
+                                    ),
+                                    title: const Text(
+                                      'Vence em:',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    trailing: Text(
+                                      DateFormat('dd/MM/yyyy').format(dataTemp),
+                                      style: const TextStyle(
+                                        color: AppTheme.primary,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    onTap: () async {
+                                      final picked = await showDatePicker(
+                                        context: context,
+                                        initialDate: dataTemp,
+                                        firstDate: DateTime.now(),
+                                        lastDate: DateTime.now().add(
+                                          const Duration(days: 365),
+                                        ),
+                                      );
+                                      if (picked != null) {
+                                        setStateModal(() => dataTemp = picked);
+                                      }
+                                    },
+                                  ),
+                                ),
                         ),
                       ],
                     ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // 4. INPUT DINÂMICO DE VENCIMENTO
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: tipoTemp == 'sessoes'
-                        ? TextFormField(
-                            key: const ValueKey('inputSessoes'),
-                            keyboardType: TextInputType.number,
-                            initialValue: sessoesTemp.toString(),
-                            style: const TextStyle(color: Colors.white),
-                            decoration: rotinaInputDecoration(
-                              hintText: 'Quantas sessões de treino?',
-                            ),
-                            onChanged: (v) => sessoesTemp = int.tryParse(v) ?? 20,
-                          )
-                        : ListTile(
-                            key: const ValueKey('inputData'),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                            ),
-                            tileColor: AppTheme.surfaceLight,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            leading: const Icon(
-                              Icons.calendar_month,
-                              color: AppTheme.primary,
-                            ),
-                            title: const Text(
-                              'Vence em:',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                              ),
-                            ),
-                            trailing: Text(
-                              DateFormat('dd/MM/yyyy').format(dataTemp),
-                              style: const TextStyle(
-                                color: AppTheme.primary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            onTap: () async {
-                              final picked = await showDatePicker(
-                                context: context,
-                                initialDate: dataTemp,
-                                firstDate: DateTime.now(),
-                                lastDate: DateTime.now().add(
-                                  const Duration(days: 365),
-                                ),
-                              );
-                              if (picked != null) {
-                                setStateModal(() => dataTemp = picked);
-                              }
-                            },
-                          ),
                   ),
 
                   const SizedBox(height: 32),
