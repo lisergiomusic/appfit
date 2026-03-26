@@ -300,7 +300,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                         controller: objCtrl,
                         focusNode: objFocusNode,
                         maxLength: 50,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15),
                         decoration: rotinaInputDecoration(
                           hintText: 'Ex: Hipertrofia Máxima',
                         ).copyWith(
@@ -315,13 +315,17 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   const SizedBox(height: 20),
 
                   // 3. TIPO DE VENCIMENTO (Sessões vs Data)
-                  const Text(
-                    'Validade',
-                    style: TextStyle(
-                      color: AppTheme.primary,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.2,
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: const Text(
+                      'Vencimento',
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.2,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -329,7 +333,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: AppTheme.surfaceLight,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                      boxShadow: [AppTheme.cardShadow],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -348,7 +353,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 8),
                         // 4. INPUT DINÂMICO DE VENCIMENTO
                         AnimatedSwitcher(
                           duration: const Duration(milliseconds: 300),
@@ -397,7 +402,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                       style: const TextStyle(
                                         color: AppTheme.primary,
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                        fontSize: 14,
                                       ),
                                     ),
                                     onTap: () async {
@@ -425,7 +430,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   // BOTÃO CONFIRMAR
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 48,
                     child: ElevatedButton(
                       onPressed: () {
                         setState(() {
@@ -437,16 +442,18 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primary,
+                        elevation: 1,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: const Text(
                         'SALVAR CONFIGURAÇÕES',
                         style: TextStyle(
                           color: Colors.black,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ),
@@ -456,24 +463,23 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
-                      height: 56,
-                      child: OutlinedButton(
+                      height: 48,
+                      child: ElevatedButton(
                         onPressed: () => _confirmarExclusao(context),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.redAccent,
-                          side: const BorderSide(
-                            color: Colors.redAccent,
-                            width: 1,
-                          ),
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          elevation: 1,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: const Text(
                           'REMOVER PLANILHA',
                           style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ),
