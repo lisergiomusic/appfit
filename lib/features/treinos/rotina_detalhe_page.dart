@@ -431,8 +431,6 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
                   // BOTÃO CONFIRMAR
                   SizedBox(
-                    width: double.infinity,
-                    height: 48,
                     child: ElevatedButton(
                       onPressed: () {
                         setState(() {
@@ -450,13 +448,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                         ),
                       ),
                       child: const Text(
-                        'SALVAR CONFIGURAÇÕES',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                          letterSpacing: 0.5,
-                        ),
+                        'Salvar configurações',
                       ),
                     ),
                   ),

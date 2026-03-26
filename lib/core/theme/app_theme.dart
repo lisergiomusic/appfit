@@ -162,7 +162,7 @@ class AppTheme {
             fontWeight: FontWeight.w600,
             letterSpacing: -0.3,
           ),
-            minimumSize: const Size(double.infinity, 54)
+            minimumSize: const Size(double.infinity, 50)
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
