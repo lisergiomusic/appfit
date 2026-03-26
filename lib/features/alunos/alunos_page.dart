@@ -352,13 +352,7 @@ class _AlunosPageState extends State<AlunosPage> {
         children: [
           const Text(
             'Meus Alunos',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-              fontSize: 40,
-              letterSpacing: -1.5,
-              height: 1.0,
-            ),
+            style: AppTheme.bigTitle,
           ),
           const SizedBox(height: 8),
           Text(
@@ -549,17 +543,17 @@ class _AlunosPageState extends State<AlunosPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceDark.withAlpha(150),
-        borderRadius: BorderRadius.circular(20),
+        color: AppTheme.surfaceDark,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         border: Border.all(color: Colors.white.withAlpha(10)),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(8),
             child: Row(
               children: [
                 Stack(
@@ -605,7 +599,7 @@ class _AlunosPageState extends State<AlunosPage> {
                         children: [
                           Text(
                             nome,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textPrimary, letterSpacing: -0.2),
+                            style: AppTheme.cardTitle,
                           ),
                           if (emRisco) ...[
                             const SizedBox(width: 6),
@@ -620,7 +614,7 @@ class _AlunosPageState extends State<AlunosPage> {
                       const SizedBox(height: 2),
                       Text(
                         email.toLowerCase(),
-                        style: TextStyle(fontSize: 12, color: AppTheme.textSecondary.withAlpha(180), fontWeight: FontWeight.w500),
+                        style: AppTheme.cardSubtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),

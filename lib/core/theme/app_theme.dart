@@ -22,6 +22,19 @@ class AppTheme {
   static const Color success = Color(0xFF4CAF50);
 
   // --- 2. ESTILOS DE TEXTO ---
+  static const TextStyle cardTitle = TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w800,
+      color: textPrimary,
+      letterSpacing: -0.2
+  );
+
+  static const TextStyle cardSubtitle = TextStyle(
+      fontSize: 12,
+      color: textSecondary,
+      fontWeight: FontWeight.w500,
+  );
+
   static const TextStyle microLabelTextStyle = TextStyle(
     color: AppTheme.silverGrey,
     fontSize: 10,
@@ -153,7 +166,7 @@ class AppTheme {
           backgroundColor: primary,
           foregroundColor: Colors.black,
           elevation: 1,
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMedium),
           ),
@@ -162,7 +175,7 @@ class AppTheme {
             fontWeight: FontWeight.w600,
             letterSpacing: -0.3,
           ),
-            minimumSize: const Size(double.infinity, 50)
+            minimumSize: const Size(double.infinity, 48)
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
