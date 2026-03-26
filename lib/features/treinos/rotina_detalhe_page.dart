@@ -269,19 +269,17 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text(
-                      'Configurações da Planilha',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
+                    Center(
+                      child: const Text(
+                        'Configurações da Planilha',
+                        style: AppTheme.pageTitle,
                       ),
                     ),
                     const SizedBox(height: 24),
 
                     // 1. NOME DA PLANILHA
                     RotinaModernInput(
-                      label: 'NOME DA PLANILHA',
+                      label: 'Nome da Planilha',
                       child: TextField(
                         controller: nomeCtrl,
                         style: const TextStyle(
@@ -297,7 +295,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
                     // 2. OBJETIVO PRINCIPAL
                     RotinaModernInput(
-                      label: 'OBJETIVO PRINCIPAL',
+                      label: 'Objetivo Principal',
                       child: TextField(
                         controller: objCtrl,
                         focusNode: objFocusNode,
@@ -318,7 +316,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
                   // 3. TIPO DE VENCIMENTO (Sessões vs Data)
                   const Text(
-                    'VALIDADE DA PLANILHA',
+                    'Validade',
                     style: TextStyle(
                       color: AppTheme.primary,
                       fontSize: 11,
@@ -537,10 +535,10 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
             color: isSelected ? AppTheme.background : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             label,
