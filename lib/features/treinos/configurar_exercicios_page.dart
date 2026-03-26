@@ -658,7 +658,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 3),
                         RichText(
                           text: TextSpan(
                             style: const TextStyle(

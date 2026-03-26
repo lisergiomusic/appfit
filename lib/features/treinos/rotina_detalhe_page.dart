@@ -42,15 +42,9 @@ class RotinaDetalhePage extends StatefulWidget {
 }
 
 class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
-  final List<String> _sugestoesObjetivo = [
-    'Hipertrofia',
-    'Emagrecimento',
-    'Força',
-    'RML',
-    'Cardio',
-  ];
   late TextEditingController nomeCtrl;
   late TextEditingController objCtrl;
+  late FocusNode objFocusNode;
   String _tipoVencimento = 'sessoes';
   int _vencimentoSessoes = 20;
   DateTime _vencimentoData = DateTime.now().add(const Duration(days: 30));
@@ -66,6 +60,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
     nomeCtrl = TextEditingController(text: widget.rotinaData?['nome'] ?? '');
     objCtrl = TextEditingController(text: widget.rotinaData?['objetivo'] ?? '');
+    objFocusNode = FocusNode();
 
     _preencherDados();
   }
@@ -90,8 +85,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       if (oldDate == null ||
           _vencimentoData.day != oldDate.day ||
           _vencimentoData.month != oldDate.month ||
-          _vencimentoData.year != oldDate.year)
+          _vencimentoData.year != oldDate.year) {
         return true;
+      }
     }
 
     // Comparação simplificada das sessões (quantidade e nomes)
@@ -103,8 +99,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       if (_treinos[i].diaSemana != sessoesRaw[i]['diaSemana']) return true;
       if (_treinos[i].orientacoes != sessoesRaw[i]['orientacoes']) return true;
       if (_treinos[i].exercicios.length !=
-          (sessoesRaw[i]['exercicios'] as List).length)
+          (sessoesRaw[i]['exercicios'] as List).length) {
         return true;
+      }
     }
 
     return false;
@@ -148,6 +145,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   void dispose() {
     nomeCtrl.dispose();
     objCtrl.dispose();
+    objFocusNode.dispose();
     super.dispose();
   }
 
@@ -216,8 +214,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
   TipoSerie _parseTipoSerie(String? tipo) {
-    if (tipo == 'aquecimento' || tipo == 'TipoSerie.aquecimento')
+    if (tipo == 'aquecimento' || tipo == 'TipoSerie.aquecimento') {
       return TipoSerie.aquecimento;
+    }
     if (tipo == 'feeder' || tipo == 'TipoSerie.feeder') return TipoSerie.feeder;
     return TipoSerie.trabalho;
   }
@@ -235,100 +234,84 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       builder: (context) => StatefulBuilder(
-        builder: (context, setStateModal) => Container(
-          padding: EdgeInsets.only(
-            left: AppTheme.paddingScreen,
-            right: AppTheme.paddingScreen,
-            top: 12,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Handle de arrastar
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(2),
+        builder: (context, setStateModal) {
+          // Listener para atualizar o modal quando o foco mudar
+          void focusListener() {
+            if (context.mounted) setStateModal(() {});
+          }
+
+          objFocusNode.removeListener(focusListener);
+          objFocusNode.addListener(focusListener);
+
+          return Container(
+            padding: EdgeInsets.only(
+              left: AppTheme.paddingScreen,
+              right: AppTheme.paddingScreen,
+              top: 12,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle de arrastar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Configurações da Planilha',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // 1. NOME DA PLANILHA
-                RotinaModernInput(
-                  label: 'NOME DA PLANILHA',
-                  icon: Icons.edit_note,
-                  child: TextField(
-                    controller: nomeCtrl,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: rotinaInputDecoration(
-                      hintText: 'Ex: Protocolo Y',
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Configurações da Planilha',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
-                // 2. OBJETIVO COM CHIPS DE SUGESTÃO
-                RotinaModernInput(
-                  label: 'OBJETIVO PRINCIPAL',
-                  icon: Icons.ads_click,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextField(
-                        controller: objCtrl,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: rotinaInputDecoration(
-                          hintText: 'Ex: Hipertrofia Máxima',
-                        ),
+                  // 1. NOME DA PLANILHA
+                  RotinaModernInput(
+                    label: 'NOME DA PLANILHA',
+                    child: TextField(
+                      controller: nomeCtrl,
+                      style: const TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 15,
                       ),
-                      const SizedBox(height: 8),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: _sugestoesObjetivo
-                              .map(
-                                (obj) => Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: ChoiceChip(
-                                    label: Text(obj),
-                                    selected: objCtrl.text == obj,
-                                    onSelected: (selected) {
-                                      if (selected)
-                                        setStateModal(() => objCtrl.text = obj);
-                                    },
-                                    backgroundColor: AppTheme.surfaceLight,
-                                    selectedColor: AppTheme.primary,
-                                    labelStyle: TextStyle(
-                                      color: objCtrl.text == obj
-                                          ? Colors.black
-                                          : Colors.white70,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
+                      decoration: rotinaInputDecoration(
+                        hintText: 'Ex: Protocolo Y',
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 20),
+
+                  // 2. OBJETIVO PRINCIPAL
+                  RotinaModernInput(
+                    label: 'OBJETIVO PRINCIPAL',
+                    child: TextField(
+                      controller: objCtrl,
+                      focusNode: objFocusNode,
+                      maxLength: 50,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: rotinaInputDecoration(
+                        hintText: 'Ex: Hipertrofia Máxima',
+                      ).copyWith(
+                        counterText: objFocusNode.hasFocus ? null : "",
+                        counterStyle: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 20),
 
                 // 3. TIPO DE VENCIMENTO (Sessões vs Data)
@@ -417,8 +400,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                 const Duration(days: 365),
                               ),
                             );
-                            if (picked != null)
+                            if (picked != null) {
                               setStateModal(() => dataTemp = picked);
+                            }
                           },
                         ),
                 ),
@@ -485,10 +469,11 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
+        );
+      },
+    ),
+  );
+}
 
   void _confirmarExclusao(BuildContext context) {
     final navigator = Navigator.of(context);
@@ -618,7 +603,6 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               const SizedBox(height: 28),
               RotinaModernInput(
                 label: 'NOME DO TREINO',
-                icon: Icons.fitness_center,
                 child: TextField(
                   controller: sNomeCtrl,
                   style: const TextStyle(color: Colors.white, fontSize: 16),
@@ -630,7 +614,6 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               const SizedBox(height: 24),
               RotinaModernInput(
                 label: 'DIA DA SEMANA',
-                icon: Icons.calendar_today,
                 child: DropdownButtonFormField<String>(
                   initialValue: diaSemana,
                   dropdownColor: AppTheme.surfaceLight,
@@ -655,7 +638,6 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               const SizedBox(height: 24),
               RotinaModernInput(
                 label: 'NOTAS',
-                icon: Icons.notes,
                 child: TextField(
                   controller: orientCtrl,
                   maxLines: 3,
@@ -1088,7 +1070,11 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       child: Center(
                         child: Text(
                           String.fromCharCode(65 + index),
-                          style: const TextStyle(color: AppTheme.primary),
+                          style: const TextStyle(
+                            color: AppTheme.primary,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -1110,11 +1096,12 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 3),
                         Text(
                           '${sessao.exercicios.length} exercícios',
-                          style: const TextStyle(color: AppTheme.textSecondary,
-                          fontSize: 12,
+                          style: const TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 12,
                             fontWeight: FontWeight.w500,
                             letterSpacing: 0.0,
                           ),

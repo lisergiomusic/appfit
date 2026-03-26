@@ -3,13 +3,11 @@ import '../../../core/theme/app_theme.dart';
 
 class RotinaModernInput extends StatelessWidget {
   final String label;
-  final IconData icon;
   final Widget child;
 
   const RotinaModernInput({
     super.key,
     required this.label,
-    required this.icon,
     required this.child,
   });
 
@@ -22,7 +20,6 @@ class RotinaModernInput extends StatelessWidget {
           padding: EdgeInsets.only(left: 0, bottom: AppTheme.space12),
           child: Row(
             children: [
-              Icon(icon, size: 16, color: AppTheme.primary),
               SizedBox(width: AppTheme.space8),
               Text(
                 label,

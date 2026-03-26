@@ -5,8 +5,8 @@ InputDecoration rotinaInputDecoration({required String hintText}) {
   return InputDecoration(
     hintText: hintText,
     hintStyle: TextStyle(
-      color: AppTheme.textSecondary.withAlpha(128),
-      fontSize: 13,
+      color: AppTheme.textTertiary,
+      fontSize: 12,
     ),
     filled: true,
     fillColor: AppTheme.surfaceDark,
@@ -16,7 +16,7 @@ InputDecoration rotinaInputDecoration({required String hintText}) {
     ),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-      borderSide: BorderSide(color: Colors.white.withAlpha(20), width: 0.5),
+      borderSide: BorderSide(color: Colors.white.withAlpha(15), width: 0.5),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
