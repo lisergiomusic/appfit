@@ -241,7 +241,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
               onTap: () => _irParaGerenciarAluno(context),
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                height: 46,
+                height: 48,
                 decoration: BoxDecoration(
                   color: Colors.white.withAlpha(10),
                   borderRadius: BorderRadius.circular(12),
@@ -311,15 +311,9 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                     ),
                   );
                 },
-                icon: const Icon(Icons.add_circle_outline, color: Colors.black, size: 18),
-                label: const Text('Criar do zero'),
+                icon: const Icon(Icons.add_circle_outline, color: Colors.black, size: 20),
+                label: const Text('Criar do zero',),
 
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.black,
-                  elevation: 1,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusSmall)),
-                ),
               ),
               const SizedBox(height: 32),
               Row(

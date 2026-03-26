@@ -151,16 +151,18 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
-          foregroundColor: Colors.white,
-          elevation: 0,
+          foregroundColor: Colors.black,
+          elevation: 1,
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMedium),
           ),
           textStyle: const TextStyle(
-            fontSize: 14,
+            fontSize: 17,
             fontWeight: FontWeight.w600,
+            letterSpacing: -0.3,
           ),
+            minimumSize: const Size(double.infinity, 54)
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
