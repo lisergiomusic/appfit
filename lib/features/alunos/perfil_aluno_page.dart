@@ -291,9 +291,11 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                   ),
                 ),
               ),
-              const Text(
-                'Nova Rotina',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5),
+              Center(
+                child: const Text(
+                  'Nova Planilha',
+                  style: AppTheme.pageTitle,
+                ),
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
@@ -309,11 +311,14 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                     ),
                   );
                 },
-                icon: const Icon(Icons.add_circle_outline, color: Colors.black, size: 20),
-                label: const Text('CRIAR DO ZERO'),
+                icon: const Icon(Icons.add_circle_outline, color: Colors.black, size: 18),
+                label: const Text('Criar do zero'),
+
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  foregroundColor: Colors.black,
+                  elevation: 1,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusSmall)),
                 ),
               ),
               const SizedBox(height: 32),
@@ -322,7 +327,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                   const Expanded(child: Divider(color: Colors.white10)),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('DA BIBLIOTECA', style: AppTheme.textSectionHeaderDark),
+                    child: Text('Da Biblioteca', style: AppTheme.textSectionHeaderDark),
                   ),
                   const Expanded(child: Divider(color: Colors.white10)),
                 ],

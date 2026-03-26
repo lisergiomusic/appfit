@@ -20,7 +20,7 @@ InputDecoration rotinaInputDecoration({required String hintText}) {
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-      borderSide: BorderSide(color: Colors.white.withAlpha(20), width: 0.5),
+      borderSide: BorderSide(color: Colors.white.withAlpha(15), width: 1),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppTheme.radiusMedium),

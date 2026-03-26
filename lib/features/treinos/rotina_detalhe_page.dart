@@ -223,7 +223,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
   void _exibirModalInfo(BuildContext context) {
     String tipoTemp = _tipoVencimento;
-    int sessoesTemp = _vencimentoSessoes;
+    // Se for nova rotina, inicia vazio para mostrar placeholder
+    String sessoesInput = widget.rotinaId == null ? '' : _vencimentoSessoes.toString();
     DateTime dataTemp = _vencimentoData;
 
     showModalBottomSheet(
@@ -286,6 +287,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                           color: AppTheme.textPrimary,
                           fontSize: 15,
                         ),
+
                         decoration: rotinaInputDecoration(
                           hintText: 'Ex: Protocolo Y',
                         ),
@@ -363,12 +365,12 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                   height: 56,
                                   child: TextFormField(
                                     keyboardType: TextInputType.number,
-                                    initialValue: sessoesTemp.toString(),
+                                    initialValue: sessoesInput,
                                     style: const TextStyle(color: AppTheme.textPrimary),
                                     decoration: rotinaInputDecoration(
                                       hintText: 'Quantas sessões de treino?',
                                     ),
-                                    onChanged: (v) => sessoesTemp = int.tryParse(v) ?? 20,
+                                    onChanged: (v) => sessoesInput = v,
                                   ),
                                 )
                               : SizedBox(
@@ -383,7 +385,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                       borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                                       side: BorderSide(
                                         color: Colors.white.withAlpha(20),
-                                        width: 0.5,
+                                        width: 1.0,
                                       ),
                                     ),
                                     leading: const Icon(
@@ -435,7 +437,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       onPressed: () {
                         setState(() {
                           _tipoVencimento = tipoTemp;
-                          _vencimentoSessoes = sessoesTemp;
+                          _vencimentoSessoes = int.tryParse(sessoesInput) ?? 20;
                           _vencimentoData = dataTemp;
                         });
                         Navigator.pop(context);
