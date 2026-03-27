@@ -4,9 +4,8 @@ class AppTheme {
   // --- 1. CORES ---
   static const Color primary = Color(
     0xFF30D158,
-  ); // Verde para interações principais
-  // Splash color token (uses the same green by default). Use this token
-  // everywhere for ripple/splash colors so changing it updates all spots.
+  );
+
   static const Color splash = primary;
   static const Color background = Color(0xFF131314);
   static const Color iosBlue = Color(0xFF00B4D8);
@@ -15,78 +14,13 @@ class AppTheme {
   static const Color surfaceLight = Color(0xFF2C2C2E);
   static const Color buttonSurface = Color(0xFF1E1E1E);
   static const Color textPrimary = Color(0xFFF2F2F7);
-  static const Color textSecondary = Color(0x99EBEBF5); // O '99' no início é 60% alpha
-  static const Color textTertiary = Color(0x4DEBEBF5); // O '4D' no início é 30% alpha
+  static const Color textSecondary = Color(0x99EBEBF5);
+  static const Color textTertiary = Color(0x4DEBEBF5);
   static const Color textLabel = Color(0xFF8E8E93);
   static const Color accentMetrics = Color(0xFFFF9F0A);
   static const Color success = Color(0xFF4CAF50);
 
-  // --- 2. ESTILOS DE TEXTO ---
-  static const TextStyle cardTitle = TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w800,
-      color: textPrimary,
-      letterSpacing: -0.2
-  );
-
-  static const TextStyle cardSubtitle = TextStyle(
-      fontSize: 12,
-      color: textSecondary,
-      fontWeight: FontWeight.w500,
-  );
-
-  static const TextStyle microLabelTextStyle = TextStyle(
-    color: AppTheme.silverGrey,
-    fontSize: 10,
-    fontWeight: FontWeight.w600,
-    letterSpacing: 0.8,
-  );
-
-  static const TextStyle caption = TextStyle(
-    color: textSecondary,
-    fontSize: 12,
-    fontWeight: FontWeight.w500,
-    letterSpacing: 0.0,
-  );
-
-  static const TextStyle bodyText = TextStyle(
-    color: textPrimary,
-    fontSize: 17,
-    fontWeight: FontWeight.w400,
-    letterSpacing: -0.1,
-    height: 1.4,
-  );
-
-  static const TextStyle bigTitle = TextStyle(
-    fontSize: 34,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.4,
-    color: AppTheme.textPrimary,
-  );
-
-  static final Border cardBorder = Border.all(color: Colors.white.withAlpha(15), width: 1);
-
-  static final BoxShadow cardShadow = BoxShadow(
-    color: Colors.black.withAlpha(50),
-    blurRadius: 3,
-    offset: const Offset(0, 2),
-  );
-
-  static const  TextStyle pageTitle = TextStyle(
-    fontSize: 17,
-    fontWeight: FontWeight.w600,
-    letterSpacing: -0.2,
-    color: AppTheme.textPrimary,
-  );
-
-  static TextStyle textSectionHeaderDark = TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.w600,
-    color: AppTheme.textPrimary,
-    letterSpacing: -0.3,
-  );
-
-  // --- 3. ESPAÇAMENTOS GLOBAIS (Novo Padrão Compacto) ---
+  // --- 2. ESPAÇAMENTOS GLOBAIS
   static const double paddingScreen = 16;
   static const double paddingCard = 16.0;
   static const double space0 = 0;
@@ -105,13 +39,79 @@ class AppTheme {
   static const double space40 = 40.0;
   static const double space48 = 48.0;
 
-  // --- 4. ARREDONDAMENTOS (Radii) ---
+  // --- 3. ARREDONDAMENTOS (Radii) ---
   static const double radiusSmall = 12.0;
   static const double radiusMedium = 16.0;
   static const double radiusLarge = 24.0;
   static const double radiusFull = 9999.0;
 
-  // --- 5. COMPONENTES (Tokens) ---
+  // --- 4. ESTILOS DE TEXTO ---
+  static const TextStyle bigTitle = TextStyle(
+    fontSize: 34,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.4,
+    color: AppTheme.textPrimary,
+  );
+
+  static TextStyle textSectionHeaderDark = TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    color: AppTheme.textPrimary,
+    letterSpacing: -0.3,
+  );
+
+  static const  TextStyle pageTitle = TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.2,
+    color: AppTheme.textPrimary,
+  );
+
+  static const TextStyle bodyText = TextStyle(
+    color: textPrimary,
+    fontSize: 17,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.1,
+    height: 1.4,
+  );
+
+  static const TextStyle cardTitle = TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w800,
+      color: textPrimary,
+      letterSpacing: -0.2
+  );
+
+  static const TextStyle cardSubtitle = TextStyle(
+      fontSize: 12,
+      color: textSecondary,
+      fontWeight: FontWeight.w500,
+  );
+
+  static const TextStyle caption = TextStyle(
+    color: textSecondary,
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.0,
+  );
+
+  static const TextStyle microLabelTextStyle = TextStyle(
+    color: AppTheme.silverGrey,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.8,
+  );
+
+  // --- 5. DECORAÇÕES (Bordas e Sombras) ---
+  static final Border cardBorder = Border.all(color: Colors.white.withAlpha(15), width: 1);
+
+  static final BoxShadow cardShadow = BoxShadow(
+    color: Colors.black.withAlpha(50),
+    blurRadius: 3,
+    offset: const Offset(0, 2),
+  );
+
+  // --- 6. COMPONENTES (Tokens) ---
   static TooltipThemeData get tooltipTheme => TooltipThemeData(
     decoration: BoxDecoration(
       color: surfaceDark,
@@ -138,7 +138,7 @@ class AppTheme {
     showDuration: const Duration(seconds: 3),
   );
 
-  // --- 6. TEMA GLOBAL DO FLUTTER ---
+  // --- 7. TEMA GLOBAL DO FLUTTER ---
   static ThemeData get themeData {
     return ThemeData(
       useMaterial3: true,

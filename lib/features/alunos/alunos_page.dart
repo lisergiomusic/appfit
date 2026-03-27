@@ -372,10 +372,10 @@ class _AlunosPageState extends State<AlunosPage> {
     return Padding(
        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Container(
-        height: 52,
+        height: 54,
         decoration: BoxDecoration(
           color: AppTheme.surfaceDark,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           border: Border.all(color: Colors.white.withAlpha(10)),
         ),
         child: TextField(
@@ -384,7 +384,7 @@ class _AlunosPageState extends State<AlunosPage> {
             setState(() => _searchQuery = val);
             _fetchInitialData();
           },
-          style: const TextStyle(color: Colors.white, fontSize: 15),
+          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15),
           decoration: InputDecoration(
             hintText: 'Pesquisar por nome...',
             hintStyle: TextStyle(color: AppTheme.textSecondary.withAlpha(80)),
@@ -401,9 +401,12 @@ class _AlunosPageState extends State<AlunosPage> {
                 : null,
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              borderSide: BorderSide(color: AppTheme.primary, width: 1)
+            ),
             filled: false,
-            contentPadding: const EdgeInsets.symmetric(vertical: 15),
+            contentPadding: const EdgeInsets.symmetric(vertical: 16),
           ),
         ),
       ),
