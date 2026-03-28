@@ -30,7 +30,7 @@ class RitmoDaSemanaCard extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.only(left: 4),
-                child: Text('Frequência semanal', style: AppTheme.textSectionHeaderDark),
+                child: Text('Frequência semanal', style: AppTheme.textSectionHeader),
               ),
               TextButton(
                 onPressed: () {},

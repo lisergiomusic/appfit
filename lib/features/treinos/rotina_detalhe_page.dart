@@ -554,7 +554,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   ),
                   const SizedBox(height: 32),
                   if (isTemplate) _buildTemplateBadge(),
-                  Text('Lista de treinos', style: AppTheme.textSectionHeaderDark),
+                  Text('Lista de treinos', style: AppTheme.textSectionHeader),
                   const SizedBox(height: 12),
                   if (_treinos.isEmpty)
                     _buildEmptyState()

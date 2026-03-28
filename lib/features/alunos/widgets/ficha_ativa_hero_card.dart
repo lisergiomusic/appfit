@@ -69,7 +69,7 @@ class FichaAtivaHeroCard extends StatelessWidget {
                   children: [
                     Text(
                       'Planilha atual',
-                      style: AppTheme.textSectionHeaderDark,
+                      style: AppTheme.textSectionHeader,
                     ),
                     TextButton(
                       onPressed: () {

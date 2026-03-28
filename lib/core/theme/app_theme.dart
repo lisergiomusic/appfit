@@ -56,7 +56,7 @@ class AppTheme {
     color: AppTheme.textPrimary,
   );
 
-  static TextStyle textSectionHeaderDark = TextStyle(
+  static TextStyle textSectionHeader = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
     color: AppTheme.textPrimary,

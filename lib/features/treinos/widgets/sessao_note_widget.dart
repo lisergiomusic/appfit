@@ -18,7 +18,7 @@ class SessaoNoteWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Notas da sessão', style: AppTheme.textSectionHeaderDark),
+        Text('Notas da sessão', style: AppTheme.textSectionHeader),
         const SizedBox(height: 10),
         GestureDetector(
           onTap: () => _showEditNoteSheet(context, controller),

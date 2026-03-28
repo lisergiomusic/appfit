@@ -684,7 +684,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Instruções', style: AppTheme.textSectionHeaderDark),
+        Text('Instruções', style: AppTheme.textSectionHeader),
         const SizedBox(height: 10),
         GestureDetector(
           onTap: _showEditInstructionsSheet,

@@ -342,7 +342,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Text(
         label,
-        style: AppTheme.textSectionHeaderDark,
+        style: AppTheme.textSectionHeader,
       ),
     );
   }

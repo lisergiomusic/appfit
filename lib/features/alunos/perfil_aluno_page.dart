@@ -400,7 +400,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       'Da Biblioteca',
-                      style: AppTheme.textSectionHeaderDark,
+                      style: AppTheme.textSectionHeader,
                     ),
                   ),
                   const Expanded(child: Divider(color: Colors.white10)),

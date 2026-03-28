@@ -315,7 +315,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                           children: [
                             Text(
                               'Lista de exercícios',
-                              style: AppTheme.textSectionHeaderDark,
+                              style: AppTheme.textSectionHeader,
                             ),
                             const Spacer(),
                             TextButton(

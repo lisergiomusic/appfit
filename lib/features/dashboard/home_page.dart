@@ -197,7 +197,7 @@ class HomePage extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 4, bottom: 16),
                     child: Text(
                       'Ações rápidas',
-                      style: AppTheme.textSectionHeaderDark,
+                      style: AppTheme.textSectionHeader,
                     ),
                   ),
                   Row(
@@ -240,7 +240,7 @@ class HomePage extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 4),
                     child: Text(
                       'Atividade recente',
-                      style: AppTheme.textSectionHeaderDark,
+                      style: AppTheme.textSectionHeader,
                     ),
                   ),
                   TextButton(
