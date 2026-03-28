@@ -241,22 +241,22 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                       idade: widget.idade,
                       peso: widget.peso,
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 32),
 
                     if (ativa.isNotEmpty) ...[
                       _buildSectionLabel('EM CURSO'),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 8),
                       ...ativa.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id, isAtiva: true)),
                       const SizedBox(height: 32),
                     ],
 
                     _buildSectionLabel('Planejadas'),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
                     ...mockFuturas.map((m) => _buildPlanilhaItem(context, m, 'mock_f', isProgramada: true)),
                     const SizedBox(height: 32),
 
                     _buildSectionLabel('Anteriores'),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
                     ...historico.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id)),
                     ...mockHistorico.map((m) => _buildPlanilhaItem(context, m, 'mock_${m['nome']}')),
 
@@ -268,11 +268,14 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddOptions(context),
-        icon: const Icon(Icons.add_rounded, color: Colors.black, size: 24),
-        label: const Text(
-          'Nova planilha',
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 16.0),
+        child: FloatingActionButton.extended(
+          onPressed: () => _showAddOptions(context),
+          icon: const Icon(Icons.add_rounded, color: Colors.black, size: 24),
+          label: const Text(
+            'Nova planilha',
+          ),
         ),
       ),
     );
@@ -280,7 +283,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
 
   Widget _buildSectionLabel(String label) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
       child: Text(
         label,
         style: AppTheme.textSectionHeaderDark,
@@ -322,7 +325,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
     final Color accentColor = isAtiva ? AppTheme.primary : (isProgramada ? AppTheme.iosBlue : AppTheme.textSecondary);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
+      margin: const EdgeInsets.only(bottom: 12, left: AppTheme.paddingScreen, right: AppTheme.paddingScreen),
       decoration: AppTheme.cardDecoration,
       child: InkWell(
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
