@@ -167,9 +167,10 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         titleTextStyle: TextStyle(
-          color: textPrimary,
-          fontSize: 16,
+          fontSize: 17,
           fontWeight: FontWeight.w600,
+          letterSpacing: -0.2,
+          color: AppTheme.textPrimary,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(

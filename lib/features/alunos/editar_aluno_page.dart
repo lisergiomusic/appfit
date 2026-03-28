@@ -19,7 +19,7 @@ class EditarAlunoPage extends StatefulWidget {
 class _EditarAlunoPageState extends State<EditarAlunoPage> {
   final AlunoService _alunoService = AlunoService();
   final _formKey = GlobalKey<FormState>();
-  
+
   bool _isLoading = true;
   bool _isSaving = false;
 
@@ -40,15 +40,15 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
     try {
       final doc = await _alunoService.getAluno(widget.alunoId);
       if (!doc.exists) throw Exception("Aluno não encontrado");
-      
+
       final data = doc.data() as Map<String, dynamic>;
-      
+
       _nomeController = TextEditingController(text: data['nome'] ?? '');
       _sobrenomeController = TextEditingController(text: data['sobrenome'] ?? '');
       _emailController = TextEditingController(text: data['email'] ?? '');
       _telefoneController = TextEditingController(text: data['telefone'] ?? '');
       _pesoController = TextEditingController(text: data['pesoAtual']?.toString() ?? '');
-      
+
       if (data['dataNascimento'] != null) {
         _dataNascimento = (data['dataNascimento'] as Timestamp).toDate();
       }
@@ -88,7 +88,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
         peso: double.tryParse(_pesoController.text),
         dataNascimento: _dataNascimento,
       );
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -114,7 +114,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: _buildAppBar(),
-      body: _isLoading 
+      body: _isLoading
         ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
         : _buildBody(),
     );
@@ -205,7 +205,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 keyboardType: TextInputType.phone,
                 hint: '(00) 00000-0000',
               ),
-              
+
               const SizedBox(height: 40),
               _buildSectionHeader('Biometria e saúde'),
               const SizedBox(height: 24),
@@ -227,7 +227,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 56),
               _buildSubmitButton(),
             ],
@@ -297,7 +297,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
             hintText: hint,
             hintStyle: TextStyle(color: AppTheme.textSecondary.withAlpha(80), fontSize: 14),
             prefixIcon: Icon(icon, color: AppTheme.textSecondary.withAlpha(120), size: 20),
-            suffixIcon: suffix != null 
+            suffixIcon: suffix != null
                 ? Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [suffix],
@@ -305,11 +305,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 : null,
             filled: true,
             fillColor: AppTheme.surfaceDark,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: Colors.white.withAlpha(15)),
-            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
@@ -387,7 +383,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    _dataNascimento != null 
+                    _dataNascimento != null
                         ? DateFormat('dd/MM/yyyy').format(_dataNascimento!)
                         : 'Selecionar',
                     style: TextStyle(
@@ -427,7 +423,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         ),
-        child: _isSaving 
+        child: _isSaving
           ? const SizedBox(
               width: 24,
               height: 24,
