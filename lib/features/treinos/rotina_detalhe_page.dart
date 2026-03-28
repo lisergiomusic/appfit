@@ -337,6 +337,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       label: 'Nome da Planilha',
                       child: TextFormField(
                         controller: localNomeCtrl,
+                        autofocus: true,
                         style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15),
                         decoration: rotinaInputDecoration(hintText: 'Ex: Protocolo Y'),
                         validator: (value) => (value == null || value.trim().isEmpty) ? 'Campo obrigatório' : null,
