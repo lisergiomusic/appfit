@@ -170,108 +170,182 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
     );
   }
 
+  Widget _buildSliverAppBar() {
+    return SliverAppBar(
+      expandedHeight: 0,
+      floating: true,
+      pinned: true,
+      backgroundColor: AppTheme.background,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+        onPressed: () => Navigator.pop(context),
+      ),
+      centerTitle: true,
+      title: const Text(
+        'Gerenciar planilhas',
+        style: AppTheme.pageTitle,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _planilhasStream,
-        builder: (context, snapshot) {
-          final allDocs = snapshot.data?.docs ?? [];
-          final planilhas = allDocs.toList()
-            ..sort((a, b) {
-              final da = (a.data() as Map<String, dynamic>)['dataCriacao'] as Timestamp?;
-              final db = (b.data() as Map<String, dynamic>)['dataCriacao'] as Timestamp?;
-              if (da == null) return 1;
-              if (db == null) return -1;
-              return db.compareTo(da);
-            });
+    return StreamBuilder<QuerySnapshot>(
+      stream: _planilhasStream,
+      builder: (context, snapshot) {
+        final allDocs = snapshot.data?.docs ?? [];
+        final planilhas = allDocs.toList()
+          ..sort((a, b) {
+            final da = (a.data() as Map<String, dynamic>)['dataCriacao'] as Timestamp?;
+            final db = (b.data() as Map<String, dynamic>)['dataCriacao'] as Timestamp?;
+            if (da == null) return 1;
+            if (db == null) return -1;
+            return db.compareTo(da);
+          });
 
-          final ativa = planilhas.where((doc) => (doc.data() as Map<String, dynamic>)['ativa'] == true).toList();
-          final historico = planilhas.where((doc) => (doc.data() as Map<String, dynamic>)['ativa'] != true).toList();
+        final ativa = planilhas.where((doc) => (doc.data() as Map<String, dynamic>)['ativa'] == true).toList();
+        final historico = planilhas.where((doc) => (doc.data() as Map<String, dynamic>)['ativa'] != true).toList();
 
-          // Mock data for visual completeness as requested by user's original code
-          final List<Map<String, dynamic>> mockHistorico = [
-            {'nome': 'Ciclo de Força 2024', 'dataCriacao': Timestamp.fromDate(DateTime(2024, 02, 10)), 'ativa': false},
-            {'nome': 'Hipertrofia ABC', 'dataCriacao': Timestamp.fromDate(DateTime(2023, 12, 05)), 'ativa': false}
-          ];
-          final List<Map<String, dynamic>> mockFuturas = [
-            {
-              'nome': 'Preparação Verão',
-              'dataCriacao': Timestamp.fromDate(DateTime.now().add(const Duration(days: 15))),
-              'ativa': false,
-              'isProgramada': true,
-            }
-          ];
-
-          return CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverAppBar(
-                expandedHeight: 0,
-                floating: true,
-                pinned: true,
-                backgroundColor: AppTheme.background,
-                elevation: 0,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                centerTitle: true,
-                title: const Text(
-                  'Gerenciar planilhas',
-                  style: AppTheme.pageTitle,
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 12),
-                    AlunoHeaderSection(
-                      alunoId: widget.alunoId,
-                      alunoNome: widget.alunoNome,
-                      photoUrl: widget.photoUrl,
-                      idade: widget.idade,
-                      peso: widget.peso,
+        return Scaffold(
+          backgroundColor: AppTheme.background,
+          body: Builder(
+            builder: (context) {
+              if (planilhas.isEmpty) {
+                return CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    _buildSliverAppBar(),
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 12),
+                          AlunoHeaderSection(
+                            alunoId: widget.alunoId,
+                            alunoNome: widget.alunoNome,
+                            photoUrl: widget.photoUrl,
+                            idade: widget.idade,
+                            peso: widget.peso,
+                          ),
+                          const Spacer(),
+                          Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(28),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.03),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.assignment_outlined,
+                                    size: 48,
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                const Text(
+                                  'Nenhuma planilha',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: -0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 48),
+                                  child: Text(
+                                    'Este aluno ainda não possui planilhas de treino vinculadas.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: AppTheme.textSecondary.withValues(alpha: 0.5),
+                                      fontSize: 15,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 32),
+                                TextButton.icon(
+                                  onPressed: () => _showAddOptions(context),
+                                  icon: const Icon(Icons.add_rounded, size: 20),
+                                  label: const Text('Criar primeira planilha'),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: AppTheme.primary,
+                                    backgroundColor: AppTheme.primary.withValues(alpha: 0.1),
+                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Spacer(flex: 2),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 32),
-
-                    if (ativa.isNotEmpty) ...[
-                      _buildSectionLabel('EM CURSO'),
-                      const SizedBox(height: 8),
-                      ...ativa.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id, isAtiva: true)),
-                      const SizedBox(height: 32),
-                    ],
-
-                    _buildSectionLabel('Planilhas planejadas'),
-                    const SizedBox(height: 8),
-                    ...mockFuturas.map((m) => _buildPlanilhaItem(context, m, 'mock_f', isProgramada: true)),
-                    const SizedBox(height: 32),
-
-                    _buildSectionLabel('Anteriores'),
-                    const SizedBox(height: 8),
-                    ...historico.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id)),
-                    ...mockHistorico.map((m) => _buildPlanilhaItem(context, m, 'mock_${m['nome']}')),
-
-                    const SizedBox(height: 120),
                   ],
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 16.0),
-        child: FloatingActionButton.extended(
-          onPressed: () => _showAddOptions(context),
-          icon: const Icon(Icons.add_rounded, color: Colors.black, size: 24),
-          label: const Text(
-            'Nova planilha',
+                );
+              }
+
+              return CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  _buildSliverAppBar(),
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 12),
+                        AlunoHeaderSection(
+                          alunoId: widget.alunoId,
+                          alunoNome: widget.alunoNome,
+                          photoUrl: widget.photoUrl,
+                          idade: widget.idade,
+                          peso: widget.peso,
+                        ),
+                        const SizedBox(height: 32),
+
+                        if (ativa.isNotEmpty) ...[
+                          _buildSectionLabel('EM CURSO'),
+                          const SizedBox(height: 8),
+                          ...ativa.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id, isAtiva: true)),
+                          const SizedBox(height: 32),
+                        ],
+
+                        if (historico.isNotEmpty) ...[
+                          _buildSectionLabel('ANTERIORES'),
+                          const SizedBox(height: 8),
+                          ...historico.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id)),
+                        ],
+
+                        const SizedBox(height: 120),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
-        ),
-      ),
+          floatingActionButton: planilhas.isEmpty
+              ? null
+              : Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: FloatingActionButton.extended(
+                    onPressed: () => _showAddOptions(context),
+                    icon: const Icon(Icons.add_rounded, color: Colors.black, size: 24),
+                    label: const Text(
+                      'Nova planilha',
+                    ),
+                  ),
+                ),
+        );
+      },
     );
   }
 
