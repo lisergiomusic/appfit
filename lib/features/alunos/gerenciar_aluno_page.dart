@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/aluno_service.dart';
 
-class GerenciarAlunoPage extends StatelessWidget {
+class GerenciarAlunoPage extends StatefulWidget {
   final String alunoId;
   final String alunoNome;
 
@@ -12,12 +14,232 @@ class GerenciarAlunoPage extends StatelessWidget {
     required this.alunoNome,
   });
 
-  // --- FUNÇÕES DE AÇÃO (Mocks) ---
+  @override
+  State<GerenciarAlunoPage> createState() => _GerenciarAlunoPageState();
+}
 
-  void _editarInformacoes(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Em breve: Abrir formulário de edição!')),
-    );
+class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
+  final AlunoService _alunoService = AlunoService();
+  bool _isLoading = false;
+
+  // --- FUNÇÕES DE AÇÃO ---
+
+  Future<void> _editarInformacoes(BuildContext context) async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final doc = await _alunoService.getAluno(widget.alunoId);
+      if (!doc.exists) {
+        throw Exception("Aluno não encontrado.");
+      }
+      final data = doc.data() as Map<String, dynamic>;
+      
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
+      final nomeController = TextEditingController(text: data['nome'] ?? '');
+      final sobrenomeController = TextEditingController(text: data['sobrenome'] ?? '');
+      final emailController = TextEditingController(text: data['email'] ?? '');
+      final telefoneController = TextEditingController(text: data['telefone'] ?? '');
+      final pesoController = TextEditingController(text: data['pesoAtual']?.toString() ?? '');
+      
+      DateTime? dataNascimento;
+      if (data['dataNascimento'] != null) {
+        dataNascimento = (data['dataNascimento'] as Timestamp).toDate();
+      }
+
+      if (!context.mounted) return;
+
+      await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => StatefulBuilder(
+          builder: (context, setModalState) => Container(
+            decoration: const BoxDecoration(
+              color: AppTheme.surfaceDark,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+            ),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+              left: 24,
+              right: 24,
+              top: 32,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Editar Aluno',
+                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5),
+                          ),
+                          Text(
+                            'Atualize os dados do aluno abaixo',
+                            style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, color: AppTheme.textSecondary),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  TextField(
+                    controller: nomeController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nome',
+                      prefixIcon: Icon(Icons.person_outline),
+                    ),
+                    textCapitalization: TextCapitalization.words,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: sobrenomeController,
+                    decoration: const InputDecoration(
+                      labelText: 'Sobrenome',
+                      prefixIcon: Icon(Icons.person_outline),
+                    ),
+                    textCapitalization: TextCapitalization.words,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: emailController,
+                    decoration: const InputDecoration(
+                      labelText: 'E-mail de Acesso',
+                      prefixIcon: Icon(Icons.alternate_email),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: telefoneController,
+                    decoration: const InputDecoration(
+                      labelText: 'Telefone / WhatsApp',
+                      prefixIcon: Icon(Icons.phone_outlined),
+                      hintText: '(00) 00000-0000',
+                    ),
+                    keyboardType: TextInputType.phone,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: pesoController,
+                          decoration: const InputDecoration(
+                            labelText: 'Peso (kg)',
+                            prefixIcon: Icon(Icons.monitor_weight_outlined),
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: dataNascimento ?? DateTime(2000),
+                              firstDate: DateTime(1940),
+                              lastDate: DateTime.now(),
+                              builder: (context, child) {
+                                return Theme(
+                                  data: Theme.of(context).copyWith(
+                                    colorScheme: const ColorScheme.dark(
+                                      primary: AppTheme.primary,
+                                      onPrimary: Colors.black,
+                                      surface: AppTheme.surfaceDark,
+                                      onSurface: Colors.white,
+                                    ),
+                                  ),
+                                  child: child!,
+                                );
+                              },
+                            );
+                            if (picked != null) {
+                              setModalState(() => dataNascimento = picked);
+                            }
+                          },
+                          child: InputDecorator(
+                            decoration: const InputDecoration(
+                              labelText: 'Nascimento',
+                              prefixIcon: Icon(Icons.calendar_today_outlined),
+                            ),
+                            child: Text(
+                              dataNascimento != null 
+                                ? DateFormat('dd/MM/yyyy').format(dataNascimento!)
+                                : 'Selecionar',
+                              style: TextStyle(
+                                color: dataNascimento != null ? Colors.white : AppTheme.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        try {
+                          await _alunoService.atualizarAluno(
+                            alunoId: widget.alunoId,
+                            nome: nomeController.text,
+                            sobrenome: sobrenomeController.text,
+                            email: emailController.text,
+                            telefone: telefoneController.text,
+                            peso: double.tryParse(pesoController.text),
+                            dataNascimento: dataNascimento,
+                          );
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Dados atualizados com sucesso!'),
+                                backgroundColor: AppTheme.success,
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Erro ao atualizar: $e')),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: const Text('SALVAR ALTERAÇÕES', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, letterSpacing: 1.0)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao carregar dados: $e')),
+        );
+      }
+    }
   }
 
   void _enviarConviteApp(BuildContext context) {
@@ -39,7 +261,6 @@ class GerenciarAlunoPage extends StatelessWidget {
   }
 
   Future<void> _excluirAluno(BuildContext context) async {
-    // Aqui usamos um Diálogo de Confirmação crítico antes de deletar
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -49,7 +270,7 @@ class GerenciarAlunoPage extends StatelessWidget {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         content: Text(
-          'Tem certeza que deseja remover $alunoNome definitivamente? Todos os treinos e históricos serão perdidos.',
+          'Tem certeza que deseja remover ${widget.alunoNome} definitivamente? Todos os treinos e históricos serão perdidos.',
           style: const TextStyle(color: AppTheme.textSecondary),
         ),
         actions: [
@@ -76,10 +297,8 @@ class GerenciarAlunoPage extends StatelessWidget {
 
     if (confirmar == true) {
       try {
-        final AlunoService alunoService = AlunoService();
-        await alunoService.deletarAluno(alunoId);
+        await _alunoService.deletarAluno(widget.alunoId);
         if (context.mounted) {
-          // Volta duas telas (fecha gerenciar e fecha perfil) para voltar à lista de alunos
           Navigator.popUntil(context, (route) => route.isFirst);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -108,7 +327,9 @@ class GerenciarAlunoPage extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
+        : SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,7 +345,7 @@ class GerenciarAlunoPage extends StatelessWidget {
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    alunoNome,
+                    widget.alunoNome,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -150,7 +371,7 @@ class GerenciarAlunoPage extends StatelessWidget {
             _buildSettingsItem(
               icon: Icons.edit_outlined,
               title: 'Editar Informações',
-              subtitle: 'Nome, e-mail, idade e objetivos',
+              subtitle: 'Nome, e-mail, idade e peso',
               onTap: () => _editarInformacoes(context),
             ),
             _buildSettingsItem(

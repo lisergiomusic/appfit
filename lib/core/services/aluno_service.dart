@@ -51,6 +51,34 @@ class AlunoService {
     });
   }
 
+  Future<void> atualizarAluno({
+    required String alunoId,
+    required String nome,
+    required String sobrenome,
+    required String email,
+    String? telefone,
+    double? peso,
+    DateTime? dataNascimento,
+    String? objetivos,
+  }) async {
+    final Map<String, dynamic> data = {
+      'nome': nome,
+      'sobrenome': sobrenome,
+      'email': email,
+    };
+
+    if (telefone != null) data['telefone'] = telefone;
+    if (peso != null) data['pesoAtual'] = peso;
+    if (dataNascimento != null) data['dataNascimento'] = Timestamp.fromDate(dataNascimento);
+    if (objetivos != null) data['objetivos'] = objetivos;
+
+    await _firestore.collection('usuarios').doc(alunoId).update(data);
+  }
+
+  Future<DocumentSnapshot> getAluno(String alunoId) async {
+    return await _firestore.collection('usuarios').doc(alunoId).get();
+  }
+
   Future<void> deletarAluno(String alunoId) async {
     await _firestore.collection('usuarios').doc(alunoId).delete();
   }
