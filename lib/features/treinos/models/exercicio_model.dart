@@ -30,6 +30,20 @@ class SerieItem {
       descanso: descanso,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SerieItem &&
+          runtimeType == other.runtimeType &&
+          tipo == other.tipo &&
+          alvo == other.alvo &&
+          carga == other.carga &&
+          descanso == other.descanso;
+
+  @override
+  int get hashCode =>
+      tipo.hashCode ^ alvo.hashCode ^ carga.hashCode ^ descanso.hashCode;
 }
 
 class ExercicioItem {
@@ -105,8 +119,23 @@ class ExercicioItem {
       identical(this, other) ||
       other is ExercicioItem &&
           runtimeType == other.runtimeType &&
-          (id != null && other.id != null ? id == other.id : nome == other.nome && personalId == other.personalId);
+          nome == other.nome &&
+          tipoAlvo == other.tipoAlvo &&
+          _listEquals(grupoMuscular, other.grupoMuscular) &&
+          _listEquals(series, other.series);
 
   @override
-  int get hashCode => id != null ? id.hashCode : nome.hashCode ^ personalId.hashCode;
+  int get hashCode =>
+      nome.hashCode ^
+      tipoAlvo.hashCode ^
+      grupoMuscular.length.hashCode ^
+      series.length.hashCode;
+
+  bool _listEquals(List a, List b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 }

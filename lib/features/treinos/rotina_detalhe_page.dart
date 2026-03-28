@@ -90,17 +90,54 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       }
     }
 
-    // Comparação simplificada das sessões (quantidade e nomes)
+    // Comparação profunda das sessões
     List<dynamic> sessoesRaw = data['sessoes'] ?? [];
     if (_treinos.length != sessoesRaw.length) return true;
 
     for (int i = 0; i < _treinos.length; i++) {
-      if (_treinos[i].nome != sessoesRaw[i]['nome']) return true;
-      if (_treinos[i].diaSemana != sessoesRaw[i]['diaSemana']) return true;
-      if (_treinos[i].orientacoes != sessoesRaw[i]['orientacoes']) return true;
-      if (_treinos[i].exercicios.length !=
-          (sessoesRaw[i]['exercicios'] as List).length) {
-        return true;
+      final sessao = _treinos[i];
+      final sessaoRaw = sessoesRaw[i];
+
+      if (sessao.nome != sessaoRaw['nome']) return true;
+      if ((sessao.diaSemana ?? '') != (sessaoRaw['diaSemana'] ?? '')) return true;
+      if ((sessao.orientacoes ?? '') != (sessaoRaw['orientacoes'] ?? '')) return true;
+
+      List<dynamic> exerciciosRaw = sessaoRaw['exercicios'] ?? [];
+      if (sessao.exercicios.length != exerciciosRaw.length) return true;
+
+      for (int j = 0; j < sessao.exercicios.length; j++) {
+        final ex = sessao.exercicios[j];
+        final exRaw = exerciciosRaw[j];
+
+        if (ex.nome != exRaw['nome']) return true;
+        if (ex.tipoAlvo != (exRaw['tipoAlvo'] ?? 'Reps')) return true;
+        
+        // Comparação de grupos musculares
+        List<String> gruposRaw = [];
+        final rawG = exRaw['grupoMuscular'];
+        if (rawG is String) {
+          gruposRaw = rawG.split(',').map((e) => e.trim()).toList();
+        } else if (rawG is List) {
+          gruposRaw = List<String>.from(rawG);
+        }
+        if (ex.grupoMuscular.length != gruposRaw.length) return true;
+        for (int k = 0; k < ex.grupoMuscular.length; k++) {
+          if (ex.grupoMuscular[k] != gruposRaw[k]) return true;
+        }
+
+        // Comparação de séries
+        List<dynamic> seriesRaw = exRaw['series'] ?? [];
+        if (ex.series.length != seriesRaw.length) return true;
+
+        for (int k = 0; k < ex.series.length; k++) {
+          final s = ex.series[k];
+          final sRaw = seriesRaw[k];
+
+          if (s.tipo.name != sRaw['tipo']) return true;
+          if (s.alvo != sRaw['alvo']) return true;
+          if (s.carga != sRaw['carga']) return true;
+          if (s.descanso != sRaw['descanso']) return true;
+        }
       }
     }
 
