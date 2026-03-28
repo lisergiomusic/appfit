@@ -622,7 +622,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(AppTheme.radiusLarge)),
-        child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.add_circle_outline, color: Colors.black), SizedBox(width: 8), Text('Novo Treino', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600))]),
+        child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.add_circle_outline, color: Colors.black), SizedBox(width: 8), Text('Nova sessão', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600))]),
       ),
     );
   }
