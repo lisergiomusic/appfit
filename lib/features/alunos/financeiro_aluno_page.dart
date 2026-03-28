@@ -97,17 +97,12 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
   }
 
   Widget _buildStudentHeader() {
-    String tempoAluno = 'Novo Aluno';
-    if (widget.dataCriacao != null) {
-      final difference = DateTime.now().difference(widget.dataCriacao!);
-      if (difference.inDays > 365) {
-        tempoAluno = '${(difference.inDays / 365).floor()} anos de AppFit';
-      } else if (difference.inDays > 30) {
-        tempoAluno = '${(difference.inDays / 30).floor()} meses de AppFit';
-      } else {
-        tempoAluno = '${difference.inDays} dias de AppFit';
-      }
-    }
+    final String tempoAluno = widget.dataCriacao != null
+        ? () {
+            String dataFormatada = DateFormat("MMMM 'de' y", "pt_BR").format(widget.dataCriacao!);
+            return 'Aluno desde ${dataFormatada[0].toUpperCase()}${dataFormatada.substring(1)}';
+          }()
+        : 'Aluno Ativo';
 
     return Row(
       children: [
