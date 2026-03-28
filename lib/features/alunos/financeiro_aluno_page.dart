@@ -2,15 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/financeiro_service.dart';
+import 'historico_financeiro_page.dart';
 
 class FinanceiroAlunoPage extends StatefulWidget {
   final String alunoId;
   final String alunoNome;
+  final String? photoUrl;
+  final DateTime? dataCriacao;
 
   const FinanceiroAlunoPage({
     super.key,
     required this.alunoId,
     required this.alunoNome,
+    this.photoUrl,
+    this.dataCriacao,
   });
 
   @override
@@ -46,7 +51,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
           }
 
           final faturas = snapshot.data ?? [];
-          final faturasPuras = faturas.where((f) => f.status != 'pago').toList();
+          final faturasAbertas = faturas.where((f) => f.status != 'pago').toList();
           final historico = faturas.where((f) => f.status == 'pago').toList();
           final totalLucro = historico.fold(0.0, (sum, f) => sum + f.valor);
 
@@ -57,19 +62,22 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 16),
+                _buildStudentHeader(),
+                const SizedBox(height: 24),
                 _buildEarningsCard(totalLucro),
                 const SizedBox(height: 32),
-                _buildSectionHeader('FATURAS EM ABERTO'),
-                if (faturasPuras.isEmpty)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildSectionHeader('FATURAS EM ABERTO'),
+                    _buildHistoryButton(),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                if (faturasAbertas.isEmpty)
                   _buildEmptyState('Nenhuma fatura pendente')
                 else
-                  ...faturasPuras.map((f) => _buildFaturaItem(f, isActionable: true)),
-                const SizedBox(height: 32),
-                _buildSectionHeader('HISTÓRICO DE PAGAMENTOS'),
-                if (historico.isEmpty)
-                  _buildEmptyState('Nenhum pagamento registrado')
-                else
-                  ...historico.map((f) => _buildFaturaItem(f, isActionable: false)),
+                  ...faturasAbertas.map((f) => _buildFaturaItem(f)),
                 const SizedBox(height: 100),
               ],
             ),
@@ -88,45 +96,114 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
     );
   }
 
+  Widget _buildStudentHeader() {
+    String tempoAluno = 'Novo Aluno';
+    if (widget.dataCriacao != null) {
+      final difference = DateTime.now().difference(widget.dataCriacao!);
+      if (difference.inDays > 365) {
+        tempoAluno = '${(difference.inDays / 365).floor()} anos de AppFit';
+      } else if (difference.inDays > 30) {
+        tempoAluno = '${(difference.inDays / 30).floor()} meses de AppFit';
+      } else {
+        tempoAluno = '${difference.inDays} dias de AppFit';
+      }
+    }
+
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3), width: 1.5),
+          ),
+          child: CircleAvatar(
+            radius: 28,
+            backgroundColor: AppTheme.surfaceLight,
+            backgroundImage: widget.photoUrl != null && widget.photoUrl!.isNotEmpty
+                ? NetworkImage(widget.photoUrl!)
+                : null,
+            child: widget.photoUrl == null || widget.photoUrl!.isEmpty
+                ? const Icon(Icons.person, color: AppTheme.textSecondary, size: 28)
+                : null,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.alunoNome,
+              style: const TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
+              ),
+            ),
+            Text(
+              tempoAluno,
+              style: TextStyle(
+                color: AppTheme.textSecondary.withValues(alpha: 0.7),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _buildEarningsCard(double total) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppTheme.primary, AppTheme.primary.withValues(alpha: 0.7)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: AppTheme.surfaceDark,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primary.withValues(alpha: 0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'Lucro total com o aluno',
-            style: TextStyle(
-              color: Colors.black54,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'LUCRO TOTAL',
+                style: TextStyle(
+                  color: AppTheme.textSecondary.withValues(alpha: 0.5),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _currencyFormat.format(total),
+                style: const TextStyle(
+                  color: AppTheme.primary,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            _currencyFormat.format(total),
-            style: const TextStyle(
-              color: Colors.black,
-              fontSize: 32,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -1,
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
+            child: const Icon(Icons.trending_up_rounded, color: AppTheme.primary, size: 24),
           ),
         ],
       ),
@@ -134,21 +211,43 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
   }
 
   Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 16),
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: AppTheme.textSecondary,
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 1.2,
+    return Text(
+      title,
+      style: const TextStyle(
+        color: AppTheme.textSecondary,
+        fontSize: 11,
+        fontWeight: FontWeight.w900,
+        letterSpacing: 1.2,
+      ),
+    );
+  }
+
+  Widget _buildHistoryButton() {
+    return TextButton.icon(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HistoricoFinanceiroPage(
+              alunoId: widget.alunoId,
+              alunoNome: widget.alunoNome,
+            ),
+          ),
+        );
+      },
+      icon: const Icon(Icons.history_rounded, size: 16, color: AppTheme.primary),
+      label: const Text(
+        'Ver Histórico',
+        style: TextStyle(
+          color: AppTheme.primary,
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
   }
 
-  Widget _buildFaturaItem(FaturaModel fatura, {required bool isActionable}) {
+  Widget _buildFaturaItem(FaturaModel fatura) {
     final bool isAtrasado = fatura.status == 'atrasado' ||
         (fatura.status == 'pendente' && fatura.dataVencimento.isBefore(DateTime.now()));
 
@@ -158,7 +257,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: isActionable ? () => _showFaturaActions(fatura) : null,
+          onTap: () => _showFaturaActions(fatura),
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -167,13 +266,12 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: (isActionable ? (isAtrasado ? Colors.redAccent : Colors.orangeAccent) : AppTheme.success)
-                        .withValues(alpha: 0.1),
+                    color: (isAtrasado ? Colors.redAccent : Colors.orangeAccent).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(
-                    isActionable ? Icons.receipt_long_rounded : Icons.check_circle_rounded,
-                    color: isActionable ? (isAtrasado ? Colors.redAccent : Colors.orangeAccent) : AppTheme.success,
+                    Icons.receipt_long_rounded,
+                    color: isAtrasado ? Colors.redAccent : Colors.orangeAccent,
                     size: 24,
                   ),
                 ),
@@ -192,9 +290,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        isActionable
-                            ? 'Vence em ${DateFormat('dd/MM/yyyy').format(fatura.dataVencimento)}'
-                            : 'Pago em ${DateFormat('dd/MM/yyyy').format(fatura.dataPagamento ?? DateTime.now())}',
+                        'Vence em ${DateFormat('dd/MM/yyyy').format(fatura.dataVencimento)}',
                         style: TextStyle(
                           color: AppTheme.textSecondary.withValues(alpha: 0.7),
                           fontSize: 13,
@@ -221,11 +317,11 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
 
   Widget _buildEmptyState(String message) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 32),
+      padding: const EdgeInsets.symmetric(vertical: 48),
       width: double.infinity,
       child: Column(
         children: [
-          Icon(Icons.history_rounded, color: Colors.white.withValues(alpha: 0.05), size: 48),
+          Icon(Icons.inbox_rounded, color: Colors.white.withValues(alpha: 0.05), size: 48),
           const SizedBox(height: 12),
           Text(
             message,

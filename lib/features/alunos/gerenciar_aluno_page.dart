@@ -76,6 +76,8 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
         builder: (context) => FinanceiroAlunoPage(
           alunoId: widget.alunoId,
           alunoNome: widget.alunoNome,
+          photoUrl: _fotoUrl,
+          dataCriacao: _dataCriacao,
         ),
       ),
     );
