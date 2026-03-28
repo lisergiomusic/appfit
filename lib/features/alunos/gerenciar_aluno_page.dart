@@ -307,30 +307,30 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                     bottom: isLast ? const Radius.circular(AppTheme.radiusMedium) : Radius.zero,
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12), // mais compacto estilo iOS
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(8), // menor
                           decoration: BoxDecoration(
                             color: (item.iconColor ?? AppTheme.textPrimary).withAlpha(15),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(10), // mais sutil
                           ),
-                          child: Icon(item.icon, color: item.iconColor ?? AppTheme.textPrimary, size: 22),
+                          child: Icon(item.icon, color: item.iconColor ?? AppTheme.textPrimary, size: 20), // menor
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 12), // menor
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 item.title,
-                                style: AppTheme.cardTitle,
+                                style: AppTheme.cardTitle.copyWith(fontSize: 15, fontWeight: FontWeight.w600), // menor
                               ),
-                              const SizedBox(height: 2),
+                              const SizedBox(height: 1),
                               Text(
                                 item.subtitle,
-                                style: AppTheme.cardSubtitle,
+                                style: AppTheme.cardSubtitle.copyWith(fontSize: 12), // menor
                               ),
                             ],
                           ),
@@ -338,7 +338,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                         Icon(
                           Icons.chevron_right_rounded,
                           color: AppTheme.textTertiary,
-                          size: 20,
+                          size: 18, // menor
                         ),
                       ],
                     ),
@@ -347,7 +347,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
               ),
               if (!isLast)
                 Padding(
-                  padding: const EdgeInsets.only(left: 64),
+                  padding: const EdgeInsets.only(left: 52), // alinhado ao novo ícone
                   child: Divider(height: 1, color: Colors.white.withAlpha(10)),
                 ),
             ],

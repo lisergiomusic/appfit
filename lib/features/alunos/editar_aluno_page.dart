@@ -270,7 +270,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 : null,
             filled: true,
             fillColor: AppTheme.surfaceDark,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),

@@ -3,7 +3,7 @@ import '../../../core/theme/app_theme.dart';
 
 class RitmoDaSemanaCard extends StatelessWidget {
   final String alunoNome;
-  
+
   const RitmoDaSemanaCard({super.key, required this.alunoNome});
 
 
@@ -24,7 +24,7 @@ class RitmoDaSemanaCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
+          padding: const EdgeInsets.only(left: AppTheme.paddingScreen, right: AppTheme.paddingScreen, bottom: 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -45,7 +45,7 @@ class RitmoDaSemanaCard extends StatelessWidget {
 
         Container(
           margin: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           decoration: AppTheme.cardDecoration,
           child: Column(
             children: [
@@ -94,7 +94,7 @@ class RitmoDaSemanaCard extends StatelessWidget {
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Builder(
                 builder: (context) {
                   final int diasTreinados = dias.where((d) => d['status'] == 'feito').length;

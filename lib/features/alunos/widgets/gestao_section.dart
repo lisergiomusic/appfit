@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
-import '../gerenciar_planilhas_page.dart';
 import '../feedback_historico_page.dart';
 
 class GestaoSection extends StatelessWidget {
@@ -37,22 +36,18 @@ class GestaoSection extends StatelessWidget {
               children: [
                 _buildManagementItem(
                   context,
-                  icon: Icons.description_outlined,
-                  title: 'Planilhas de Treino',
+                  icon: Icons.trending_up_rounded,
+                  title: 'Progressão de Cargas',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => GerenciarPlanilhasPage(
-                          alunoId: alunoId,
-                          alunoNome: alunoNome,
-                          photoUrl: photoUrl,
-                          peso: peso,
-                          idade: idade,
-                        ),
-                      ),
-                    );
+                    // TODO: Implementar navegação para a página de Progressão de Cargas
                   },
+                  showBorder: true,
+                ),
+                _buildManagementItem(
+                  context,
+                  icon: Icons.query_stats_rounded,
+                  title: 'Avaliação Física',
+                  onTap: () {},
                   showBorder: true,
                 ),
                 _buildManagementItem(
@@ -67,13 +62,6 @@ class GestaoSection extends StatelessWidget {
                       ),
                     );
                   },
-                  showBorder: true,
-                ),
-                _buildManagementItem(
-                  context,
-                  icon: Icons.query_stats_rounded,
-                  title: 'Avaliação Física',
-                  onTap: () {},
                   showBorder: false,
                 ),
               ],

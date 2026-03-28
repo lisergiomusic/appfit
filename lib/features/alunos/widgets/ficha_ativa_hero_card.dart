@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../treinos/rotina_detalhe_page.dart';
 import '../../../core/services/aluno_service.dart';
+import '../gerenciar_planilhas_page.dart';
 
 class FichaAtivaHeroCard extends StatelessWidget {
   final String alunoId;
@@ -62,10 +63,33 @@ class FichaAtivaHeroCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.only(left: 4, bottom: 8),
-                child: Text(
-                  'Planilha atual',
-                  style: AppTheme.textSectionHeaderDark,
+                padding: const EdgeInsets.only(left: 4, bottom: 4, right: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Planilha atual',
+                      style: AppTheme.textSectionHeaderDark,
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => GerenciarPlanilhasPage(
+                              alunoId: alunoId,
+                              alunoNome: alunoNome,
+                              photoUrl: null,
+                              peso: '',
+                              idade: '',
+                            ),
+                          ),
+                        );
+                      },
+
+                      child: const Text('Ver todas'),
+                    ),
+                  ],
                 ),
               ),
               Container(

@@ -57,7 +57,7 @@ class AppTheme {
   );
 
   static TextStyle textSectionHeaderDark = TextStyle(
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: FontWeight.w600,
     color: AppTheme.textPrimary,
     letterSpacing: -0.3,
@@ -163,15 +163,27 @@ class AppTheme {
         onSurface: textPrimary,
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.transparent,
+        backgroundColor: background,
         elevation: 0,
         centerTitle: true,
+        surfaceTintColor: Colors.transparent,
+
         titleTextStyle: TextStyle(
           fontSize: 17,
           fontWeight: FontWeight.w600,
           letterSpacing: -0.2,
-          color: AppTheme.textPrimary,
+          color: textPrimary,
         ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+          minimumSize: Size(0, 32),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          foregroundColor: AppTheme.primary,
+          textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: 0.1),
+        ),
+
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
