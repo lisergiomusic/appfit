@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/aluno_service.dart';
 import 'editar_aluno_page.dart';
@@ -20,6 +22,7 @@ class GerenciarAlunoPage extends StatefulWidget {
 class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
   final AlunoService _alunoService = AlunoService();
   String? _fotoUrl;
+  DateTime? _dataCriacao;
   bool _isLoadingData = true;
 
   @override
@@ -35,6 +38,9 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
         final data = doc.data() as Map<String, dynamic>;
         setState(() {
           _fotoUrl = data['photoUrl'] ?? data['fotoUrl'];
+          if (data['dataCriacao'] != null) {
+            _dataCriacao = (data['dataCriacao'] as Timestamp).toDate();
+          }
           _isLoadingData = false;
         });
       }
@@ -249,14 +255,15 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                     letterSpacing: -0.5,
                   ),
                 ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Aluno Ativo',
-                  style: TextStyle(
-                    color: AppTheme.primary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
+
+                Text(
+                  _dataCriacao != null
+                    ? () {
+                        String dataFormatada = DateFormat("MMMM 'de' y", "pt_BR").format(_dataCriacao!);
+                        return 'Aluno desde ${dataFormatada[0].toUpperCase()}${dataFormatada.substring(1)}';
+                      }()
+                    : 'Aluno Ativo',
+                  style: AppTheme.cardSubtitle,
                 ),
               ],
             ),
@@ -318,19 +325,12 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                             children: [
                               Text(
                                 item.title,
-                                style: const TextStyle(
-                                  color: AppTheme.textPrimary,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 15,
-                                ),
+                                style: AppTheme.cardTitle,
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 item.subtitle,
-                                style: const TextStyle(
-                                  color: AppTheme.textSecondary,
-                                  fontSize: 12,
-                                ),
+                                style: AppTheme.cardSubtitle,
                               ),
                             ],
                           ),
