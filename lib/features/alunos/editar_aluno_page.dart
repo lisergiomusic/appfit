@@ -125,12 +125,21 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: _buildAppBar(),
-      body: _isLoading
-        ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
-        : _buildBody(),
+    return PopScope(
+      canPop: !_isSaving,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        if (_isSaving) return;
+        await _salvar();
+        // O _salvar já faz o pop
+      },
+      child: Scaffold(
+        backgroundColor: AppTheme.background,
+        appBar: _buildAppBar(),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
+            : _buildBody(),
+      ),
     );
   }
 
@@ -143,7 +152,11 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       centerTitle: true,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.textPrimary, size: 20),
-        onPressed: () => Navigator.pop(context),
+        onPressed: () async {
+          if (_isSaving) return;
+          await _salvar();
+          // O _salvar já faz o pop
+        },
       ),
       title: const Text(
         'Editar Aluno',
@@ -154,24 +167,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           letterSpacing: -0.5,
         ),
       ),
-      actions: [
-        if (!_isLoading)
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: TextButton(
-              onPressed: _isSaving ? null : _salvar,
-              child: Text(
-                'Salvar',
-                style: TextStyle(
-                  color: _isSaving ? AppTheme.textSecondary : AppTheme.primary,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 13,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-          ),
-      ],
+
     );
   }
 
