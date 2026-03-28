@@ -250,12 +250,12 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                       const SizedBox(height: 32),
                     ],
 
-                    _buildSectionLabel('PLANEJADAS'),
+                    _buildSectionLabel('Planejadas'),
                     const SizedBox(height: 16),
                     ...mockFuturas.map((m) => _buildPlanilhaItem(context, m, 'mock_f', isProgramada: true)),
                     const SizedBox(height: 32),
 
-                    _buildSectionLabel('ANTERIORES'),
+                    _buildSectionLabel('Anteriores'),
                     const SizedBox(height: 16),
                     ...historico.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id)),
                     ...mockHistorico.map((m) => _buildPlanilhaItem(context, m, 'mock_${m['nome']}')),
@@ -292,12 +292,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Text(
         label,
-        style: const TextStyle(
-          color: AppTheme.textSecondary,
-          fontSize: 12,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 1.5,
-        ),
+        style: AppTheme.textSectionHeaderDark,
       ),
     );
   }
@@ -335,54 +330,50 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
 
     final Color accentColor = isAtiva ? AppTheme.primary : (isProgramada ? AppTheme.iosBlue : AppTheme.textSecondary);
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      decoration: BoxDecoration(
-        color: isExpanded ? Colors.white.withValues(alpha: 0.04) : AppTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isExpanded ? accentColor.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.05),
-          width: 1,
-        ),
-      ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
+      decoration: AppTheme.cardDecoration,
       child: InkWell(
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        splashColor: AppTheme.splash.withAlpha(50),
+        highlightColor: AppTheme.splash.withAlpha(30),
         onTap: () => setState(() => _idPlanilhaExpandida = isExpanded ? null : id),
-        borderRadius: BorderRadius.circular(24),
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: AppTheme.edgeInsetsSmall,
               child: Row(
                 children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: accentColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        if (isAtiva)
-                          SizedBox(
-                            width: 44,
-                            height: 44,
-                            child: CircularProgressIndicator(
-                              value: progress,
-                              strokeWidth: 3,
-                              valueColor: AlwaysStoppedAnimation<Color>(accentColor),
-                              backgroundColor: accentColor.withValues(alpha: 0.1),
-                              strokeCap: StrokeCap.round,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      width: 56,
+                      height: 56,
+                      color: Colors.black.withAlpha(40),
+
+
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          if (isAtiva)
+                            SizedBox(
+                              width: 44,
+                              height: 44,
+                              child: CircularProgressIndicator(
+                                value: progress,
+                                strokeWidth: 3,
+                                valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+                                backgroundColor: accentColor.withValues(alpha: 0.1),
+                                strokeCap: StrokeCap.round,
+                              ),
                             ),
+                          Icon(
+                            isAtiva ? Icons.bolt_rounded : (isProgramada ? Icons.calendar_today_rounded : Icons.history_rounded),
+                            color: accentColor,
+                            size: 24,
                           ),
-                        Icon(
-                          isAtiva ? Icons.bolt_rounded : (isProgramada ? Icons.calendar_today_rounded : Icons.history_rounded),
-                          color: accentColor,
-                          size: 24,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -421,13 +412,8 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          (data['nome'] ?? 'Planilha').toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 16,
-                            letterSpacing: -0.2,
-                          ),
+                          (data['nome'] ?? 'Planilha'),
+                          style: AppTheme.cardTitle,
                         ),
                       ],
                     ),

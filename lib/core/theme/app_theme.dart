@@ -39,6 +39,9 @@ class AppTheme {
   static const double space40 = 40.0;
   static const double space48 = 48.0;
 
+  // --- 2.1 CONVENIENCE PADDINGS ---
+  static const EdgeInsets edgeInsetsSmall = EdgeInsets.all(8);
+
   // --- 3. ARREDONDAMENTOS (Radii) ---
   static const double radiusSmall = 12.0;
   static const double radiusMedium = 16.0;
@@ -109,6 +112,14 @@ class AppTheme {
     color: Colors.black.withAlpha(50),
     blurRadius: 3,
     offset: const Offset(0, 2),
+  );
+
+  /// Decoração padrão para cards, reutilizável em containers e widgets de cartão.
+  static BoxDecoration get cardDecoration => BoxDecoration(
+    color: AppTheme.surfaceDark,
+    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+    boxShadow: [AppTheme.cardShadow],
+    border: AppTheme.cardBorder,
   );
 
   // --- 6. COMPONENTES (Tokens) ---

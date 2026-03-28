@@ -1041,12 +1041,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       key: key,
       margin: const EdgeInsets.only(bottom: 12),
       child: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.surfaceDark,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          boxShadow: [AppTheme.cardShadow],
-          border: AppTheme.cardBorder,
-        ),
+        decoration: AppTheme.cardDecoration,
         child: Material(
           type: MaterialType.transparency,
           elevation: 0,
