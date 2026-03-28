@@ -139,6 +139,9 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                 FichaAtivaHeroCard(
                   alunoId: widget.alunoId,
                   alunoNome: nomeExibicao,
+                  photoUrl: widget.photoUrl ?? photoUrl,
+                  peso: peso,
+                  idade: idade,
                   onPrescreverTreino: () =>
                       _exibirOpcoesVincularTreino(context),
                 ),

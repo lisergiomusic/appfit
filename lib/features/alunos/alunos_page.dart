@@ -532,6 +532,7 @@ class _AlunosPageState extends State<AlunosPage> {
               builder: (context) => PerfilAlunoPage(
                 alunoId: id,
                 alunoNome: '${aluno['nome'] ?? ''} ${aluno['sobrenome'] ?? ''}'.trim(),
+                photoUrl: aluno['photoUrl'],
               ),
             ),
           );

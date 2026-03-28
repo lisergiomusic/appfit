@@ -9,12 +9,18 @@ import '../gerenciar_planilhas_page.dart';
 class FichaAtivaHeroCard extends StatelessWidget {
   final String alunoId;
   final String alunoNome;
+  final String? photoUrl;
+  final String peso;
+  final String idade;
   final VoidCallback onPrescreverTreino;
 
   const FichaAtivaHeroCard({
     super.key,
     required this.alunoId,
     required this.alunoNome,
+    this.photoUrl,
+    required this.peso,
+    required this.idade,
     required this.onPrescreverTreino,
   });
 
@@ -67,7 +73,7 @@ class FichaAtivaHeroCard extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                     Text(
                       'Planilha atual',
                       style: AppTheme.textSectionHeader,
                     ),
@@ -79,9 +85,9 @@ class FichaAtivaHeroCard extends StatelessWidget {
                             builder: (context) => GerenciarPlanilhasPage(
                               alunoId: alunoId,
                               alunoNome: alunoNome,
-                              photoUrl: null,
-                              peso: '',
-                              idade: '',
+                              photoUrl: photoUrl,
+                              peso: peso,
+                              idade: idade,
                             ),
                           ),
                         );
