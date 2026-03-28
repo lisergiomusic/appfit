@@ -39,8 +39,8 @@ class AlunoHeaderSection extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: -0.5,
+                    color: AppTheme.textPrimary,
+                    letterSpacing: -0.3,
                   ),
                 ),
                 const SizedBox(height: 8),

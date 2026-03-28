@@ -30,6 +30,11 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
   late TextEditingController _pesoController;
   DateTime? _dataNascimento;
 
+  // TODO: Atualizar os índices no Firestore para incluir o campo 'genero' quando integrar com backend.
+  String? _generoSelecionado;
+  final List<String> _generos = ['Masculino', 'Feminino', 'Outro'];
+  final String _generoPlaceholder = 'Selecione o gênero';
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +56,13 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
 
       if (data['dataNascimento'] != null) {
         _dataNascimento = (data['dataNascimento'] as Timestamp).toDate();
+      }
+
+      // TODO: Remover este bloco quando a atualização do Firestore for realizada.
+      if (data['genero'] != null && _generos.contains(data['genero'])) {
+        _generoSelecionado = data['genero'];
+      } else {
+        _generoSelecionado = _generos.first;
       }
 
       setState(() => _isLoading = false);
@@ -87,6 +99,8 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
         telefone: _telefoneController.text.trim(),
         peso: double.tryParse(_pesoController.text),
         dataNascimento: _dataNascimento,
+        // TODO: Enviar o campo 'genero' para o backend quando o serviço for atualizado
+        // genero: _generoSelecionado,
       );
 
       if (mounted) {
@@ -128,7 +142,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       surfaceTintColor: Colors.transparent,
       centerTitle: true,
       leading: IconButton(
-        icon: const Icon(Icons.close_rounded, color: AppTheme.textPrimary),
+        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.textPrimary, size: 20),
         onPressed: () => Navigator.pop(context),
       ),
       title: const Text(
@@ -172,8 +186,6 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionHeader('Informações básicas'),
-              const SizedBox(height: 24),
               _buildTextField(
                 controller: _nomeController,
                 label: 'Nome',
@@ -190,6 +202,10 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 validator: (v) => v!.isEmpty ? 'O sobrenome é obrigatório' : null,
               ),
               const SizedBox(height: 20),
+              _buildDatePicker(),
+              const SizedBox(height: 20),
+              _buildGeneroDropdown(),
+              const SizedBox(height: 20),
               _buildTextField(
                 controller: _emailController,
                 label: 'E-mail de acesso',
@@ -205,29 +221,6 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 keyboardType: TextInputType.phone,
                 hint: '(00) 00000-0000',
               ),
-
-              const SizedBox(height: 40),
-              _buildSectionHeader('Biometria e saúde'),
-              const SizedBox(height: 24),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: _buildTextField(
-                      controller: _pesoController,
-                      label: 'Peso atual',
-                      icon: Icons.monitor_weight_outlined,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      suffix: const Text('kg', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12, fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildDatePicker(),
-                  ),
-                ],
-              ),
-
               const SizedBox(height: 56),
               _buildSubmitButton(),
             ],
@@ -237,30 +230,6 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Row(
-      children: [
-        Container(
-          width: 4,
-          height: 16,
-          decoration: BoxDecoration(
-            color: AppTheme.primary,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 13,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.5,
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildTextField({
     required TextEditingController controller,
@@ -305,7 +274,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 : null,
             filled: true,
             fillColor: AppTheme.surfaceDark,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
@@ -320,6 +289,60 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
             ),
             errorStyle: const TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.w500),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGeneroDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(left: 4, bottom: 10),
+          child: Text(
+            'Gênero',
+            style: TextStyle(
+              color: AppTheme.textSecondary,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.0,
+            ),
+          ),
+        ),
+        DropdownButtonFormField<String>(
+          isExpanded: true,
+          initialValue: _generoSelecionado?.isNotEmpty == true && _generos.contains(_generoSelecionado)
+              ? _generoSelecionado
+              : null,
+          hint: Text(_generoPlaceholder, style: TextStyle(color: AppTheme.textSecondary.withAlpha(120))),
+          items: [
+            DropdownMenuItem<String>(
+              value: null,
+              enabled: false,
+              child: Text(_generoPlaceholder, style: TextStyle(color: AppTheme.textSecondary.withAlpha(120))),
+            ),
+            ..._generos.map((g) => DropdownMenuItem(
+                  value: g,
+                  child: Text(g),
+                ))
+          ],
+          onChanged: (value) {
+            setState(() {
+              _generoSelecionado = value;
+            });
+          },
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppTheme.surfaceDark,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+          dropdownColor: AppTheme.surfaceDark,
         ),
       ],
     );

@@ -185,7 +185,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
               _ActionItem(
                 icon: Icons.edit_rounded,
                 title: 'Editar Informações',
-                subtitle: 'Nome, e-mail, idade e peso',
+                subtitle: 'Informações pessoais e de contato',
                 onTap: () => _irParaEditar(context),
               ),
               _ActionItem(
