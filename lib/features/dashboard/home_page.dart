@@ -55,7 +55,18 @@ class HomePage extends StatelessWidget {
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(height: 0.5, color: Colors.white.withAlpha(15)),
+          child: Container(
+            height: 1.0,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withAlpha(0),
+                  Colors.white.withAlpha(20),
+                  Colors.white.withAlpha(0),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
       body: SingleChildScrollView(
