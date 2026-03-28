@@ -402,38 +402,17 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
   }
 
   Widget _buildSubmitButton() {
-    return Container(
-      width: double.infinity,
-      height: 60,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withAlpha(30),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+    return ElevatedButton(
+      onPressed: _isSaving ? null : _salvar,
+      child: _isSaving
+        ? const SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(color: Colors.black, strokeWidth: 3),
+          )
+        : const Text(
+            'Atualizar Perfil',
           ),
-        ],
-      ),
-      child: ElevatedButton(
-        onPressed: _isSaving ? null : _salvar,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.primary,
-          foregroundColor: Colors.black,
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        ),
-        child: _isSaving
-          ? const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(color: Colors.black, strokeWidth: 3),
-            )
-          : const Text(
-              'Atualizar perfil',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, letterSpacing: 1.5),
-            ),
-      ),
     );
   }
 }
