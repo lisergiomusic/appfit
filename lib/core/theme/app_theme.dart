@@ -106,7 +106,7 @@ class AppTheme {
   );
 
   // --- 5. DECORAÇÕES (Bordas e Sombras) ---
-  static final Border cardBorder = Border.all(color: Colors.white.withAlpha(15), width: 1);
+  static final Border cardBorder = Border.all(color: Colors.white.withAlpha(5), width: 1);
 
   static final BoxShadow cardShadow = BoxShadow(
     color: Colors.black.withAlpha(50),

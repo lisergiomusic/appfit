@@ -62,18 +62,14 @@ class FichaAtivaHeroCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.only(left: 4, bottom: 12),
+                padding: EdgeInsets.only(left: 4, bottom: 8),
                 child: Text(
                   'Planilha atual',
                   style: AppTheme.textSectionHeaderDark,
                 ),
               ),
               Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceDark,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.white.withAlpha(5)),
-                ),
+                decoration: AppTheme.cardDecoration,
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
@@ -90,7 +86,7 @@ class FichaAtivaHeroCard extends StatelessWidget {
                         ),
                       );
                     },
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                     child: Padding(
                        padding: const EdgeInsets.all(16),
                       child: Row(
@@ -119,14 +115,14 @@ class FichaAtivaHeroCard extends StatelessWidget {
                               children: [
                                 Text(
                                   rotina['nome'] ?? 'Ficha de Treino',
-                                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+                                  style: AppTheme.cardTitle,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   objetivo,
-                                  style: TextStyle(color: AppTheme.textSecondary.withAlpha(180), fontSize: 14, fontWeight: FontWeight.w500),
+                                  style: AppTheme.cardSubtitle,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -158,7 +154,7 @@ class FichaAtivaHeroCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Padding(
-          padding: EdgeInsets.only(left: 4, bottom: 12),
+          padding: EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
             'Planilha atual',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary, letterSpacing: -0.5),

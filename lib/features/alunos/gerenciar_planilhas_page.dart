@@ -312,14 +312,14 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                         const SizedBox(height: 32),
 
                         if (ativa.isNotEmpty) ...[
-                          _buildSectionLabel('EM CURSO'),
+                          _buildSectionLabel('Planilha atual'),
                           const SizedBox(height: 8),
                           ...ativa.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id, isAtiva: true)),
                           const SizedBox(height: 32),
                         ],
 
                         if (historico.isNotEmpty) ...[
-                          _buildSectionLabel('ANTERIORES'),
+                          _buildSectionLabel('Anteriores'),
                           const SizedBox(height: 8),
                           ...historico.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id)),
                         ],
@@ -351,7 +351,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
 
   Widget _buildSectionLabel(String label) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Text(
         label,
         style: AppTheme.textSectionHeaderDark,

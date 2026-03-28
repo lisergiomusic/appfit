@@ -25,12 +25,15 @@ class RitmoDaSemanaCard extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Frequência semanal', style: AppTheme.textSectionHeaderDark),
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: Text('Frequência semanal', style: AppTheme.textSectionHeaderDark),
+              ),
               TextButton(
                 onPressed: () {},
                 child: const Text(
-                  'VER TUDO',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.primary),
+                  'Ver mais',
+                  style: TextStyle(color: AppTheme.primary),
                 ),
               ),
             ],
@@ -40,11 +43,7 @@ class RitmoDaSemanaCard extends StatelessWidget {
         Container(
           margin: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
           padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppTheme.surfaceDark,
-            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-            border: Border.all(color: Colors.white.withAlpha(5)),
-          ),
+          decoration: AppTheme.cardDecoration,
           child: Column(
             children: [
               Row(

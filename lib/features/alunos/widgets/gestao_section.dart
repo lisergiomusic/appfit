@@ -31,11 +31,7 @@ class GestaoSection extends StatelessWidget {
             child: Text('Gestão', style: AppTheme.textSectionHeaderDark),
           ),
           Container(
-            decoration: BoxDecoration(
-              color: AppTheme.surfaceDark,
-              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-              border: Border.all(color: Colors.white.withAlpha(5)),
-            ),
+            decoration: AppTheme.cardDecoration,
             clipBehavior: Clip.antiAlias,
             child: Column(
               children: [
@@ -102,7 +98,7 @@ class GestaoSection extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            border: showBorder ? Border(bottom: BorderSide(color: Colors.white.withAlpha(10), width: 0.5)) : null,
+            border: showBorder ? Border(bottom: BorderSide(color: Colors.white.withAlpha(10), width: 1.0)) : null,
           ),
           child: Row(
             children: [
