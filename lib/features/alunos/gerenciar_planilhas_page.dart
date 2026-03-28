@@ -28,7 +28,6 @@ class GerenciarPlanilhasPage extends StatefulWidget {
 }
 
 class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
-  String? _idPlanilhaExpandida;
   late final Stream<QuerySnapshot> _planilhasStream;
   final AlunoService _alunoService = AlunoService();
 
@@ -292,7 +291,6 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
   }
 
   Widget _buildPlanilhaItem(BuildContext context, Map<String, dynamic> data, String id, {bool isAtiva = false, bool isProgramada = false}) {
-    final bool isExpanded = _idPlanilhaExpandida == id;
     String statusLabel = '';
     String infoLabel = '';
     double progress = 0.0;
@@ -331,171 +329,86 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         splashColor: AppTheme.splash.withAlpha(50),
         highlightColor: AppTheme.splash.withAlpha(30),
-        onTap: () => setState(() => _idPlanilhaExpandida = isExpanded ? null : id),
-        child: Column(
-          children: [
-            Padding(
-              padding: AppTheme.edgeInsetsSmall,
-              child: Row(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      width: 56,
-                      height: 56,
-                      color: Colors.black.withAlpha(40),
-
-
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          if (isAtiva)
-                            SizedBox(
-                              width: 44,
-                              height: 44,
-                              child: CircularProgressIndicator(
-                                value: progress,
-                                strokeWidth: 3,
-                                valueColor: AlwaysStoppedAnimation<Color>(accentColor),
-                                backgroundColor: accentColor.withValues(alpha: 0.1),
-                                strokeCap: StrokeCap.round,
-                              ),
-                            ),
-                          Icon(
-                            isAtiva ? Icons.bolt_rounded : (isProgramada ? Icons.calendar_today_rounded : Icons.history_rounded),
-                            color: accentColor,
-                            size: 24,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              statusLabel,
-                              style: TextStyle(
-                                color: accentColor,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 1,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            if (!isAtiva && !isProgramada)
-                              Container(
-                                width: 4,
-                                height: 4,
-                                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
-                              ),
-                            const SizedBox(width: 8),
-                            Text(
-                              infoLabel,
-                              style: TextStyle(
-                                color: AppTheme.textSecondary.withValues(alpha: 0.6),
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          (data['nome'] ?? 'Planilha'),
-                          style: AppTheme.cardTitle,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-                    color: Colors.white.withValues(alpha: 0.2),
-                  ),
-                ],
-              ),
-            ),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              child: isExpanded
-                  ? Column(
-                      children: [
-                        Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _buildActionBtn(
-                                  label: 'EDITAR',
-                                  icon: Icons.edit_note_rounded,
-                                  onTap: () => _navegarParaDetalhes(context, data, id),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _buildActionBtn(
-                                  label: 'STATS',
-                                  icon: Icons.bar_chart_rounded,
-                                  onTap: () {},
-                                  disabled: isProgramada,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _buildActionBtn(
-                                  label: isAtiva ? 'PAUSAR' : 'ATIVAR',
-                                  icon: isAtiva ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                                  color: isAtiva ? Colors.orangeAccent : AppTheme.primary,
-                                  onTap: () {},
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    )
-                  : const SizedBox(width: double.infinity, height: 0),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionBtn({
-    required String label,
-    required IconData icon,
-    required VoidCallback onTap,
-    Color color = Colors.white,
-    bool disabled = false,
-  }) {
-    final finalColor = disabled ? Colors.white.withValues(alpha: 0.1) : color;
-    return Material(
-      color: Colors.white.withValues(alpha: 0.03),
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: disabled ? null : onTap,
-        borderRadius: BorderRadius.circular(12),
+        onTap: () => _navegarParaDetalhes(context, data, id),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Column(
+          padding: AppTheme.edgeInsetsSmall,
+          child: Row(
             children: [
-              Icon(icon, color: finalColor, size: 20),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  color: finalColor,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.5,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  width: 56,
+                  height: 56,
+                  color: Colors.black.withAlpha(40),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      if (isAtiva)
+                        SizedBox(
+                          width: 44,
+                          height: 44,
+                          child: CircularProgressIndicator(
+                            value: progress,
+                            strokeWidth: 3,
+                            valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+                            backgroundColor: accentColor.withValues(alpha: 0.1),
+                            strokeCap: StrokeCap.round,
+                          ),
+                        ),
+                      Icon(
+                        isAtiva ? Icons.bolt_rounded : (isProgramada ? Icons.calendar_today_rounded : Icons.history_rounded),
+                        color: accentColor,
+                        size: 24,
+                      ),
+                    ],
+                  ),
                 ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          statusLabel,
+                          style: TextStyle(
+                            color: accentColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        if (!isAtiva && !isProgramada)
+                          Container(
+                            width: 4,
+                            height: 4,
+                            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
+                          ),
+                        const SizedBox(width: 8),
+                        Text(
+                          infoLabel,
+                          style: TextStyle(
+                            color: AppTheme.textSecondary.withValues(alpha: 0.6),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      (data['nome'] ?? 'Planilha'),
+                      style: AppTheme.cardTitle,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.white.withValues(alpha: 0.2),
               ),
             ],
           ),
