@@ -19,17 +19,47 @@ class GerenciarAlunoPage extends StatefulWidget {
 
 class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
   final AlunoService _alunoService = AlunoService();
+  String? _fotoUrl;
+  bool _isLoadingData = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _buscarDadosAluno();
+  }
+
+  Future<void> _buscarDadosAluno() async {
+    try {
+      final doc = await _alunoService.getAluno(widget.alunoId);
+      if (doc.exists && mounted) {
+        final data = doc.data() as Map<String, dynamic>;
+        setState(() {
+          _fotoUrl = data['photoUrl'] ?? data['fotoUrl'];
+          _isLoadingData = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Erro ao buscar dados do aluno: $e");
+      if (mounted) {
+        setState(() => _isLoadingData = false);
+      }
+    }
+  }
 
   // --- FUNÇÕES DE AÇÃO ---
 
   Future<void> _irParaEditar(BuildContext context) async {
-    await Navigator.push(
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => EditarAlunoPage(alunoId: widget.alunoId),
         fullscreenDialog: true, // Abre como um modal fullscreen no iOS
       ),
     );
+
+    if (result == true) {
+      _buscarDadosAluno();
+    }
   }
 
   void _enviarConviteApp(BuildContext context) {
@@ -125,10 +155,15 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
             // Identificação Rápida
             Row(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 24,
                   backgroundColor: AppTheme.surfaceLight,
-                  child: Icon(Icons.person, color: AppTheme.textSecondary),
+                  backgroundImage: _fotoUrl != null && _fotoUrl!.isNotEmpty 
+                    ? NetworkImage(_fotoUrl!) 
+                    : null,
+                  child: (_fotoUrl == null || _fotoUrl!.isEmpty) && !_isLoadingData
+                    ? const Icon(Icons.person, color: AppTheme.textSecondary)
+                    : null,
                 ),
                 const SizedBox(width: 16),
                 Expanded(
