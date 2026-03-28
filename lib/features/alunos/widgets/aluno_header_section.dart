@@ -64,52 +64,49 @@ class AlunoHeaderSection extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
-    return Hero(
-      tag: 'avatar_$alunoId',
-      child: Container(
-        width: 84,
-        height: 84,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            colors: [
-              AppTheme.primary,
-              AppTheme.primary.withValues(alpha: 0.5),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.15),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
+    return Container(
+      width: 84,
+      height: 84,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.primary,
+            AppTheme.primary.withValues(alpha: 0.5),
           ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        padding: const EdgeInsets.all(2.5),
-        child: Container(
-          decoration: const BoxDecoration(
-            color: AppTheme.background,
-            shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primary.withValues(alpha: 0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
-          padding: const EdgeInsets.all(2),
-          child: CircleAvatar(
-            backgroundColor: AppTheme.surfaceLight,
-            backgroundImage: photoUrl != null && photoUrl!.isNotEmpty
-                ? CachedNetworkImageProvider(photoUrl!)
-                : null,
-            child: photoUrl == null || photoUrl!.isEmpty
-                ? Text(
-                    alunoNome.isNotEmpty ? alunoNome[0].toUpperCase() : '?',
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.primary,
-                    ),
-                  )
-                : null,
-          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(2.5),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: AppTheme.background,
+          shape: BoxShape.circle,
+        ),
+        padding: const EdgeInsets.all(2),
+        child: CircleAvatar(
+          backgroundColor: AppTheme.surfaceLight,
+          backgroundImage: photoUrl != null && photoUrl!.isNotEmpty
+              ? CachedNetworkImageProvider(photoUrl!)
+              : null,
+          child: photoUrl == null || photoUrl!.isEmpty
+              ? Text(
+                  alunoNome.isNotEmpty ? alunoNome[0].toUpperCase() : '?',
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.primary,
+                  ),
+                )
+              : null,
         ),
       ),
     );
