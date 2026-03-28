@@ -429,15 +429,14 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                   }
                 },
                 itemBuilder: (context) => [
-                  _buildPopupItem('editar', 'Editar', Icons.edit_note_rounded),
-                  _buildPopupItem('stats', 'Estatísticas', Icons.bar_chart_rounded, enabled: !isProgramada),
                   _buildPopupItem(
                     'alternar_status',
                     isAtiva ? 'Pausar Planilha' : 'Ativar Planilha',
                     isAtiva ? Icons.pause_rounded : Icons.play_arrow_rounded,
                     color: isAtiva ? Colors.orangeAccent : AppTheme.primary,
                   ),
-                  const PopupMenuDivider(height: 1),
+                  _buildPopupItem('editar', 'Editar', Icons.edit_note_rounded),
+                  _buildPopupItem('stats', 'Estatísticas', Icons.bar_chart_rounded, enabled: !isProgramada),
                   _buildPopupItem('excluir', 'Excluir', Icons.delete_outline_rounded, color: Colors.redAccent),
                 ],
               ),
