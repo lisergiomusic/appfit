@@ -270,18 +270,9 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddOptions(context),
-        backgroundColor: AppTheme.primary,
-        elevation: 10,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
         icon: const Icon(Icons.add_rounded, color: Colors.black, size: 24),
         label: const Text(
-          'NOVA PLANILHA',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w800,
-            fontSize: 13,
-            letterSpacing: 0.5,
-          ),
+          'Nova planilha',
         ),
       ),
     );

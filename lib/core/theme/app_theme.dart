@@ -189,6 +189,20 @@ class AppTheme {
             minimumSize: const Size(double.infinity, 48)
         ),
       ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primary,
+        foregroundColor: Colors.black,
+        elevation: 10,
+          extendedPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          extendedTextStyle: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.3,
+          ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radiusMedium)
+        )
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surfaceDark,
