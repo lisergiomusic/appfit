@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'aluno_avatar.dart';
 import '../../../core/theme/app_theme.dart';
 
 class AlunoHeaderSection extends StatelessWidget {
@@ -27,7 +27,11 @@ class AlunoHeaderSection extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _buildAvatar(),
+          AlunoAvatar(
+            alunoNome: alunoNome,
+            photoUrl: photoUrl,
+            radius: 40,
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -63,39 +67,7 @@ class AlunoHeaderSection extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar() {
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-          border: Border.all(color: AppTheme.primary.withAlpha(50), width: 1.5),
-
-      ),
-      child: Container(
-        decoration: const BoxDecoration(
-          color: AppTheme.background,
-          shape: BoxShape.circle,
-        ),
-        padding: const EdgeInsets.all(2),
-        child: CircleAvatar(
-          radius: 40,
-          backgroundColor: AppTheme.surfaceLight,
-          backgroundImage: photoUrl != null && photoUrl!.isNotEmpty
-              ? CachedNetworkImageProvider(photoUrl!)
-              : null,
-          child: photoUrl == null || photoUrl!.isEmpty
-              ? Text(
-                  alunoNome.isNotEmpty ? alunoNome[0].toUpperCase() : '?',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.primary,
-                  ),
-                )
-              : null,
-        ),
-      ),
-    );
-  }
+  // ...existing code...
 
   Widget _buildBadge(IconData icon, String label) {
     return Container(

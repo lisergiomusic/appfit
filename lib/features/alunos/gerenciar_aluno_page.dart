@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'widgets/aluno_avatar.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/aluno_service.dart';
 import 'editar_aluno_page.dart';
@@ -25,7 +25,6 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
   final AlunoService _alunoService = AlunoService();
   String? _fotoUrl;
   DateTime? _dataCriacao;
-  bool _isLoadingData = true;
 
   @override
   void initState() {
@@ -43,13 +42,11 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
           if (data['dataCriacao'] != null) {
             _dataCriacao = (data['dataCriacao'] as Timestamp).toDate();
           }
-          _isLoadingData = false;
         });
       }
     } catch (e) {
       debugPrint("Erro ao buscar dados do aluno: $e");
       if (mounted) {
-        setState(() => _isLoadingData = false);
       }
     }
   }
@@ -251,29 +248,10 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: AppTheme.primary.withAlpha(50), width: 1.5),
-            ),
-            child: CircleAvatar(
-              radius: 32,
-              backgroundColor: AppTheme.surfaceLight,
-              backgroundImage: _fotoUrl != null && _fotoUrl!.isNotEmpty
-                ? CachedNetworkImageProvider(_fotoUrl!)
-                : null,
-              child: (_fotoUrl == null || _fotoUrl!.isEmpty) && !_isLoadingData
-                  ? Text(
-                widget.alunoNome.isNotEmpty ? widget.alunoNome[0].toUpperCase() : '?',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.primary,
-                ),
-              )
-                  : null,
-            ),
+          AlunoAvatar(
+            alunoNome: widget.alunoNome,
+            photoUrl: _fotoUrl,
+            radius: 32,
           ),
           const SizedBox(width: 16),
           Expanded(

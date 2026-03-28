@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/aluno_service.dart';
 import 'perfil_aluno_page.dart';
+import 'widgets/aluno_avatar.dart';
 
 class AlunosPage extends StatefulWidget {
   const AlunosPage({super.key});
@@ -559,7 +560,6 @@ class _AlunosPageState extends State<AlunosPage> {
       }
     }
 
-    final Color statusColor = emRisco ? Colors.orangeAccent : (isAtivo ? AppTheme.primary : Colors.redAccent);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -580,34 +580,10 @@ class _AlunosPageState extends State<AlunosPage> {
                 Stack(
                   alignment: Alignment.bottomRight,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(1),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white.withAlpha(30), width: 1),
-                      ),
-                      child: CircleAvatar(
-                        radius: 26,
-                        backgroundColor: AppTheme.surfaceLight,
-                        backgroundImage: photoUrl != null && photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
-                        child: photoUrl == null || photoUrl.isEmpty
-                            ? Text(nome.isNotEmpty ? nome[0].toUpperCase() : '?',
-                                style: TextStyle(
-                                  color: statusColor,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 20,
-                                ))
-                            : null,
-                      ),
-                    ),
-                    Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: statusColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppTheme.surfaceDark, width: 2),
-                      ),
+                    AlunoAvatar(
+                      alunoNome: nome,
+                      photoUrl: photoUrl,
+                      radius: 26,
                     ),
                   ],
                 ),
