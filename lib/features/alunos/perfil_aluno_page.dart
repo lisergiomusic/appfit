@@ -109,6 +109,9 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
 
           final data = snapshot.data!;
           final alunoData = data.aluno;
+          final String nomeFirestore = '${alunoData['nome'] ?? ''} ${alunoData['sobrenome'] ?? ''}'.trim();
+          final String nomeExibicao = nomeFirestore.isNotEmpty ? nomeFirestore : widget.alunoNome;
+
           final photoUrl = alunoData['photoUrl'] as String?;
           final telefone = alunoData['telefone'] as String?;
           final dataNascimento = alunoData['dataNascimento'] as Timestamp?;
@@ -122,7 +125,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                 const SizedBox(height: 16),
                 AlunoHeaderSection(
                   alunoId: widget.alunoId,
-                  alunoNome: widget.alunoNome,
+                  alunoNome: nomeExibicao,
                   photoUrl: widget.photoUrl ?? photoUrl,
                   idade: idade,
                   peso: peso,
@@ -130,17 +133,17 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                 const SizedBox(height: 16),
                 _buildActions(context, telefone),
                 const SizedBox(height: 16),
-                const RitmoDaSemanaCard(),
+                RitmoDaSemanaCard(alunoNome: nomeExibicao),
                 const SizedBox(height: 32),
                 FichaAtivaHeroCard(
                   alunoId: widget.alunoId,
-                  alunoNome: widget.alunoNome,
+                  alunoNome: nomeExibicao,
                   onPrescreverTreino: () => _exibirOpcoesVincularTreino(context),
                 ),
                 const SizedBox(height: 32),
                 GestaoSection(
                   alunoId: widget.alunoId,
-                  alunoNome: widget.alunoNome,
+                  alunoNome: nomeExibicao,
                   photoUrl: photoUrl,
                   peso: peso,
                   idade: idade,
@@ -392,7 +395,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                 Text('Duração para ${widget.alunoNome}:', style: const TextStyle(color: AppTheme.textSecondary)),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<int>(
-                  value: semanasSelecionadas,
+                  initialValue: semanasSelecionadas,
                   dropdownColor: AppTheme.surfaceLight,
                   style: const TextStyle(color: Colors.white),
                   items: [4, 5, 6, 8, 10, 12].map((w) => DropdownMenuItem(value: w, child: Text('$w semanas'))).toList(),

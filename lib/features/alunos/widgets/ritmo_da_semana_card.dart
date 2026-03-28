@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 
 class RitmoDaSemanaCard extends StatelessWidget {
-  const RitmoDaSemanaCard({super.key, });
+  final String alunoNome;
+  
+  const RitmoDaSemanaCard({super.key, required this.alunoNome});
 
 
   @override
   Widget build(BuildContext context) {
+    final String primeiroNome = alunoNome.split(' ').first;
     final dias = [
       {'dia': 'S', 'status': 'feito'},
       {'dia': 'T', 'status': 'feito'},
@@ -97,7 +100,7 @@ class RitmoDaSemanaCard extends StatelessWidget {
                   final int diasTreinados = dias.where((d) => d['status'] == 'feito').length;
                   return Center(
                     child: Text(
-                      'O aluno treinou $diasTreinados dias essa semana',
+                      '$primeiroNome treinou $diasTreinados dias essa semana',
                       style: TextStyle(
                         color: AppTheme.textSecondary,
                         fontSize: 12,

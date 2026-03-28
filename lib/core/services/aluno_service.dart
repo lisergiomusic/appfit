@@ -35,12 +35,13 @@ class AlunoService {
 
   String? get _currentPersonalId => _auth.currentUser?.uid;
 
-  Future<void> salvarAluno(String nome, String email) async {
+  Future<void> salvarAluno(String nome, String sobrenome, String email) async {
     final personalId = _currentPersonalId;
     if (personalId == null) throw Exception('Personal não autenticado');
 
     await _firestore.collection('usuarios').add({
       'nome': nome,
+      'sobrenome': sobrenome,
       'email': email,
       'tipoUsuario': 'aluno',
       'status': 'ativo',

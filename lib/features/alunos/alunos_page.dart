@@ -145,11 +145,11 @@ class _AlunosPageState extends State<AlunosPage> {
     }
   }
 
-  Future<void> _salvarAluno(BuildContext context, String nome, String email) async {
-    if (nome.isEmpty || email.isEmpty) return;
+  Future<void> _salvarAluno(BuildContext context, String nome, String sobrenome, String email) async {
+    if (nome.isEmpty || sobrenome.isEmpty || email.isEmpty) return;
 
     try {
-      await _alunoService.salvarAluno(nome, email);
+      await _alunoService.salvarAluno(nome, sobrenome, email);
       if (context.mounted) {
         Navigator.pop(context);
         _fetchInitialData();
@@ -161,6 +161,7 @@ class _AlunosPageState extends State<AlunosPage> {
 
   void _exibirModalCadastro() {
     final nomeController = TextEditingController();
+    final sobrenomeController = TextEditingController();
     final emailController = TextEditingController();
 
     showModalBottomSheet(
@@ -208,7 +209,16 @@ class _AlunosPageState extends State<AlunosPage> {
             TextField(
               controller: nomeController,
               decoration: const InputDecoration(
-                labelText: 'Nome do Aluno',
+                labelText: 'Nome',
+                prefixIcon: Icon(Icons.person_outline),
+              ),
+              textCapitalization: TextCapitalization.words,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: sobrenomeController,
+              decoration: const InputDecoration(
+                labelText: 'Sobrenome',
                 prefixIcon: Icon(Icons.person_outline),
               ),
               textCapitalization: TextCapitalization.words,
@@ -227,7 +237,7 @@ class _AlunosPageState extends State<AlunosPage> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () => _salvarAluno(context, nomeController.text, emailController.text),
+                onPressed: () => _salvarAluno(context, nomeController.text, sobrenomeController.text, emailController.text),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primary,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -510,7 +520,7 @@ class _AlunosPageState extends State<AlunosPage> {
         child: const Icon(Icons.delete_sweep_rounded, color: Colors.redAccent, size: 28),
       ),
       child: _buildAlunoCard(
-        nome: aluno['nome'] ?? 'Sem nome',
+        nome: '${aluno['nome'] ?? ''} ${aluno['sobrenome'] ?? ''}'.trim(),
         email: aluno['email'] ?? 'Sem e-mail',
         status: aluno['status'] ?? 'ativo',
         photoUrl: aluno['photoUrl'],
@@ -519,7 +529,10 @@ class _AlunosPageState extends State<AlunosPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PerfilAlunoPage(alunoId: id, alunoNome: aluno['nome']),
+              builder: (context) => PerfilAlunoPage(
+                alunoId: id,
+                alunoNome: '${aluno['nome'] ?? ''} ${aluno['sobrenome'] ?? ''}'.trim(),
+              ),
             ),
           );
         },
