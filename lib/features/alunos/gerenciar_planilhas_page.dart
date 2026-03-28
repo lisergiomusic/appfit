@@ -310,16 +310,9 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
 
   Widget _buildHistoricoEmptyState() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.02),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.05),
-          width: 1,
-        ),
-      ),
+      decoration: AppTheme.cardDecoration,
       child: Center(
         child: Column(
           children: [
