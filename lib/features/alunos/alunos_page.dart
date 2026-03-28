@@ -304,50 +304,39 @@ class _AlunosPageState extends State<AlunosPage> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: _buildAppBar(),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _exibirModalCadastro,
-        backgroundColor: AppTheme.primary,
-        icon: const Icon(Icons.add, color: Colors.black, size: 20),
-        label: const Text(
-          'ADICIONAR',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w900,
-            fontSize: 13,
-            letterSpacing: 0.5,
-          ),
-        ),
-      ),
       body: RefreshIndicator(
         onRefresh: _fetchInitialData,
         color: AppTheme.primary,
         backgroundColor: AppTheme.surfaceDark,
-        child: CustomScrollView(
+        child: ListView(
           controller: _scrollController,
-          physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
-          ),
-          slivers: [
-            SliverToBoxAdapter(child: _buildHeader()),
-            SliverToBoxAdapter(child: _buildSearchBar()),
-            SliverToBoxAdapter(child: _buildFilterChips()),
+          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          padding: EdgeInsets.zero,
+          children: [
+            _buildSearchBar(),
+            _buildFilterChips(),
             if (_isLoading)
-              const SliverFillRemaining(
+              const Padding(
+                padding: EdgeInsets.only(top: 64),
                 child: Center(
                   child: CircularProgressIndicator(color: AppTheme.primary),
                 ),
               )
             else if (_alunosDocs.isEmpty)
-              SliverFillRemaining(
+              Padding(
+                padding: const EdgeInsets.only(top: 64),
                 child: _searchQuery.isNotEmpty || _statusFilter != "todos"
                     ? _buildNoResultsState()
                     : _buildEmptyState(),
               )
             else
-              SliverPadding(
+              Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _alunosDocs.length + 1,
+                  itemBuilder: (context, index) {
                     if (index == _alunosDocs.length) {
                       return _hasMore
                           ? const Padding(
@@ -363,10 +352,17 @@ class _AlunosPageState extends State<AlunosPage> {
                     final doc = _alunosDocs[index];
                     final aluno = doc.data() as Map<String, dynamic>;
                     return _buildDismissibleCard(doc.id, aluno);
-                  }, childCount: _alunosDocs.length + 1),
+                  },
                 ),
               ),
           ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _exibirModalCadastro,
+        icon: const Icon(Icons.add, color: Colors.black, size: 20),
+        label: const Text(
+          'Adicionar',
         ),
       ),
     );
@@ -377,7 +373,7 @@ class _AlunosPageState extends State<AlunosPage> {
       backgroundColor: AppTheme.background.withAlpha(200),
       elevation: 0,
       surfaceTintColor: Colors.transparent,
-      title: Row(children: [const SizedBox(width: 10), Text('Meus Alunos')]),
+      title: Row(children: [const SizedBox(width: 10), Text('Gerenciamento de Alunos')]),
       actions: [
         IconButton(
           icon: Stack(
@@ -428,30 +424,9 @@ class _AlunosPageState extends State<AlunosPage> {
     );
   }
 
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Meus Alunos', style: AppTheme.bigTitle),
-          Text(
-            'GERENCIAMENTO DE CLIENTES',
-            style: TextStyle(
-              fontSize: 10,
-              letterSpacing: 1.5,
-              color: AppTheme.textSecondary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       child: Container(
         height: 54,
         decoration: BoxDecoration(
