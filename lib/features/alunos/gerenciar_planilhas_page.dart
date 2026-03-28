@@ -244,7 +244,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                       const SizedBox(height: 32),
                     ],
 
-                    _buildSectionLabel('Planejadas'),
+                    _buildSectionLabel('Planilhas planejadas'),
                     const SizedBox(height: 8),
                     ...mockFuturas.map((m) => _buildPlanilhaItem(context, m, 'mock_f', isProgramada: true)),
                     const SizedBox(height: 32),
