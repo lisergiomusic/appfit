@@ -557,7 +557,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   Text('Lista de treinos', style: AppTheme.textSectionHeaderDark),
                   const SizedBox(height: 12),
                   if (_treinos.isEmpty)
-                    const Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 60), child: Text('Nenhuma sessão', style: TextStyle(color: AppTheme.textSecondary))))
+                    _buildEmptyState()
                   else
                     ..._treinos.asMap().entries.map((entry) => _buildSessaoCard(entry.value, entry.key, key: ValueKey(entry.value))),
                   const SizedBox(height: 8),
@@ -566,6 +566,50 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 48),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceLight.withAlpha(40),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                CupertinoIcons.square_list,
+                size: 48,
+                color: AppTheme.primary.withAlpha(150),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Sua planilha está vazia',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Adicione as sessões de treino (ex: Treino A, Treino B)\npara começar a configurar os exercícios.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 14,
+                height: 1.5,
+              ),
+            ),
+          ],
         ),
       ),
     );
