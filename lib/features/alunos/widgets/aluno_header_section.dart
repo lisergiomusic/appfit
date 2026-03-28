@@ -23,12 +23,12 @@ class AlunoHeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen, vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _buildAvatar(),
-          const SizedBox(width: 20),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,13 +37,13 @@ class AlunoHeaderSection extends StatelessWidget {
                 Text(
                   alunoNome,
                   style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
                     color: AppTheme.textPrimary,
-                    letterSpacing: -0.3,
+                    letterSpacing: -0.5,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 Row(
                   children: [
                     _buildBadge(Icons.calendar_today_rounded, '$idade anos'),
@@ -52,7 +52,7 @@ class AlunoHeaderSection extends StatelessWidget {
                   ],
                 ),
                 if (actions != null) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   actions!,
                 ],
               ],
@@ -65,27 +65,11 @@ class AlunoHeaderSection extends StatelessWidget {
 
   Widget _buildAvatar() {
     return Container(
-      width: 84,
-      height: 84,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.primary,
-            AppTheme.primary.withValues(alpha: 0.5),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withValues(alpha: 0.15),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+          border: Border.all(color: AppTheme.primary.withAlpha(50), width: 1.5),
+
       ),
-      padding: const EdgeInsets.all(2.5),
       child: Container(
         decoration: const BoxDecoration(
           color: AppTheme.background,
@@ -93,6 +77,7 @@ class AlunoHeaderSection extends StatelessWidget {
         ),
         padding: const EdgeInsets.all(2),
         child: CircleAvatar(
+          radius: 40,
           backgroundColor: AppTheme.surfaceLight,
           backgroundImage: photoUrl != null && photoUrl!.isNotEmpty
               ? CachedNetworkImageProvider(photoUrl!)
@@ -101,7 +86,7 @@ class AlunoHeaderSection extends StatelessWidget {
               ? Text(
                   alunoNome.isNotEmpty ? alunoNome[0].toUpperCase() : '?',
                   style: const TextStyle(
-                    fontSize: 32,
+                    fontSize: 24,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.primary,
                   ),

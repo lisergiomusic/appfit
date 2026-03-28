@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/aluno_service.dart';
 import 'editar_aluno_page.dart';
@@ -260,11 +261,18 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
               radius: 32,
               backgroundColor: AppTheme.surfaceLight,
               backgroundImage: _fotoUrl != null && _fotoUrl!.isNotEmpty
-                ? NetworkImage(_fotoUrl!)
+                ? CachedNetworkImageProvider(_fotoUrl!)
                 : null,
               child: (_fotoUrl == null || _fotoUrl!.isEmpty) && !_isLoadingData
-                ? const Icon(Icons.person, color: AppTheme.textSecondary, size: 32)
-                : null,
+                  ? Text(
+                widget.alunoNome.isNotEmpty ? widget.alunoNome[0].toUpperCase() : '?',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.primary,
+                ),
+              )
+                  : null,
             ),
           ),
           const SizedBox(width: 16),

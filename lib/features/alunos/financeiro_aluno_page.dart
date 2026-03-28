@@ -31,16 +31,12 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        elevation: 0,
-        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppTheme.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Financeiro',
-          style: AppTheme.pageTitle,
         ),
       ),
       body: StreamBuilder<List<FaturaModel>>(
@@ -86,11 +82,9 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showNovaFaturaModal(context),
-        backgroundColor: AppTheme.primary,
         icon: const Icon(Icons.add, color: Colors.black),
         label: const Text(
-          'NOVA FATURA',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+          'Nova Fatura',
         ),
       ),
     );
@@ -154,18 +148,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      decoration:AppTheme.cardDecoration,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
