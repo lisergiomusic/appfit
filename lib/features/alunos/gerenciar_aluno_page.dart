@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/aluno_service.dart';
 import 'editar_aluno_page.dart';
+import 'financeiro_aluno_page.dart';
 
 class GerenciarAlunoPage extends StatefulWidget {
   final String alunoId;
@@ -66,6 +67,18 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
     if (result == true) {
       _buscarDadosAluno();
     }
+  }
+
+  void _irParaFinanceiro(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FinanceiroAlunoPage(
+          alunoId: widget.alunoId,
+          alunoNome: widget.alunoNome,
+        ),
+      ),
+    );
   }
 
   void _enviarConviteApp(BuildContext context) {
@@ -193,6 +206,17 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                 title: 'Enviar convite do App',
                 subtitle: 'Mandar link de acesso para o aluno',
                 onTap: () => _enviarConviteApp(context),
+              ),
+            ]),
+            const SizedBox(height: 32),
+            _buildSectionHeader('GESTÃO FINANCEIRA'),
+            _buildActionGroup([
+              _ActionItem(
+                icon: Icons.payments_rounded,
+                title: 'Financeiro do Aluno',
+                subtitle: 'Faturas, histórico e balanço',
+                iconColor: AppTheme.primary,
+                onTap: () => _irParaFinanceiro(context),
               ),
             ]),
             const SizedBox(height: 32),

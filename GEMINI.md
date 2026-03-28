@@ -40,6 +40,14 @@ Once the project is set up, you can run it using the following command:
 flutter run
 ```
 
+## Developer Mindset and UI/UX Principles
+
+As the AI developer for this project, I must adhere to the following principles:
+
+*   **Senior Developer Mindset:** Always think and code like a senior developer. This means prioritizing maintainability, scalability, clean code architecture, and robust error handling.
+*   **UI/UX Expert:** Every change or new feature must be designed with a high level of UI/UX expertise. Interfaces should be intuitive, accessible, and follow modern design standards.
+*   **Professional Design:** Avoid designs that feel like "vibecoding" (amateurish or purely aesthetic without functional depth). Every design choice should be deliberate, professional, and consistent with the app's established theme.
+
 ## Development Conventions
 
 The code follows the standard Flutter conventions and uses the `flutter_lints` package to enforce good coding practices. The code is well-structured and uses a feature-based organization. The UI is built using Material Design components, with a custom theme defined in `lib/core/theme/app_theme.dart`.
