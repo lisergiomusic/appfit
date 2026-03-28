@@ -153,11 +153,11 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'LUCRO TOTAL',
+                'TOTAL RECEBIDO',
                 style: TextStyle(
                   color: AppTheme.textSecondary.withValues(alpha: 0.5),
                   fontSize: 10,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w800,
                   letterSpacing: 1.2,
                 ),
               ),

@@ -184,7 +184,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
             children: [
               _buildTextField(
                 controller: _nomeController,
-                label: 'Nome',
+                label: 'NOME',
                 icon: Icons.person_rounded,
                 textCapitalization: TextCapitalization.words,
                 validator: (v) => v!.isEmpty ? 'O nome é obrigatório' : null,
@@ -192,7 +192,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
               const SizedBox(height: 20),
               _buildTextField(
                 controller: _sobrenomeController,
-                label: 'Sobrenome',
+                label: 'SOBRENOME',
                 icon: Icons.badge_rounded,
                 textCapitalization: TextCapitalization.words,
                 validator: (v) => v!.isEmpty ? 'O sobrenome é obrigatório' : null,
@@ -204,7 +204,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
               const SizedBox(height: 20),
               _buildTextField(
                 controller: _emailController,
-                label: 'E-mail de acesso',
+                label: 'E-MAIL DE ACESSO',
                 icon: Icons.alternate_email_rounded,
                 keyboardType: TextInputType.emailAddress,
                 validator: (v) => v!.isEmpty ? 'O e-mail é obrigatório' : null,
@@ -212,7 +212,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
               const SizedBox(height: 20),
               _buildTextField(
                 controller: _telefoneController,
-                label: 'WhatsApp / contato',
+                label: 'WHATSAPP / CONTATO',
                 icon: Icons.phone_iphone_rounded,
                 keyboardType: TextInputType.phone,
                 hint: '(00) 00000-0000',
@@ -297,7 +297,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
         const Padding(
           padding: EdgeInsets.only(left: 4, bottom: 10),
           child: Text(
-            'Gênero',
+            'GÊNERO',
             style: TextStyle(
               color: AppTheme.textSecondary,
               fontSize: 10,
@@ -339,6 +339,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           ),
           style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
           dropdownColor: AppTheme.surfaceDark,
+          borderRadius: BorderRadius.circular(16),
         ),
       ],
     );
@@ -351,7 +352,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
         const Padding(
           padding: EdgeInsets.only(left: 4, bottom: 10),
           child: Text(
-            'Nascimento',
+            'NASCIMENTO',
             style: TextStyle(
               color: AppTheme.textSecondary,
               fontSize: 10,
@@ -390,11 +391,10 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           },
           borderRadius: BorderRadius.circular(16),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: AppTheme.surfaceDark,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withAlpha(15)),
             ),
             child: Row(
               children: [

@@ -18,31 +18,19 @@ class HomePage extends StatelessWidget {
         centerTitle: false,
         title: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppTheme.primary.withAlpha(20),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.fitness_center_rounded, color: AppTheme.primary, size: 18),
-            ),
             const SizedBox(width: 10),
-            const Text(
-              'AppFit',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w900,
-                color: AppTheme.textPrimary,
-                letterSpacing: -1.0,
-              ),
-            ),
+            const Text('Painel de Controle'),
           ],
         ),
         actions: [
           IconButton(
             icon: Stack(
               children: [
-                const Icon(Icons.notifications_rounded, color: AppTheme.textPrimary, size: 26),
+                const Icon(
+                  Icons.notifications_rounded,
+                  color: AppTheme.textPrimary,
+                  size: 26,
+                ),
                 Positioned(
                   right: 2,
                   top: 2,
@@ -52,7 +40,10 @@ class HomePage extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: AppTheme.primary,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppTheme.background, width: 1.5),
+                      border: Border.all(
+                        color: AppTheme.background,
+                        width: 1.5,
+                      ),
                     ),
                   ),
                 ),
@@ -64,10 +55,7 @@ class HomePage extends StatelessWidget {
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(
-            height: 0.5,
-            color: Colors.white.withAlpha(15),
-          ),
+          child: Container(height: 0.5, color: Colors.white.withAlpha(15)),
         ),
       ),
       body: SingleChildScrollView(
@@ -98,9 +86,16 @@ class HomePage extends StatelessWidget {
                           CircleAvatar(
                             radius: 34,
                             backgroundColor: AppTheme.surfaceLight,
-                            backgroundImage: photoUrl != null && photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                            backgroundImage:
+                                photoUrl != null && photoUrl.isNotEmpty
+                                ? NetworkImage(photoUrl)
+                                : null,
                             child: photoUrl == null || photoUrl.isEmpty
-                                ? const Icon(Icons.person_rounded, color: AppTheme.textSecondary, size: 34)
+                                ? const Icon(
+                                    Icons.person_rounded,
+                                    color: AppTheme.textSecondary,
+                                    size: 34,
+                                  )
                                 : null,
                           ),
                           Container(
@@ -109,9 +104,16 @@ class HomePage extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: AppTheme.primary,
                               shape: BoxShape.circle,
-                              border: Border.all(color: AppTheme.background, width: 2.5),
+                              border: Border.all(
+                                color: AppTheme.background,
+                                width: 2.5,
+                              ),
                             ),
-                            child: const Icon(Icons.check_rounded, size: 10, color: Colors.black),
+                            child: const Icon(
+                              Icons.check_rounded,
+                              size: 10,
+                              color: Colors.black,
+                            ),
                           ),
                         ],
                       ),
@@ -131,7 +133,10 @@ class HomePage extends StatelessWidget {
                             ),
                             const SizedBox(height: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppTheme.primary.withAlpha(25),
                                 borderRadius: BorderRadius.circular(6),
@@ -157,7 +162,9 @@ class HomePage extends StatelessWidget {
 
             // Stats Row
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.paddingScreen,
+              ),
               child: Row(
                 children: [
                   Expanded(
@@ -189,7 +196,9 @@ class HomePage extends StatelessWidget {
 
             // Quick Actions
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.paddingScreen,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -232,11 +241,13 @@ class HomePage extends StatelessWidget {
 
             // Recent Activity
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.paddingScreen,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                   Padding(
+                  Padding(
                     padding: const EdgeInsets.only(left: 4),
                     child: Text(
                       'Atividade recente',
@@ -264,7 +275,9 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.paddingScreen,
+              ),
               child: Container(
                 decoration: BoxDecoration(
                   color: AppTheme.surfaceDark,
@@ -328,7 +341,7 @@ class HomePage extends StatelessWidget {
             color: Colors.black.withAlpha(20),
             blurRadius: 15,
             offset: const Offset(0, 5),
-          )
+          ),
         ],
       ),
       child: Material(
@@ -462,9 +475,15 @@ class HomePage extends StatelessWidget {
                   CircleAvatar(
                     radius: 20,
                     backgroundColor: AppTheme.surfaceLight,
-                    backgroundImage: photoUrl != null && photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                    backgroundImage: photoUrl != null && photoUrl.isNotEmpty
+                        ? NetworkImage(photoUrl)
+                        : null,
                     child: photoUrl == null || photoUrl.isEmpty
-                        ? const Icon(Icons.person_rounded, color: AppTheme.textSecondary, size: 20)
+                        ? const Icon(
+                            Icons.person_rounded,
+                            color: AppTheme.textSecondary,
+                            size: 20,
+                          )
                         : null,
                   ),
                   const SizedBox(width: 14),
