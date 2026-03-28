@@ -703,7 +703,7 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
     localObjCtrl = TextEditingController(text: widget.objetivoInicial);
     nomeFocus = FocusNode();
     objFocus = FocusNode();
-    
+
     // Listeners para atualizar a visibilidade do contador ao focar/desfocar
     nomeFocus.addListener(() => setState(() {}));
     objFocus.addListener(() => setState(() {}));
@@ -731,7 +731,7 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
         elevation: 0,
         leading: IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () async {
           if (localNomeCtrl.text.trim().isNotEmpty && localObjCtrl.text.trim().isNotEmpty) { Navigator.pop(context); return; }
-          if (await widget.showDescartarDialog()) { if (mounted) Navigator.pop(context); }
+          if (await widget.showDescartarDialog()) { if (context.mounted) Navigator.pop(context); }
         }),
         title: const Text('Configurações', style: AppTheme.pageTitle),
         actions: [TextButton(onPressed: () { if (_formKey.currentState!.validate()) { final sessoes = int.tryParse(sessoesInput) ?? 20; if (tipoTemp == 'sessoes' && (int.tryParse(sessoesInput) == null || sessoes <= 0)) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Informe uma quantidade válida de sessões.'))); return; } widget.onSave(localNomeCtrl.text.trim(), localObjCtrl.text.trim(), tipoTemp, sessoes, dataTemp); Navigator.pop(context); } }, child: const Text('SALVAR', style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold)))],
@@ -742,30 +742,30 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
           key: _formKey,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             RotinaModernInput(
-              label: 'Nome da Planilha', 
+              label: 'Nome da Planilha',
               child: TextFormField(
-                controller: localNomeCtrl, 
+                controller: localNomeCtrl,
                 focusNode: nomeFocus,
-                autofocus: true, 
+                autofocus: true,
                 maxLength: 40,
-                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15), 
+                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15),
                 decoration: rotinaInputDecoration(hintText: 'Ex: Protocolo Y').copyWith(
                   counterText: nomeFocus.hasFocus ? null : "",
-                ), 
+                ),
                 validator: (value) => (value == null || value.trim().isEmpty) ? 'Campo obrigatório' : null
               ),
             ),
             const SizedBox(height: 20),
             RotinaModernInput(
-              label: 'Objetivo Principal', 
+              label: 'Objetivo Principal',
               child: TextFormField(
-                controller: localObjCtrl, 
+                controller: localObjCtrl,
                 focusNode: objFocus,
-                maxLength: 50, 
-                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15), 
+                maxLength: 50,
+                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15),
                 decoration: rotinaInputDecoration(hintText: 'Ex: Hipertrofia Máxima').copyWith(
                   counterText: objFocus.hasFocus ? null : "",
-                ), 
+                ),
                 validator: (value) => (value == null || value.trim().isEmpty) ? 'Campo obrigatório' : null
               ),
             ),
@@ -838,7 +838,7 @@ class _SessaoTreinoPageState extends State<_SessaoTreinoPage> {
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             RotinaModernInput(label: 'NOME DO TREINO', child: TextFormField(controller: sNomeCtrl, autofocus: true, style: const TextStyle(color: Colors.white, fontSize: 16), decoration: rotinaInputDecoration(hintText: 'Ex: Push, Pull...'), validator: (value) => (value == null || value.trim().isEmpty) ? 'Campo obrigatório' : null)),
             const SizedBox(height: 24),
-            RotinaModernInput(label: 'DIA DA SEMANA', child: DropdownButtonFormField<String>(value: diaSemana, dropdownColor: AppTheme.surfaceLight, items: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(), onChanged: (v) => setState(() => diaSemana = v), decoration: rotinaInputDecoration(hintText: 'Sem dia fixo'))),
+            RotinaModernInput(label: 'DIA DA SEMANA', child: DropdownButtonFormField<String>(initialValue: diaSemana, dropdownColor: AppTheme.surfaceLight, items: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(), onChanged: (v) => setState(() => diaSemana = v), decoration: rotinaInputDecoration(hintText: 'Sem dia fixo'))),
             const SizedBox(height: 24),
             RotinaModernInput(label: 'NOTAS', child: TextFormField(controller: orientCtrl, maxLines: 5, style: const TextStyle(color: Colors.white, fontSize: 16), decoration: rotinaInputDecoration(hintText: 'Ex: Aquecer manguito antes...'))),
           ]),
