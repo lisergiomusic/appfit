@@ -264,267 +264,321 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     String sessoesInput = widget.rotinaId == null ? '' : _vencimentoSessoes.toString();
     DateTime dataTemp = _vencimentoData;
 
+    // Controladores locais para evitar alteração imediata nos controladores principais
+    final localNomeCtrl = TextEditingController(text: nomeCtrl.text);
+    final localObjCtrl = TextEditingController(text: objCtrl.text);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      isDismissible: true, // Permitir fechar clicando fora, mas interceptar no PopScope
+      enableDrag: true,    // Permitir fechar arrastando, mas interceptar no PopScope
       backgroundColor: AppTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setStateModal) {
-          // Listener para atualizar o modal quando o foco mudar
-          void focusListener() {
-            if (context.mounted) setStateModal(() {});
+      builder: (modalContext) => PopScope(
+        canPop: false, // Interceptamos para validar
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) return;
+
+          final nome = localNomeCtrl.text.trim();
+          final obj = localObjCtrl.text.trim();
+
+          // Se estiver tudo preenchido, deixa sair (cancelar edição do modal)
+          if (nome.isNotEmpty && obj.isNotEmpty) {
+            Navigator.of(modalContext).pop();
+            return;
           }
 
-          objFocusNode.removeListener(focusListener);
-          objFocusNode.addListener(focusListener);
-
-          return SafeArea(
-            child: Container(
-              padding: EdgeInsets.only(
-                left: AppTheme.paddingScreen,
-                right: AppTheme.paddingScreen,
-                top: 12,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Handle de arrastar
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.white24,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Center(
-                      child: const Text(
-                        'Configurações da Planilha',
-                        style: AppTheme.pageTitle,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // 1. NOME DA PLANILHA
-                    RotinaModernInput(
-                      label: 'Nome da Planilha',
-                      child: TextField(
-                        controller: nomeCtrl,
-                        style: const TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontSize: 15,
-                        ),
-
-                        decoration: rotinaInputDecoration(
-                          hintText: 'Ex: Protocolo Y',
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // 2. OBJETIVO PRINCIPAL
-                    RotinaModernInput(
-                      label: 'Objetivo Principal',
-                      child: TextField(
-                        controller: objCtrl,
-                        focusNode: objFocusNode,
-                        maxLength: 50,
-                        style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15),
-                        decoration: rotinaInputDecoration(
-                          hintText: 'Ex: Hipertrofia Máxima',
-                        ).copyWith(
-                          counterText: objFocusNode.hasFocus ? null : "",
-                          counterStyle: const TextStyle(
-                            color: Colors.white54,
-                            fontSize: 10,
+          // Se algum campo obrigatório estiver vazio, pergunta se quer descartar
+          final descartar = await _showDescartarDialog();
+          if (descartar) {
+            if (mounted) {
+              Navigator.of(modalContext).pop(); // Fecha o modal
+              // Se for criação de nova planilha e não houver treinos, sai da página também
+              if (widget.rotinaId == null && _treinos.isEmpty) {
+                Navigator.of(context).pop();
+              }
+            }
+          }
+        },
+        child: StatefulBuilder(
+          builder: (context, setStateModal) {
+            return SafeArea(
+              child: Container(
+                padding: EdgeInsets.only(
+                  left: AppTheme.paddingScreen,
+                  right: AppTheme.paddingScreen,
+                  top: 12,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Handle de arrastar
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.white24,
+                            borderRadius: BorderRadius.circular(2),
                           ),
                         ),
                       ),
-                    ),
-                  const SizedBox(height: 20),
-
-                  // 3. TIPO DE VENCIMENTO (Sessões vs Data)
-
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: const Text(
-                      'Vencimento',
-                      style: TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.2,
+                      const SizedBox(height: 24),
+                      Center(
+                        child: const Text(
+                          'Configurações da Planilha',
+                          style: AppTheme.pageTitle,
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppTheme.surfaceLight,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                      boxShadow: [AppTheme.cardShadow],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
-                          children: [
-                            _buildTabOption(
-                              label: 'Sessões',
-                              isSelected: tipoTemp == 'sessoes',
-                              onTap: () => setStateModal(() => tipoTemp = 'sessoes'),
+                      const SizedBox(height: 24),
+
+                      // 1. NOME DA PLANILHA
+                      RotinaModernInput(
+                        label: 'Nome da Planilha',
+                        child: TextField(
+                          controller: localNomeCtrl,
+                          style: const TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 15,
+                          ),
+                          decoration: rotinaInputDecoration(
+                            hintText: 'Ex: Protocolo Y',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // 2. OBJETIVO PRINCIPAL
+                      RotinaModernInput(
+                        label: 'Objetivo Principal',
+                        child: TextField(
+                          controller: localObjCtrl,
+                          maxLength: 50,
+                          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15),
+                          decoration: rotinaInputDecoration(
+                            hintText: 'Ex: Hipertrofia Máxima',
+                          ).copyWith(
+                            counterStyle: const TextStyle(
+                              color: Colors.white54,
+                              fontSize: 10,
                             ),
-                            _buildTabOption(
-                              label: 'Data Fixa',
-                              isSelected: tipoTemp == 'data',
-                              onTap: () => setStateModal(() => tipoTemp = 'data'),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // 3. TIPO DE VENCIMENTO
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: const Text(
+                          'Vencimento',
+                          style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceLight,
+                          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                          boxShadow: [AppTheme.cardShadow],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              children: [
+                                _buildTabOption(
+                                  label: 'Sessões',
+                                  isSelected: tipoTemp == 'sessoes',
+                                  onTap: () => setStateModal(() => tipoTemp = 'sessoes'),
+                                ),
+                                _buildTabOption(
+                                  label: 'Data Fixa',
+                                  isSelected: tipoTemp == 'data',
+                                  onTap: () => setStateModal(() => tipoTemp = 'data'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              child: tipoTemp == 'sessoes'
+                                  ? SizedBox(
+                                      key: const ValueKey('inputSessoes'),
+                                      height: 56,
+                                      child: TextFormField(
+                                        keyboardType: TextInputType.number,
+                                        initialValue: sessoesInput,
+                                        style: const TextStyle(color: AppTheme.textPrimary),
+                                        decoration: rotinaInputDecoration(
+                                          hintText: 'Quantas sessões de treino?',
+                                        ),
+                                        onChanged: (v) => sessoesInput = v,
+                                      ),
+                                    )
+                                  : SizedBox(
+                                      key: const ValueKey('inputData'),
+                                      height: 56,
+                                      child: ListTile(
+                                        contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                        ),
+                                        tileColor: AppTheme.surfaceDark,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                                          side: BorderSide(
+                                            color: Colors.white.withAlpha(20),
+                                            width: 1.0,
+                                          ),
+                                        ),
+                                        leading: const Icon(
+                                          Icons.calendar_month,
+                                          color: AppTheme.primary,
+                                        ),
+                                        title: const Text(
+                                          'Vence em:',
+                                          style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        trailing: Text(
+                                          DateFormat('dd/MM/yyyy').format(dataTemp),
+                                          style: const TextStyle(
+                                            color: AppTheme.primary,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        onTap: () async {
+                                          final picked = await showDatePicker(
+                                            context: context,
+                                            initialDate: dataTemp,
+                                            firstDate: DateTime.now(),
+                                            lastDate: DateTime.now().add(
+                                              const Duration(days: 365),
+                                            ),
+                                          );
+                                          if (picked != null) {
+                                            setStateModal(() => dataTemp = picked);
+                                          }
+                                        },
+                                      ),
+                                    ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
-                        // 4. INPUT DINÂMICO DE VENCIMENTO
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
-                          child: tipoTemp == 'sessoes'
-                              ? SizedBox(
-                                  key: const ValueKey('inputSessoes'),
-                                  height: 56,
-                                  child: TextFormField(
-                                    keyboardType: TextInputType.number,
-                                    initialValue: sessoesInput,
-                                    style: const TextStyle(color: AppTheme.textPrimary),
-                                    decoration: rotinaInputDecoration(
-                                      hintText: 'Quantas sessões de treino?',
-                                    ),
-                                    onChanged: (v) => sessoesInput = v,
-                                  ),
-                                )
-                              : SizedBox(
-                                  key: const ValueKey('inputData'),
-                                  height: 56,
-                                  child: ListTile(
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                    ),
-                                    tileColor: AppTheme.surfaceDark,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                                      side: BorderSide(
-                                        color: Colors.white.withAlpha(20),
-                                        width: 1.0,
-                                      ),
-                                    ),
-                                    leading: const Icon(
-                                      Icons.calendar_month,
-                                      color: AppTheme.primary,
-                                    ),
-                                    title: const Text(
-                                      'Vence em:',
-                                      style: TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    trailing: Text(
-                                      DateFormat('dd/MM/yyyy').format(dataTemp),
-                                      style: const TextStyle(
-                                        color: AppTheme.primary,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    onTap: () async {
-                                      final picked = await showDatePicker(
-                                        context: context,
-                                        initialDate: dataTemp,
-                                        firstDate: DateTime.now(),
-                                        lastDate: DateTime.now().add(
-                                          const Duration(days: 365),
-                                        ),
-                                      );
-                                      if (picked != null) {
-                                        setStateModal(() => dataTemp = picked);
-                                      }
-                                    },
-                                  ),
-                                ),
+                      ),
+                      const SizedBox(height: 32),
+
+                      // BOTÃO CONFIRMAR
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            final nome = localNomeCtrl.text.trim();
+                            final obj = localObjCtrl.text.trim();
+                            final sessoes = int.tryParse(sessoesInput);
+
+                            if (nome.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('O nome da planilha é obrigatório.')),
+                              );
+                              return;
+                            }
+                            if (obj.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('O objetivo da planilha é obrigatório.')),
+                              );
+                              return;
+                            }
+                            if (tipoTemp == 'sessoes' && (sessoes == null || sessoes <= 0)) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Informe uma quantidade válida de sessões.')),
+                              );
+                              return;
+                            }
+
+                            setState(() {
+                              nomeCtrl.text = nome;
+                              objCtrl.text = obj;
+                              _tipoVencimento = tipoTemp;
+                              _vencimentoSessoes = sessoes ?? 20;
+                              _vencimentoData = dataTemp;
+                            });
+                            Navigator.of(modalContext).pop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primary,
+                            elevation: 1,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Salvar configurações',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      if (widget.rotinaId != null) ...[
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: () => _confirmarExclusao(context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red.withAlpha(30),
+                              foregroundColor: Colors.redAccent,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: const BorderSide(color: Colors.redAccent, width: 0.5),
+                              ),
+                            ),
+                            child: const Text(
+                              'REMOVER PLANILHA',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
                         ),
                       ],
-                    ),
+                    ],
                   ),
-
-                  const SizedBox(height: 32),
-
-                  // BOTÃO CONFIRMAR
-                  SizedBox(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _tipoVencimento = tipoTemp;
-                          _vencimentoSessoes = int.tryParse(sessoesInput) ?? 20;
-                          _vencimentoData = dataTemp;
-                        });
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
-                        elevation: 1,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Salvar configurações',
-                      ),
-                    ),
-                  ),
-
-                  if (widget.rotinaId != null) ...[
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: () => _confirmarExclusao(context),
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          elevation: 1,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'REMOVER PLANILHA',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
+                ),
               ),
-            ),
-          ),
-        );
-      },
-    ),
-  );
-}
+            );
+          },
+        ),
+      ),
+    ).then((_) {
+      localNomeCtrl.dispose();
+      localObjCtrl.dispose();
+    });
+  }
 
   void _confirmarExclusao(BuildContext context) {
     final navigator = Navigator.of(context);
@@ -759,12 +813,28 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       return true;
     }
 
-    if (nomeParaSalvar.isEmpty || _treinos.isEmpty) {
+    if (nomeParaSalvar.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Dê um nome e adicione pelo menos um treino.'),
-          ),
+          const SnackBar(content: Text('O nome da planilha é obrigatório.')),
+        );
+      }
+      return false;
+    }
+
+    if (objetivoParaSalvar.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('O objetivo da planilha é obrigatório.')),
+        );
+      }
+      return false;
+    }
+
+    if (_treinos.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Adicione pelo menos um treino à planilha.')),
         );
       }
       return false;
