@@ -53,7 +53,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
       context,
       MaterialPageRoute(
         builder: (context) => EditarAlunoPage(alunoId: widget.alunoId),
-        fullscreenDialog: true, // Abre como um modal fullscreen no iOS
+        fullscreenDialog: true,
       ),
     );
 
@@ -85,6 +85,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.surfaceDark,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text(
           'Excluir Aluno?',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -97,14 +98,14 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: const Text(
-              'Cancelar',
-              style: TextStyle(color: AppTheme.textSecondary),
+              'CANCELAR',
+              style: TextStyle(color: AppTheme.textSecondary, fontWeight: FontWeight.bold),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: const Text(
-              'Sim, Excluir',
+              'REMOVER',
               style: TextStyle(
                 color: Colors.redAccent,
                 fontWeight: FontWeight.bold,
@@ -140,160 +141,235 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppTheme.background,
+        elevation: 0,
+        centerTitle: true,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppTheme.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text(
           'Gerenciar Aluno',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textPrimary,
+            letterSpacing: -0.3,
+          ),
         ),
-        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(
+            height: 0.5,
+            color: Colors.white.withAlpha(20),
+          ),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.all(AppTheme.paddingScreen),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Identificação Rápida
-            Row(
+            _buildProfileCard(),
+            const SizedBox(height: 16),
+            _buildSectionHeader('CONFIGURAÇÕES DO PERFIL'),
+            _buildActionGroup([
+              _ActionItem(
+                icon: Icons.edit_rounded,
+                title: 'Editar Informações',
+                subtitle: 'Nome, e-mail, idade e peso',
+                onTap: () => _irParaEditar(context),
+              ),
+              _ActionItem(
+                icon: Icons.send_rounded,
+                title: 'Enviar convite do App',
+                subtitle: 'Mandar link de acesso para o aluno',
+                onTap: () => _enviarConviteApp(context),
+              ),
+            ]),
+            const SizedBox(height: 32),
+            _buildSectionHeader('ZONA DE SEGURANÇA'),
+            _buildActionGroup([
+              _ActionItem(
+                icon: Icons.block_rounded,
+                title: 'Bloquear Acesso',
+                subtitle: 'O aluno não poderá fazer login',
+                iconColor: Colors.orangeAccent,
+                onTap: () => _alternarBloqueio(context),
+              ),
+              _ActionItem(
+                icon: Icons.delete_forever_rounded,
+                title: 'Excluir Aluno',
+                subtitle: 'Apagar todos os dados permanentemente',
+                iconColor: Colors.redAccent,
+                onTap: () => _excluirAluno(context),
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppTheme.primary.withAlpha(50), width: 1.5),
+            ),
+            child: CircleAvatar(
+              radius: 32,
+              backgroundColor: AppTheme.surfaceLight,
+              backgroundImage: _fotoUrl != null && _fotoUrl!.isNotEmpty
+                ? NetworkImage(_fotoUrl!)
+                : null,
+              child: (_fotoUrl == null || _fotoUrl!.isEmpty) && !_isLoadingData
+                ? const Icon(Icons.person, color: AppTheme.textSecondary, size: 32)
+                : null,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: AppTheme.surfaceLight,
-                  backgroundImage: _fotoUrl != null && _fotoUrl!.isNotEmpty 
-                    ? NetworkImage(_fotoUrl!) 
-                    : null,
-                  child: (_fotoUrl == null || _fotoUrl!.isEmpty) && !_isLoadingData
-                    ? const Icon(Icons.person, color: AppTheme.textSecondary)
-                    : null,
+                Text(
+                  widget.alunoNome,
+                  style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.5,
+                  ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    widget.alunoNome,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Aluno Ativo',
+                  style: TextStyle(
+                    color: AppTheme.primary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 40),
+          ),
+        ],
+      ),
+    );
+  }
 
-            // SEÇÃO 1: Ações Gerais
-            const Text(
-              'AÇÕES GERAIS',
-              style: TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildSettingsItem(
-              icon: Icons.edit_outlined,
-              title: 'Editar Informações',
-              subtitle: 'Nome, e-mail, idade e peso',
-              onTap: () => _irParaEditar(context),
-            ),
-            _buildSettingsItem(
-              icon: Icons.send_outlined,
-              title: 'Enviar convite do App',
-              subtitle: 'Mandar link de acesso para o aluno',
-              onTap: () => _enviarConviteApp(context),
-            ),
-
-            const SizedBox(height: 40),
-
-            // SEÇÃO 2: Zona de Perigo (Segurança e Exclusão)
-            const Text(
-              'ZONA DE PERIGO',
-              style: TextStyle(
-                color: Colors.redAccent,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildSettingsItem(
-              icon: Icons.block,
-              title: 'Bloquear Acesso',
-              subtitle: 'O aluno não poderá fazer login',
-              iconColor: Colors.orangeAccent,
-              titleColor: Colors.orangeAccent,
-              onTap: () => _alternarBloqueio(context),
-            ),
-            _buildSettingsItem(
-              icon: Icons.delete_outline,
-              title: 'Excluir Aluno',
-              subtitle: 'Apagar todos os dados permanentemente',
-              iconColor: Colors.redAccent,
-              titleColor: Colors.redAccent,
-              onTap: () => _excluirAluno(context),
-            ),
-          ],
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 12),
+      child: Text(
+        title,
+        style: const TextStyle(
+          color: AppTheme.textSecondary,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.2,
         ),
       ),
     );
   }
 
-  Widget _buildSettingsItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-    Color iconColor = AppTheme.textSecondary,
-    Color titleColor = Colors.white,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppTheme.surfaceDark,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: iconColor, size: 22),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: titleColor,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
+  Widget _buildActionGroup(List<_ActionItem> items) {
+    return Container(
+      decoration: AppTheme.cardDecoration,
+      child: Column(
+        children: List.generate(items.length, (index) {
+          final item = items[index];
+          final isLast = index == items.length - 1;
+
+          return Column(
+            children: [
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: item.onTap,
+                  borderRadius: BorderRadius.vertical(
+                    top: index == 0 ? const Radius.circular(AppTheme.radiusMedium) : Radius.zero,
+                    bottom: isLast ? const Radius.circular(AppTheme.radiusMedium) : Radius.zero,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: (item.iconColor ?? AppTheme.textPrimary).withAlpha(15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(item.icon, color: item.iconColor ?? AppTheme.textPrimary, size: 22),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.title,
+                                style: const TextStyle(
+                                  color: AppTheme.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                item.subtitle,
+                                style: const TextStyle(
+                                  color: AppTheme.textSecondary,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          color: AppTheme.textTertiary,
+                          size: 20,
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              color: AppTheme.textSecondary,
-              size: 20,
-            ),
-          ],
-        ),
+              if (!isLast)
+                Padding(
+                  padding: const EdgeInsets.only(left: 64),
+                  child: Divider(height: 1, color: Colors.white.withAlpha(10)),
+                ),
+            ],
+          );
+        }),
       ),
     );
   }
+}
+
+class _ActionItem {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  final Color? iconColor;
+
+  _ActionItem({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.iconColor,
+  });
 }
