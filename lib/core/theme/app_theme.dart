@@ -11,12 +11,14 @@ class AppTheme {
   static const Color surfaceDark = Color(0xFF1E1F20);
   static const Color surfaceLight = Color(0xFF2C2C2E);
   static const Color buttonSurface = Color(0xFF1E1E1E);
-  static const Color labelPrimary = Color(0xFFF2F2F7);
+  static const Color labelPrimary = Color(0xFFFFFFFF);
   static const Color labelSecondary = Color(0x99EBEBF5);
   static const Color labelTertiary = Color(0x4DEBEBF5);
   static const Color textLabel = Color(0xFF8E8E93);
   static const Color accentMetrics = Color(0xFFFF9F0A);
   static const Color success = Color(0xFF4CAF50);
+  static const Color systemRed = Color(0xFFFF3B30);
+  static const Color fillSecondary = Color(0x1A787880);
 
   // --- 2. ESPAÇAMENTOS GLOBAIS
   static const double paddingScreen = 16;
@@ -307,5 +309,48 @@ class NavBarTokens {
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
     color: AppTheme.primary,
+  );
+}
+
+class ButtonTokens {
+  ButtonTokens._();
+
+  // dimensões
+  static const double primaryHeight   = 50.0;
+  static const double primaryRadius   = 14.0;
+  static const double secondaryHeight = 50.0;
+  static const double secondaryRadius = 14.0;
+
+  // estilos de texto
+  static const TextStyle primaryTextStyle = TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.41,
+    color: AppTheme.primary,
+  );
+
+  static const TextStyle secondaryTextStyle = TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.41,
+    color: AppTheme.labelPrimary,
+  );
+
+  static const TextStyle destructiveTextStyle = TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.41,
+    color: AppTheme.systemRed,
+  );
+
+  // decorações prontas
+  static BoxDecoration primaryDecoration = BoxDecoration(
+    color: AppTheme.primary.withAlpha(25),
+    borderRadius: BorderRadius.circular(primaryRadius),
+  );
+
+  static BoxDecoration secondaryDecoration = BoxDecoration(
+    color: AppTheme.fillSecondary,
+    borderRadius: BorderRadius.circular(secondaryRadius),
   );
 }

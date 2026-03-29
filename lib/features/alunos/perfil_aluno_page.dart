@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shimmer/shimmer.dart';
@@ -267,71 +268,57 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
 
   Widget _buildActions(BuildContext context, String? telefone) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
+      padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.lg),
       child: Row(
         children: [
           Expanded(
-            child: InkWell(
-              onTap: () => _abrirWhatsApp(context, telefone),
-              borderRadius: BorderRadius.circular(12),
+            child: CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: () => _abrirWhatsApp(context, telefone),
               child: Container(
-                height: 46,
+                height: ButtonTokens.primaryHeight,
                 decoration: BoxDecoration(
                   color: AppTheme.primary.withAlpha(25),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(ButtonTokens.primaryRadius),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     FaIcon(
                       FontAwesomeIcons.whatsapp,
                       color: AppTheme.primary,
-                      size: 18,
+                      size: 20,
                     ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Conversar',
-                      style: TextStyle(
-                        color: AppTheme.primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
+                    const SizedBox(width: SpacingTokens.sm),
+                    Text('Conversar', style: ButtonTokens.primaryTextStyle.copyWith(
+                      color: AppTheme.primary,
+                    )),
                   ],
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: SpacingTokens.sm),
           Expanded(
-            child: InkWell(
-              onTap: () => _irParaGerenciarAluno(context),
-              borderRadius: BorderRadius.circular(12),
+            child: CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: () => _irParaGerenciarAluno(context),
               child: Container(
-                height: 48,
+                height: ButtonTokens.secondaryHeight,
                 decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(10),
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppTheme.fillSecondary,
+                  borderRadius: BorderRadius.circular(ButtonTokens.secondaryRadius),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.settings_outlined,
-                      color: Colors.white,
-                      size: 18,
+                      CupertinoIcons.settings,
+                      color: AppTheme.labelPrimary,
+                      size: 20,
                     ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Gerenciar',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
+                    const SizedBox(width: SpacingTokens.sm),
+                    Text('Gerenciar', style: ButtonTokens.secondaryTextStyle),
                   ],
                 ),
               ),
@@ -341,7 +328,6 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
       ),
     );
   }
-
   void _exibirOpcoesVincularTreino(BuildContext context) {
     showModalBottomSheet(
       context: context,
