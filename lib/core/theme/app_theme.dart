@@ -51,8 +51,8 @@ class AppTheme {
   // --- 4. ESTILOS DE TEXTO ---
   static const TextStyle bigTitle = TextStyle(
     fontSize: 34,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.4,
+    fontWeight: FontWeight.bold,
+    letterSpacing: -0.41,
     color: AppTheme.textPrimary,
   );
 

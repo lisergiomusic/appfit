@@ -453,9 +453,9 @@ class _AlunosPageState extends State<AlunosPage> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Container(
-        height: 38,
+        height: 36,
         decoration: BoxDecoration(
-          color: AppTheme.surfaceLight,
+          color: AppTheme.surfaceDark,
           borderRadius: BorderRadius.circular(10),
         ),
         child: TextField(
@@ -464,15 +464,17 @@ class _AlunosPageState extends State<AlunosPage> {
             setState(() => _searchQuery = val);
             _fetchInitialData();
           },
-          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16, letterSpacing: -0.41, fontWeight: FontWeight.w400),
           cursorColor: AppTheme.primary,
           textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
             isDense: true,
-            hintText: 'Pesquisar',
+            hintText: 'Buscar por nome...',
             hintStyle: TextStyle(
-              color: AppTheme.textSecondary.withAlpha(120),
-              fontSize: 16,
+              color: AppTheme.textTertiary,
+              fontSize: 17,
+              letterSpacing: -0.41,
+              fontWeight: FontWeight.w400,
             ),
             prefixIcon: Icon(
               Icons.search_rounded,
@@ -507,37 +509,41 @@ class _AlunosPageState extends State<AlunosPage> {
   Widget _buildFilterChips() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        child: Row(
-          children: [
-            _buildChip(
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildChip(
               label: 'Todos',
               count: _totalCount,
               value: 'todos',
             ),
-            const SizedBox(width: 8),
-            _buildChip(
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: _buildChip(
               label: 'Ativos',
               count: _ativosCount,
               value: 'ativo',
             ),
-            const SizedBox(width: 8),
-            _buildChip(
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: _buildChip(
               label: 'Risco',
               count: _riscoCount,
               value: 'risco',
               activeColor: Colors.orangeAccent,
             ),
-            const SizedBox(width: 8),
-            _buildChip(
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: _buildChip(
               label: 'Inativos',
               count: _inativosCount,
               value: 'inativo',
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -560,7 +566,7 @@ class _AlunosPageState extends State<AlunosPage> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         decoration: BoxDecoration(
           color: isSelected ? primaryColor : AppTheme.surfaceDark,
           borderRadius: BorderRadius.circular(10),
@@ -569,31 +575,35 @@ class _AlunosPageState extends State<AlunosPage> {
           ),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.black : AppTheme.textSecondary,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                fontSize: 14,
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? Colors.black : AppTheme.textSecondary,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  fontSize: 12,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 4),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
               decoration: BoxDecoration(
                 color: isSelected
                     ? Colors.black.withAlpha(40)
                     : Colors.white.withAlpha(10),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 count.toString(),
                 style: TextStyle(
                   color: isSelected ? Colors.black : AppTheme.textPrimary,
                   fontWeight: FontWeight.w700,
-                  fontSize: 11,
+                  fontSize: 10,
                 ),
               ),
             ),
