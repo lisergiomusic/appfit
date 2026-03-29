@@ -88,7 +88,7 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
                   const Text(
                     'NOTAS DA SESSÃO',
                     style: TextStyle(
-                      color: AppTheme.textSecondary,
+                      color: AppTheme.labelSecondary,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.2,
@@ -189,7 +189,7 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
                               style: TextStyle(
                                 color: isLimitReached
                                     ? Colors.redAccent
-                                    : AppTheme.textSecondary.withAlpha(120),
+                                    : AppTheme.labelSecondary.withAlpha(120),
                                 fontSize: 13,
                                 fontWeight: isLimitReached
                                     ? FontWeight.bold
@@ -208,7 +208,7 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
                       hintText:
                           'Digite as instruções, foco ou detalhes aqui...',
                       hintStyle: TextStyle(
-                        color: AppTheme.textSecondary.withAlpha(120),
+                        color: AppTheme.labelSecondary.withAlpha(120),
                         fontSize: 17,
                         fontStyle: FontStyle.italic,
                       ),

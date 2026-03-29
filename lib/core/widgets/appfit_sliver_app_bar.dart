@@ -33,7 +33,7 @@ class AppFitSliverAppBar extends StatelessWidget {
             padding: const EdgeInsets.only(left: 8),
             child: const Icon(
               CupertinoIcons.back,
-              color: AppTheme.textPrimary,
+              color: AppTheme.labelPrimary,
               size: 24,
             ),
           ),

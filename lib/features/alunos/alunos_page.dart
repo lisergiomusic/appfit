@@ -134,7 +134,7 @@ class _AlunosPageState extends State<AlunosPage> {
         ),
         content: const Text(
           'Deseja realmente remover este aluno? Todos os dados vinculados serão perdidos.',
-          style: TextStyle(color: AppTheme.textSecondary),
+          style: TextStyle(color: AppTheme.labelSecondary),
         ),
         actions: [
           TextButton(
@@ -142,7 +142,7 @@ class _AlunosPageState extends State<AlunosPage> {
             child: const Text(
               'CANCELAR',
               style: TextStyle(
-                color: AppTheme.textSecondary,
+                color: AppTheme.labelSecondary,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -229,14 +229,14 @@ class _AlunosPageState extends State<AlunosPage> {
                       'Preencha os dados do aluno abaixo',
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppTheme.textSecondary,
+                        color: AppTheme.labelSecondary,
                       ),
                     ),
                   ],
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: AppTheme.textSecondary),
+                  icon: const Icon(Icons.close, color: AppTheme.labelSecondary),
                 ),
               ],
             ),
@@ -444,7 +444,7 @@ class _AlunosPageState extends State<AlunosPage> {
             _fetchInitialData();
           },
           style: const TextStyle(
-            color: AppTheme.textPrimary,
+            color: AppTheme.labelPrimary,
             fontSize: 16,
             letterSpacing: -0.41,
             fontWeight: FontWeight.w400,
@@ -455,14 +455,14 @@ class _AlunosPageState extends State<AlunosPage> {
             isDense: true,
             hintText: 'Buscar por nome...',
             hintStyle: TextStyle(
-              color: AppTheme.textTertiary,
+              color: AppTheme.labelTertiary,
               fontSize: 17,
               letterSpacing: -0.41,
               fontWeight: FontWeight.w400,
             ),
             prefixIcon: Icon(
               Icons.search_rounded,
-              color: AppTheme.textSecondary.withAlpha(120),
+              color: AppTheme.labelSecondary.withAlpha(120),
               size: 20,
             ),
             suffixIcon: _searchQuery.isNotEmpty
@@ -470,7 +470,7 @@ class _AlunosPageState extends State<AlunosPage> {
                     icon: const Icon(
                       Icons.close_rounded,
                       size: 18,
-                      color: AppTheme.textSecondary,
+                      color: AppTheme.labelSecondary,
                     ),
                     onPressed: () {
                       _searchController.clear();
@@ -528,7 +528,7 @@ class _AlunosPageState extends State<AlunosPage> {
               fontSize: 13,
               letterSpacing: -0.08,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              color: isSelected ? Colors.white : AppTheme.textSecondary,
+              color: isSelected ? Colors.white : AppTheme.labelSecondary,
             ),
           ),
           const SizedBox(width: 4),
@@ -536,7 +536,7 @@ class _AlunosPageState extends State<AlunosPage> {
             '($count)',
             style: TextStyle(
               fontSize: 11,
-              color: isSelected ? AppTheme.primary : AppTheme.textTertiary,
+              color: isSelected ? AppTheme.primary : AppTheme.labelTertiary,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -673,7 +673,7 @@ class _AlunosPageState extends State<AlunosPage> {
                 ),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
-                  color: AppTheme.textSecondary.withAlpha(100),
+                  color: AppTheme.labelSecondary.withAlpha(100),
                   size: 14,
                 ),
               ],
@@ -692,7 +692,7 @@ class _AlunosPageState extends State<AlunosPage> {
           Icon(
             Icons.group_add_rounded,
             size: 64,
-            color: AppTheme.textSecondary.withAlpha(30),
+            color: AppTheme.labelSecondary.withAlpha(30),
           ),
           const SizedBox(height: 24),
           const Text(
@@ -706,7 +706,7 @@ class _AlunosPageState extends State<AlunosPage> {
           const SizedBox(height: 8),
           const Text(
             'Toque em ADICIONAR para começar.',
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+            style: TextStyle(color: AppTheme.labelSecondary, fontSize: 14),
           ),
         ],
       ),
@@ -723,14 +723,14 @@ class _AlunosPageState extends State<AlunosPage> {
             Icon(
               Icons.search_off_rounded,
               size: 48,
-              color: AppTheme.textSecondary.withAlpha(40),
+              color: AppTheme.labelSecondary.withAlpha(40),
             ),
             const SizedBox(height: 16),
             Text(
               'Nenhum resultado para os filtros aplicados',
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: AppTheme.textSecondary,
+                color: AppTheme.labelSecondary,
                 fontSize: 14,
               ),
             ),

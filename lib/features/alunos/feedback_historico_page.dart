@@ -98,7 +98,7 @@ class FeedbackHistoricoPage extends StatelessWidget {
                       Text(
                         item['data'],
                         style: const TextStyle(
-                          color: AppTheme.textSecondary,
+                          color: AppTheme.labelSecondary,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -120,7 +120,7 @@ class FeedbackHistoricoPage extends StatelessWidget {
                     Text(
                       item['comentario'],
                       style: TextStyle(
-                        color: AppTheme.textSecondary.withAlpha(200),
+                        color: AppTheme.labelSecondary.withAlpha(200),
                         fontSize: 13,
                         fontStyle: FontStyle.italic,
                       ),
@@ -157,7 +157,7 @@ class FeedbackHistoricoPage extends StatelessWidget {
     return Center(
       child: Text(
         'Nenhum feedback registrado ainda.',
-        style: TextStyle(color: AppTheme.textSecondary),
+        style: TextStyle(color: AppTheme.labelSecondary),
       ),
     );
   }

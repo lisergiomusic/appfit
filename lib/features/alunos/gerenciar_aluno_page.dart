@@ -111,14 +111,14 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
         ),
         content: Text(
           'Tem certeza que deseja remover ${widget.alunoNome} definitivamente? Todos os treinos e históricos serão perdidos.',
-          style: const TextStyle(color: AppTheme.textSecondary),
+          style: const TextStyle(color: AppTheme.labelSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: const Text(
               'CANCELAR',
-              style: TextStyle(color: AppTheme.textSecondary, fontWeight: FontWeight.bold),
+              style: TextStyle(color: AppTheme.labelSecondary, fontWeight: FontWeight.bold),
             ),
           ),
           TextButton(
@@ -165,7 +165,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
         centerTitle: true,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppTheme.textPrimary),
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppTheme.labelPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -173,7 +173,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
-            color: AppTheme.textPrimary,
+            color: AppTheme.labelPrimary,
             letterSpacing: -0.3,
           ),
         ),
@@ -261,7 +261,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                 Text(
                   widget.alunoNome,
                   style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                    color: AppTheme.labelPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.5,
@@ -291,7 +291,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
       child: Text(
         title,
         style: const TextStyle(
-          color: AppTheme.textSecondary,
+          color: AppTheme.labelSecondary,
           fontSize: 11,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.2,
@@ -325,10 +325,10 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                         Container(
                           padding: const EdgeInsets.all(8), // menor
                           decoration: BoxDecoration(
-                            color: (item.iconColor ?? AppTheme.textPrimary).withAlpha(15),
+                            color: (item.iconColor ?? AppTheme.labelPrimary).withAlpha(15),
                             borderRadius: BorderRadius.circular(10), // mais sutil
                           ),
-                          child: Icon(item.icon, color: item.iconColor ?? AppTheme.textPrimary, size: 20), // menor
+                          child: Icon(item.icon, color: item.iconColor ?? AppTheme.labelPrimary, size: 20), // menor
                         ),
                         const SizedBox(width: 12), // menor
                         Expanded(
@@ -349,7 +349,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                         ),
                         Icon(
                           Icons.chevron_right_rounded,
-                          color: AppTheme.textTertiary,
+                          color: AppTheme.labelTertiary,
                           size: 18, // menor
                         ),
                       ],

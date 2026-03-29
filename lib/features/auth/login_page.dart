@@ -96,13 +96,13 @@ class _LoginPageState extends State<LoginPage> {
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
+                  color: AppTheme.labelPrimary,
                 ),
               ),
               const SizedBox(height: 8),
               const Text(
                 'Faça login para continuar',
-                style: TextStyle(fontSize: 16, color: AppTheme.textSecondary),
+                style: TextStyle(fontSize: 16, color: AppTheme.labelSecondary),
               ),
               const SizedBox(height: 48),
 
@@ -166,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   const Text(
                     'Ainda não tem uma conta?',
-                    style: TextStyle(color: AppTheme.textSecondary),
+                    style: TextStyle(color: AppTheme.labelSecondary),
                   ),
                   TextButton(
                     onPressed: () {
@@ -209,7 +209,7 @@ class _LoginPageState extends State<LoginPage> {
       controller: controller, // Repassando para o TextField real
       obscureText: obscureText,
       keyboardType: keyboardType,
-      style: const TextStyle(color: AppTheme.textPrimary),
+      style: const TextStyle(color: AppTheme.labelPrimary),
       cursorColor: AppTheme.primary,
       decoration: InputDecoration(
         labelText: label,

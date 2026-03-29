@@ -76,7 +76,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
           icon: const Icon(
             Icons.arrow_back_ios_new,
             size: 20,
-            color: AppTheme.textPrimary,
+            color: AppTheme.labelPrimary,
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -290,7 +290,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                     ),
                     SizedBox(width: 8),
                     Text(
-                      'CONVERSAR',
+                      'Conversar',
                       style: TextStyle(
                         color: AppTheme.primary,
                         fontSize: 12,
@@ -324,7 +324,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                     ),
                     SizedBox(width: 8),
                     Text(
-                      'GERENCIAR',
+                      'Gerenciar',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 12,
@@ -403,7 +403,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       'Da Biblioteca',
-                      style: AppTheme.textSectionHeader,
+                      style: AppTheme.sectionHeader,
                     ),
                   ),
                   const Expanded(child: Divider(color: Colors.white10)),
@@ -426,7 +426,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                         child: Text(
                           'Sua biblioteca está vazia.',
                           style: TextStyle(
-                            color: AppTheme.textSecondary.withAlpha(100),
+                            color: AppTheme.labelSecondary.withAlpha(100),
                           ),
                         ),
                       );
@@ -466,7 +466,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                             subtitle: Text(
                               '$qtdSessoes sessões planejadas',
                               style: const TextStyle(
-                                color: AppTheme.textSecondary,
+                                color: AppTheme.labelSecondary,
                                 fontSize: 13,
                               ),
                             ),
@@ -516,7 +516,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
               children: [
                 Text(
                   'Duração para ${widget.alunoNome}:',
-                  style: const TextStyle(color: AppTheme.textSecondary),
+                  style: const TextStyle(color: AppTheme.labelSecondary),
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<int>(
@@ -549,7 +549,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                 onPressed: () => Navigator.pop(dialogContext),
                 child: const Text(
                   'Cancelar',
-                  style: TextStyle(color: AppTheme.textSecondary),
+                  style: TextStyle(color: AppTheme.labelSecondary),
                 ),
               ),
               ElevatedButton(

@@ -39,7 +39,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
           icon: const Icon(
             Icons.arrow_back_ios_new,
             size: 20,
-            color: AppTheme.textPrimary,
+            color: AppTheme.labelPrimary,
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -121,7 +121,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
             Text(
               widget.alunoNome,
               style: const TextStyle(
-                color: AppTheme.textPrimary,
+                color: AppTheme.labelPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.5,
@@ -130,7 +130,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
             Text(
               tempoAluno,
               style: TextStyle(
-                color: AppTheme.textSecondary.withValues(alpha: 0.7),
+                color: AppTheme.labelSecondary.withValues(alpha: 0.7),
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -155,7 +155,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
               Text(
                 'TOTAL RECEBIDO',
                 style: TextStyle(
-                  color: AppTheme.textSecondary.withValues(alpha: 0.5),
+                  color: AppTheme.labelSecondary.withValues(alpha: 0.5),
                   fontSize: 10,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.2,
@@ -193,7 +193,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
     return Text(
       title,
       style: const TextStyle(
-        color: AppTheme.textSecondary,
+        color: AppTheme.labelSecondary,
         fontSize: 11,
         fontWeight: FontWeight.w900,
         letterSpacing: 1.2,
@@ -278,7 +278,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
                       Text(
                         'Vence em ${DateFormat('dd/MM/yyyy').format(fatura.dataVencimento)}',
                         style: TextStyle(
-                          color: AppTheme.textSecondary.withValues(alpha: 0.7),
+                          color: AppTheme.labelSecondary.withValues(alpha: 0.7),
                           fontSize: 13,
                         ),
                       ),
@@ -316,7 +316,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
           Text(
             message,
             style: TextStyle(
-              color: AppTheme.textSecondary.withValues(alpha: 0.3),
+              color: AppTheme.labelSecondary.withValues(alpha: 0.3),
               fontSize: 14,
             ),
           ),
@@ -414,7 +414,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: AppTheme.textSecondary.withValues(alpha: 0.7),
+                        color: AppTheme.labelSecondary.withValues(alpha: 0.7),
                         fontSize: 13,
                       ),
                     ),
@@ -493,7 +493,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
                 contentPadding: EdgeInsets.zero,
                 title: const Text(
                   'Vencimento',
-                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                  style: TextStyle(color: AppTheme.labelSecondary, fontSize: 14),
                 ),
                 subtitle: Text(
                   DateFormat('dd/MM/yyyy').format(dataVencimento),

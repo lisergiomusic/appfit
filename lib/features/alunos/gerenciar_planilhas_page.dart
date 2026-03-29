@@ -155,7 +155,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: AppTheme.textSecondary.withValues(alpha: 0.7),
+                        color: AppTheme.labelSecondary.withValues(alpha: 0.7),
                         fontSize: 13,
                       ),
                     ),
@@ -298,7 +298,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
               'Toque no botão abaixo para prescrever.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppTheme.textSecondary.withValues(alpha: 0.3),
+                color: AppTheme.labelSecondary.withValues(alpha: 0.3),
                 fontSize: 12,
               ),
             ),
@@ -326,7 +326,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
               'Planilhas vencidas aparecerão aqui',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppTheme.textSecondary.withValues(alpha: 0.3),
+                color: AppTheme.labelSecondary.withValues(alpha: 0.3),
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -342,7 +342,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Text(
         label,
-        style: AppTheme.textSectionHeader,
+        style: AppTheme.sectionHeader,
       ),
     );
   }
@@ -377,7 +377,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
       infoLabel = DateFormat('dd MMM yyyy').format(dataC);
     }
 
-    final Color accentColor = isAtiva ? AppTheme.primary : (isProgramada ? AppTheme.iosBlue : AppTheme.textSecondary);
+    final Color accentColor = isAtiva ? AppTheme.primary : (isProgramada ? AppTheme.iosBlue : AppTheme.labelSecondary);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12, left: AppTheme.paddingScreen, right: AppTheme.paddingScreen),
@@ -448,7 +448,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                         Text(
                           infoLabel,
                           style: TextStyle(
-                            color: AppTheme.textSecondary.withValues(alpha: 0.6),
+                            color: AppTheme.labelSecondary.withValues(alpha: 0.6),
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),

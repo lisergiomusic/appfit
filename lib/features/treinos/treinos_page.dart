@@ -183,7 +183,7 @@ class _TreinosPageState extends State<TreinosPage> {
           controller: _searchController,
           onChanged: (val) => setState(() => _searchQuery = val),
           style: const TextStyle(
-            color: AppTheme.textPrimary,
+            color: AppTheme.labelPrimary,
             fontSize: 16,
             letterSpacing: -0.41,
             fontWeight: FontWeight.w400,
@@ -194,14 +194,14 @@ class _TreinosPageState extends State<TreinosPage> {
             isDense: true,
             hintText: 'Buscar templates...',
             hintStyle: TextStyle(
-              color: AppTheme.textTertiary,
+              color: AppTheme.labelTertiary,
               fontSize: 17,
               letterSpacing: -0.41,
               fontWeight: FontWeight.w400,
             ),
             prefixIcon: Icon(
               Icons.search_rounded,
-              color: AppTheme.textSecondary.withAlpha(120),
+              color: AppTheme.labelSecondary.withAlpha(120),
               size: 20,
             ),
             suffixIcon: _searchQuery.isNotEmpty
@@ -209,7 +209,7 @@ class _TreinosPageState extends State<TreinosPage> {
                     icon: const Icon(
                       Icons.close_rounded,
                       size: 18,
-                      color: AppTheme.textSecondary,
+                      color: AppTheme.labelSecondary,
                     ),
                     onPressed: () {
                       _searchController.clear();
@@ -250,14 +250,14 @@ class _TreinosPageState extends State<TreinosPage> {
               ),
               content: const Text(
                 "Isso removerá a ficha da sua biblioteca permanentemente.",
-                style: TextStyle(color: AppTheme.textSecondary),
+                style: TextStyle(color: AppTheme.labelSecondary),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
                   child: const Text(
                     "Cancelar",
-                    style: TextStyle(color: AppTheme.textSecondary),
+                    style: TextStyle(color: AppTheme.labelSecondary),
                   ),
                 ),
                 TextButton(
@@ -353,7 +353,7 @@ class _TreinosPageState extends State<TreinosPage> {
                   ),
                   Icon(
                     Icons.chevron_right,
-                    color: AppTheme.textSecondary.withAlpha(100),
+                    color: AppTheme.labelSecondary.withAlpha(100),
                     size: 20,
                   ),
                 ],
@@ -373,25 +373,22 @@ class _TreinosPageState extends State<TreinosPage> {
           Icon(
             Icons.dashboard_customize_outlined,
             size: 64,
-            color: AppTheme.textSecondary.withAlpha(80),
+            color: AppTheme.labelSecondary.withAlpha(80),
           ),
           const SizedBox(height: 20),
           const Text(
             'Biblioteca vazia',
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.labelPrimary,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Crie templates para atribuir\naos seus alunos.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: AppTheme.textSecondary,
-            ),
+            style: AppTheme.bodyText.copyWith(color: AppTheme.labelSecondary),
           ),
         ],
       ),

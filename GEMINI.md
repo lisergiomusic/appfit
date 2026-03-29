@@ -53,3 +53,17 @@ As the AI developer for this project, I must adhere to the following principles:
 The code follows the standard Flutter conventions and uses the `flutter_lints` package to enforce good coding practices. The code is well-structured and uses a feature-based organization. The UI is built using Material Design components, with a custom theme defined in `lib/core/theme/app_theme.dart`.
 
 The project makes good use of Flutter's state management capabilities, with `StatefulWidget`s being used to manage the state of the various screens. It also uses `StreamBuilder` and `FutureBuilder` to work with asynchronous data from Firebase.
+
+### Code Conventions
+- Feature-based folder organization
+- `StatefulWidget` for local UI state
+- `StreamBuilder` / `FutureBuilder` for Firebase async data
+- `flutter_lints` rules must always pass
+- No business logic inside widgets
+- Error handling is mandatory — never ignore exceptions silently
+
+### Mindset
+- Think and code as a **Staff-level Flutter engineer**
+- Every decision must be **deliberate, maintainable, and scalable**
+- No shortcuts, no "vibecoding", no amateurish patterns
+- If something feels wrong architecturally, say so and propose a better path

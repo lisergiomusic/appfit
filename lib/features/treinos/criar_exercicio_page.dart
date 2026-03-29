@@ -179,7 +179,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                       decoration: InputDecoration(
                         hintText: 'Ex: Supino Reto com Halteres',
                         hintStyle: TextStyle(
-                          color: AppTheme.textSecondary.withAlpha(100),
+                          color: AppTheme.labelSecondary.withAlpha(100),
                         ),
                         filled: true,
                         fillColor: AppTheme.surfaceDark,
@@ -227,7 +227,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                           labelStyle: TextStyle(
                             color: isSelected
                                 ? AppTheme.primary
-                                : AppTheme.textSecondary,
+                                : AppTheme.labelSecondary,
                             fontWeight: isSelected
                                 ? FontWeight.bold
                                 : FontWeight.normal,
@@ -271,7 +271,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                             decoration: InputDecoration(
                               hintText: 'Cole o link do YouTube ou GIF...',
                               hintStyle: TextStyle(
-                                color: AppTheme.textSecondary.withAlpha(100),
+                                color: AppTheme.labelSecondary.withAlpha(100),
                               ),
                               filled: true,
                               fillColor: Colors.black.withAlpha(50),
@@ -290,7 +290,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                             child: Text(
                               'OU',
                               style: TextStyle(
-                                color: AppTheme.textSecondary,
+                                color: AppTheme.labelSecondary,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -351,7 +351,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                         child: SwitchListTile(
                           value: _isPublico,
                           onChanged: (val) => setState(() => _isPublico = val),
-                          activeColor: AppTheme.primary,
+                          activeThumbColor: AppTheme.primary,
                           title: const Text(
                             'Salvar como Exercício Público (Global)',
                             style: TextStyle(
@@ -363,7 +363,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                           subtitle: Text(
                             'Este exercício ficará visível para todos os utilizadores da plataforma.',
                             style: TextStyle(
-                              color: AppTheme.textSecondary.withAlpha(150),
+                              color: AppTheme.labelSecondary.withAlpha(150),
                               fontSize: 12,
                             ),
                           ),

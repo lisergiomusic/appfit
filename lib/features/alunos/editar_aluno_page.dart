@@ -151,7 +151,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       surfaceTintColor: Colors.transparent,
       centerTitle: true,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.textPrimary, size: 20),
+        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.labelPrimary, size: 20),
         onPressed: () async {
           if (_isSaving) return;
           await _salvar();
@@ -163,7 +163,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w700,
-          color: AppTheme.textPrimary,
+          color: AppTheme.labelPrimary,
           letterSpacing: -0.5,
         ),
       ),
@@ -245,7 +245,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           child: Text(
             label,
             style: const TextStyle(
-              color: AppTheme.textSecondary,
+              color: AppTheme.labelSecondary,
               fontSize: 10,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.0,
@@ -260,8 +260,8 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: AppTheme.textSecondary.withAlpha(80), fontSize: 14),
-            prefixIcon: Icon(icon, color: AppTheme.textSecondary.withAlpha(120), size: 20),
+            hintStyle: TextStyle(color: AppTheme.labelSecondary.withAlpha(80), fontSize: 14),
+            prefixIcon: Icon(icon, color: AppTheme.labelSecondary.withAlpha(120), size: 20),
             suffixIcon: suffix != null
                 ? Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -299,7 +299,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           child: Text(
             'GÊNERO',
             style: TextStyle(
-              color: AppTheme.textSecondary,
+              color: AppTheme.labelSecondary,
               fontSize: 10,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.0,
@@ -311,12 +311,12 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           initialValue: _generoSelecionado?.isNotEmpty == true && _generos.contains(_generoSelecionado)
               ? _generoSelecionado
               : null,
-          hint: Text(_generoPlaceholder, style: TextStyle(color: AppTheme.textSecondary.withAlpha(120))),
+          hint: Text(_generoPlaceholder, style: TextStyle(color: AppTheme.labelSecondary.withAlpha(120))),
           items: [
             DropdownMenuItem<String>(
               value: null,
               enabled: false,
-              child: Text(_generoPlaceholder, style: TextStyle(color: AppTheme.textSecondary.withAlpha(120))),
+              child: Text(_generoPlaceholder, style: TextStyle(color: AppTheme.labelSecondary.withAlpha(120))),
             ),
             ..._generos.map((g) => DropdownMenuItem(
                   value: g,
@@ -354,7 +354,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           child: Text(
             'NASCIMENTO',
             style: TextStyle(
-              color: AppTheme.textSecondary,
+              color: AppTheme.labelSecondary,
               fontSize: 10,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.0,
@@ -398,7 +398,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
             ),
             child: Row(
               children: [
-                Icon(Icons.calendar_today_rounded, color: AppTheme.textSecondary.withAlpha(120), size: 18),
+                Icon(Icons.calendar_today_rounded, color: AppTheme.labelSecondary.withAlpha(120), size: 18),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -406,7 +406,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                         ? DateFormat('dd/MM/yyyy').format(_dataNascimento!)
                         : 'Selecionar',
                     style: TextStyle(
-                      color: _dataNascimento != null ? Colors.white : AppTheme.textSecondary.withAlpha(80),
+                      color: _dataNascimento != null ? Colors.white : AppTheme.labelSecondary.withAlpha(80),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),

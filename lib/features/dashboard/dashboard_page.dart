@@ -39,7 +39,7 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.settings, size: 64, color: AppTheme.textSecondary),
+            const Icon(Icons.settings, size: 64, color: AppTheme.labelSecondary),
             const SizedBox(height: AppTheme.space16),
             const Text(
                 'Ajustes',
@@ -74,7 +74,7 @@ class _DashboardPageState extends State<DashboardPage> {
         type: BottomNavigationBarType.fixed,
         backgroundColor: AppTheme.surfaceDark,
         selectedItemColor: AppTheme.primary,
-        unselectedItemColor: AppTheme.textSecondary,
+        unselectedItemColor: AppTheme.labelSecondary,
         elevation: 16,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.grid_view_rounded), label: 'Início'),

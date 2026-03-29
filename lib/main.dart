@@ -112,7 +112,7 @@ class SelecaoPerfilScreen extends StatelessWidget {
                       fontSize: 34,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.2,
-                      color: AppTheme.textPrimary,
+                      color: AppTheme.labelPrimary,
                     ),
                   ),
                 ],
@@ -124,7 +124,7 @@ class SelecaoPerfilScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
-                  color: AppTheme.textSecondary,
+                  color: AppTheme.labelSecondary,
                 ),
               ),
               const Spacer(flex: 2),

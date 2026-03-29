@@ -11,9 +11,9 @@ class AppTheme {
   static const Color surfaceDark = Color(0xFF1E1F20);
   static const Color surfaceLight = Color(0xFF2C2C2E);
   static const Color buttonSurface = Color(0xFF1E1E1E);
-  static const Color textPrimary = Color(0xFFF2F2F7);
-  static const Color textSecondary = Color(0x99EBEBF5);
-  static const Color textTertiary = Color(0x4DEBEBF5);
+  static const Color labelPrimary = Color(0xFFF2F2F7);
+  static const Color labelSecondary = Color(0x99EBEBF5);
+  static const Color labelTertiary = Color(0x4DEBEBF5);
   static const Color textLabel = Color(0xFF8E8E93);
   static const Color accentMetrics = Color(0xFFFF9F0A);
   static const Color success = Color(0xFF4CAF50);
@@ -55,61 +55,74 @@ class AppTheme {
     fontSize: 34,
     fontWeight: FontWeight.bold,
     letterSpacing: -0.41,
-    color: AppTheme.textPrimary,
+    color: AppTheme.labelPrimary,
   );
 
-  static TextStyle textSectionHeader = TextStyle(
-    fontSize: 17,
-    fontWeight: FontWeight.w600,
-    color: AppTheme.textPrimary,
-    letterSpacing: -0.3,
+  static const title1 = TextStyle(
+    fontSize: 28,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0.36,
+    color: labelPrimary,
+  );
+
+  static TextStyle sectionHeader = TextStyle(
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.08,
+    color: AppTheme.labelSecondary,
+  );
+
+  static const sectionAction = TextStyle(
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.08,
+    color: AppTheme.primary ,
   );
 
   static const TextStyle pageTitle = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.2,
-    color: AppTheme.textPrimary,
+    color: AppTheme.labelPrimary,
   );
 
   static const TextStyle inputPlaceHolder = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
-    color: AppTheme.textTertiary,
+    color: AppTheme.labelTertiary,
   );
 
   static const inputText = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
-    color: textPrimary, // branco no dark, preto no light
+    color: labelPrimary, // branco no dark, preto no light
   );
 
   static const TextStyle bodyText = TextStyle(
-    color: textPrimary,
+    color: labelPrimary,
     fontSize: 17,
     fontWeight: FontWeight.w400,
-    letterSpacing: -0.1,
-    height: 1.4,
+    letterSpacing: -0.41,
   );
 
   static const TextStyle cardTitle = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
-    color: textPrimary,
+    color: labelPrimary,
     letterSpacing: -0.41,
   );
 
   static const TextStyle cardSubtitle = TextStyle(
     fontSize: 15,
-    color: textSecondary,
+    color: labelSecondary,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.24,
   );
 
   static const TextStyle caption = TextStyle(
-    color: textSecondary,
+    color: labelSecondary,
     fontSize: 12,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.0,
@@ -119,7 +132,7 @@ class AppTheme {
     fontSize: 15,
     fontWeight: FontWeight.w500,
     letterSpacing: -0.24,
-    color: textSecondary,
+    color: labelSecondary,
   );
 
   static const TextStyle microLabelTextStyle = TextStyle(
@@ -187,7 +200,7 @@ class AppTheme {
       colorScheme: const ColorScheme.dark(
         primary: primary,
         surface: surfaceDark,
-        onSurface: textPrimary,
+        onSurface: labelPrimary,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: background,
@@ -199,7 +212,7 @@ class AppTheme {
           fontSize: 17,
           fontWeight: FontWeight.w600,
           letterSpacing: -0.2,
-          color: textPrimary,
+          color: labelPrimary,
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -256,8 +269,8 @@ class AppTheme {
           vertical: 14,
           horizontal: 16,
         ),
-        labelStyle: const TextStyle(color: textSecondary, fontSize: 13),
-        hintStyle: TextStyle(color: textSecondary.withAlpha(128), fontSize: 13),
+        labelStyle: const TextStyle(color: labelSecondary, fontSize: 13),
+        hintStyle: TextStyle(color: labelSecondary.withAlpha(128), fontSize: 13),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusXL),
           borderSide: BorderSide.none,
@@ -274,6 +287,18 @@ class AppTheme {
 
 class CardTokens {
   static const padding = EdgeInsets.symmetric(horizontal: 16, vertical: 12);
+  static const TextStyle cardTitle = TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
+    color: AppTheme.labelPrimary,
+    letterSpacing: -0.41,
+  );
+  static const TextStyle cardSubtitle = TextStyle(
+    fontSize: 15,
+    color: AppTheme.labelSecondary,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.24,
+  );
 }
 
 class NavBarTokens {

@@ -491,7 +491,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             padding: const EdgeInsets.only(left: 8),
             child: const Icon(
               CupertinoIcons.back,
-              color: AppTheme.textPrimary,
+              color: AppTheme.labelPrimary,
               size: 24,
             ),
             onPressed: () => Navigator.of(context).maybePop(),
@@ -534,7 +534,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                       ? 'Defina o objetivo'
                                       : value.text,
                                   style: const TextStyle(
-                                    color: AppTheme.textSecondary,
+                                    color: AppTheme.labelSecondary,
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -547,7 +547,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                 const Icon(
                                   Icons.schedule,
                                   size: 14,
-                                  color: AppTheme.textSecondary,
+                                  color: AppTheme.labelSecondary,
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
@@ -555,7 +555,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                       ? '$_vencimentoSessoes sessões'
                                       : 'Vence em ${DateFormat('dd/MM/yyyy').format(_vencimentoData)}',
                                   style: const TextStyle(
-                                    color: AppTheme.textSecondary,
+                                    color: AppTheme.labelSecondary,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -569,14 +569,14 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                         onPressed: () => _exibirModalInfo(context),
                         icon: const Icon(
                           CupertinoIcons.ellipsis_vertical,
-                          color: AppTheme.textSecondary,
+                          color: AppTheme.labelSecondary,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 32),
                   if (isTemplate) _buildTemplateBadge(),
-                  Text('Lista de treinos', style: AppTheme.textSectionHeader),
+                  Text('Lista de treinos', style: AppTheme.sectionHeader),
                   const SizedBox(height: 12),
                   if (_treinos.isEmpty)
                     _buildEmptyState()
@@ -632,7 +632,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               'Adicione as sessões de treino (ex: Treino A, Treino B)\npara começar a configurar os exercícios.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppTheme.textSecondary,
+                color: AppTheme.labelSecondary,
                 fontSize: 14,
                 height: 1.5,
               ),
@@ -751,7 +751,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     Text(
                       sessao.nome,
                       style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                        color: AppTheme.labelPrimary,
                         fontWeight: FontWeight.w700,
                         fontSize: 17,
                       ),
@@ -762,7 +762,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     Text(
                       '${sessao.exercicios.length} exercícios',
                       style: const TextStyle(
-                        color: AppTheme.textSecondary,
+                        color: AppTheme.labelSecondary,
                         fontSize: 12,
                       ),
                     ),
@@ -923,7 +923,7 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
                   autofocus: true,
                   maxLength: 40,
                   style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                    color: AppTheme.labelPrimary,
                     fontSize: 15,
                   ),
                   decoration: rotinaInputDecoration(

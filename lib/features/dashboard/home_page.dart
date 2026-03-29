@@ -28,7 +28,7 @@ class HomePage extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.notifications_rounded,
-                  color: AppTheme.textPrimary,
+                  color: AppTheme.labelPrimary,
                   size: 26,
                 ),
                 Positioned(
@@ -104,7 +104,7 @@ class HomePage extends StatelessWidget {
                             child: photoUrl == null || photoUrl.isEmpty
                                 ? const Icon(
                                     Icons.person_rounded,
-                                    color: AppTheme.textSecondary,
+                                    color: AppTheme.labelSecondary,
                                     size: 34,
                                   )
                                 : null,
@@ -138,7 +138,7 @@ class HomePage extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.w800,
-                                color: AppTheme.textPrimary,
+                                color: AppTheme.labelPrimary,
                                 letterSpacing: -0.5,
                               ),
                             ),
@@ -217,7 +217,7 @@ class HomePage extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 4, bottom: 16),
                     child: Text(
                       'Ações rápidas',
-                      style: AppTheme.textSectionHeader,
+                      style: AppTheme.sectionHeader,
                     ),
                   ),
                   Row(
@@ -262,7 +262,7 @@ class HomePage extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 4),
                     child: Text(
                       'Atividade recente',
-                      style: AppTheme.textSectionHeader,
+                      style: AppTheme.sectionHeader,
                     ),
                   ),
                   TextButton(
@@ -374,7 +374,7 @@ class HomePage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: AppTheme.textSecondary.withAlpha(160),
+                          color: AppTheme.labelSecondary.withAlpha(160),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -385,7 +385,7 @@ class HomePage extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 34,
                           fontWeight: FontWeight.w900,
-                          color: AppTheme.textPrimary,
+                          color: AppTheme.labelPrimary,
                           letterSpacing: -1.5,
                         ),
                       ),
@@ -416,7 +416,7 @@ class HomePage extends StatelessWidget {
                   Icon(
                     Icons.chevron_right_rounded,
                     size: 18,
-                    color: AppTheme.textSecondary.withAlpha(80),
+                    color: AppTheme.labelSecondary.withAlpha(80),
                   ),
                 ],
               ],
@@ -455,7 +455,7 @@ class HomePage extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: AppTheme.textPrimary,
+                color: AppTheme.labelPrimary,
                 letterSpacing: -0.2,
               ),
             ),
@@ -492,7 +492,7 @@ class HomePage extends StatelessWidget {
                     child: photoUrl == null || photoUrl.isEmpty
                         ? const Icon(
                             Icons.person_rounded,
-                            color: AppTheme.textSecondary,
+                            color: AppTheme.labelSecondary,
                             size: 20,
                           )
                         : null,
@@ -507,7 +507,7 @@ class HomePage extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
-                            color: AppTheme.textPrimary,
+                            color: AppTheme.labelPrimary,
                             letterSpacing: -0.2,
                           ),
                         ),
@@ -516,7 +516,7 @@ class HomePage extends StatelessWidget {
                           action,
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppTheme.textSecondary.withAlpha(180),
+                            color: AppTheme.labelSecondary.withAlpha(180),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -532,7 +532,7 @@ class HomePage extends StatelessWidget {
                         time,
                         style: const TextStyle(
                           fontSize: 11,
-                          color: AppTheme.textSecondary,
+                          color: AppTheme.labelSecondary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -540,7 +540,7 @@ class HomePage extends StatelessWidget {
                       Icon(
                         Icons.chevron_right_rounded,
                         size: 18,
-                        color: AppTheme.textSecondary.withAlpha(80),
+                        color: AppTheme.labelSecondary.withAlpha(80),
                       ),
                     ],
                   ),

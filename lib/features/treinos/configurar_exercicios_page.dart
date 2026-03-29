@@ -195,7 +195,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                           style: TextStyle(
                                             color: isLimit
                                                 ? Colors.redAccent
-                                                : AppTheme.textSecondary,
+                                                : AppTheme.labelSecondary,
                                             fontSize: 12,
                                             fontWeight: isLimit
                                                 ? FontWeight.bold
@@ -315,7 +315,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                           children: [
                             Text(
                               'Lista de exercícios',
-                              style: AppTheme.textSectionHeader,
+                              style: AppTheme.sectionHeader,
                             ),
                             const Spacer(),
                             TextButton(
@@ -534,7 +534,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                         'montar o seu treino.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: AppTheme.textSecondary,
+                          color: AppTheme.labelSecondary,
                           fontSize: 14,
                           height: 1.4,
                         ),
@@ -622,7 +622,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                             const Center(
                           child: Icon(
                             Icons.fitness_center,
-                            color: AppTheme.textSecondary,
+                            color: AppTheme.labelSecondary,
                           ),
                         ),
                         loadingBuilder: (context, child, loadingProgress) {
@@ -650,7 +650,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                         Text(
                           ex.nome,
                           style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                            color: AppTheme.labelPrimary,
                             fontWeight: FontWeight.w700,
                             fontSize: 17,
                             letterSpacing: -0.1,
@@ -679,7 +679,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                 TextSpan(
                                   text: ' • ${ex.grupoMuscular.join(' • ')}',
                                   style: const TextStyle(
-                                    color: AppTheme.textSecondary,
+                                    color: AppTheme.labelSecondary,
                                   ),
                                 ),
                             ],
@@ -691,7 +691,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                   const SizedBox(width: 8),
                   Icon(
                     CupertinoIcons.chevron_right,
-                    color: AppTheme.textSecondary.withAlpha(100),
+                    color: AppTheme.labelSecondary.withAlpha(100),
                     size: 20.0,
                   ),
                 ],
@@ -732,7 +732,7 @@ class _MetricCard extends StatelessWidget {
               Text(
                 label,
                 style: const TextStyle(
-                  color: AppTheme.textSecondary,
+                  color: AppTheme.labelSecondary,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -744,7 +744,7 @@ class _MetricCard extends StatelessWidget {
                 Icon(
                   Icons.info_outline,
                   size: 14,
-                  color: AppTheme.textSecondary.withAlpha(180),
+                  color: AppTheme.labelSecondary.withAlpha(180),
                 ),
               ],
             ],

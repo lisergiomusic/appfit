@@ -25,7 +25,7 @@ class HistoricoFinanceiroPage extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppTheme.textPrimary),
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppTheme.labelPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('Histórico de Pagamentos', style: AppTheme.pageTitle),
@@ -48,7 +48,7 @@ class HistoricoFinanceiroPage extends StatelessWidget {
                   const SizedBox(height: 16),
                   Text(
                     'Nenhum pagamento registrado',
-                    style: TextStyle(color: AppTheme.textSecondary.withValues(alpha: 0.3), fontSize: 16),
+                    style: TextStyle(color: AppTheme.labelSecondary.withValues(alpha: 0.3), fontSize: 16),
                   ),
                 ],
               ),
@@ -88,7 +88,7 @@ class HistoricoFinanceiroPage extends StatelessWidget {
                             const SizedBox(height: 4),
                             Text(
                               'Pago em ${DateFormat('dd/MM/yyyy').format(fatura.dataPagamento ?? DateTime.now())}',
-                              style: TextStyle(color: AppTheme.textSecondary.withValues(alpha: 0.7), fontSize: 13),
+                              style: TextStyle(color: AppTheme.labelSecondary.withValues(alpha: 0.7), fontSize: 13),
                             ),
                           ],
                         ),

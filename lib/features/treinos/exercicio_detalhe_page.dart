@@ -249,7 +249,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   const Text(
                     'Tipo de Série',
                     style: TextStyle(
-                      color: AppTheme.textPrimary,
+                      color: AppTheme.labelPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       letterSpacing: -0.3,
@@ -353,7 +353,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         Text(
                           title,
                           style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                            color: AppTheme.labelPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -362,7 +362,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         Text(
                           subtitle,
                           style: TextStyle(
-                            color: AppTheme.textTertiary,
+                            color: AppTheme.labelTertiary,
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                             letterSpacing: 0.0,
@@ -393,8 +393,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
   }
 
-  TextStyle _microLabelStyle() => const TextStyle(color: AppTheme.textSecondary, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 0.8);
-  TextStyle _sectionEyebrowStyle() => const TextStyle(color: AppTheme.textSecondary, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 1.0);
+  TextStyle _microLabelStyle() => const TextStyle(color: AppTheme.labelSecondary, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 0.8);
+  TextStyle _sectionEyebrowStyle() => const TextStyle(color: AppTheme.labelSecondary, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 1.0);
 
   InputDecoration _editableFieldDecoration() {
     return const InputDecoration(
@@ -516,7 +516,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOutCubic,
                   padding: EdgeInsets.only(left: isEditingSection ? 0 : 18),
-                  child: Text('$visualNumber', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14, fontWeight: FontWeight.w700)),
+                  child: Text('$visualNumber', style: const TextStyle(color: AppTheme.labelSecondary, fontSize: 14, fontWeight: FontWeight.w700)),
                 ),
               ),
               const SizedBox(width: AppTheme.space8),
@@ -571,7 +571,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       inputFormatters: inputFormatters,
       textAlign: TextAlign.center,
       keyboardType: TextInputType.text,
-      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: -0.0),
+      style: const TextStyle(color: AppTheme.labelPrimary, fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: -0.0),
       decoration: _editableFieldDecoration(),
     );
   }
@@ -605,7 +605,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   IconButton(
                     icon: Icon(
                       isEditingSection ? Icons.check : Icons.more_vert,
-                      color: AppTheme.textSecondary,
+                      color: AppTheme.labelSecondary,
                       size: 20,
                     ),
                     onPressed: () {
@@ -684,7 +684,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Instruções', style: AppTheme.textSectionHeader),
+        Text('Instruções', style: AppTheme.sectionHeader),
         const SizedBox(height: 10),
         GestureDetector(
           onTap: _showEditInstructionsSheet,
@@ -711,7 +711,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   : ex.instrucoes!,
               style: TextStyle(
                 color: ex.instrucoes?.isEmpty ?? true
-                    ? AppTheme.textSecondary.withAlpha(80)
+                    ? AppTheme.labelSecondary.withAlpha(80)
                     : Colors.white,
                 fontSize: 14,
                 height: 1.5,
@@ -872,7 +872,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                             const SizedBox(height: 48),
                             const Icon(Icons.fitness_center_rounded, size: 50, color: AppTheme.primary),
                             const SizedBox(height: 24),
-                            const Text('Prescreva o exercício', style: TextStyle(color: AppTheme.textPrimary, fontSize: 22, fontWeight: FontWeight.bold)),
+                            const Text('Prescreva o exercício', style: TextStyle(color: AppTheme.labelPrimary, fontSize: 22, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 32),
                             OrangeGlassActionButton(label: 'Adicionar Série', onTap: _adicionarSerie, bottomMargin: 0, showGlow: false),
                           ])

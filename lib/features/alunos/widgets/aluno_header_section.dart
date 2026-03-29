@@ -40,12 +40,7 @@ class AlunoHeaderSection extends StatelessWidget {
               children: [
                 Text(
                   alunoNome,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.textPrimary,
-                    letterSpacing: -0.5,
-                  ),
+                  style: AppTheme.title1,
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -74,20 +69,17 @@ class AlunoHeaderSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.05),
-        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: AppTheme.textSecondary),
+          Icon(icon, size: 12, color: AppTheme.labelSecondary),
           const SizedBox(width: 6),
           Text(
             label,
             style: const TextStyle(
-              color: AppTheme.textSecondary,
+              color: AppTheme.labelSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),

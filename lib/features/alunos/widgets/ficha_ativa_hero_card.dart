@@ -75,7 +75,7 @@ class FichaAtivaHeroCard extends StatelessWidget {
                   children: [
                      Text(
                       'Planilha atual',
-                      style: AppTheme.textSectionHeader,
+                      style: AppTheme.sectionHeader,
                     ),
                     TextButton(
                       onPressed: () {
@@ -93,7 +93,7 @@ class FichaAtivaHeroCard extends StatelessWidget {
                         );
                       },
 
-                      child: const Text('Ver todas'),
+                      child: const Text('Ver todas', style: AppTheme.sectionAction),
                     ),
                   ],
                 ),
@@ -145,18 +145,16 @@ class FichaAtivaHeroCard extends StatelessWidget {
                               children: [
                                 Text(
                                   rotina['nome'] ?? 'Ficha de Treino',
-                                  style: AppTheme.cardTitle,
+                                  style: CardTokens.cardTitle,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(height: 2),
                                 Text(
                                   objetivo,
-                                  style: AppTheme.cardSubtitle,
+                                  style: CardTokens.cardSubtitle,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(height: 2),
                                 Text(
                                   legendaVencimento.toUpperCase(),
                                   style: const TextStyle(color: AppTheme.primary, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.5),
@@ -165,7 +163,7 @@ class FichaAtivaHeroCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Icon(Icons.chevron_right_rounded, color: AppTheme.textSecondary.withAlpha(80), size: 24),
+                          Icon(Icons.chevron_right_rounded, color: AppTheme.labelSecondary.withAlpha(80), size: 24),
                         ],
                       ),
                     ),
@@ -187,7 +185,7 @@ class FichaAtivaHeroCard extends StatelessWidget {
           padding: EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
             'Planilha atual',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary, letterSpacing: -0.5),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.labelPrimary, letterSpacing: -0.5),
           ),
         ),
         Container(
@@ -214,7 +212,7 @@ class FichaAtivaHeroCard extends StatelessWidget {
                     const SizedBox(height: 16),
                     const Text('Prescrever novo treino', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16, letterSpacing: -0.2)),
                     const SizedBox(height: 4),
-                    Text('O aluno ainda não possui uma ficha ativa', style: TextStyle(color: AppTheme.textSecondary.withAlpha(150), fontSize: 13)),
+                    Text('O aluno ainda não possui uma ficha ativa', style: TextStyle(color: AppTheme.labelSecondary.withAlpha(150), fontSize: 13)),
                   ],
                 ),
               ),

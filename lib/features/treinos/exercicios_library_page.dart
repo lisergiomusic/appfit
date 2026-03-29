@@ -191,7 +191,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     const Text(
                       'Exercícios Selecionados',
                       style: TextStyle(
-                        color: AppTheme.textPrimary,
+                        color: AppTheme.labelPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -348,14 +348,14 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                 children: [
                                   Icon(
                                     Icons.videocam_off,
-                                    color: AppTheme.textSecondary,
+                                    color: AppTheme.labelSecondary,
                                     size: 40,
                                   ),
                                   SizedBox(height: 8),
                                   Text(
                                     'Mídia indisponível',
                                     style: TextStyle(
-                                      color: AppTheme.textSecondary,
+                                      color: AppTheme.labelSecondary,
                                     ),
                                   ),
                                 ],
@@ -377,7 +377,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                 Text(
                   ex.grupoMuscular.join(' • '),
                   style: const TextStyle(
-                    color: AppTheme.textSecondary,
+                    color: AppTheme.labelSecondary,
                     fontSize: 16,
                   ),
                 ),
@@ -516,12 +516,12 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   child: TextField(
                     controller: _searchController,
                     focusNode: _searchFocusNode,
-                    style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15),
+                    style: const TextStyle(color: AppTheme.labelPrimary, fontSize: 15),
                     decoration: InputDecoration(
                       hintText: 'Buscar exercícios...',
                       prefixIcon: const Icon(
                         Icons.search,
-                        color: AppTheme.textSecondary,
+                        color: AppTheme.labelSecondary,
                         size: 20,
                       ),
 
@@ -535,7 +535,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                     key: const ValueKey('clear_search'),
                                     icon: const Icon(
                                       Icons.close_rounded,
-                                      color: AppTheme.textSecondary,
+                                      color: AppTheme.labelSecondary,
                                       size: 20,
                                     ),
                                     onPressed: _limparBusca,
@@ -618,7 +618,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     selectedColor: AppTheme.primary,
                     backgroundColor: AppTheme.surfaceDark,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.black : AppTheme.textSecondary,
+                      color: isSelected ? Colors.black : AppTheme.labelSecondary,
                       fontWeight: FontWeight.w500,
                       fontSize: 12,
                       letterSpacing: 0.0,
@@ -651,7 +651,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                         SizedBox(height: 16),
                         Text(
                           'Nenhum exercício encontrado.',
-                          style: TextStyle(color: AppTheme.textSecondary),
+                          style: TextStyle(color: AppTheme.labelSecondary),
                         ),
                       ],
                     ),
@@ -736,7 +736,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                         Text(
                                           ex.nome,
                                           style: const TextStyle(
-                                            color: AppTheme.textPrimary,
+                                            color: AppTheme.labelPrimary,
                                             fontWeight: FontWeight.w700,
                                             fontSize: 17,
                                             letterSpacing: -0.1,
@@ -746,7 +746,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                         Text(
                                           ex.grupoMuscular.join(' • '),
                                           style: const TextStyle(
-                                            color: AppTheme.textSecondary,
+                                            color: AppTheme.labelSecondary,
                                             fontSize: 12,
                                             fontWeight: FontWeight.w500,
                                             letterSpacing: 0.0,
@@ -772,7 +772,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                           border: Border.all(
                                             color: isSelected
                                                 ? AppTheme.primary
-                                                : AppTheme.textSecondary
+                                                : AppTheme.labelSecondary
                                                       .withAlpha(50),
                                             width: 2,
                                           ),
@@ -858,14 +858,14 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                             const Text(
                               'Ver lista',
                               style: TextStyle(
-                                color: AppTheme.textSecondary,
+                                color: AppTheme.labelSecondary,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
                               ),
                             ),
                             const Icon(
                               Icons.keyboard_arrow_up_rounded,
-                              color: AppTheme.textSecondary,
+                              color: AppTheme.labelSecondary,
                               size: 20,
                             ),
                           ],
@@ -989,7 +989,7 @@ class _StaticImageState extends State<_StaticImage> {
         width: 56,
         height: 56,
         color: AppTheme.surfaceLight,
-        child: const Icon(Icons.fitness_center, color: AppTheme.textSecondary),
+        child: const Icon(Icons.fitness_center, color: AppTheme.labelSecondary),
       );
     }
 
