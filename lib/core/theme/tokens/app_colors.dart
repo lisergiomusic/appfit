@@ -19,6 +19,6 @@ class AppColors {
   static const Color accentMetrics = Color(0xFFFF9F0A);
   static const Color success = Color(0xFF4CAF50);
   static const Color systemRed = Color(0xFFFF3B30);
-  static const Color fillSecondary = Color(0x1A787880);
+  static const Color fillSecondary = Color(0x24787880);
   static const Color separator = Color(0x99545458);
 }

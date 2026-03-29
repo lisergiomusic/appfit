@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
@@ -69,15 +70,17 @@ class FichaAtivaHeroCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 4, bottom: 4, right: 4),
+                padding: const EdgeInsets.only(left: 4, bottom: 0, right: 4),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                      Text(
                       'Planilha atual',
                       style: AppTheme.sectionHeader,
                     ),
-                    TextButton(
+                    const Spacer(),
+                    CupertinoButton(
+                      padding: EdgeInsets.only(right: 8),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -92,80 +95,77 @@ class FichaAtivaHeroCard extends StatelessWidget {
                           ),
                         );
                       },
-
                       child: const Text('Ver todas', style: AppTheme.sectionAction),
                     ),
+
                   ],
                 ),
               ),
               Container(
                 decoration: AppTheme.cardDecoration,
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RotinaDetalhePage(
-                            rotinaData: rotina,
-                            rotinaId: treinoDoc.id,
-                            alunoId: alunoId,
-                            alunoNome: alunoNome,
-                          ),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RotinaDetalhePage(
+                          rotinaData: rotina,
+                          rotinaId: treinoDoc.id,
+                          alunoId: alunoId,
+                          alunoNome: alunoNome,
                         ),
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                    child: Padding(
-                       padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              SizedBox(
-                                width: 60,
-                                height: 60,
-                                child: CircularProgressIndicator(
-                                  value: progressoAtual,
-                                  strokeWidth: 6,
-                                  backgroundColor: AppColors.primary.withAlpha(15),
-                                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
-                                  strokeCap: StrokeCap.round,
-                                ),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                  child: Padding(
+                     padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            SizedBox(
+                              width: 60,
+                              height: 60,
+                              child: CircularProgressIndicator(
+                                value: progressoAtual,
+                                strokeWidth: 6,
+                                backgroundColor: AppColors.primary.withAlpha(15),
+                                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                                strokeCap: StrokeCap.round,
                               ),
-                              const Icon(Icons.fitness_center_rounded, color: AppColors.primary, size: 22),
+                            ),
+                            const Icon(Icons.fitness_center_rounded, color: AppColors.primary, size: 22),
+                          ],
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                rotina['nome'] ?? 'Ficha de Treino',
+                                style: CardTokens.cardTitle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                objetivo,
+                                style: AppTheme.caption,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                legendaVencimento,
+                                style: AppTheme.caption2.copyWith(color: AppColors.primary),
+                              ),
                             ],
                           ),
-                          const SizedBox(width: 20),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  rotina['nome'] ?? 'Ficha de Treino',
-                                  style: CardTokens.cardTitle,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  objetivo,
-                                  style: CardTokens.cardSubtitle,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  legendaVencimento,
-                                  style: AppTheme.caption2.copyWith(color: AppColors.primary),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Icon(Icons.chevron_right_rounded, color: AppColors.labelSecondary.withAlpha(80), size: 24),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(Icons.chevron_right_rounded, color: AppColors.labelSecondary.withAlpha(80), size: 24),
+                      ],
                     ),
                   ),
                 ),

@@ -142,7 +142,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                 _buildActions(context, telefone),
                 const SizedBox(height: 16),
                 RitmoDaSemanaCard(alunoNome: nomeExibicao),
-                const SizedBox(height: 32),
+                const SizedBox(height: SpacingTokens.xxl),
                 FichaAtivaHeroCard(
                   alunoId: widget.alunoId,
                   alunoNome: nomeExibicao,
@@ -152,7 +152,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                   onPrescreverTreino: () =>
                       _exibirOpcoesVincularTreino(context),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: SpacingTokens.xxl),
                 GestaoSection(
                   alunoId: widget.alunoId,
                   alunoNome: nomeExibicao,

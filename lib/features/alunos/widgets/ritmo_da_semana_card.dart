@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../../../core/theme/app_theme.dart';
 
 class RitmoDaSemanaCard extends StatelessWidget {
@@ -24,15 +25,17 @@ class RitmoDaSemanaCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: AppTheme.paddingScreen, right: AppTheme.paddingScreen, bottom: 4),
+          padding: const EdgeInsets.only(left: AppTheme.paddingScreen, right: AppTheme.paddingScreen),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Padding(
                 padding: const EdgeInsets.only(left: 4),
                 child: Text('Frequência semanal', style: AppTheme.sectionHeader),
               ),
-              TextButton(
+              const Spacer(),
+              CupertinoButton(
+                padding: EdgeInsets.only(right: 8),
                 onPressed: () {},
                 child: const Text(
                   'Ver mais',
