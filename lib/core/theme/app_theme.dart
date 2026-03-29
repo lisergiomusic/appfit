@@ -4,25 +4,6 @@ export 'tokens/spacing_tokens.dart';
 export 'tokens/app_colors.dart';
 
 class AppTheme {
-  // --- 1. CORES (Tokens de Cor) ---
-  static const Color primary = AppColors.primary;
-  static const Color splash = AppColors.splash;
-  static const Color background = AppColors.background;
-  static const Color iosBlue = AppColors.iosBlue;
-  static const Color silverGrey = AppColors.silverGrey;
-  static const Color surfaceDark = AppColors.surfaceDark;
-  static const Color surfaceLight = AppColors.surfaceLight;
-  static const Color buttonSurface = AppColors.buttonSurface;
-  static const Color labelPrimary = AppColors.labelPrimary;
-  static const Color labelSecondary = AppColors.labelSecondary;
-  static const Color labelTertiary = AppColors.labelTertiary;
-  static const Color textLabel = AppColors.textLabel;
-  static const Color accentMetrics = AppColors.accentMetrics;
-  static const Color success = AppColors.success;
-  static const Color systemRed = AppColors.systemRed;
-  static const Color fillSecondary = AppColors.fillSecondary;
-
-
   // --- 2. ESPAÇAMENTOS GLOBAIS
   static const double paddingScreen = 16;
   static const double paddingCard = 16.0;
@@ -63,13 +44,6 @@ class AppTheme {
     color: AppColors.labelPrimary,
   );
 
-  static const navBarAction = TextStyle(
-    fontSize: 17,
-    fontWeight: FontWeight.w400,
-    letterSpacing: -0.41,
-    color: AppTheme.primary,
-  );
-
   static const title1 = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w700,
@@ -88,7 +62,7 @@ class AppTheme {
     fontSize: 13,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.08,
-    color: AppColors.primary ,
+    color: AppColors.primary,
   );
 
   static const TextStyle pageTitle = TextStyle(
@@ -96,6 +70,13 @@ class AppTheme {
     fontWeight: FontWeight.w600,
     letterSpacing: -0.2,
     color: AppColors.labelPrimary,
+  );
+
+  static const TextStyle navBarAction = TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.41,
+    color: AppColors.primary,
   );
 
   static const TextStyle inputPlaceHolder = TextStyle(
@@ -109,7 +90,7 @@ class AppTheme {
     fontSize: 17,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
-    color: AppColors.labelPrimary, // branco no dark, preto no light
+    color: AppColors.labelPrimary,
   );
 
   static const TextStyle bodyText = TextStyle(
@@ -168,16 +149,18 @@ class AppTheme {
 
   /// Decoração padrão para cards, reutilizável em containers e widgets de cartão.
   static BoxDecoration get cardDecoration => BoxDecoration(
-    color: AppTheme.surfaceDark,
+    color: AppColors.surfaceDark,
     borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+    boxShadow: [AppTheme.cardShadow],
+    border: AppTheme.cardBorder,
   );
 
   // --- 6. COMPONENTES (Tokens) ---
   static TooltipThemeData get tooltipTheme => TooltipThemeData(
     decoration: BoxDecoration(
-      color: surfaceDark,
+      color: AppColors.surfaceDark,
       borderRadius: BorderRadius.circular(radiusLG),
-      border: Border.all(color: primary.withAlpha(100)),
+      border: Border.all(color: AppColors.primary.withAlpha(100)),
       boxShadow: [
         BoxShadow(
           color: Colors.black.withAlpha(100),
@@ -204,34 +187,32 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      primaryColor: primary,
-      scaffoldBackgroundColor: background,
-      canvasColor: surfaceDark,
+      primaryColor: AppColors.primary,
+      scaffoldBackgroundColor: AppColors.background,
+      canvasColor: AppColors.surfaceDark,
       colorScheme: const ColorScheme.dark(
-        primary: primary,
-        surface: surfaceDark,
-        onSurface: labelPrimary,
+        primary: AppColors.primary,
+        surface: AppColors.surfaceDark,
+        onSurface: AppColors.labelPrimary,
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: background,
+        backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: true,
         surfaceTintColor: Colors.transparent,
-        toolbarHeight: 44,
-
         titleTextStyle: TextStyle(
           fontSize: 17,
           fontWeight: FontWeight.w600,
           letterSpacing: -0.2,
-          color: labelPrimary,
+          color: AppColors.labelPrimary,
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-          minimumSize: Size(0, 32),
+          minimumSize: const Size(0, 32),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          foregroundColor: AppTheme.primary,
+          foregroundColor: AppColors.primary,
           textStyle: const TextStyle(
             fontWeight: FontWeight.w700,
             fontSize: 13,
@@ -241,7 +222,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primary,
+          backgroundColor: AppColors.primary,
           foregroundColor: Colors.black,
           elevation: 1,
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
@@ -257,7 +238,7 @@ class AppTheme {
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: primary,
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.black,
         elevation: 10,
         extendedPadding: const EdgeInsets.symmetric(
@@ -275,20 +256,20 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: surfaceDark,
+        fillColor: AppColors.surfaceDark,
         contentPadding: const EdgeInsets.symmetric(
           vertical: 14,
           horizontal: 16,
         ),
-        labelStyle: const TextStyle(color: labelSecondary, fontSize: 13),
-        hintStyle: TextStyle(color: labelSecondary.withAlpha(128), fontSize: 13),
+        labelStyle: const TextStyle(color: AppColors.labelSecondary, fontSize: 13),
+        hintStyle: TextStyle(color: AppColors.labelSecondary.withAlpha(128), fontSize: 13),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusXL),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusXL),
-          borderSide: const BorderSide(color: primary, width: 1.0),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.0),
         ),
       ),
       tooltipTheme: tooltipTheme,
@@ -301,12 +282,12 @@ class CardTokens {
   static const TextStyle cardTitle = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
-    color: AppTheme.labelPrimary,
+    color: AppColors.labelPrimary,
     letterSpacing: -0.41,
   );
   static const TextStyle cardSubtitle = TextStyle(
     fontSize: 15,
-    color: AppTheme.labelSecondary,
+    color: AppColors.labelSecondary,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.24,
   );
@@ -317,49 +298,46 @@ class NavBarTokens {
     fontSize: 17,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
-    color: AppTheme.primary,
+    color: AppColors.primary,
   );
 }
 
 class ButtonTokens {
   ButtonTokens._();
 
-  // dimensões
   static const double primaryHeight   = 50.0;
   static const double primaryRadius   = 14.0;
   static const double secondaryHeight = 50.0;
   static const double secondaryRadius = 14.0;
 
-  // estilos de texto
   static const TextStyle primaryTextStyle = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.41,
-    color: AppTheme.primary,
+    color: AppColors.primary,
   );
 
   static const TextStyle secondaryTextStyle = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.41,
-    color: AppTheme.labelPrimary,
+    color: AppColors.labelPrimary,
   );
 
   static const TextStyle destructiveTextStyle = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
-    color: AppTheme.systemRed,
+    color: AppColors.systemRed,
   );
 
-  // decorações prontas
   static BoxDecoration primaryDecoration = BoxDecoration(
-    color: AppTheme.primary.withAlpha(25),
+    color: AppColors.primary.withAlpha(25),
     borderRadius: BorderRadius.circular(primaryRadius),
   );
 
   static BoxDecoration secondaryDecoration = BoxDecoration(
-    color: AppTheme.fillSecondary,
+    color: AppColors.fillSecondary,
     borderRadius: BorderRadius.circular(secondaryRadius),
   );
 }

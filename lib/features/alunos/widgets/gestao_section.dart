@@ -32,7 +32,7 @@ class GestaoSection extends StatelessWidget {
           ),
           Container(
             decoration: BoxDecoration(
-              color: AppTheme.surfaceDark,
+              color: AppColors.surfaceDark,
               borderRadius: BorderRadius.circular(AppTheme.radiusLG),
             ),
             clipBehavior: Clip.antiAlias,
@@ -93,7 +93,7 @@ class GestaoSection extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(icon, color: AppTheme.labelTertiary, size: 22),
+                Icon(icon, color: AppColors.labelTertiary, size: 22),
                 const SizedBox(width: SpacingTokens.md),
                 Expanded(
                   child: Text(title, style: AppTheme.bodyText),
