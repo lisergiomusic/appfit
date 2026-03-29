@@ -170,8 +170,6 @@ class AppTheme {
   static BoxDecoration get cardDecoration => BoxDecoration(
     color: AppTheme.surfaceDark,
     borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-    boxShadow: [AppTheme.cardShadow],
-    border: AppTheme.cardBorder,
   );
 
   // --- 6. COMPONENTES (Tokens) ---

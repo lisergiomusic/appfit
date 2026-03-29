@@ -83,8 +83,8 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
             children: [
               SizedBox(width: 8),
               Icon(
-                CupertinoIcons.back,
-                size: 20,
+                CupertinoIcons.chevron_back,
+                size: 17,
                 color: AppColors.primary,
               ),
               SizedBox(width: 4),

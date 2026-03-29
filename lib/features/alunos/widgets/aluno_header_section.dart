@@ -68,7 +68,7 @@ class AlunoHeaderSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: AppColors.fillSecondary,
         borderRadius: BorderRadius.circular(AppTheme.radiusFull),
       ),
       child: Row(
@@ -80,8 +80,9 @@ class AlunoHeaderSection extends StatelessWidget {
             label,
             style: const TextStyle(
               color: AppColors.labelSecondary,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+              fontSize: 13,
+              letterSpacing: -0.08,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ],

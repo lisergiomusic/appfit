@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../feedback_historico_page.dart';
@@ -21,38 +22,39 @@ class GestaoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
+      padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 8),
+            padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
             child: Text('Gestão', style: AppTheme.sectionHeader),
           ),
           Container(
-            decoration: AppTheme.cardDecoration,
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceDark,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+            ),
             clipBehavior: Clip.antiAlias,
             child: Column(
               children: [
                 _buildManagementItem(
                   context,
-                  icon: Icons.trending_up_rounded,
+                  icon: CupertinoIcons.graph_square,
                   title: 'Progressão de Cargas',
-                  onTap: () {
-                    // TODO: Implementar navegação para a página de Progressão de Cargas
-                  },
+                  onTap: () {},
                   showBorder: true,
                 ),
                 _buildManagementItem(
                   context,
-                  icon: Icons.query_stats_rounded,
+                  icon: CupertinoIcons.chart_bar_alt_fill,
                   title: 'Avaliação Física',
                   onTap: () {},
                   showBorder: true,
                 ),
                 _buildManagementItem(
                   context,
-                  icon: Icons.history_edu_rounded,
+                  icon: CupertinoIcons.doc_text,
                   title: 'Histórico de Feedbacks',
                   onTap: () {
                     Navigator.push(
@@ -73,35 +75,43 @@ class GestaoSection extends StatelessWidget {
   }
 
   Widget _buildManagementItem(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    required bool showBorder,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            border: showBorder ? Border(bottom: BorderSide(color: Colors.white.withAlpha(10), width: 1.0)) : null,
-          ),
-          child: Row(
-            children: [
-              Icon(icon, color: AppColors.labelSecondary.withAlpha(150), size: 22),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text(
-                  title,
-                  style: AppTheme.bodyText,
+      BuildContext context, {
+        required IconData icon,
+        required String title,
+        required VoidCallback onTap,
+        required bool showBorder,
+      }) {
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: onTap,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: SpacingTokens.lg,
+              vertical: 13,
+            ),
+            child: Row(
+              children: [
+                Icon(icon, color: AppTheme.labelTertiary, size: 22),
+                const SizedBox(width: SpacingTokens.md),
+                Expanded(
+                  child: Text(title, style: AppTheme.bodyText),
                 ),
-              ),
-              Icon(Icons.chevron_right_rounded, color: AppColors.labelSecondary.withAlpha(80), size: 20),
-            ],
+                Icon(
+                  CupertinoIcons.chevron_forward,
+                  color: AppColors.labelQuaternary,
+                  size: 16,
+                ),
+              ],
+            ),
           ),
-        ),
+          if (showBorder)
+            Padding(
+              padding: const EdgeInsets.only(left: 52),
+              child: Container(height: 0.5, color: AppColors.separator),
+            ),
+        ],
       ),
     );
   }
