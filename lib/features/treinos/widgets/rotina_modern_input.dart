@@ -23,12 +23,7 @@ class RotinaModernInput extends StatelessWidget {
               SizedBox(width: AppTheme.space8),
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.2,
-                ),
+                style: AppTheme.formLabel,
               ),
             ],
           ),

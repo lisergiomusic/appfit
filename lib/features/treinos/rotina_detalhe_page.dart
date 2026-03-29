@@ -876,7 +876,7 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
         ),
         title: const Text('Configurações', style: AppTheme.pageTitle),
         actions: [
-          TextButton(
+          CupertinoButton(
             onPressed: () {
               if (_formKey.currentState!.validate()) {
                 final sessoes = int.tryParse(sessoesInput) ?? 20;
@@ -954,13 +954,14 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'VENCIMENTO',
-                style: TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                children: [
+                  const SizedBox(width: AppTheme.space8),
+                  const Text(
+                    'Vencimento',
+                    style: AppTheme.formLabel,
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               Container(

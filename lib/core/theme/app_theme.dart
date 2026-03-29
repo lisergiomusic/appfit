@@ -101,6 +101,13 @@ class AppTheme {
     letterSpacing: 0.0,
   );
 
+  static const TextStyle formLabel = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w500,
+    letterSpacing: -0.24,
+    color: textSecondary,
+  );
+
   static const TextStyle microLabelTextStyle = TextStyle(
     color: AppTheme.silverGrey,
     fontSize: 10,
