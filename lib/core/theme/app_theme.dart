@@ -117,7 +117,7 @@ class AppTheme {
   static const TextStyle caption = TextStyle(
     color: AppColors.labelSecondary,
     fontSize: 12,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w400,
     letterSpacing: 0.0,
   );
 
@@ -349,4 +349,10 @@ class ButtonTokens {
     color: AppColors.fillSecondary,
     borderRadius: BorderRadius.circular(secondaryRadius),
   );
+}
+
+class AvatarTokens {
+  static const double sm = 14.0;  // diâmetro 28 — tab bar, listas densas
+  static const double md = 20.0;  // diâmetro 40 — listas padrão
+  static const double lg = 28.0;  // diâmetro 56 — cabeçalhos de perfil, home
 }

@@ -39,7 +39,7 @@ class HomePage extends StatelessWidget {
                     width: 9,
                     height: 9,
                     decoration: BoxDecoration(
-                      color: AppColors.primary,
+                      color: AppColors.systemRed,
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: AppColors.background,
@@ -96,7 +96,7 @@ class HomePage extends StatelessWidget {
                         alignment: Alignment.bottomRight,
                         children: [
                           CircleAvatar(
-                            radius: 34,
+                            radius: AvatarTokens.lg,
                             backgroundColor: AppColors.surfaceLight,
                             backgroundImage:
                                 photoUrl != null && photoUrl.isNotEmpty
@@ -334,12 +334,11 @@ class HomePage extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6),
                     Text(
                       value,
                       style: AppTheme.title1,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     Row(
                       children: [
                         Icon(trendIcon, size: 12, color: trendColor),
@@ -390,20 +389,17 @@ class HomePage extends StatelessWidget {
               width: double.infinity,
               height: 64,
               decoration: BoxDecoration(
-                color: color.withAlpha(20),
+                color: AppColors.fillSecondary,
                 borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               ),
               child: Icon(icon, color: color, size: 28),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: SpacingTokens.sm),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+              style: AppTheme.caption.copyWith(
                 color: AppColors.labelPrimary,
-                letterSpacing: -0.2,
               ),
             ),
           ],
@@ -451,20 +447,12 @@ class HomePage extends StatelessWidget {
                       children: [
                         Text(
                           name,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.labelPrimary,
-                            letterSpacing: -0.2,
-                          ),
+                          style: AppTheme.cardTitle,
                         ),
                         const SizedBox(height: 1),
                         Text(
                           action,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.labelSecondary.withAlpha(180),
-                          ),
+                          style: AppTheme.cardSubtitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -477,11 +465,7 @@ class HomePage extends StatelessWidget {
                     children: [
                       Text(
                         time,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.labelSecondary,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppTheme.caption,
                       ),
                       const SizedBox(width: 4),
                       Icon(
