@@ -121,6 +121,11 @@ class AppTheme {
     letterSpacing: 0.0,
   );
 
+  static const caption2 = TextStyle(
+    fontSize: 11,
+    letterSpacing: 0.07,
+    fontWeight: FontWeight.w400,
+  );
   static const TextStyle formLabel = TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w500,
@@ -261,8 +266,14 @@ class AppTheme {
           vertical: 14,
           horizontal: 16,
         ),
-        labelStyle: const TextStyle(color: AppColors.labelSecondary, fontSize: 13),
-        hintStyle: TextStyle(color: AppColors.labelSecondary.withAlpha(128), fontSize: 13),
+        labelStyle: const TextStyle(
+          color: AppColors.labelSecondary,
+          fontSize: 13,
+        ),
+        hintStyle: TextStyle(
+          color: AppColors.labelSecondary.withAlpha(128),
+          fontSize: 13,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusXL),
           borderSide: BorderSide.none,
@@ -305,8 +316,8 @@ class NavBarTokens {
 class ButtonTokens {
   ButtonTokens._();
 
-  static const double primaryHeight   = 50.0;
-  static const double primaryRadius   = 14.0;
+  static const double primaryHeight = 50.0;
+  static const double primaryRadius = 14.0;
   static const double secondaryHeight = 50.0;
   static const double secondaryRadius = 14.0;
 

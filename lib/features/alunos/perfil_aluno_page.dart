@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import '../../core/services/aluno_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_bar_divider.dart';
@@ -81,17 +80,13 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(width: 8),
               Icon(
                 CupertinoIcons.chevron_back,
                 size: 17,
                 color: AppColors.primary,
               ),
               SizedBox(width: 4),
-              Text(
-                'Voltar',
-                style: AppTheme.navBarAction,
-              ),
+              Text('Voltar', style: AppTheme.navBarAction),
             ],
           ),
         ),
@@ -291,7 +286,9 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withAlpha(25),
-                  borderRadius: BorderRadius.circular(ButtonTokens.primaryRadius),
+                  borderRadius: BorderRadius.circular(
+                    ButtonTokens.primaryRadius,
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -328,7 +325,9 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
                   color: AppColors.fillSecondary,
-                  borderRadius: BorderRadius.circular(ButtonTokens.secondaryRadius),
+                  borderRadius: BorderRadius.circular(
+                    ButtonTokens.secondaryRadius,
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -357,6 +356,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
       ),
     );
   }
+
   void _exibirOpcoesVincularTreino(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -416,10 +416,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                   const Expanded(child: Divider(color: Colors.white10)),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'Da Biblioteca',
-                      style: AppTheme.sectionHeader,
-                    ),
+                    child: Text('Da Biblioteca', style: AppTheme.sectionHeader),
                   ),
                   const Expanded(child: Divider(color: Colors.white10)),
                 ],

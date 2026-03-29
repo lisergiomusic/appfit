@@ -156,8 +156,8 @@ class FichaAtivaHeroCard extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 Text(
-                                  legendaVencimento.toUpperCase(),
-                                  style: const TextStyle(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                                  legendaVencimento,
+                                  style: AppTheme.caption2.copyWith(color: AppColors.primary),
                                 ),
                               ],
                             ),
