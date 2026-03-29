@@ -250,9 +250,16 @@ class AppTheme {
     );
   }
 }
+
 class CardTokens {
-  static const padding = EdgeInsets.symmetric(
-    horizontal: 16,
-    vertical: 12,
+  static const padding = EdgeInsets.symmetric(horizontal: 16, vertical: 12);
+}
+
+class NavBarTokens {
+  static const actionButton = TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.41,
+    color: AppTheme.primary,
   );
 }

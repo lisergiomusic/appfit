@@ -1,12 +1,12 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/widgets/appfit_simple_app_bar.dart';
 import '../../core/services/aluno_service.dart';
 import '../../core/services/rotina_service.dart';
 import 'rotina_detalhe_page.dart';
 
-class TreinosPage extends StatelessWidget {
+class TreinosPage extends StatefulWidget {
   final String? alunoId;
   final String? alunoNome;
 
@@ -16,245 +16,384 @@ class TreinosPage extends StatelessWidget {
     this.alunoNome,
   });
 
+  @override
+  State<TreinosPage> createState() => _TreinosPageState();
+}
+
+class _TreinosPageState extends State<TreinosPage> {
+  final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  String _searchQuery = "";
+
   Future<void> _deletarTreino(String id) async {
     await RotinaService().excluirRotina(id);
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final bool isSelecting = alunoId != null;
+    final bool isSelecting = widget.alunoId != null;
     final AlunoService alunoService = AlunoService();
 
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppFitSimpleAppBar(
-        title: isSelecting ? 'Escolher Template' : 'Sua Biblioteca',
-        centerTitle: true,
-      ),
-      // --- FAB Oculto se estiver selecionando ---
-      floatingActionButton: isSelecting ? null : FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const RotinaDetalhePage()),
-          );
-        },
-        backgroundColor: AppTheme.primary,
-        elevation: 4,
-        icon: const Icon(Icons.add, color: Colors.white, size: 20),
-        label: const Text(
-          'Novo Template',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
+      body: CustomScrollView(
+        controller: _scrollController,
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
         ),
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: alunoService.getRotinasTemplates(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppTheme.primary),
-            );
-          }
-
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.dashboard_customize_outlined,
-                    size: 64,
-                    color: AppTheme.textSecondary.withAlpha(80),
+        slivers: [
+          _buildSliverAppBar(isSelecting),
+          SliverToBoxAdapter(child: _buildSearchBar()),
+          StreamBuilder<QuerySnapshot>(
+            stream: alunoService.getRotinasTemplates(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SliverFillRemaining(
+                  child: Center(
+                    child: CircularProgressIndicator(color: AppTheme.primary),
                   ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Biblioteca vazia',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Crie templates para atribuir\naos seus alunos.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
+                );
+              }
 
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
-            itemCount: snapshot.data!.docs.length,
-            itemBuilder: (context, index) {
-              var doc = snapshot.data!.docs[index];
-              var rotina = doc.data() as Map<String, dynamic>;
-              int qtdSessoes = rotina['sessoes'] != null
-                  ? (rotina['sessoes'] as List).length
-                  : 0;
+              final docs = snapshot.data?.docs ?? [];
+              final filteredDocs = docs.where((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                final nome = (data['nome'] ?? '').toString().toLowerCase();
+                return nome.contains(_searchQuery.toLowerCase());
+              }).toList();
 
-              return Dismissible(
-                key: Key(doc.id),
-                direction: isSelecting ? DismissDirection.none : DismissDirection.endToStart,
-                confirmDismiss: (direction) async {
-                  return await showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        backgroundColor: AppTheme.surfaceDark,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        title: const Text(
-                          "Excluir template?",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        content: const Text(
-                          "Isso removerá a ficha da sua biblioteca permanentemente.",
-                          style: TextStyle(color: AppTheme.textSecondary),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: const Text(
-                              "Cancelar",
-                              style: TextStyle(color: AppTheme.textSecondary),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: const Text(
-                              "Excluir",
-                              style: TextStyle(
-                                color: Colors.redAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
+              if (filteredDocs.isEmpty) {
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _buildEmptyState(),
+                );
+              }
+
+              return SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      var doc = filteredDocs[index];
+                      var rotina = doc.data() as Map<String, dynamic>;
+                      int qtdSessoes = rotina['sessoes'] != null
+                          ? (rotina['sessoes'] as List).length
+                          : 0;
+
+                      return _buildTreinoCard(doc.id, rotina, qtdSessoes, isSelecting);
                     },
-                  );
-                },
-                background: Container(
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 16),
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Icon(Icons.delete_outline, color: Colors.white),
-                ),
-                onDismissed: (direction) => _deletarTreino(doc.id),
-
-                // --- CARTÃO DA LISTA ---
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: Material(
-                    elevation: 1.0,
-                    color: AppTheme.surfaceDark,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(color: Colors.white.withAlpha(10), width: 1.0),
-                    ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () {
-                        if (isSelecting) {
-                          // Abre para criar uma NOVA rotina para o aluno baseada no template (passando rotinaData mas sem rotinaId)
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => RotinaDetalhePage(
-                                rotinaData: rotina,
-                                alunoId: alunoId,
-                                alunoNome: alunoNome,
-                              ),
-                            ),
-                          );
-                        } else {
-                          // Fluxo normal: Editar template
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => RotinaDetalhePage(
-                                rotinaData: rotina,
-                                rotinaId: doc.id,
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: (isSelecting ? AppTheme.iosBlue : AppTheme.primary).withAlpha(20),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                isSelecting ? Icons.add_task : Icons.fitness_center,
-                                color: isSelecting ? AppTheme.iosBlue : AppTheme.primary,
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    rotina['nome'] ?? 'Sem título',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    '$qtdSessoes sessões de treino',
-                                    style: const TextStyle(
-                                      color: AppTheme.textSecondary,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Icon(
-                              Icons.chevron_right,
-                              color: AppTheme.textSecondary.withAlpha(100),
-                              size: 20,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    childCount: filteredDocs.length,
                   ),
                 ),
               );
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSliverAppBar(bool isSelecting) {
+    final String titleStr = isSelecting ? 'Templates' : 'Biblioteca de Rotinas';
+
+    return SliverAppBar(
+      pinned: true,
+      expandedHeight: 120,
+      backgroundColor: AppTheme.background,
+      surfaceTintColor: AppTheme.background,
+      elevation: 0,
+      scrolledUnderElevation: 0.5,
+      leading: widget.alunoId != null
+          ? IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.primary, size: 20),
+              onPressed: () => Navigator.pop(context),
+            )
+          : const SizedBox.shrink(),
+      leadingWidth: widget.alunoId != null ? 56 : 0,
+      centerTitle: true,
+      actions: [
+        if (!isSelecting)
+          CupertinoButton(
+            padding: const EdgeInsets.only(right: 16),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const RotinaDetalhePage()),
+              );
+            },
+            child: const Icon(
+              CupertinoIcons.add,
+              color: AppTheme.primary,
+              size: 26,
+            ),
+          ),
+      ],
+      flexibleSpace: LayoutBuilder(
+        builder: (context, constraints) {
+          final bool isCollapsed = constraints.biggest.height <=
+              (kToolbarHeight + MediaQuery.of(context).padding.top + 10);
+
+          return FlexibleSpaceBar(
+            title: AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: isCollapsed ? 1.0 : 0.0,
+              child: Text(
+                titleStr,
+                style: AppTheme.pageTitle,
+              ),
+            ),
+            centerTitle: true,
+            titlePadding: const EdgeInsets.only(bottom: 14),
+            background: AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: isCollapsed ? 0.0 : 1.0,
+              child: Container(
+                color: AppTheme.background,
+                padding: const EdgeInsets.only(left: 20, bottom: 10),
+                alignment: Alignment.bottomLeft,
+                child: Text(
+                  titleStr,
+                  style: AppTheme.bigTitle,
+                ),
+              ),
+            ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      child: Container(
+        height: 36,
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceDark,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: TextField(
+          controller: _searchController,
+          onChanged: (val) => setState(() => _searchQuery = val),
+          style: const TextStyle(
+            color: AppTheme.textPrimary,
+            fontSize: 16,
+            letterSpacing: -0.41,
+            fontWeight: FontWeight.w400,
+          ),
+          cursorColor: AppTheme.primary,
+          textAlignVertical: TextAlignVertical.center,
+          decoration: InputDecoration(
+            isDense: true,
+            hintText: 'Buscar templates...',
+            hintStyle: TextStyle(
+              color: AppTheme.textTertiary,
+              fontSize: 17,
+              letterSpacing: -0.41,
+              fontWeight: FontWeight.w400,
+            ),
+            prefixIcon: Icon(
+              Icons.search_rounded,
+              color: AppTheme.textSecondary.withAlpha(120),
+              size: 20,
+            ),
+            suffixIcon: _searchQuery.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: AppTheme.textSecondary,
+                    ),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() => _searchQuery = "");
+                    },
+                  )
+                : null,
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            filled: false,
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTreinoCard(String id, Map<String, dynamic> rotina, int qtdSessoes, bool isSelecting) {
+    return Dismissible(
+      key: Key(id),
+      direction: isSelecting ? DismissDirection.none : DismissDirection.endToStart,
+      confirmDismiss: (direction) async {
+        return await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: AppTheme.surfaceDark,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+              ),
+              title: const Text(
+                "Excluir template?",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: const Text(
+                "Isso removerá a ficha da sua biblioteca permanentemente.",
+                style: TextStyle(color: AppTheme.textSecondary),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text(
+                    "Cancelar",
+                    style: TextStyle(color: AppTheme.textSecondary),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text(
+                    "Excluir",
+                    style: TextStyle(
+                      color: Colors.redAccent,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 16),
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.redAccent.withAlpha(30),
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        ),
+        child: const Icon(Icons.delete_outline, color: Colors.redAccent),
+      ),
+      onDismissed: (direction) => _deletarTreino(id),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: AppTheme.cardDecoration,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+            onTap: () {
+              if (isSelecting) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RotinaDetalhePage(
+                      rotinaData: rotina,
+                      alunoId: widget.alunoId,
+                      alunoNome: widget.alunoNome,
+                    ),
+                  ),
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RotinaDetalhePage(
+                      rotinaData: rotina,
+                      rotinaId: id,
+                    ),
+                  ),
+                );
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: (isSelecting ? AppTheme.iosBlue : AppTheme.primary).withAlpha(20),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isSelecting ? Icons.add_task : Icons.fitness_center,
+                      color: isSelecting ? AppTheme.iosBlue : AppTheme.primary,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          rotina['nome'] ?? 'Sem título',
+                          style: AppTheme.cardTitle,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$qtdSessoes sessões de treino',
+                          style: AppTheme.cardSubtitle,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    color: AppTheme.textSecondary.withAlpha(100),
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.dashboard_customize_outlined,
+            size: 64,
+            color: AppTheme.textSecondary.withAlpha(80),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Biblioteca vazia',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Crie templates para atribuir\naos seus alunos.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              color: AppTheme.textSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }
