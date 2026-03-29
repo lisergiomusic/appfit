@@ -39,8 +39,8 @@ class AppTheme {
   // --- 4. ESTILOS DE TEXTO ---
   static const TextStyle bigTitle = TextStyle(
     fontSize: 34,
-    fontWeight: FontWeight.bold,
-    letterSpacing: -0.41,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.37,
     color: AppColors.labelPrimary,
   );
 
@@ -156,8 +156,6 @@ class AppTheme {
   static BoxDecoration get cardDecoration => BoxDecoration(
     color: AppColors.surfaceDark,
     borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-    boxShadow: [AppTheme.cardShadow],
-    border: AppTheme.cardBorder,
   );
 
   // --- 6. COMPONENTES (Tokens) ---

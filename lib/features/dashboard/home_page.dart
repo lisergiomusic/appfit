@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/auth_service.dart';
 
@@ -28,7 +29,7 @@ class HomePage extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.notifications_rounded,
-                  color: AppColors.labelPrimary,
+                  color: AppColors.labelSecondary,
                   size: 26,
                 ),
                 Positioned(
@@ -109,23 +110,6 @@ class HomePage extends StatelessWidget {
                                   )
                                 : null,
                           ),
-                          Container(
-                            width: 20,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.background,
-                                width: 2.5,
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.check_rounded,
-                              size: 10,
-                              color: Colors.black,
-                            ),
-                          ),
                         ],
                       ),
                       const SizedBox(width: 16),
@@ -135,12 +119,7 @@ class HomePage extends StatelessWidget {
                           children: [
                             Text(
                               '${_getSaudacao()}, $nome',
-                              style: const TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.labelPrimary,
-                                letterSpacing: -0.5,
-                              ),
+                              style: AppTheme.bigTitle,
                             ),
                             const SizedBox(height: 6),
                             Container(
@@ -214,7 +193,7 @@ class HomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(left: 4, bottom: 16),
+                    padding: const EdgeInsets.only(left: 4, bottom: SpacingTokens.sm),
                     child: Text(
                       'Ações rápidas',
                       style: AppTheme.sectionHeader,
@@ -265,26 +244,19 @@ class HomePage extends StatelessWidget {
                       style: AppTheme.sectionHeader,
                     ),
                   ),
-                  TextButton(
+                  CupertinoButton(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: Size(0, 0),
                     onPressed: () {},
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
                     child: const Text(
                       'Ver tudo',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
+                      style: AppTheme.sectionAction,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: SpacingTokens.sm),
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppTheme.paddingScreen,
@@ -343,84 +315,59 @@ class HomePage extends StatelessWidget {
     VoidCallback? onTap,
   }) {
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        border: Border.all(color: Colors.white.withAlpha(5)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(20),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        label,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.labelSecondary.withAlpha(160),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        value,
-                        style: const TextStyle(
-                          fontSize: 34,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.labelPrimary,
-                          letterSpacing: -1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Icon(trendIcon, size: 12, color: trendColor),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              trendText,
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: trendColor,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+      decoration: AppTheme.cardDecoration,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: AppTheme.formLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      value,
+                      style: AppTheme.title1,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(trendIcon, size: 12, color: trendColor),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            trendText,
+                            style: AppTheme.caption.copyWith(
+                              color: trendColor,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                if (onTap != null) ...[
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    size: 18,
-                    color: AppColors.labelSecondary.withAlpha(80),
-                  ),
-                ],
+              ),
+              if (onTap != null) ...[
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 18,
+                  color: AppColors.labelSecondary.withAlpha(80),
+                ),
               ],
-            ),
+            ],
           ),
         ),
       ),
