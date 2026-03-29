@@ -363,11 +363,6 @@ class _AlunosPageState extends State<AlunosPage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _exibirModalCadastro,
-        icon: const Icon(Icons.add, color: Colors.black, size: 20),
-        label: const Text('Adicionar'),
-      ),
     );
   }
 
@@ -383,32 +378,15 @@ class _AlunosPageState extends State<AlunosPage> {
       leadingWidth: 0,
       centerTitle: true,
       actions: [
-        IconButton(
-          icon: Stack(
-            children: [
-              const Icon(
-                Icons.notifications_outlined,
-                color: AppTheme.textPrimary,
-                size: 24,
-              ),
-              Positioned(
-                right: 2,
-                top: 2,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primary,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppTheme.background, width: 1.5),
-                  ),
-                ),
-              ),
-            ],
+        CupertinoButton(
+          padding: const EdgeInsets.only(right: 16, top: 4),
+          onPressed: _exibirModalCadastro,
+          child: const Icon(
+            CupertinoIcons.add,
+            color: AppTheme.primary,
+            size: 24,
           ),
-          onPressed: () {},
         ),
-        const SizedBox(width: 8),
       ],
       flexibleSpace: LayoutBuilder(
         builder: (context, constraints) {
