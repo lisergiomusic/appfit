@@ -303,56 +303,60 @@ class _AlunosPageState extends State<AlunosPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: _buildAppBar(),
       body: RefreshIndicator(
         onRefresh: _fetchInitialData,
         color: AppTheme.primary,
         backgroundColor: AppTheme.surfaceDark,
-        child: ListView(
+        edgeOffset: 120,
+        child: CustomScrollView(
           controller: _scrollController,
-          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-          padding: EdgeInsets.zero,
-          children: [
-            _buildSearchBar(),
-            _buildFilterChips(),
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          slivers: [
+            _buildSliverAppBar(),
+            SliverToBoxAdapter(child: _buildSearchBar()),
+            SliverToBoxAdapter(child: _buildFilterChips()),
             if (_isLoading)
-              const Padding(
-                padding: EdgeInsets.only(top: 64),
+              const SliverFillRemaining(
                 child: Center(
                   child: CircularProgressIndicator(color: AppTheme.primary),
                 ),
               )
             else if (_alunosDocs.isEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 64),
-                child: _searchQuery.isNotEmpty || _statusFilter != "todos"
-                    ? _buildNoResultsState()
-                    : _buildEmptyState(),
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 64),
+                  child: _searchQuery.isNotEmpty || _statusFilter != "todos"
+                      ? _buildNoResultsState()
+                      : _buildEmptyState(),
+                ),
               )
             else
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _alunosDocs.length + 1,
-                  itemBuilder: (context, index) {
-                    if (index == _alunosDocs.length) {
-                      return _hasMore
-                          ? const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 32),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: AppTheme.primary,
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      if (index == _alunosDocs.length) {
+                        return _hasMore
+                            ? const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 32),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppTheme.primary,
+                                  ),
                                 ),
-                              ),
-                            )
-                          : const SizedBox.shrink();
-                    }
-                    final doc = _alunosDocs[index];
-                    final aluno = doc.data() as Map<String, dynamic>;
-                    return _buildDismissibleCard(doc.id, aluno);
-                  },
+                              )
+                            : const SizedBox.shrink();
+                      }
+                      final doc = _alunosDocs[index];
+                      final aluno = doc.data() as Map<String, dynamic>;
+                      return _buildDismissibleCard(doc.id, aluno);
+                    },
+                    childCount: _alunosDocs.length + 1,
+                  ),
                 ),
               ),
           ],
@@ -361,41 +365,41 @@ class _AlunosPageState extends State<AlunosPage> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _exibirModalCadastro,
         icon: const Icon(Icons.add, color: Colors.black, size: 20),
-        label: const Text(
-          'Adicionar',
-        ),
+        label: const Text('Adicionar'),
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: AppTheme.background.withAlpha(200),
+  Widget _buildSliverAppBar() {
+    return SliverAppBar(
+      pinned: true,
+      expandedHeight: 120,
+      backgroundColor: AppTheme.background,
+      surfaceTintColor: AppTheme.background,
       elevation: 0,
-      surfaceTintColor: Colors.transparent,
-      title: Row(children: [const SizedBox(width: 10), Text('Gerenciamento de Alunos')]),
+      scrolledUnderElevation: 0.5,
+      leading: const SizedBox.shrink(),
+      leadingWidth: 0,
+      centerTitle: true,
       actions: [
         IconButton(
           icon: Stack(
             children: [
               const Icon(
-                Icons.notifications_rounded,
+                Icons.notifications_outlined,
                 color: AppTheme.textPrimary,
-                size: 26,
+                size: 24,
               ),
               Positioned(
                 right: 2,
                 top: 2,
                 child: Container(
-                  width: 9,
-                  height: 9,
+                  width: 8,
+                  height: 8,
                   decoration: BoxDecoration(
                     color: AppTheme.primary,
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppTheme.background,
-                      width: 1.5,
-                    ),
+                    border: Border.all(color: AppTheme.background, width: 1.5),
                   ),
                 ),
               ),
@@ -405,34 +409,54 @@ class _AlunosPageState extends State<AlunosPage> {
         ),
         const SizedBox(width: 8),
       ],
-      centerTitle: false,
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1.0),
-        child: Container(
-          height: 1.0,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.white.withAlpha(0),
-                Colors.white.withAlpha(20),
-                Colors.white.withAlpha(0),
-              ],
+      flexibleSpace: LayoutBuilder(
+        builder: (context, constraints) {
+          final bool isCollapsed = constraints.biggest.height <=
+              (kToolbarHeight + MediaQuery.of(context).padding.top + 10);
+
+          return FlexibleSpaceBar(
+            title: AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: isCollapsed ? 1.0 : 0.0,
+              child: const Text(
+                'Meus Alunos',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 17,
+                  letterSpacing: -0.5,
+                ),
+              ),
             ),
-          ),
-        ),
+            centerTitle: true,
+            titlePadding: const EdgeInsets.only(bottom: 14),
+            background: AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: isCollapsed ? 0.0 : 1.0,
+              child: Container(
+                color: AppTheme.background,
+                padding: const EdgeInsets.only(left: 20, bottom: 10),
+                alignment: Alignment.bottomLeft,
+                child: const Text(
+                  'Meus Alunos',
+                  style: AppTheme.bigTitle,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Container(
-        height: 54,
+        height: 38,
         decoration: BoxDecoration(
-          color: AppTheme.surfaceDark,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          border: Border.all(color: Colors.white.withAlpha(10)),
+          color: AppTheme.surfaceLight,
+          borderRadius: BorderRadius.circular(10),
         ),
         child: TextField(
           controller: _searchController,
@@ -440,13 +464,19 @@ class _AlunosPageState extends State<AlunosPage> {
             setState(() => _searchQuery = val);
             _fetchInitialData();
           },
-          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15),
+          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+          cursorColor: AppTheme.primary,
+          textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
-            hintText: 'Pesquisar por nome...',
-            hintStyle: TextStyle(color: AppTheme.textSecondary.withAlpha(80)),
-            prefixIcon: const Icon(
+            isDense: true,
+            hintText: 'Pesquisar',
+            hintStyle: TextStyle(
+              color: AppTheme.textSecondary.withAlpha(120),
+              fontSize: 16,
+            ),
+            prefixIcon: Icon(
               Icons.search_rounded,
-              color: AppTheme.textSecondary,
+              color: AppTheme.textSecondary.withAlpha(120),
               size: 20,
             ),
             suffixIcon: _searchQuery.isNotEmpty
@@ -465,12 +495,9 @@ class _AlunosPageState extends State<AlunosPage> {
                 : null,
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-              borderSide: BorderSide(color: AppTheme.primary, width: 1),
-            ),
+            focusedBorder: InputBorder.none,
             filled: false,
-            contentPadding: const EdgeInsets.symmetric(vertical: 16),
+            contentPadding: EdgeInsets.zero,
           ),
         ),
       ),
@@ -479,42 +506,38 @@ class _AlunosPageState extends State<AlunosPage> {
 
   Widget _buildFilterChips() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildChip(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          children: [
+            _buildChip(
               label: 'Todos',
               count: _totalCount,
               value: 'todos',
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildChip(
+            const SizedBox(width: 8),
+            _buildChip(
               label: 'Ativos',
               count: _ativosCount,
               value: 'ativo',
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildChip(
+            const SizedBox(width: 8),
+            _buildChip(
               label: 'Risco',
               count: _riscoCount,
               value: 'risco',
               activeColor: Colors.orangeAccent,
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildChip(
+            const SizedBox(width: 8),
+            _buildChip(
               label: 'Inativos',
               count: _inativosCount,
               value: 'inativo',
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -537,41 +560,28 @@ class _AlunosPageState extends State<AlunosPage> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
         decoration: BoxDecoration(
           color: isSelected ? primaryColor : AppTheme.surfaceDark,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? primaryColor : Colors.white.withAlpha(15),
+            color: isSelected ? primaryColor : Colors.white.withAlpha(10),
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: primaryColor.withAlpha(60),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : [],
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: isSelected ? Colors.black : AppTheme.textSecondary,
-                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                  fontSize: 12,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.black : AppTheme.textSecondary,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 14,
               ),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 6),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: isSelected
                     ? Colors.black.withAlpha(40)
@@ -582,8 +592,8 @@ class _AlunosPageState extends State<AlunosPage> {
                 count.toString(),
                 style: TextStyle(
                   color: isSelected ? Colors.black : AppTheme.textPrimary,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
                 ),
               ),
             ),
