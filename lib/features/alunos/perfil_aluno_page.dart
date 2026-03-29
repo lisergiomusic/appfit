@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/services/aluno_service.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_bar_divider.dart';
 import '../treinos/rotina_detalhe_page.dart';
 import 'gerenciar_aluno_page.dart';
 import 'models/aluno_perfil_data.dart';
@@ -95,10 +96,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
           ),
         ),
         title: const Text('Perfil do Aluno'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
-          child: Container(height: 0.5, color: Colors.white.withAlpha(10)),
-        ),
+        bottom: const AppBarDivider(),
       ),
       body: StreamBuilder<AlunoPerfilData>(
         stream: _alunoService.getAlunoPerfilCompletoStream(widget.alunoId),
