@@ -579,7 +579,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
       child: Container(
         decoration: BoxDecoration(
           color: AppTheme.surfaceDark,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
           boxShadow: [AppTheme.cardShadow],
           border: AppTheme.cardBorder,
         ),
@@ -587,7 +587,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
           type: MaterialType.transparency,
           elevation: 0,
           child: InkWell(
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
             splashColor: AppTheme.splash.withAlpha(50),
             highlightColor: AppTheme.splash.withAlpha(30),
             onTap: () async {
@@ -718,7 +718,7 @@ class _MetricCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
         color: AppTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         border: AppTheme.cardBorder,
         boxShadow: [
           AppTheme.cardShadow,

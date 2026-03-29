@@ -383,7 +383,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
       margin: const EdgeInsets.only(bottom: 12, left: AppTheme.paddingScreen, right: AppTheme.paddingScreen),
       decoration: AppTheme.cardDecoration,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         splashColor: AppTheme.splash.withAlpha(50),
         highlightColor: AppTheme.splash.withAlpha(30),
         onTap: () => _navegarParaDetalhes(context, data, id),

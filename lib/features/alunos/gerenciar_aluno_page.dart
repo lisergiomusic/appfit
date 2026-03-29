@@ -104,7 +104,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.surfaceDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusXL)),
         title: const Text(
           'Excluir Aluno?',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -315,8 +315,8 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                 child: InkWell(
                   onTap: item.onTap,
                   borderRadius: BorderRadius.vertical(
-                    top: index == 0 ? const Radius.circular(AppTheme.radiusMedium) : Radius.zero,
-                    bottom: isLast ? const Radius.circular(AppTheme.radiusMedium) : Radius.zero,
+                    top: index == 0 ? const Radius.circular(AppTheme.radiusXL) : Radius.zero,
+                    bottom: isLast ? const Radius.circular(AppTheme.radiusXL) : Radius.zero,
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12), // mais compacto estilo iOS

@@ -436,7 +436,7 @@ class HomePage extends StatelessWidget {
     return Expanded(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         child: Column(
           children: [
             Container(
@@ -444,7 +444,7 @@ class HomePage extends StatelessWidget {
               height: 64,
               decoration: BoxDecoration(
                 color: color.withAlpha(20),
-                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               ),
               child: Icon(icon, color: color, size: 28),
             ),

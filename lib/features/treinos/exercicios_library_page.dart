@@ -624,7 +624,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                       letterSpacing: 0.0,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadiusGeometry.circular(AppTheme.radiusSmall),
+                      borderRadius: BorderRadiusGeometry.circular(AppTheme.radiusLG),
                     ),
                     side: BorderSide.none,
                     showCheckmark: false,
@@ -685,7 +685,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                             onTap: () => _mostrarPreviewExercicio(ex),
                             child: Padding(
                               padding: const EdgeInsets.all(8),
@@ -697,7 +697,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                     height: 56,
                                     decoration: BoxDecoration(
                                       color: AppTheme.surfaceDark,
-                                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                                      borderRadius: BorderRadius.circular(AppTheme.radiusLG),
                                       border: ex.personalId != null
                                           ? Border.all(
                                               color: AppTheme.accentMetrics
@@ -717,7 +717,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                         : (ex.imagemUrl != null &&
                                               ex.imagemUrl!.isNotEmpty)
                                         ? ClipRRect(
-                                            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                                            borderRadius: BorderRadius.circular(AppTheme.radiusLG),
                                             child: _StaticImage(url: ex.imagemUrl!),
                                           )
                                         : const Center(
@@ -810,7 +810,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: AppTheme.surfaceDark,
-                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                 border: Border.all(
                   color: Colors.white.withAlpha(20), // ~8% opacity
                   width: 0.5,
@@ -829,10 +829,10 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     flex: 1,
                     child: Material(
                       color: Colors.transparent,
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                       child: InkWell(
                         onTap: _abrirResumoSelecao,
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                         splashColor: AppTheme.primary.withAlpha(30), // ~12% opacity
                         highlightColor: AppTheme.primary.withAlpha(20), // ~8% opacity
                         child: Row(

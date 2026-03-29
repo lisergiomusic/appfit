@@ -260,7 +260,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   Container(
                     decoration: BoxDecoration(
                       color: AppTheme.surfaceLight,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                     ),
                     child: Column(
                       children: [
@@ -332,7 +332,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: Row(
@@ -410,7 +410,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   // --- WIDGET DE LINHA DA SÉRIE ---
   Widget _buildSerieRow(SerieItem serie, int realIndex, int visualNumber, bool isFirst, bool isLast) {
     final isNew = controller.newSeriesIds.contains(serie.id);
-    final radius = Radius.circular(AppTheme.radiusMedium);
+    final radius = Radius.circular(AppTheme.radiusXL);
     final borderRadius = BorderRadius.only(
       topLeft: isFirst ? radius : Radius.zero,
       topRight: isFirst ? radius : Radius.zero,
@@ -624,7 +624,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
           Container(
             decoration: BoxDecoration(
               color: AppTheme.surfaceDark,
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
               border: Border.all(color: Colors.white.withAlpha(20), width: 0.5),
             ),
             child: Column(
@@ -694,7 +694,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppTheme.surfaceDark.withAlpha(180),
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withAlpha(50),

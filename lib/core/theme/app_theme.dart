@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // --- 1. CORES ---
-  static const Color primary = Color(
-    0xFF30D158,
-  );
+  static const Color primary = Color(0xFF30D158);
 
   static const Color splash = primary;
   static const Color background = Color(0xFF131314);
@@ -43,8 +41,12 @@ class AppTheme {
   static const EdgeInsets edgeInsetsSmall = EdgeInsets.all(8);
 
   // --- 3. ARREDONDAMENTOS (Radii) ---
-  static const double radiusSmall = 12.0;
-  static const double radiusMedium = 16.0;
+  static const double radiusXS = 4;
+  static const double radiusSM = 8;
+  static const double radiusMD = 10;
+  static const double radiusLG = 12.0;
+  static const double radiusXL = 16.0;
+  static const double radiusXXL = 20.0;
   static const double radiusLarge = 24.0;
   static const double radiusFull = 9999.0;
 
@@ -63,7 +65,7 @@ class AppTheme {
     letterSpacing: -0.3,
   );
 
-  static const  TextStyle pageTitle = TextStyle(
+  static const TextStyle pageTitle = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.2,
@@ -79,16 +81,17 @@ class AppTheme {
   );
 
   static const TextStyle cardTitle = TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w800,
-      color: textPrimary,
-      letterSpacing: -0.2
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
+    color: textPrimary,
+    letterSpacing: -0.41,
   );
 
   static const TextStyle cardSubtitle = TextStyle(
-      fontSize: 12,
-      color: textSecondary,
-      fontWeight: FontWeight.w500,
+    fontSize: 15,
+    color: textSecondary,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.24,
   );
 
   static const TextStyle caption = TextStyle(
@@ -106,7 +109,10 @@ class AppTheme {
   );
 
   // --- 5. DECORAÇÕES (Bordas e Sombras) ---
-  static final Border cardBorder = Border.all(color: Colors.white.withAlpha(5), width: 1);
+  static final Border cardBorder = Border.all(
+    color: Colors.white.withAlpha(5),
+    width: 1,
+  );
 
   static final BoxShadow cardShadow = BoxShadow(
     color: Colors.black.withAlpha(50),
@@ -117,7 +123,7 @@ class AppTheme {
   /// Decoração padrão para cards, reutilizável em containers e widgets de cartão.
   static BoxDecoration get cardDecoration => BoxDecoration(
     color: AppTheme.surfaceDark,
-    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+    borderRadius: BorderRadius.circular(AppTheme.radiusLG),
     boxShadow: [AppTheme.cardShadow],
     border: AppTheme.cardBorder,
   );
@@ -126,7 +132,7 @@ class AppTheme {
   static TooltipThemeData get tooltipTheme => TooltipThemeData(
     decoration: BoxDecoration(
       color: surfaceDark,
-      borderRadius: BorderRadius.circular(radiusSmall),
+      borderRadius: BorderRadius.circular(radiusLG),
       border: Border.all(color: primary.withAlpha(100)),
       boxShadow: [
         BoxShadow(
@@ -181,9 +187,12 @@ class AppTheme {
           minimumSize: Size(0, 32),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           foregroundColor: AppTheme.primary,
-          textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: 0.1),
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+            letterSpacing: 0.1,
+          ),
         ),
-
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -192,29 +201,32 @@ class AppTheme {
           elevation: 1,
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radiusMedium),
+            borderRadius: BorderRadius.circular(radiusXL),
           ),
           textStyle: const TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w600,
             letterSpacing: -0.3,
           ),
-            minimumSize: const Size(double.infinity, 48)
+          minimumSize: const Size(double.infinity, 48),
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primary,
         foregroundColor: Colors.black,
         elevation: 10,
-          extendedPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          extendedTextStyle: const TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.3,
-          ),
+        extendedPadding: const EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 16,
+        ),
+        extendedTextStyle: const TextStyle(
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.3,
+        ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radiusMedium)
-        )
+          borderRadius: BorderRadius.circular(radiusXL),
+        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -224,20 +236,23 @@ class AppTheme {
           horizontal: 16,
         ),
         labelStyle: const TextStyle(color: textSecondary, fontSize: 13),
-        hintStyle: TextStyle(
-          color: textSecondary.withAlpha(128),
-          fontSize: 13,
-        ),
+        hintStyle: TextStyle(color: textSecondary.withAlpha(128), fontSize: 13),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radiusMedium),
+          borderRadius: BorderRadius.circular(radiusXL),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radiusMedium),
+          borderRadius: BorderRadius.circular(radiusXL),
           borderSide: const BorderSide(color: primary, width: 1.0),
         ),
       ),
       tooltipTheme: tooltipTheme,
     );
   }
+}
+class CardTokens {
+  static const padding = EdgeInsets.symmetric(
+    horizontal: 16,
+    vertical: 12,
+  );
 }

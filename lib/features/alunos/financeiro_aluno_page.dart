@@ -243,7 +243,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _showFaturaActions(fatura),
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(

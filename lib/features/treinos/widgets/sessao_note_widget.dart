@@ -28,7 +28,7 @@ class SessaoNoteWidget extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppTheme.surfaceDark,
-              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withAlpha(50),

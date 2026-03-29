@@ -15,15 +15,15 @@ InputDecoration rotinaInputDecoration({required String hintText}) {
       vertical: AppTheme.space12,
     ),
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+      borderRadius: BorderRadius.circular(AppTheme.radiusXL),
       borderSide: BorderSide(color: Colors.white.withAlpha(15), width: 0.5),
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+      borderRadius: BorderRadius.circular(AppTheme.radiusXL),
       borderSide: BorderSide(color: Colors.white.withAlpha(15), width: 1),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+      borderRadius: BorderRadius.circular(AppTheme.radiusXL),
       borderSide: BorderSide(
         color: AppTheme.primary.withAlpha(150),
         width: 1,

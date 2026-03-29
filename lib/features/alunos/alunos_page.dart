@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
@@ -125,7 +126,7 @@ class _AlunosPageState extends State<AlunosPage> {
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.surfaceDark,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         ),
         title: const Text(
           'Remover Aluno',
@@ -464,7 +465,12 @@ class _AlunosPageState extends State<AlunosPage> {
             setState(() => _searchQuery = val);
             _fetchInitialData();
           },
-          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16, letterSpacing: -0.41, fontWeight: FontWeight.w400),
+          style: const TextStyle(
+            color: AppTheme.textPrimary,
+            fontSize: 16,
+            letterSpacing: -0.41,
+            fontWeight: FontWeight.w400,
+          ),
           cursorColor: AppTheme.primary,
           textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
@@ -507,108 +513,55 @@ class _AlunosPageState extends State<AlunosPage> {
   }
 
   Widget _buildFilterChips() {
-    return Padding(
+    return Container(
+      width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildChip(
-              label: 'Todos',
-              count: _totalCount,
-              value: 'todos',
-            ),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: _buildChip(
-              label: 'Ativos',
-              count: _ativosCount,
-              value: 'ativo',
-            ),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: _buildChip(
-              label: 'Risco',
-              count: _riscoCount,
-              value: 'risco',
-              activeColor: Colors.orangeAccent,
-            ),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: _buildChip(
-              label: 'Inativos',
-              count: _inativosCount,
-              value: 'inativo',
-            ),
-          ),
-        ],
+      child: CupertinoSlidingSegmentedControl<String>(
+        backgroundColor: AppTheme.surfaceDark,
+        thumbColor: const Color(0xFF3A3A3C),
+        groupValue: _statusFilter,
+        children: {
+          'todos': _buildSegment('Todos', _totalCount, 'todos'),
+          'ativo': _buildSegment('Ativos', _ativosCount, 'ativo'),
+          'risco': _buildSegment('Risco', _riscoCount, 'risco'),
+          'inativo': _buildSegment('Inativos', _inativosCount, 'inativo'),
+        },
+        onValueChanged: (value) {
+          if (value != null) {
+            setState(() => _statusFilter = value);
+            _fetchInitialData();
+          }
+        },
       ),
     );
   }
 
-  Widget _buildChip({
-    required String label,
-    required int count,
-    required String value,
-    Color? activeColor,
-  }) {
+  Widget _buildSegment(String label, int count, String value) {
     final bool isSelected = _statusFilter == value;
-    final Color primaryColor = activeColor ?? AppTheme.primary;
 
-    return GestureDetector(
-      onTap: () {
-        if (_statusFilter != value) {
-          setState(() => _statusFilter = value);
-          _fetchInitialData();
-        }
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        decoration: BoxDecoration(
-          color: isSelected ? primaryColor : AppTheme.surfaceDark,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected ? primaryColor : Colors.white.withAlpha(10),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: isSelected ? Colors.white : AppTheme.textSecondary,
+            ),
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: isSelected ? Colors.black : AppTheme.textSecondary,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  fontSize: 12,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+          const SizedBox(width: 4),
+          Text(
+            '($count)',
+            style: TextStyle(
+              fontSize: 10,
+              color: isSelected ? AppTheme.primary : AppTheme.textTertiary,
+              fontWeight: FontWeight.bold,
             ),
-            const SizedBox(width: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? Colors.black.withAlpha(40)
-                    : Colors.white.withAlpha(10),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                count.toString(),
-                style: TextStyle(
-                  color: isSelected ? Colors.black : AppTheme.textPrimary,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 10,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -678,18 +631,14 @@ class _AlunosPageState extends State<AlunosPage> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        border: Border.all(color: Colors.white.withAlpha(10)),
-      ),
+      decoration: AppTheme.cardDecoration,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
           child: Padding(
-            padding: const EdgeInsets.all(8),
+            padding: CardTokens.padding,
             child: Row(
               children: [
                 Stack(
@@ -698,7 +647,7 @@ class _AlunosPageState extends State<AlunosPage> {
                     AlunoAvatar(
                       alunoNome: nome,
                       photoUrl: photoUrl,
-                      radius: 26,
+                      radius: 20,
                     ),
                   ],
                 ),

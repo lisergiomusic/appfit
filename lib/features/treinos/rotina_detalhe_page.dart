@@ -642,7 +642,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: AppTheme.cardDecoration,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         onTap: () async {
           final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => ConfigurarExerciciosPage(nomeTreino: sessao.nome, exercicios: sessao.exercicios, sessaoNote: sessao.orientacoes ?? '')));
           if (mounted && result is Map<String, dynamic>) {
@@ -772,7 +772,7 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
             const SizedBox(height: 24),
             const Text('VENCIMENTO', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppTheme.surfaceLight, borderRadius: BorderRadius.circular(AppTheme.radiusMedium)), child: Column(children: [
+            Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppTheme.surfaceLight, borderRadius: BorderRadius.circular(AppTheme.radiusXL)), child: Column(children: [
               Row(children: [_buildTabOption('Sessões', tipoTemp == 'sessoes', () => setState(() => tipoTemp = 'sessoes')), _buildTabOption('Data Fixa', tipoTemp == 'data', () => setState(() => tipoTemp = 'data'))]),
               const SizedBox(height: 8),
               AnimatedSwitcher(duration: const Duration(milliseconds: 300), child: tipoTemp == 'sessoes' ? TextFormField(key: const ValueKey('inputSessoes'), keyboardType: TextInputType.number, initialValue: sessoesInput, style: const TextStyle(color: AppTheme.textPrimary), decoration: rotinaInputDecoration(hintText: 'Quantas sessões?'), onChanged: (v) => sessoesInput = v) : ListTile(key: const ValueKey('inputData'), tileColor: AppTheme.surfaceDark, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), leading: const Icon(Icons.calendar_month, color: AppTheme.primary), title: Text(DateFormat('dd/MM/yyyy').format(dataTemp), style: const TextStyle(color: Colors.white)), onTap: () async { final picked = await showDatePicker(context: context, initialDate: dataTemp, firstDate: DateTime.now(), lastDate: DateTime.now().add(const Duration(days: 365))); if (picked != null) setState(() => dataTemp = picked); })),
