@@ -90,7 +90,7 @@ class GestaoSection extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(icon, color: AppTheme.labelSecondary.withAlpha(150), size: 22),
+              Icon(icon, color: AppColors.labelSecondary.withAlpha(150), size: 22),
               const SizedBox(width: 14),
               Expanded(
                 child: Text(
@@ -98,7 +98,7 @@ class GestaoSection extends StatelessWidget {
                   style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ),
-              Icon(Icons.chevron_right_rounded, color: AppTheme.labelSecondary.withAlpha(80), size: 20),
+              Icon(Icons.chevron_right_rounded, color: AppColors.labelSecondary.withAlpha(80), size: 20),
             ],
           ),
         ),

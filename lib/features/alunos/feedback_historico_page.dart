@@ -34,7 +34,7 @@ class FeedbackHistoricoPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const Text(
@@ -68,7 +68,7 @@ class FeedbackHistoricoPage extends StatelessWidget {
                 width: 12,
                 height: 12,
                 decoration: const BoxDecoration(
-                  color: AppTheme.primary,
+                  color: AppColors.primary,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -85,7 +85,7 @@ class FeedbackHistoricoPage extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 24),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.surfaceDark,
+                color: AppColors.surfaceDark,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.white.withAlpha(13)),
               ),
@@ -98,7 +98,7 @@ class FeedbackHistoricoPage extends StatelessWidget {
                       Text(
                         item['data'],
                         style: const TextStyle(
-                          color: AppTheme.labelSecondary,
+                          color: AppColors.labelSecondary,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -120,7 +120,7 @@ class FeedbackHistoricoPage extends StatelessWidget {
                     Text(
                       item['comentario'],
                       style: TextStyle(
-                        color: AppTheme.labelSecondary.withAlpha(200),
+                        color: AppColors.labelSecondary.withAlpha(200),
                         fontSize: 13,
                         fontStyle: FontStyle.italic,
                       ),
@@ -139,13 +139,13 @@ class FeedbackHistoricoPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppTheme.primary.withAlpha(26),
+        color: AppColors.primary.withAlpha(26),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         '$valor $status',
         style: const TextStyle(
-          color: AppTheme.primary,
+          color: AppColors.primary,
           fontSize: 10,
           fontWeight: FontWeight.bold,
         ),
@@ -157,7 +157,7 @@ class FeedbackHistoricoPage extends StatelessWidget {
     return Center(
       child: Text(
         'Nenhum feedback registrado ainda.',
-        style: TextStyle(color: AppTheme.labelSecondary),
+        style: TextStyle(color: AppColors.labelSecondary),
       ),
     );
   }

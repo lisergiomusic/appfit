@@ -124,7 +124,7 @@ class _AlunosPageState extends State<AlunosPage> {
     final bool? confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surfaceDark,
+        backgroundColor: AppColors.surfaceDark,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         ),
@@ -134,7 +134,7 @@ class _AlunosPageState extends State<AlunosPage> {
         ),
         content: const Text(
           'Deseja realmente remover este aluno? Todos os dados vinculados serão perdidos.',
-          style: TextStyle(color: AppTheme.labelSecondary),
+          style: TextStyle(color: AppColors.labelSecondary),
         ),
         actions: [
           TextButton(
@@ -142,7 +142,7 @@ class _AlunosPageState extends State<AlunosPage> {
             child: const Text(
               'CANCELAR',
               style: TextStyle(
-                color: AppTheme.labelSecondary,
+                color: AppColors.labelSecondary,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -197,7 +197,7 @@ class _AlunosPageState extends State<AlunosPage> {
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: const BoxDecoration(
-          color: AppTheme.surfaceDark,
+          color: AppColors.surfaceDark,
           borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
         ),
         padding: EdgeInsets.only(
@@ -229,14 +229,14 @@ class _AlunosPageState extends State<AlunosPage> {
                       'Preencha os dados do aluno abaixo',
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppTheme.labelSecondary,
+                        color: AppColors.labelSecondary,
                       ),
                     ),
                   ],
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: AppTheme.labelSecondary),
+                  icon: const Icon(Icons.close, color: AppColors.labelSecondary),
                 ),
               ],
             ),
@@ -279,7 +279,7 @@ class _AlunosPageState extends State<AlunosPage> {
                   emailController.text,
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
+                  backgroundColor: AppColors.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -303,11 +303,11 @@ class _AlunosPageState extends State<AlunosPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       body: RefreshIndicator(
         onRefresh: _fetchInitialData,
-        color: AppTheme.primary,
-        backgroundColor: AppTheme.surfaceDark,
+        color: AppColors.primary,
+        backgroundColor: AppColors.surfaceDark,
         edgeOffset: 120,
         child: CustomScrollView(
           controller: _scrollController,
@@ -321,7 +321,7 @@ class _AlunosPageState extends State<AlunosPage> {
             if (_isLoading)
               const SliverFillRemaining(
                 child: Center(
-                  child: CircularProgressIndicator(color: AppTheme.primary),
+                  child: CircularProgressIndicator(color: AppColors.primary),
                 ),
               )
             else if (_alunosDocs.isEmpty)
@@ -346,7 +346,7 @@ class _AlunosPageState extends State<AlunosPage> {
                                 padding: EdgeInsets.symmetric(vertical: 32),
                                 child: Center(
                                   child: CircularProgressIndicator(
-                                    color: AppTheme.primary,
+                                    color: AppColors.primary,
                                   ),
                                 ),
                               )
@@ -370,8 +370,8 @@ class _AlunosPageState extends State<AlunosPage> {
     return SliverAppBar(
       pinned: true,
       expandedHeight: 120,
-      backgroundColor: AppTheme.background,
-      surfaceTintColor: AppTheme.background,
+      backgroundColor: AppColors.background,
+      surfaceTintColor: AppColors.background,
       elevation: 0,
       scrolledUnderElevation: 0.5,
       leading: const SizedBox.shrink(),
@@ -383,7 +383,7 @@ class _AlunosPageState extends State<AlunosPage> {
           onPressed: _exibirModalCadastro,
           child: const Icon(
             CupertinoIcons.add,
-            color: AppTheme.primary,
+            color: AppColors.primary,
             size: 24,
           ),
         ),
@@ -413,7 +413,7 @@ class _AlunosPageState extends State<AlunosPage> {
               duration: const Duration(milliseconds: 200),
               opacity: isCollapsed ? 0.0 : 1.0,
               child: Container(
-                color: AppTheme.background,
+                color: AppColors.background,
                 padding: const EdgeInsets.only(left: 20, bottom: 10),
                 alignment: Alignment.bottomLeft,
                 child: const Text(
@@ -434,7 +434,7 @@ class _AlunosPageState extends State<AlunosPage> {
       child: Container(
         height: 36,
         decoration: BoxDecoration(
-          color: AppTheme.surfaceDark,
+          color: AppColors.surfaceDark,
           borderRadius: BorderRadius.circular(10),
         ),
         child: TextField(
@@ -444,25 +444,25 @@ class _AlunosPageState extends State<AlunosPage> {
             _fetchInitialData();
           },
           style: const TextStyle(
-            color: AppTheme.labelPrimary,
+            color: AppColors.labelPrimary,
             fontSize: 16,
             letterSpacing: -0.41,
             fontWeight: FontWeight.w400,
           ),
-          cursorColor: AppTheme.primary,
+          cursorColor: AppColors.primary,
           textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
             isDense: true,
             hintText: 'Buscar por nome...',
             hintStyle: TextStyle(
-              color: AppTheme.labelTertiary,
+              color: AppColors.labelTertiary,
               fontSize: 17,
               letterSpacing: -0.41,
               fontWeight: FontWeight.w400,
             ),
             prefixIcon: Icon(
               Icons.search_rounded,
-              color: AppTheme.labelSecondary.withAlpha(120),
+              color: AppColors.labelSecondary.withAlpha(120),
               size: 20,
             ),
             suffixIcon: _searchQuery.isNotEmpty
@@ -470,7 +470,7 @@ class _AlunosPageState extends State<AlunosPage> {
                     icon: const Icon(
                       Icons.close_rounded,
                       size: 18,
-                      color: AppTheme.labelSecondary,
+                      color: AppColors.labelSecondary,
                     ),
                     onPressed: () {
                       _searchController.clear();
@@ -495,7 +495,7 @@ class _AlunosPageState extends State<AlunosPage> {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
       child: CupertinoSlidingSegmentedControl<String>(
-        backgroundColor: AppTheme.surfaceDark,
+        backgroundColor: AppColors.surfaceDark,
         thumbColor: const Color(0xFF3A3A3C),
         groupValue: _statusFilter,
         children: {
@@ -528,7 +528,7 @@ class _AlunosPageState extends State<AlunosPage> {
               fontSize: 13,
               letterSpacing: -0.08,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              color: isSelected ? Colors.white : AppTheme.labelSecondary,
+              color: isSelected ? Colors.white : AppColors.labelSecondary,
             ),
           ),
           const SizedBox(width: 4),
@@ -536,7 +536,7 @@ class _AlunosPageState extends State<AlunosPage> {
             '($count)',
             style: TextStyle(
               fontSize: 11,
-              color: isSelected ? AppTheme.primary : AppTheme.labelTertiary,
+              color: isSelected ? AppColors.primary : AppColors.labelTertiary,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -673,7 +673,7 @@ class _AlunosPageState extends State<AlunosPage> {
                 ),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
-                  color: AppTheme.labelSecondary.withAlpha(100),
+                  color: AppColors.labelSecondary.withAlpha(100),
                   size: 14,
                 ),
               ],
@@ -692,7 +692,7 @@ class _AlunosPageState extends State<AlunosPage> {
           Icon(
             Icons.group_add_rounded,
             size: 64,
-            color: AppTheme.labelSecondary.withAlpha(30),
+            color: AppColors.labelSecondary.withAlpha(30),
           ),
           const SizedBox(height: 24),
           const Text(
@@ -706,7 +706,7 @@ class _AlunosPageState extends State<AlunosPage> {
           const SizedBox(height: 8),
           const Text(
             'Toque em ADICIONAR para começar.',
-            style: TextStyle(color: AppTheme.labelSecondary, fontSize: 14),
+            style: TextStyle(color: AppColors.labelSecondary, fontSize: 14),
           ),
         ],
       ),
@@ -723,14 +723,14 @@ class _AlunosPageState extends State<AlunosPage> {
             Icon(
               Icons.search_off_rounded,
               size: 48,
-              color: AppTheme.labelSecondary.withAlpha(40),
+              color: AppColors.labelSecondary.withAlpha(40),
             ),
             const SizedBox(height: 16),
             Text(
               'Nenhum resultado para os filtros aplicados',
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: AppTheme.labelSecondary,
+                color: AppColors.labelSecondary,
                 fontSize: 14,
               ),
             ),

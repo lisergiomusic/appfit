@@ -74,12 +74,12 @@ class AlunoHeaderSection extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: AppTheme.labelSecondary),
+          Icon(icon, size: 12, color: AppColors.labelSecondary),
           const SizedBox(width: 6),
           Text(
             label,
             style: const TextStyle(
-              color: AppTheme.labelSecondary,
+              color: AppColors.labelSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),

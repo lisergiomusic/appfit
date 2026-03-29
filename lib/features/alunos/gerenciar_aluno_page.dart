@@ -85,7 +85,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Em breve: Link de convite copiado/enviado!'),
-        backgroundColor: AppTheme.success,
+        backgroundColor: AppColors.success,
       ),
     );
   }
@@ -103,7 +103,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surfaceDark,
+        backgroundColor: AppColors.surfaceDark,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusXL)),
         title: const Text(
           'Excluir Aluno?',
@@ -111,14 +111,14 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
         ),
         content: Text(
           'Tem certeza que deseja remover ${widget.alunoNome} definitivamente? Todos os treinos e históricos serão perdidos.',
-          style: const TextStyle(color: AppTheme.labelSecondary),
+          style: const TextStyle(color: AppColors.labelSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: const Text(
               'CANCELAR',
-              style: TextStyle(color: AppTheme.labelSecondary, fontWeight: FontWeight.bold),
+              style: TextStyle(color: AppColors.labelSecondary, fontWeight: FontWeight.bold),
             ),
           ),
           TextButton(
@@ -143,7 +143,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Aluno excluído com sucesso.'),
-              backgroundColor: AppTheme.primary,
+              backgroundColor: AppColors.primary,
             ),
           );
         }
@@ -158,14 +158,14 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.background,
+        backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: true,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppTheme.labelPrimary),
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.labelPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -173,7 +173,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
-            color: AppTheme.labelPrimary,
+            color: AppColors.labelPrimary,
             letterSpacing: -0.3,
           ),
         ),
@@ -215,7 +215,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                 icon: Icons.payments_rounded,
                 title: 'Financeiro do Aluno',
                 subtitle: 'Faturas, histórico e balanço',
-                iconColor: AppTheme.primary,
+                iconColor: AppColors.primary,
                 onTap: () => _irParaFinanceiro(context),
               ),
             ]),
@@ -261,7 +261,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                 Text(
                   widget.alunoNome,
                   style: const TextStyle(
-                    color: AppTheme.labelPrimary,
+                    color: AppColors.labelPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.5,
@@ -291,7 +291,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
       child: Text(
         title,
         style: const TextStyle(
-          color: AppTheme.labelSecondary,
+          color: AppColors.labelSecondary,
           fontSize: 11,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.2,
@@ -325,10 +325,10 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                         Container(
                           padding: const EdgeInsets.all(8), // menor
                           decoration: BoxDecoration(
-                            color: (item.iconColor ?? AppTheme.labelPrimary).withAlpha(15),
+                            color: (item.iconColor ?? AppColors.labelPrimary).withAlpha(15),
                             borderRadius: BorderRadius.circular(10), // mais sutil
                           ),
-                          child: Icon(item.icon, color: item.iconColor ?? AppTheme.labelPrimary, size: 20), // menor
+                          child: Icon(item.icon, color: item.iconColor ?? AppColors.labelPrimary, size: 20), // menor
                         ),
                         const SizedBox(width: 12), // menor
                         Expanded(
@@ -349,7 +349,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                         ),
                         Icon(
                           Icons.chevron_right_rounded,
-                          color: AppTheme.labelTertiary,
+                          color: AppColors.labelTertiary,
                           size: 18, // menor
                         ),
                       ],

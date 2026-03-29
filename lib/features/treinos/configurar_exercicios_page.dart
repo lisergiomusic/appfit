@@ -61,7 +61,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SystemChrome.setSystemUIOverlayStyle(
         SystemUiOverlayStyle(
-          systemNavigationBarColor: AppTheme.background,
+          systemNavigationBarColor: AppColors.background,
           systemNavigationBarIconBrightness: Brightness.light,
         ),
       );
@@ -140,7 +140,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
       child: ScaffoldMessenger(
         key: _scaffoldMessengerKey,
         child: Scaffold(
-          backgroundColor: AppTheme.background,
+          backgroundColor: AppColors.background,
           body: CustomScrollView(
             controller: _scrollController,
             physics: const AlwaysScrollableScrollPhysics(
@@ -195,7 +195,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                           style: TextStyle(
                                             color: isLimit
                                                 ? Colors.redAccent
-                                                : AppTheme.labelSecondary,
+                                                : AppColors.labelSecondary,
                                             fontSize: 12,
                                             fontWeight: isLimit
                                                 ? FontWeight.bold
@@ -217,12 +217,12 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
                                       borderSide: BorderSide(
-                                        color: AppTheme.primary.withAlpha(120),
+                                        color: AppColors.primary.withAlpha(120),
                                         width: 1.5,
                                       ),
                                     ),
                                   ),
-                                  cursorColor: AppTheme.primary,
+                                  cursorColor: AppColors.primary,
                                   textCapitalization: TextCapitalization.words,
                                   onSubmitted: (_) =>
                                       controller.toggleEditTitle(),
@@ -260,7 +260,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                   ? Icons.check_circle_rounded
                                   : Icons.edit_note,
                               color: controller.isEditingTitle
-                                  ? AppTheme.primary
+                                  ? AppColors.primary
                                   : Colors.white.withAlpha(80),
                               size: 44,
                             ),
@@ -323,7 +323,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                 // TODO: Implementar ação de edição
                               },
                               style: TextButton.styleFrom(
-                                foregroundColor: AppTheme.primary,
+                                foregroundColor: AppColors.primary,
                                 padding: const EdgeInsets.symmetric(horizontal: AppTheme.space8),
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
@@ -435,7 +435,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                               content: Text('$removedItemName removido'),
                               action: SnackBarAction(
                                 label: 'DESFAZER',
-                                textColor: AppTheme.primary,
+                                textColor: AppColors.primary,
                                 onPressed: () {
                                   controller.cancelSnackBarTimer();
                                   _scaffoldMessengerKey.currentState
@@ -515,7 +515,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                           child: Icon(
                             Icons.fitness_center_outlined,
                             size: 40,
-                            color: AppTheme.primary,
+                            color: AppColors.primary,
                           ),
                         ),
                       ),
@@ -534,7 +534,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                         'montar o seu treino.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: AppTheme.labelSecondary,
+                          color: AppColors.labelSecondary,
                           fontSize: 14,
                           height: 1.4,
                         ),
@@ -578,7 +578,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
       padding: const EdgeInsets.only(bottom: AppTheme.space12),
       child: Container(
         decoration: BoxDecoration(
-          color: AppTheme.surfaceDark,
+          color: AppColors.surfaceDark,
           borderRadius: BorderRadius.circular(AppTheme.radiusXL),
           boxShadow: [AppTheme.cardShadow],
           border: AppTheme.cardBorder,
@@ -588,8 +588,8 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
           elevation: 0,
           child: InkWell(
             borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-            splashColor: AppTheme.splash.withAlpha(50),
-            highlightColor: AppTheme.splash.withAlpha(30),
+            splashColor: AppColors.splash.withAlpha(50),
+            highlightColor: AppColors.splash.withAlpha(30),
             onTap: () async {
               await Navigator.push(
                 context,
@@ -622,7 +622,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                             const Center(
                           child: Icon(
                             Icons.fitness_center,
-                            color: AppTheme.labelSecondary,
+                            color: AppColors.labelSecondary,
                           ),
                         ),
                         loadingBuilder: (context, child, loadingProgress) {
@@ -634,7 +634,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                       loadingProgress.expectedTotalBytes!
                                   : null,
                               strokeWidth: 2,
-                              color: AppTheme.primary.withAlpha(100),
+                              color: AppColors.primary.withAlpha(100),
                             ),
                           );
                         },
@@ -650,7 +650,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                         Text(
                           ex.nome,
                           style: const TextStyle(
-                            color: AppTheme.labelPrimary,
+                            color: AppColors.labelPrimary,
                             fontWeight: FontWeight.w700,
                             fontSize: 17,
                             letterSpacing: -0.1,
@@ -671,7 +671,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                 text:
                                     '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
                                 style: const TextStyle(
-                                  color: AppTheme.primary,
+                                  color: AppColors.primary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -679,7 +679,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                 TextSpan(
                                   text: ' • ${ex.grupoMuscular.join(' • ')}',
                                   style: const TextStyle(
-                                    color: AppTheme.labelSecondary,
+                                    color: AppColors.labelSecondary,
                                   ),
                                 ),
                             ],
@@ -691,7 +691,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                   const SizedBox(width: 8),
                   Icon(
                     CupertinoIcons.chevron_right,
-                    color: AppTheme.labelSecondary.withAlpha(100),
+                    color: AppColors.labelSecondary.withAlpha(100),
                     size: 20.0,
                   ),
                 ],
@@ -717,7 +717,7 @@ class _MetricCard extends StatelessWidget {
     Widget card = Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceDark,
+        color: AppColors.surfaceDark,
         borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         border: AppTheme.cardBorder,
         boxShadow: [
@@ -732,7 +732,7 @@ class _MetricCard extends StatelessWidget {
               Text(
                 label,
                 style: const TextStyle(
-                  color: AppTheme.labelSecondary,
+                  color: AppColors.labelSecondary,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -744,7 +744,7 @@ class _MetricCard extends StatelessWidget {
                 Icon(
                   Icons.info_outline,
                   size: 14,
-                  color: AppTheme.labelSecondary.withAlpha(180),
+                  color: AppColors.labelSecondary.withAlpha(180),
                 ),
               ],
             ],
@@ -772,9 +772,9 @@ class _MetricCard extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         margin: const EdgeInsets.symmetric(horizontal: 24),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceDark,
+          color: AppColors.surfaceDark,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.primary.withAlpha(100)),
+          border: Border.all(color: AppColors.primary.withAlpha(100)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withAlpha(100),
@@ -858,16 +858,16 @@ class _HintingExercicioAnimatorState extends State<_HintingExercicioAnimator>
       vsync: this,
     );
 
-    final highlightColor = AppTheme.primary.withValues(alpha: 0.12);
+    final highlightColor = AppColors.primary.withValues(alpha: 0.12);
     // Sequência 1: Animação de flash (0ms a 1200ms)
     _colorAnimation =
         TweenSequence<Color?>([
           TweenSequenceItem(
-            tween: ColorTween(begin: AppTheme.surfaceDark, end: highlightColor),
+            tween: ColorTween(begin: AppColors.surfaceDark, end: highlightColor),
             weight: 50.0,
           ),
           TweenSequenceItem(
-            tween: ColorTween(begin: highlightColor, end: AppTheme.surfaceDark),
+            tween: ColorTween(begin: highlightColor, end: AppColors.surfaceDark),
             weight: 50.0,
           ),
         ]).animate(

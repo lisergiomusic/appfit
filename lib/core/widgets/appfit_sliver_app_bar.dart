@@ -33,7 +33,7 @@ class AppFitSliverAppBar extends StatelessWidget {
             padding: const EdgeInsets.only(left: 8),
             child: const Icon(
               CupertinoIcons.back,
-              color: AppTheme.labelPrimary,
+              color: AppColors.labelPrimary,
               size: 24,
             ),
           ),
@@ -41,7 +41,7 @@ class AppFitSliverAppBar extends StatelessWidget {
 
     return SliverAppBar(
       automaticallyImplyLeading: false,
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       surfaceTintColor: Colors.transparent,
       pinned: isPinned,
       expandedHeight: expandedHeight,

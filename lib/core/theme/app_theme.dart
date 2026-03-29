@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
+import 'tokens/app_colors.dart';
 export 'tokens/spacing_tokens.dart';
+export 'tokens/app_colors.dart';
 
 class AppTheme {
-  // --- 1. CORES ---
-  static const Color primary = Color(0xFF30D158);
-  static const Color splash = primary;
-  static const Color background = Color(0xFF131314);
-  static const Color iosBlue = Color(0xFF00B4D8);
-  static const Color silverGrey = Color.fromRGBO(255, 255, 255, 0.5);
-  static const Color surfaceDark = Color(0xFF1E1F20);
-  static const Color surfaceLight = Color(0xFF2C2C2E);
-  static const Color buttonSurface = Color(0xFF1E1E1E);
-  static const Color labelPrimary = Color(0xFFFFFFFF);
-  static const Color labelSecondary = Color(0x99EBEBF5);
-  static const Color labelTertiary = Color(0x4DEBEBF5);
-  static const Color textLabel = Color(0xFF8E8E93);
-  static const Color accentMetrics = Color(0xFFFF9F0A);
-  static const Color success = Color(0xFF4CAF50);
-  static const Color systemRed = Color(0xFFFF3B30);
-  static const Color fillSecondary = Color(0x1A787880);
+  // --- 1. CORES (Tokens de Cor) ---
+  static const Color primary = AppColors.primary;
+  static const Color splash = AppColors.splash;
+  static const Color background = AppColors.background;
+  static const Color iosBlue = AppColors.iosBlue;
+  static const Color silverGrey = AppColors.silverGrey;
+  static const Color surfaceDark = AppColors.surfaceDark;
+  static const Color surfaceLight = AppColors.surfaceLight;
+  static const Color buttonSurface = AppColors.buttonSurface;
+  static const Color labelPrimary = AppColors.labelPrimary;
+  static const Color labelSecondary = AppColors.labelSecondary;
+  static const Color labelTertiary = AppColors.labelTertiary;
+  static const Color textLabel = AppColors.textLabel;
+  static const Color accentMetrics = AppColors.accentMetrics;
+  static const Color success = AppColors.success;
+  static const Color systemRed = AppColors.systemRed;
+  static const Color fillSecondary = AppColors.fillSecondary;
+
 
   // --- 2. ESPAÇAMENTOS GLOBAIS
   static const double paddingScreen = 16;
@@ -57,53 +60,53 @@ class AppTheme {
     fontSize: 34,
     fontWeight: FontWeight.bold,
     letterSpacing: -0.41,
-    color: AppTheme.labelPrimary,
+    color: AppColors.labelPrimary,
   );
 
   static const title1 = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w700,
     letterSpacing: 0.36,
-    color: labelPrimary,
+    color: AppColors.labelPrimary,
   );
 
   static TextStyle sectionHeader = TextStyle(
     fontSize: 13,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.08,
-    color: AppTheme.labelSecondary,
+    color: AppColors.labelSecondary,
   );
 
   static const sectionAction = TextStyle(
     fontSize: 13,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.08,
-    color: AppTheme.primary ,
+    color: AppColors.primary ,
   );
 
   static const TextStyle pageTitle = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.2,
-    color: AppTheme.labelPrimary,
+    color: AppColors.labelPrimary,
   );
 
   static const TextStyle inputPlaceHolder = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
-    color: AppTheme.labelTertiary,
+    color: AppColors.labelTertiary,
   );
 
   static const inputText = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
-    color: labelPrimary, // branco no dark, preto no light
+    color: AppColors.labelPrimary, // branco no dark, preto no light
   );
 
   static const TextStyle bodyText = TextStyle(
-    color: labelPrimary,
+    color: AppColors.labelPrimary,
     fontSize: 17,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
@@ -112,19 +115,19 @@ class AppTheme {
   static const TextStyle cardTitle = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
-    color: labelPrimary,
+    color: AppColors.labelPrimary,
     letterSpacing: -0.41,
   );
 
   static const TextStyle cardSubtitle = TextStyle(
     fontSize: 15,
-    color: labelSecondary,
+    color: AppColors.labelSecondary,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.24,
   );
 
   static const TextStyle caption = TextStyle(
-    color: labelSecondary,
+    color: AppColors.labelSecondary,
     fontSize: 12,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.0,
@@ -134,11 +137,11 @@ class AppTheme {
     fontSize: 15,
     fontWeight: FontWeight.w500,
     letterSpacing: -0.24,
-    color: labelSecondary,
+    color: AppColors.labelSecondary,
   );
 
   static const TextStyle microLabelTextStyle = TextStyle(
-    color: AppTheme.silverGrey,
+    color: AppColors.silverGrey,
     fontSize: 10,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.8,

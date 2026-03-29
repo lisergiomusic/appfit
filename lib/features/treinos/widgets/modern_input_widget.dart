@@ -72,7 +72,7 @@ class _ModernInputWidgetState extends State<ModernInputWidget> {
           textAlign: TextAlign.center,
           textAlignVertical: TextAlignVertical.center,
           keyboardType: TextInputType.text,
-          cursorColor: AppTheme.primary,
+          cursorColor: AppColors.primary,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 16,
@@ -82,7 +82,7 @@ class _ModernInputWidgetState extends State<ModernInputWidget> {
           decoration: InputDecoration(
             filled: true,
             fillColor: isFocused
-                ? AppTheme.primary.withAlpha(35)
+                ? AppColors.primary.withAlpha(35)
                 : Colors.white.withAlpha(15),
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(
@@ -99,7 +99,7 @@ class _ModernInputWidgetState extends State<ModernInputWidget> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(
-                color: AppTheme.primary.withAlpha(150),
+                color: AppColors.primary.withAlpha(150),
                 width: 0.5,
               ),
             ),

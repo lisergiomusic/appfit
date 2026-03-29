@@ -115,7 +115,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: AppTheme.surfaceDark,
+            backgroundColor: AppColors.surfaceDark,
             title: const Text(
               'Descartar alterações?',
               style: TextStyle(color: Colors.white),
@@ -129,7 +129,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 onPressed: () => Navigator.pop(context, false),
                 child: const Text(
                   'CONTINUAR EDITANDO',
-                  style: TextStyle(color: AppTheme.primary),
+                  style: TextStyle(color: AppColors.primary),
                 ),
               ),
               TextButton(
@@ -291,7 +291,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppTheme.surfaceDark,
+        backgroundColor: AppColors.surfaceDark,
         title: const Text(
           'Remover Planilha?',
           style: TextStyle(color: Colors.white),
@@ -483,15 +483,15 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppTheme.background,
+        backgroundColor: AppColors.background,
         appBar: AppBar(
-          backgroundColor: AppTheme.background,
+          backgroundColor: AppColors.background,
           elevation: 0,
           leading: CupertinoButton(
             padding: const EdgeInsets.only(left: 8),
             child: const Icon(
               CupertinoIcons.back,
-              color: AppTheme.labelPrimary,
+              color: AppColors.labelPrimary,
               size: 24,
             ),
             onPressed: () => Navigator.of(context).maybePop(),
@@ -534,7 +534,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                       ? 'Defina o objetivo'
                                       : value.text,
                                   style: const TextStyle(
-                                    color: AppTheme.labelSecondary,
+                                    color: AppColors.labelSecondary,
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -547,7 +547,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                 const Icon(
                                   Icons.schedule,
                                   size: 14,
-                                  color: AppTheme.labelSecondary,
+                                  color: AppColors.labelSecondary,
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
@@ -555,7 +555,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                       ? '$_vencimentoSessoes sessões'
                                       : 'Vence em ${DateFormat('dd/MM/yyyy').format(_vencimentoData)}',
                                   style: const TextStyle(
-                                    color: AppTheme.labelSecondary,
+                                    color: AppColors.labelSecondary,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -569,7 +569,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                         onPressed: () => _exibirModalInfo(context),
                         icon: const Icon(
                           CupertinoIcons.ellipsis_vertical,
-                          color: AppTheme.labelSecondary,
+                          color: AppColors.labelSecondary,
                         ),
                       ),
                     ],
@@ -609,13 +609,13 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppTheme.surfaceLight.withAlpha(40),
+                color: AppColors.surfaceLight.withAlpha(40),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 CupertinoIcons.square_list,
                 size: 48,
-                color: AppTheme.primary.withAlpha(150),
+                color: AppColors.primary.withAlpha(150),
               ),
             ),
             const SizedBox(height: 24),
@@ -632,7 +632,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               'Adicione as sessões de treino (ex: Treino A, Treino B)\npara começar a configurar os exercícios.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppTheme.labelSecondary,
+                color: AppColors.labelSecondary,
                 fontSize: 14,
                 height: 1.5,
               ),
@@ -650,7 +650,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.primary,
+          color: AppColors.primary,
           borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         ),
         child: const Row(
@@ -676,18 +676,18 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        color: AppTheme.primary.withAlpha(15),
+        color: AppColors.primary.withAlpha(15),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.primary.withAlpha(30)),
+        border: Border.all(color: AppColors.primary.withAlpha(30)),
       ),
       child: const Row(
         children: [
-          Icon(Icons.collections_bookmark, color: AppTheme.primary, size: 18),
+          Icon(Icons.collections_bookmark, color: AppColors.primary, size: 18),
           SizedBox(width: 12),
           Text(
             'Template de Biblioteca',
             style: TextStyle(
-              color: AppTheme.primary,
+              color: AppColors.primary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -736,7 +736,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   child: Text(
                     String.fromCharCode(65 + index),
                     style: const TextStyle(
-                      color: AppTheme.primary,
+                      color: AppColors.primary,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -751,7 +751,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     Text(
                       sessao.nome,
                       style: const TextStyle(
-                        color: AppTheme.labelPrimary,
+                        color: AppColors.labelPrimary,
                         fontWeight: FontWeight.w700,
                         fontSize: 17,
                       ),
@@ -762,7 +762,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     Text(
                       '${sessao.exercicios.length} exercícios',
                       style: const TextStyle(
-                        color: AppTheme.labelSecondary,
+                        color: AppColors.labelSecondary,
                         fontSize: 12,
                       ),
                     ),
@@ -857,9 +857,9 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.background,
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
@@ -923,7 +923,7 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
                   autofocus: true,
                   maxLength: 40,
                   style: const TextStyle(
-                    color: AppTheme.labelPrimary,
+                    color: AppColors.labelPrimary,
                     fontSize: 15,
                   ),
                   decoration: rotinaInputDecoration(
@@ -963,7 +963,7 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceLight,
+                  color: AppColors.surfaceLight,
                   borderRadius: BorderRadius.circular(AppTheme.radiusLG),
                 ),
                 child: Column(
@@ -997,13 +997,13 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
                             )
                           : ListTile(
                               key: const ValueKey('inputData'),
-                              tileColor: AppTheme.surfaceDark,
+                              tileColor: AppColors.surfaceDark,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(AppTheme.radiusSM),
                               ),
                               leading: const Icon(
                                 Icons.calendar_month,
-                                color: AppTheme.primary,
+                                color: AppColors.primary,
                               ),
                               title: Text(
                                 DateFormat('dd/MM/yyyy').format(dataTemp),
@@ -1062,14 +1062,14 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? AppTheme.background : Colors.transparent,
+            color: isSelected ? AppColors.background : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isSelected ? AppTheme.primary : Colors.white38,
+              color: isSelected ? AppColors.primary : Colors.white38,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),
@@ -1113,9 +1113,9 @@ class _SessaoTreinoPageState extends State<_SessaoTreinoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.background,
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
@@ -1140,7 +1140,7 @@ class _SessaoTreinoPageState extends State<_SessaoTreinoPage> {
             child: Text(
               'Salvar',
               style: TextStyle(
-                color: AppTheme.primary,
+                color: AppColors.primary,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1173,7 +1173,7 @@ class _SessaoTreinoPageState extends State<_SessaoTreinoPage> {
                 label: 'DIA DA SEMANA',
                 child: DropdownButtonFormField<String>(
                   initialValue: diaSemana,
-                  dropdownColor: AppTheme.surfaceLight,
+                  dropdownColor: AppColors.surfaceLight,
                   items:
                       [
                             'Segunda',

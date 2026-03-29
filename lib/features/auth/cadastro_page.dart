@@ -106,14 +106,14 @@ class _CadastroPageState extends State<CadastroPage> {
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.labelPrimary,
+                  color: AppColors.labelPrimary,
                   height: 1.2,
                 ),
               ),
               const SizedBox(height: 8),
               const Text(
                 'Preencha os dados abaixo para começar.',
-                style: TextStyle(fontSize: 16, color: AppTheme.labelSecondary),
+                style: TextStyle(fontSize: 16, color: AppColors.labelSecondary),
               ),
               const SizedBox(height: 32),
 
@@ -203,8 +203,8 @@ class _CadastroPageState extends State<CadastroPage> {
       obscureText: obscureText,
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
-      style: const TextStyle(color: AppTheme.labelPrimary),
-      cursorColor: AppTheme.primary,
+      style: const TextStyle(color: AppColors.labelPrimary),
+      cursorColor: AppColors.primary,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon),

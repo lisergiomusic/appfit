@@ -51,7 +51,7 @@ class _ChecagemPaginaState extends State<ChecagemPagina> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(
-              child: CircularProgressIndicator(color: AppTheme.primary),
+              child: CircularProgressIndicator(color: AppColors.primary),
             ),
           );
         }
@@ -63,7 +63,7 @@ class _ChecagemPaginaState extends State<ChecagemPagina> {
               if (typeSnapshot.connectionState == ConnectionState.waiting) {
                 return const Scaffold(
                   body: Center(
-                    child: CircularProgressIndicator(color: AppTheme.primary),
+                    child: CircularProgressIndicator(color: AppColors.primary),
                   ),
                 );
               }
@@ -103,7 +103,7 @@ class SelecaoPerfilScreen extends StatelessWidget {
                   const Icon(
                     Icons.fitness_center,
                     size: 42,
-                    color: AppTheme.primary,
+                    color: AppColors.primary,
                   ),
                   const SizedBox(width: 12),
                   const Text(
@@ -112,7 +112,7 @@ class SelecaoPerfilScreen extends StatelessWidget {
                       fontSize: 34,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.2,
-                      color: AppTheme.labelPrimary,
+                      color: AppColors.labelPrimary,
                     ),
                   ),
                 ],
@@ -124,7 +124,7 @@ class SelecaoPerfilScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
-                  color: AppTheme.labelSecondary,
+                  color: AppColors.labelSecondary,
                 ),
               ),
               const Spacer(flex: 2),
@@ -164,7 +164,7 @@ class SelecaoPerfilScreen extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.surfaceLight,
+                    backgroundColor: AppColors.surfaceLight,
                   ),
                   child: const Text(
                     'Sou aluno',

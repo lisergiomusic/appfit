@@ -185,7 +185,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       content: const Text('Série removida'),
       action: SnackBarAction(
         label: 'DESFAZER',
-        textColor: AppTheme.primary,
+        textColor: AppColors.primary,
         onPressed: () {
           controller.cancelSnackBarTimer();
           _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
@@ -225,7 +225,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       builder: (context) {
         return Container(
           decoration: const BoxDecoration(
-            color: AppTheme.surfaceDark,
+            color: AppColors.surfaceDark,
             borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
           ),
           child: SafeArea(
@@ -241,7 +241,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                     height: 5,
                     margin: const EdgeInsets.only(bottom: 24),
                     decoration: BoxDecoration(
-                      color: AppTheme.textLabel.withAlpha(50),
+                      color: AppColors.textLabel.withAlpha(50),
                       borderRadius: BorderRadius.circular(2.5),
                     ),
                   ),
@@ -249,7 +249,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   const Text(
                     'Tipo de Série',
                     style: TextStyle(
-                      color: AppTheme.labelPrimary,
+                      color: AppColors.labelPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       letterSpacing: -0.3,
@@ -259,7 +259,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
 
                   Container(
                     decoration: BoxDecoration(
-                      color: AppTheme.surfaceLight,
+                      color: AppColors.surfaceLight,
                       borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                     ),
                     child: Column(
@@ -353,7 +353,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         Text(
                           title,
                           style: const TextStyle(
-                            color: AppTheme.labelPrimary,
+                            color: AppColors.labelPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -362,7 +362,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         Text(
                           subtitle,
                           style: TextStyle(
-                            color: AppTheme.labelTertiary,
+                            color: AppColors.labelTertiary,
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                             letterSpacing: 0.0,
@@ -373,7 +373,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   ),
                   Icon(
                     Icons.chevron_right_rounded,
-                    color: AppTheme.textLabel.withAlpha(40),
+                    color: AppColors.textLabel.withAlpha(40),
                   ),
                 ],
               ),
@@ -393,8 +393,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
   }
 
-  TextStyle _microLabelStyle() => const TextStyle(color: AppTheme.labelSecondary, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 0.8);
-  TextStyle _sectionEyebrowStyle() => const TextStyle(color: AppTheme.labelSecondary, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 1.0);
+  TextStyle _microLabelStyle() => const TextStyle(color: AppColors.labelSecondary, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 0.8);
+  TextStyle _sectionEyebrowStyle() => const TextStyle(color: AppColors.labelSecondary, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 1.0);
 
   InputDecoration _editableFieldDecoration() {
     return const InputDecoration(
@@ -480,7 +480,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       builder: (context, child) {
         final editFlashCtrl = _flashControllers[serie.hashCode];
         final editFlashColor = editFlashCtrl != null
-            ? ColorTween(begin: AppTheme.accentMetrics.withAlpha(50), end: Colors.transparent).animate(editFlashCtrl).value
+            ? ColorTween(begin: AppColors.accentMetrics.withAlpha(50), end: Colors.transparent).animate(editFlashCtrl).value
             : Colors.transparent;
 
         return Container(
@@ -516,7 +516,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOutCubic,
                   padding: EdgeInsets.only(left: isEditingSection ? 0 : 18),
-                  child: Text('$visualNumber', style: const TextStyle(color: AppTheme.labelSecondary, fontSize: 14, fontWeight: FontWeight.w700)),
+                  child: Text('$visualNumber', style: const TextStyle(color: AppColors.labelSecondary, fontSize: 14, fontWeight: FontWeight.w700)),
                 ),
               ),
               const SizedBox(width: AppTheme.space8),
@@ -540,7 +540,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   duration: const Duration(milliseconds: 200),
                   opacity: isEditingSection ? 1.0 : 0.0,
                   child: IconButton(
-                    icon: const Icon(Icons.copy_rounded, color: AppTheme.primary, size: 18),
+                    icon: const Icon(Icons.copy_rounded, color: AppColors.primary, size: 18),
                     onPressed: () {
                       final sectionIndex = controller.sectionIndexOf(serie);
                       controller.duplicateSerie(serie);
@@ -571,7 +571,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       inputFormatters: inputFormatters,
       textAlign: TextAlign.center,
       keyboardType: TextInputType.text,
-      style: const TextStyle(color: AppTheme.labelPrimary, fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: -0.0),
+      style: const TextStyle(color: AppColors.labelPrimary, fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: -0.0),
       decoration: _editableFieldDecoration(),
     );
   }
@@ -605,7 +605,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   IconButton(
                     icon: Icon(
                       isEditingSection ? Icons.check : Icons.more_vert,
-                      color: AppTheme.labelSecondary,
+                      color: AppColors.labelSecondary,
                       size: 20,
                     ),
                     onPressed: () {
@@ -623,7 +623,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
           ),
           Container(
             decoration: BoxDecoration(
-              color: AppTheme.surfaceDark,
+              color: AppColors.surfaceDark,
               borderRadius: BorderRadius.circular(AppTheme.radiusXL),
               border: Border.all(color: Colors.white.withAlpha(20), width: 0.5),
             ),
@@ -693,7 +693,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             constraints: const BoxConstraints(minHeight: 80),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceDark.withAlpha(180),
+              color: AppColors.surfaceDark.withAlpha(180),
               borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                 boxShadow: [
                   BoxShadow(
@@ -711,7 +711,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   : ex.instrucoes!,
               style: TextStyle(
                 color: ex.instrucoes?.isEmpty ?? true
-                    ? AppTheme.labelSecondary.withAlpha(80)
+                    ? AppColors.labelSecondary.withAlpha(80)
                     : Colors.white,
                 fontSize: 14,
                 height: 1.5,
@@ -737,7 +737,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
           padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: Container(
             decoration: BoxDecoration(
-              color: AppTheme.background.withAlpha(235),
+              color: AppColors.background.withAlpha(235),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               boxShadow: [BoxShadow(color: Colors.black.withAlpha(100), blurRadius: 40, spreadRadius: 10)],
             ),
@@ -761,7 +761,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           widget.onChanged();
                           Navigator.pop(context);
                         },
-                        child: const Text('OK', style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w800, fontSize: 15)),
+                        child: const Text('OK', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w800, fontSize: 15)),
                       ),
                     ],
                   ),
@@ -777,7 +777,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         maxLines: 8,
                         maxLength: 250,
                         autofocus: true,
-                        cursorColor: AppTheme.primary,
+                        cursorColor: AppColors.primary,
                         style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.5),
                         decoration: InputDecoration(
                           hintText: 'Ex: "Mantenha o cotovelo fixo e faça o movimento de forma controlada."',
@@ -832,7 +832,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       child: ScaffoldMessenger(
         key: _scaffoldMessengerKey,
         child: Scaffold(
-          backgroundColor: AppTheme.background,
+          backgroundColor: AppColors.background,
           body: SafeArea(
             child: CustomScrollView(
               slivers: [
@@ -870,9 +870,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         if (ex.series.isEmpty)
                           Column(children: [
                             const SizedBox(height: 48),
-                            const Icon(Icons.fitness_center_rounded, size: 50, color: AppTheme.primary),
+                            const Icon(Icons.fitness_center_rounded, size: 50, color: AppColors.primary),
                             const SizedBox(height: 24),
-                            const Text('Prescreva o exercício', style: TextStyle(color: AppTheme.labelPrimary, fontSize: 22, fontWeight: FontWeight.bold)),
+                            const Text('Prescreva o exercício', style: TextStyle(color: AppColors.labelPrimary, fontSize: 22, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 32),
                             OrangeGlassActionButton(label: 'Adicionar Série', onTap: _adicionarSerie, bottomMargin: 0, showGlow: false),
                           ])
@@ -922,7 +922,7 @@ class _ExerciseVideoCard extends StatelessWidget {
                 child: Image.network(
                   imageUrl ?? 'https://lh3.googleusercontent.com/aida-public/AB6AXuAXzEmkEB7BMnRUWQ6iIDF5Oc_gVzBjCjxHaac9LYJyL8KxdAi-mTOKK2v2nO9Vt3-DXPcDcoSM3RkTh-iDX0q8oShyD0TllFVTVsQBP3fKU0HPHHtOlkO5uRRx_yIiMes1tmlEr6VkkMyvhy-LTIzYuWYuJaLsSzeba5FPnNX9_RQjcusWmbIyWrBVLVSmLZjDaMcPJMKiSSY6S-RSZFaAzRzHQdDbWnPbv1aUP1akkwSiPE9Rriwmdn8VrF3w0ZIWei1Cxfd7B2Ut',
                   fit: BoxFit.cover,
-                  errorBuilder: (context, _, _) => Container(color: AppTheme.surfaceDark, child: const Icon(Icons.videocam_off, color: Colors.white38)),
+                  errorBuilder: (context, _, _) => Container(color: AppColors.surfaceDark, child: const Icon(Icons.videocam_off, color: Colors.white38)),
                 ),
               ),
               Center(
@@ -987,7 +987,7 @@ class _HintingSerieAnimatorState extends State<_HintingSerieAnimator>
       vsync: this,
     );
 
-    final highlightColor = AppTheme.primary.withAlpha(30);
+    final highlightColor = AppColors.primary.withAlpha(30);
     _colorAnimation = TweenSequence<Color?>([
       TweenSequenceItem(
         tween: ColorTween(begin: Colors.transparent, end: highlightColor),

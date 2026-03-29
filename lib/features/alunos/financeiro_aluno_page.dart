@@ -33,13 +33,13 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new,
             size: 20,
-            color: AppTheme.labelPrimary,
+            color: AppColors.labelPrimary,
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -50,7 +50,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-              child: CircularProgressIndicator(color: AppTheme.primary),
+              child: CircularProgressIndicator(color: AppColors.primary),
             );
           }
 
@@ -121,7 +121,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
             Text(
               widget.alunoNome,
               style: const TextStyle(
-                color: AppTheme.labelPrimary,
+                color: AppColors.labelPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.5,
@@ -130,7 +130,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
             Text(
               tempoAluno,
               style: TextStyle(
-                color: AppTheme.labelSecondary.withValues(alpha: 0.7),
+                color: AppColors.labelSecondary.withValues(alpha: 0.7),
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -155,7 +155,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
               Text(
                 'TOTAL RECEBIDO',
                 style: TextStyle(
-                  color: AppTheme.labelSecondary.withValues(alpha: 0.5),
+                  color: AppColors.labelSecondary.withValues(alpha: 0.5),
                   fontSize: 10,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.2,
@@ -165,7 +165,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
               Text(
                 _currencyFormat.format(total),
                 style: const TextStyle(
-                  color: AppTheme.primary,
+                  color: AppColors.primary,
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
                 ),
@@ -175,12 +175,12 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.primary.withValues(alpha: 0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.trending_up_rounded,
-              color: AppTheme.primary,
+              color: AppColors.primary,
               size: 24,
             ),
           ),
@@ -193,7 +193,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
     return Text(
       title,
       style: const TextStyle(
-        color: AppTheme.labelSecondary,
+        color: AppColors.labelSecondary,
         fontSize: 11,
         fontWeight: FontWeight.w900,
         letterSpacing: 1.2,
@@ -217,12 +217,12 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
       icon: const Icon(
         Icons.history_rounded,
         size: 16,
-        color: AppTheme.primary,
+        color: AppColors.primary,
       ),
       label: const Text(
         'Ver Histórico',
         style: TextStyle(
-          color: AppTheme.primary,
+          color: AppColors.primary,
           fontSize: 13,
           fontWeight: FontWeight.bold,
         ),
@@ -278,7 +278,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
                       Text(
                         'Vence em ${DateFormat('dd/MM/yyyy').format(fatura.dataVencimento)}',
                         style: TextStyle(
-                          color: AppTheme.labelSecondary.withValues(alpha: 0.7),
+                          color: AppColors.labelSecondary.withValues(alpha: 0.7),
                           fontSize: 13,
                         ),
                       ),
@@ -316,7 +316,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
           Text(
             message,
             style: TextStyle(
-              color: AppTheme.labelSecondary.withValues(alpha: 0.3),
+              color: AppColors.labelSecondary.withValues(alpha: 0.3),
               fontSize: 14,
             ),
           ),
@@ -328,7 +328,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
   void _showFaturaActions(FaturaModel fatura) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
@@ -352,7 +352,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
                 _financeiroService.marcarComoPaga(fatura.id);
               },
               icon: Icons.check_circle_outline_rounded,
-              color: AppTheme.success,
+              color: AppColors.success,
               title: 'Marcar como paga',
               subtitle: 'Confirmar recebimento deste valor',
             ),
@@ -414,7 +414,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: AppTheme.labelSecondary.withValues(alpha: 0.7),
+                        color: AppColors.labelSecondary.withValues(alpha: 0.7),
                         fontSize: 13,
                       ),
                     ),
@@ -444,7 +444,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) => Container(
           decoration: const BoxDecoration(
-            color: AppTheme.surfaceDark,
+            color: AppColors.surfaceDark,
             borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
           ),
           padding: EdgeInsets.only(
@@ -493,7 +493,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
                 contentPadding: EdgeInsets.zero,
                 title: const Text(
                   'Vencimento',
-                  style: TextStyle(color: AppTheme.labelSecondary, fontSize: 14),
+                  style: TextStyle(color: AppColors.labelSecondary, fontSize: 14),
                 ),
                 subtitle: Text(
                   DateFormat('dd/MM/yyyy').format(dataVencimento),
@@ -505,7 +505,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
                 ),
                 trailing: const Icon(
                   Icons.calendar_today_rounded,
-                  color: AppTheme.primary,
+                  color: AppColors.primary,
                 ),
                 onTap: () async {
                   final picked = await showDatePicker(
@@ -516,9 +516,9 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
                     builder: (context, child) => Theme(
                       data: Theme.of(context).copyWith(
                         colorScheme: const ColorScheme.dark(
-                          primary: AppTheme.primary,
+                          primary: AppColors.primary,
                           onPrimary: Colors.black,
-                          surface: AppTheme.surfaceDark,
+                          surface: AppColors.surfaceDark,
                         ),
                       ),
                       child: child!,
@@ -556,7 +556,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
+                    backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),

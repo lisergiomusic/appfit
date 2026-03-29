@@ -42,7 +42,7 @@ class _TreinosPageState extends State<TreinosPage> {
     final AlunoService alunoService = AlunoService();
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       body: CustomScrollView(
         controller: _scrollController,
         physics: const BouncingScrollPhysics(
@@ -57,7 +57,7 @@ class _TreinosPageState extends State<TreinosPage> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SliverFillRemaining(
                   child: Center(
-                    child: CircularProgressIndicator(color: AppTheme.primary),
+                    child: CircularProgressIndicator(color: AppColors.primary),
                   ),
                 );
               }
@@ -106,13 +106,13 @@ class _TreinosPageState extends State<TreinosPage> {
     return SliverAppBar(
       pinned: true,
       expandedHeight: 120,
-      backgroundColor: AppTheme.background,
-      surfaceTintColor: AppTheme.background,
+      backgroundColor: AppColors.background,
+      surfaceTintColor: AppColors.background,
       elevation: 0,
       scrolledUnderElevation: 0.5,
       leading: widget.alunoId != null
           ? IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.primary, size: 20),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.primary, size: 20),
               onPressed: () => Navigator.pop(context),
             )
           : const SizedBox.shrink(),
@@ -130,7 +130,7 @@ class _TreinosPageState extends State<TreinosPage> {
             },
             child: const Icon(
               CupertinoIcons.add,
-              color: AppTheme.primary,
+              color: AppColors.primary,
               size: 26,
             ),
           ),
@@ -155,7 +155,7 @@ class _TreinosPageState extends State<TreinosPage> {
               duration: const Duration(milliseconds: 200),
               opacity: isCollapsed ? 0.0 : 1.0,
               child: Container(
-                color: AppTheme.background,
+                color: AppColors.background,
                 padding: const EdgeInsets.only(left: 20, bottom: 10),
                 alignment: Alignment.bottomLeft,
                 child: Text(
@@ -176,32 +176,32 @@ class _TreinosPageState extends State<TreinosPage> {
       child: Container(
         height: 36,
         decoration: BoxDecoration(
-          color: AppTheme.surfaceDark,
+          color: AppColors.surfaceDark,
           borderRadius: BorderRadius.circular(10),
         ),
         child: TextField(
           controller: _searchController,
           onChanged: (val) => setState(() => _searchQuery = val),
           style: const TextStyle(
-            color: AppTheme.labelPrimary,
+            color: AppColors.labelPrimary,
             fontSize: 16,
             letterSpacing: -0.41,
             fontWeight: FontWeight.w400,
           ),
-          cursorColor: AppTheme.primary,
+          cursorColor: AppColors.primary,
           textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
             isDense: true,
             hintText: 'Buscar templates...',
             hintStyle: TextStyle(
-              color: AppTheme.labelTertiary,
+              color: AppColors.labelTertiary,
               fontSize: 17,
               letterSpacing: -0.41,
               fontWeight: FontWeight.w400,
             ),
             prefixIcon: Icon(
               Icons.search_rounded,
-              color: AppTheme.labelSecondary.withAlpha(120),
+              color: AppColors.labelSecondary.withAlpha(120),
               size: 20,
             ),
             suffixIcon: _searchQuery.isNotEmpty
@@ -209,7 +209,7 @@ class _TreinosPageState extends State<TreinosPage> {
                     icon: const Icon(
                       Icons.close_rounded,
                       size: 18,
-                      color: AppTheme.labelSecondary,
+                      color: AppColors.labelSecondary,
                     ),
                     onPressed: () {
                       _searchController.clear();
@@ -237,7 +237,7 @@ class _TreinosPageState extends State<TreinosPage> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              backgroundColor: AppTheme.surfaceDark,
+              backgroundColor: AppColors.surfaceDark,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppTheme.radiusXL),
               ),
@@ -250,14 +250,14 @@ class _TreinosPageState extends State<TreinosPage> {
               ),
               content: const Text(
                 "Isso removerá a ficha da sua biblioteca permanentemente.",
-                style: TextStyle(color: AppTheme.labelSecondary),
+                style: TextStyle(color: AppColors.labelSecondary),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
                   child: const Text(
                     "Cancelar",
-                    style: TextStyle(color: AppTheme.labelSecondary),
+                    style: TextStyle(color: AppColors.labelSecondary),
                   ),
                 ),
                 TextButton(
@@ -325,12 +325,12 @@ class _TreinosPageState extends State<TreinosPage> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: (isSelecting ? AppTheme.iosBlue : AppTheme.primary).withAlpha(20),
+                      color: (isSelecting ? AppColors.iosBlue : AppColors.primary).withAlpha(20),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       isSelecting ? Icons.add_task : Icons.fitness_center,
-                      color: isSelecting ? AppTheme.iosBlue : AppTheme.primary,
+                      color: isSelecting ? AppColors.iosBlue : AppColors.primary,
                       size: 20,
                     ),
                   ),
@@ -353,7 +353,7 @@ class _TreinosPageState extends State<TreinosPage> {
                   ),
                   Icon(
                     Icons.chevron_right,
-                    color: AppTheme.labelSecondary.withAlpha(100),
+                    color: AppColors.labelSecondary.withAlpha(100),
                     size: 20,
                   ),
                 ],
@@ -373,7 +373,7 @@ class _TreinosPageState extends State<TreinosPage> {
           Icon(
             Icons.dashboard_customize_outlined,
             size: 64,
-            color: AppTheme.labelSecondary.withAlpha(80),
+            color: AppColors.labelSecondary.withAlpha(80),
           ),
           const SizedBox(height: 20),
           const Text(
@@ -381,14 +381,14 @@ class _TreinosPageState extends State<TreinosPage> {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
-              color: AppTheme.labelPrimary,
+              color: AppColors.labelPrimary,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Crie templates para atribuir\naos seus alunos.',
             textAlign: TextAlign.center,
-            style: AppTheme.bodyText.copyWith(color: AppTheme.labelSecondary),
+            style: AppTheme.bodyText.copyWith(color: AppColors.labelSecondary),
           ),
         ],
       ),

@@ -27,7 +27,7 @@ class SessaoNoteWidget extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 80),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceDark,
+              color: AppColors.surfaceDark,
               borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               boxShadow: [
                 BoxShadow(
@@ -44,7 +44,7 @@ class SessaoNoteWidget extends StatelessWidget {
                   : noteText,
               style: TextStyle(
                 color: isEmpty
-                    ? AppTheme.labelSecondary.withAlpha(80)
+                    ? AppColors.labelSecondary.withAlpha(80)
                     : Colors.white,
                 fontSize: 14,
                 height: 1.5,
@@ -71,7 +71,7 @@ class SessaoNoteWidget extends StatelessWidget {
           padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: Container(
             decoration: BoxDecoration(
-              color: AppTheme.background.withAlpha(235),
+              color: AppColors.background.withAlpha(235),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               boxShadow: [
                 BoxShadow(
@@ -116,7 +116,7 @@ class SessaoNoteWidget extends StatelessWidget {
                         child: const Text(
                           'OK',
                           style: TextStyle(
-                            color: AppTheme.primary,
+                            color: AppColors.primary,
                             fontWeight: FontWeight.w800,
                             fontSize: 15,
                           ),
@@ -140,7 +140,7 @@ class SessaoNoteWidget extends StatelessWidget {
                         maxLines: 8,
                         maxLength: 500,
                         autofocus: true,
-                        cursorColor: AppTheme.primary,
+                        cursorColor: AppColors.primary,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,

@@ -26,7 +26,7 @@ class OrangeGlassActionButton extends StatelessWidget {
       width: buttonWidth,
       margin: EdgeInsets.only(bottom: bottomMargin),
       decoration: BoxDecoration(
-        color: AppTheme.primary,
+        color: AppColors.primary,
         borderRadius: BorderRadius.circular(AppTheme.radiusLG),
         boxShadow: [AppTheme.cardShadow]
       ),

@@ -62,7 +62,7 @@ class RitmoDaSemanaCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
-                          color: isFuturo ? AppTheme.labelSecondary.withAlpha(100) : AppTheme.labelSecondary,
+                          color: isFuturo ? AppColors.labelSecondary.withAlpha(100) : AppColors.labelSecondary,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -70,10 +70,10 @@ class RitmoDaSemanaCard extends StatelessWidget {
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          color: isFeito ? AppTheme.primary : Colors.transparent,
+                          color: isFeito ? AppColors.primary : Colors.transparent,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: isFeito ? AppTheme.primary : AppTheme.labelSecondary.withAlpha(30),
+                            color: isFeito ? AppColors.primary : AppColors.labelSecondary.withAlpha(30),
                             width: 1.5,
                           ),
                         ),
@@ -84,7 +84,7 @@ class RitmoDaSemanaCard extends StatelessWidget {
                                   width: 4,
                                   height: 4,
                                   decoration: BoxDecoration(
-                                    color: AppTheme.labelSecondary.withAlpha(50),
+                                    color: AppColors.labelSecondary.withAlpha(50),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -102,7 +102,7 @@ class RitmoDaSemanaCard extends StatelessWidget {
                     child: Text(
                       '$primeiroNome treinou $diasTreinados dias essa semana',
                       style: TextStyle(
-                        color: AppTheme.labelSecondary,
+                        color: AppColors.labelSecondary,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

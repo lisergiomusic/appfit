@@ -6,7 +6,7 @@ InputDecoration rotinaInputDecoration({required String hintText}) {
     hintText: hintText,
     hintStyle: AppTheme.inputPlaceHolder,
     filled: true,
-    fillColor: AppTheme.surfaceDark,
+    fillColor: AppColors.surfaceDark,
     contentPadding: EdgeInsets.symmetric(
       horizontal: AppTheme.space14,
       vertical: AppTheme.space12,
@@ -22,7 +22,7 @@ InputDecoration rotinaInputDecoration({required String hintText}) {
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppTheme.radiusMD),
       borderSide: BorderSide(
-        color: AppTheme.primary.withAlpha(150),
+        color: AppColors.primary.withAlpha(150),
         width: 0.5,
       ),
     ),

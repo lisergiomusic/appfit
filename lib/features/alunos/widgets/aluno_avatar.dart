@@ -20,16 +20,16 @@ class AlunoAvatar extends StatelessWidget {
       padding: EdgeInsets.all(1),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: AppTheme.primary.withAlpha(120), width: 2),
+        border: Border.all(color: AppColors.primary.withAlpha(120), width: 2),
       ),
       child: Container(
         decoration: const BoxDecoration(
-          color: AppTheme.background,
+          color: AppColors.background,
           shape: BoxShape.circle,
         ),
         child: CircleAvatar(
           radius: radius,
-          backgroundColor: AppTheme.surfaceLight,
+          backgroundColor: AppColors.surfaceLight,
           backgroundImage: photoUrl != null && photoUrl!.isNotEmpty
               ? CachedNetworkImageProvider(photoUrl!)
               : null,
@@ -39,7 +39,7 @@ class AlunoAvatar extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
-                    color: AppTheme.primary,
+                    color: AppColors.primary,
                   ),
                 )
               : null,

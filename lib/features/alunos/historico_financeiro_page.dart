@@ -19,13 +19,13 @@ class HistoricoFinanceiroPage extends StatelessWidget {
     final NumberFormat currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.background,
+        backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppTheme.labelPrimary),
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.labelPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('Histórico de Pagamentos', style: AppTheme.pageTitle),
@@ -34,7 +34,7 @@ class HistoricoFinanceiroPage extends StatelessWidget {
         stream: financeiroService.getFaturasStream(alunoId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: AppTheme.primary));
+            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
           }
 
           final historico = (snapshot.data ?? []).where((f) => f.status == 'pago').toList();
@@ -48,7 +48,7 @@ class HistoricoFinanceiroPage extends StatelessWidget {
                   const SizedBox(height: 16),
                   Text(
                     'Nenhum pagamento registrado',
-                    style: TextStyle(color: AppTheme.labelSecondary.withValues(alpha: 0.3), fontSize: 16),
+                    style: TextStyle(color: AppColors.labelSecondary.withValues(alpha: 0.3), fontSize: 16),
                   ),
                 ],
               ),
@@ -71,10 +71,10 @@ class HistoricoFinanceiroPage extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppTheme.success.withValues(alpha: 0.1),
+                          color: AppColors.success.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(Icons.check_circle_rounded, color: AppTheme.success, size: 24),
+                        child: const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 24),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -88,7 +88,7 @@ class HistoricoFinanceiroPage extends StatelessWidget {
                             const SizedBox(height: 4),
                             Text(
                               'Pago em ${DateFormat('dd/MM/yyyy').format(fatura.dataPagamento ?? DateTime.now())}',
-                              style: TextStyle(color: AppTheme.labelSecondary.withValues(alpha: 0.7), fontSize: 13),
+                              style: TextStyle(color: AppColors.labelSecondary.withValues(alpha: 0.7), fontSize: 13),
                             ),
                           ],
                         ),

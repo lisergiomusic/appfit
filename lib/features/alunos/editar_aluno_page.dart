@@ -107,7 +107,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Perfil atualizado com sucesso!'),
-            backgroundColor: AppTheme.success,
+            backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -134,10 +134,10 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
         // O _salvar já faz o pop
       },
       child: Scaffold(
-        backgroundColor: AppTheme.background,
+        backgroundColor: AppColors.background,
         appBar: _buildAppBar(),
         body: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
+            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
             : _buildBody(),
       ),
     );
@@ -145,13 +145,13 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       centerTitle: true,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.labelPrimary, size: 20),
+        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.labelPrimary, size: 20),
         onPressed: () async {
           if (_isSaving) return;
           await _salvar();
@@ -163,7 +163,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w700,
-          color: AppTheme.labelPrimary,
+          color: AppColors.labelPrimary,
           letterSpacing: -0.5,
         ),
       ),
@@ -245,7 +245,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           child: Text(
             label,
             style: const TextStyle(
-              color: AppTheme.labelSecondary,
+              color: AppColors.labelSecondary,
               fontSize: 10,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.0,
@@ -260,8 +260,8 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: AppTheme.labelSecondary.withAlpha(80), fontSize: 14),
-            prefixIcon: Icon(icon, color: AppTheme.labelSecondary.withAlpha(120), size: 20),
+            hintStyle: TextStyle(color: AppColors.labelSecondary.withAlpha(80), fontSize: 14),
+            prefixIcon: Icon(icon, color: AppColors.labelSecondary.withAlpha(120), size: 20),
             suffixIcon: suffix != null
                 ? Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -269,11 +269,11 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                   )
                 : null,
             filled: true,
-            fillColor: AppTheme.surfaceDark,
+            fillColor: AppColors.surfaceDark,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
+              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
@@ -299,7 +299,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           child: Text(
             'GÊNERO',
             style: TextStyle(
-              color: AppTheme.labelSecondary,
+              color: AppColors.labelSecondary,
               fontSize: 10,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.0,
@@ -311,12 +311,12 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           initialValue: _generoSelecionado?.isNotEmpty == true && _generos.contains(_generoSelecionado)
               ? _generoSelecionado
               : null,
-          hint: Text(_generoPlaceholder, style: TextStyle(color: AppTheme.labelSecondary.withAlpha(120))),
+          hint: Text(_generoPlaceholder, style: TextStyle(color: AppColors.labelSecondary.withAlpha(120))),
           items: [
             DropdownMenuItem<String>(
               value: null,
               enabled: false,
-              child: Text(_generoPlaceholder, style: TextStyle(color: AppTheme.labelSecondary.withAlpha(120))),
+              child: Text(_generoPlaceholder, style: TextStyle(color: AppColors.labelSecondary.withAlpha(120))),
             ),
             ..._generos.map((g) => DropdownMenuItem(
                   value: g,
@@ -330,7 +330,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           },
           decoration: InputDecoration(
             filled: true,
-            fillColor: AppTheme.surfaceDark,
+            fillColor: AppColors.surfaceDark,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
@@ -338,7 +338,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
             ),
           ),
           style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
-          dropdownColor: AppTheme.surfaceDark,
+          dropdownColor: AppColors.surfaceDark,
           borderRadius: BorderRadius.circular(16),
         ),
       ],
@@ -354,7 +354,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           child: Text(
             'NASCIMENTO',
             style: TextStyle(
-              color: AppTheme.labelSecondary,
+              color: AppColors.labelSecondary,
               fontSize: 10,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.0,
@@ -372,13 +372,13 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 return Theme(
                   data: Theme.of(context).copyWith(
                     colorScheme: const ColorScheme.dark(
-                      primary: AppTheme.primary,
+                      primary: AppColors.primary,
                       onPrimary: Colors.black,
-                      surface: AppTheme.surfaceDark,
+                      surface: AppColors.surfaceDark,
                       onSurface: Colors.white,
                     ),
                     textButtonTheme: TextButtonThemeData(
-                      style: TextButton.styleFrom(foregroundColor: AppTheme.primary),
+                      style: TextButton.styleFrom(foregroundColor: AppColors.primary),
                     ),
                   ),
                   child: child!,
@@ -393,12 +393,12 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceDark,
+              color: AppColors.surfaceDark,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
               children: [
-                Icon(Icons.calendar_today_rounded, color: AppTheme.labelSecondary.withAlpha(120), size: 18),
+                Icon(Icons.calendar_today_rounded, color: AppColors.labelSecondary.withAlpha(120), size: 18),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -406,7 +406,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                         ? DateFormat('dd/MM/yyyy').format(_dataNascimento!)
                         : 'Selecionar',
                     style: TextStyle(
-                      color: _dataNascimento != null ? Colors.white : AppTheme.labelSecondary.withAlpha(80),
+                      color: _dataNascimento != null ? Colors.white : AppColors.labelSecondary.withAlpha(80),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),

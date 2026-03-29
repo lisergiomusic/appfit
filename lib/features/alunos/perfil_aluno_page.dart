@@ -71,13 +71,13 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new,
             size: 20,
-            color: AppTheme.labelPrimary,
+            color: AppColors.labelPrimary,
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -278,7 +278,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
               child: Container(
                 height: ButtonTokens.primaryHeight,
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withAlpha(25),
+                  color: AppColors.primary.withAlpha(25),
                   borderRadius: BorderRadius.circular(ButtonTokens.primaryRadius),
                 ),
                 child: Row(
@@ -286,12 +286,12 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                   children: [
                     FaIcon(
                       FontAwesomeIcons.whatsapp,
-                      color: AppTheme.primary,
+                      color: AppColors.primary,
                       size: 20,
                     ),
                     const SizedBox(width: SpacingTokens.sm),
                     Text('Conversar', style: ButtonTokens.primaryTextStyle.copyWith(
-                      color: AppTheme.primary,
+                      color: AppColors.primary,
                     )),
                   ],
                 ),
@@ -306,7 +306,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
               child: Container(
                 height: ButtonTokens.secondaryHeight,
                 decoration: BoxDecoration(
-                  color: AppTheme.fillSecondary,
+                  color: AppColors.fillSecondary,
                   borderRadius: BorderRadius.circular(ButtonTokens.secondaryRadius),
                 ),
                 child: Row(
@@ -314,7 +314,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                   children: [
                     Icon(
                       CupertinoIcons.settings,
-                      color: AppTheme.labelPrimary,
+                      color: AppColors.labelPrimary,
                       size: 20,
                     ),
                     const SizedBox(width: SpacingTokens.sm),
@@ -331,7 +331,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
   void _exibirOpcoesVincularTreino(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surfaceDark,
+      backgroundColor: AppColors.surfaceDark,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
@@ -403,7 +403,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
                         child: CircularProgressIndicator(
-                          color: AppTheme.primary,
+                          color: AppColors.primary,
                         ),
                       );
                     }
@@ -412,7 +412,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                         child: Text(
                           'Sua biblioteca está vazia.',
                           style: TextStyle(
-                            color: AppTheme.labelSecondary.withAlpha(100),
+                            color: AppColors.labelSecondary.withAlpha(100),
                           ),
                         ),
                       );
@@ -430,7 +430,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           decoration: BoxDecoration(
-                            color: AppTheme.surfaceLight.withAlpha(20),
+                            color: AppColors.surfaceLight.withAlpha(20),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: Colors.white.withAlpha(5),
@@ -452,13 +452,13 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                             subtitle: Text(
                               '$qtdSessoes sessões planejadas',
                               style: const TextStyle(
-                                color: AppTheme.labelSecondary,
+                                color: AppColors.labelSecondary,
                                 fontSize: 13,
                               ),
                             ),
                             trailing: const Icon(
                               Icons.add_circle_outline,
-                              color: AppTheme.primary,
+                              color: AppColors.primary,
                               size: 22,
                             ),
                           ),
@@ -486,7 +486,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setStateDialog) {
           return AlertDialog(
-            backgroundColor: AppTheme.surfaceDark,
+            backgroundColor: AppColors.surfaceDark,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
             ),
@@ -502,12 +502,12 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
               children: [
                 Text(
                   'Duração para ${widget.alunoNome}:',
-                  style: const TextStyle(color: AppTheme.labelSecondary),
+                  style: const TextStyle(color: AppColors.labelSecondary),
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<int>(
                   initialValue: semanasSelecionadas,
-                  dropdownColor: AppTheme.surfaceLight,
+                  dropdownColor: AppColors.surfaceLight,
                   style: const TextStyle(color: Colors.white),
                   items: [4, 5, 6, 8, 10, 12]
                       .map(
@@ -521,7 +521,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                       setStateDialog(() => semanasSelecionadas = v!),
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: AppTheme.surfaceLight,
+                    fillColor: AppColors.surfaceLight,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -535,7 +535,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                 onPressed: () => Navigator.pop(dialogContext),
                 child: const Text(
                   'Cancelar',
-                  style: TextStyle(color: AppTheme.labelSecondary),
+                  style: TextStyle(color: AppColors.labelSecondary),
                 ),
               ),
               ElevatedButton(

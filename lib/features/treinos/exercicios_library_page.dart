@@ -158,7 +158,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTheme.surfaceDark,
+      backgroundColor: AppColors.surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -191,7 +191,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     const Text(
                       'Exercícios Selecionados',
                       style: TextStyle(
-                        color: AppTheme.labelPrimary,
+                        color: AppColors.labelPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -202,13 +202,13 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.primary.withAlpha(30),
+                        color: AppColors.primary.withAlpha(30),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         '${_selecionados.length}',
                         style: const TextStyle(
-                          color: AppTheme.primary,
+                          color: AppColors.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -226,7 +226,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppTheme.surfaceLight,
+                          color: AppColors.surfaceLight,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Row(
@@ -247,7 +247,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                   Text(
                                     ex.grupoMuscular.join(' • '),
                                     style: const TextStyle(
-                                      color: AppTheme.textLabel,
+                                      color: AppColors.textLabel,
                                       fontSize: 12,
                                     ),
                                   ),
@@ -282,7 +282,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     _confirmarSelecao();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
+                    backgroundColor: AppColors.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -309,7 +309,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
     await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTheme.surfaceDark,
+      backgroundColor: AppColors.surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -339,7 +339,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
                     child: Container(
-                      color: AppTheme.surfaceLight,
+                      color: AppColors.surfaceLight,
                       child: ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty
                           ? _buildMediaPreview(ex.imagemUrl!)
                           : const Center(
@@ -348,14 +348,14 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                 children: [
                                   Icon(
                                     Icons.videocam_off,
-                                    color: AppTheme.labelSecondary,
+                                    color: AppColors.labelSecondary,
                                     size: 40,
                                   ),
                                   SizedBox(height: 8),
                                   Text(
                                     'Mídia indisponível',
                                     style: TextStyle(
-                                      color: AppTheme.labelSecondary,
+                                      color: AppColors.labelSecondary,
                                     ),
                                   ),
                                 ],
@@ -377,7 +377,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                 Text(
                   ex.grupoMuscular.join(' • '),
                   style: const TextStyle(
-                    color: AppTheme.labelSecondary,
+                    color: AppColors.labelSecondary,
                     fontSize: 16,
                   ),
                 ),
@@ -393,8 +393,8 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isSelected
-                        ? AppTheme.surfaceLight
-                        : AppTheme.primary,
+                        ? AppColors.surfaceLight
+                        : AppColors.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -457,9 +457,9 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.background,
+        backgroundColor: AppColors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
@@ -489,11 +489,11 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     _carregarDados(reset: true);
                   }
                 },
-                icon: const Icon(Icons.add, color: AppTheme.primary, size: 18),
+                icon: const Icon(Icons.add, color: AppColors.primary, size: 18),
                 label: const Text(
                   'Criar',
                   style: TextStyle(
-                    color: AppTheme.primary,
+                    color: AppColors.primary,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     letterSpacing: -0.2,
@@ -516,12 +516,12 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   child: TextField(
                     controller: _searchController,
                     focusNode: _searchFocusNode,
-                    style: const TextStyle(color: AppTheme.labelPrimary, fontSize: 15),
+                    style: const TextStyle(color: AppColors.labelPrimary, fontSize: 15),
                     decoration: InputDecoration(
                       hintText: 'Buscar exercícios...',
                       prefixIcon: const Icon(
                         Icons.search,
-                        color: AppTheme.labelSecondary,
+                        color: AppColors.labelSecondary,
                         size: 20,
                       ),
 
@@ -535,7 +535,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                     key: const ValueKey('clear_search'),
                                     icon: const Icon(
                                       Icons.close_rounded,
-                                      color: AppTheme.labelSecondary,
+                                      color: AppColors.labelSecondary,
                                       size: 20,
                                     ),
                                     onPressed: _limparBusca,
@@ -545,7 +545,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                         },
                       ),
                       filled: true,
-                      fillColor: AppTheme.surfaceDark,
+                      fillColor: AppColors.surfaceDark,
                       contentPadding: const EdgeInsets.symmetric(vertical: 0),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -583,7 +583,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                             child: const Text(
                               'Cancelar',
                               style: TextStyle(
-                                color: AppTheme.primary,
+                                color: AppColors.primary,
                                 fontSize: 15,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -615,10 +615,10 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                         _carregarDados(reset: true);
                       }
                     },
-                    selectedColor: AppTheme.primary,
-                    backgroundColor: AppTheme.surfaceDark,
+                    selectedColor: AppColors.primary,
+                    backgroundColor: AppColors.surfaceDark,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.black : AppTheme.labelSecondary,
+                      color: isSelected ? Colors.black : AppColors.labelSecondary,
                       fontWeight: FontWeight.w500,
                       fontSize: 12,
                       letterSpacing: 0.0,
@@ -636,7 +636,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
           Expanded(
             child: _listaExercicios.isEmpty && _isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(color: AppTheme.primary),
+                    child: CircularProgressIndicator(color: AppColors.primary),
                   )
                 : _listaExercicios.isEmpty
                 ? const Center(
@@ -646,12 +646,12 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                         Icon(
                           Icons.search_off,
                           size: 64,
-                          color: AppTheme.surfaceLight,
+                          color: AppColors.surfaceLight,
                         ),
                         SizedBox(height: 16),
                         Text(
                           'Nenhum exercício encontrado.',
-                          style: TextStyle(color: AppTheme.labelSecondary),
+                          style: TextStyle(color: AppColors.labelSecondary),
                         ),
                       ],
                     ),
@@ -666,7 +666,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                           padding: EdgeInsets.symmetric(vertical: 32),
                           child: Center(
                             child: CircularProgressIndicator(
-                              color: AppTheme.primary,
+                              color: AppColors.primary,
                               strokeWidth: 2,
                             ),
                           ),
@@ -696,11 +696,11 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                     width: 56,
                                     height: 56,
                                     decoration: BoxDecoration(
-                                      color: AppTheme.surfaceDark,
+                                      color: AppColors.surfaceDark,
                                       borderRadius: BorderRadius.circular(AppTheme.radiusLG),
                                       border: ex.personalId != null
                                           ? Border.all(
-                                              color: AppTheme.accentMetrics
+                                              color: AppColors.accentMetrics
                                                   .withAlpha(100),
                                               width: 2,
                                             )
@@ -710,7 +710,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                         ? const Center(
                                             child: Icon(
                                               Icons.star_rounded,
-                                              color: AppTheme.accentMetrics,
+                                              color: AppColors.accentMetrics,
                                               size: 28,
                                             ),
                                           )
@@ -723,7 +723,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                         : const Center(
                                             child: Icon(
                                               Icons.fitness_center,
-                                              color: AppTheme.primary,
+                                              color: AppColors.primary,
                                             ),
                                           ),
                                   ),
@@ -736,7 +736,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                         Text(
                                           ex.nome,
                                           style: const TextStyle(
-                                            color: AppTheme.labelPrimary,
+                                            color: AppColors.labelPrimary,
                                             fontWeight: FontWeight.w700,
                                             fontSize: 17,
                                             letterSpacing: -0.1,
@@ -746,7 +746,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                         Text(
                                           ex.grupoMuscular.join(' • '),
                                           style: const TextStyle(
-                                            color: AppTheme.labelSecondary,
+                                            color: AppColors.labelSecondary,
                                             fontSize: 12,
                                             fontWeight: FontWeight.w500,
                                             letterSpacing: 0.0,
@@ -771,13 +771,13 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                             color: isSelected
-                                                ? AppTheme.primary
-                                                : AppTheme.labelSecondary
+                                                ? AppColors.primary
+                                                : AppColors.labelSecondary
                                                       .withAlpha(50),
                                             width: 2,
                                           ),
                                           color: isSelected
-                                              ? AppTheme.primary
+                                              ? AppColors.primary
                                               : Colors.transparent,
                                         ),
                                         child: isSelected
@@ -809,7 +809,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
               margin: const EdgeInsets.symmetric(horizontal: AppTheme.space16),
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppTheme.surfaceDark,
+                color: AppColors.surfaceDark,
                 borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                 border: Border.all(
                   color: Colors.white.withAlpha(20), // ~8% opacity
@@ -833,15 +833,15 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                       child: InkWell(
                         onTap: _abrirResumoSelecao,
                         borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                        splashColor: AppTheme.primary.withAlpha(30), // ~12% opacity
-                        highlightColor: AppTheme.primary.withAlpha(20), // ~8% opacity
+                        splashColor: AppColors.primary.withAlpha(30), // ~12% opacity
+                        highlightColor: AppColors.primary.withAlpha(20), // ~8% opacity
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Container(
                               padding: const EdgeInsets.all(AppTheme.space8),
                               decoration: const BoxDecoration(
-                                color: AppTheme.surfaceLight,
+                                color: AppColors.surfaceLight,
                                 shape: BoxShape.circle,
                               ),
                               child: Text(
@@ -858,14 +858,14 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                             const Text(
                               'Ver lista',
                               style: TextStyle(
-                                color: AppTheme.labelSecondary,
+                                color: AppColors.labelSecondary,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
                               ),
                             ),
                             const Icon(
                               Icons.keyboard_arrow_up_rounded,
-                              color: AppTheme.labelSecondary,
+                              color: AppColors.labelSecondary,
                               size: 20,
                             ),
                           ],
@@ -879,7 +879,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     child: ElevatedButton.icon(
                       onPressed: _confirmarSelecao,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
+                        backgroundColor: AppColors.primary,
                         foregroundColor: Colors.black,
                         elevation: 1,
                         shape: RoundedRectangleBorder(
@@ -988,8 +988,8 @@ class _StaticImageState extends State<_StaticImage> {
       return Container(
         width: 56,
         height: 56,
-        color: AppTheme.surfaceLight,
-        child: const Icon(Icons.fitness_center, color: AppTheme.labelSecondary),
+        color: AppColors.surfaceLight,
+        child: const Icon(Icons.fitness_center, color: AppColors.labelSecondary),
       );
     }
 
@@ -997,7 +997,7 @@ class _StaticImageState extends State<_StaticImage> {
       return Container(
         width: 56,
         height: 56,
-        color: AppTheme.surfaceLight,
+        color: AppColors.surfaceLight,
       );
     }
 

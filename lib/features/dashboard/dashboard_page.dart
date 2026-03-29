@@ -39,7 +39,7 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.settings, size: 64, color: AppTheme.labelSecondary),
+            const Icon(Icons.settings, size: 64, color: AppColors.labelSecondary),
             const SizedBox(height: AppTheme.space16),
             const Text(
                 'Ajustes',
@@ -62,7 +62,7 @@ class _DashboardPageState extends State<DashboardPage> {
     ];
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       body: paginas[_indiceAtual],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _indiceAtual,
@@ -72,9 +72,9 @@ class _DashboardPageState extends State<DashboardPage> {
           });
         },
         type: BottomNavigationBarType.fixed,
-        backgroundColor: AppTheme.surfaceDark,
-        selectedItemColor: AppTheme.primary,
-        unselectedItemColor: AppTheme.labelSecondary,
+        backgroundColor: AppColors.surfaceDark,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: AppColors.labelSecondary,
         elevation: 16,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.grid_view_rounded), label: 'Início'),

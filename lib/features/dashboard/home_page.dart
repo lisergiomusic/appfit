@@ -10,9 +10,9 @@ class HomePage extends StatelessWidget {
     final AuthService authService = AuthService();
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.background,
+        backgroundColor: AppColors.background,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: false,
@@ -28,7 +28,7 @@ class HomePage extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.notifications_rounded,
-                  color: AppTheme.labelPrimary,
+                  color: AppColors.labelPrimary,
                   size: 26,
                 ),
                 Positioned(
@@ -38,10 +38,10 @@ class HomePage extends StatelessWidget {
                     width: 9,
                     height: 9,
                     decoration: BoxDecoration(
-                      color: AppTheme.primary,
+                      color: AppColors.primary,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppTheme.background,
+                        color: AppColors.background,
                         width: 1.5,
                       ),
                     ),
@@ -96,7 +96,7 @@ class HomePage extends StatelessWidget {
                         children: [
                           CircleAvatar(
                             radius: 34,
-                            backgroundColor: AppTheme.surfaceLight,
+                            backgroundColor: AppColors.surfaceLight,
                             backgroundImage:
                                 photoUrl != null && photoUrl.isNotEmpty
                                 ? NetworkImage(photoUrl)
@@ -104,7 +104,7 @@ class HomePage extends StatelessWidget {
                             child: photoUrl == null || photoUrl.isEmpty
                                 ? const Icon(
                                     Icons.person_rounded,
-                                    color: AppTheme.labelSecondary,
+                                    color: AppColors.labelSecondary,
                                     size: 34,
                                   )
                                 : null,
@@ -113,10 +113,10 @@ class HomePage extends StatelessWidget {
                             width: 20,
                             height: 20,
                             decoration: BoxDecoration(
-                              color: AppTheme.primary,
+                              color: AppColors.primary,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: AppTheme.background,
+                                color: AppColors.background,
                                 width: 2.5,
                               ),
                             ),
@@ -138,7 +138,7 @@ class HomePage extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.w800,
-                                color: AppTheme.labelPrimary,
+                                color: AppColors.labelPrimary,
                                 letterSpacing: -0.5,
                               ),
                             ),
@@ -149,7 +149,7 @@ class HomePage extends StatelessWidget {
                                 vertical: 3,
                               ),
                               decoration: BoxDecoration(
-                                color: AppTheme.primary.withAlpha(25),
+                                color: AppColors.primary.withAlpha(25),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: const Text(
@@ -157,7 +157,7 @@ class HomePage extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w800,
-                                  color: AppTheme.primary,
+                                  color: AppColors.primary,
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -184,7 +184,7 @@ class HomePage extends StatelessWidget {
                       value: '42',
                       trendText: '+12% este mês',
                       trendIcon: Icons.trending_up_rounded,
-                      trendColor: AppTheme.primary,
+                      trendColor: AppColors.primary,
                       onTap: () {},
                     ),
                   ),
@@ -195,7 +195,7 @@ class HomePage extends StatelessWidget {
                       value: '05',
                       trendText: 'Pendentes',
                       trendIcon: Icons.error_rounded,
-                      trendColor: AppTheme.accentMetrics,
+                      trendColor: AppColors.accentMetrics,
                       onTap: () {},
                     ),
                   ),
@@ -225,21 +225,21 @@ class HomePage extends StatelessWidget {
                       _buildQuickActionButton(
                         icon: Icons.person_add_rounded,
                         label: 'Novo aluno',
-                        color: AppTheme.primary,
+                        color: AppColors.primary,
                         onTap: () {},
                       ),
                       const SizedBox(width: 12),
                       _buildQuickActionButton(
                         icon: Icons.assignment_rounded,
                         label: 'Criar rotina',
-                        color: AppTheme.iosBlue,
+                        color: AppColors.iosBlue,
                         onTap: () {},
                       ),
                       const SizedBox(width: 12),
                       _buildQuickActionButton(
                         icon: Icons.bar_chart_rounded,
                         label: 'Relatórios',
-                        color: AppTheme.accentMetrics,
+                        color: AppColors.accentMetrics,
                         onTap: () {},
                       ),
                     ],
@@ -277,7 +277,7 @@ class HomePage extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: AppTheme.primary,
+                        color: AppColors.primary,
                       ),
                     ),
                   ),
@@ -291,7 +291,7 @@ class HomePage extends StatelessWidget {
               ),
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceDark,
+                  color: AppColors.surfaceDark,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.white.withAlpha(5)),
                 ),
@@ -344,7 +344,7 @@ class HomePage extends StatelessWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceDark,
+        color: AppColors.surfaceDark,
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         border: Border.all(color: Colors.white.withAlpha(5)),
         boxShadow: [
@@ -374,7 +374,7 @@ class HomePage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: AppTheme.labelSecondary.withAlpha(160),
+                          color: AppColors.labelSecondary.withAlpha(160),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -385,7 +385,7 @@ class HomePage extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 34,
                           fontWeight: FontWeight.w900,
-                          color: AppTheme.labelPrimary,
+                          color: AppColors.labelPrimary,
                           letterSpacing: -1.5,
                         ),
                       ),
@@ -416,7 +416,7 @@ class HomePage extends StatelessWidget {
                   Icon(
                     Icons.chevron_right_rounded,
                     size: 18,
-                    color: AppTheme.labelSecondary.withAlpha(80),
+                    color: AppColors.labelSecondary.withAlpha(80),
                   ),
                 ],
               ],
@@ -455,7 +455,7 @@ class HomePage extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: AppTheme.labelPrimary,
+                color: AppColors.labelPrimary,
                 letterSpacing: -0.2,
               ),
             ),
@@ -485,14 +485,14 @@ class HomePage extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundColor: AppTheme.surfaceLight,
+                    backgroundColor: AppColors.surfaceLight,
                     backgroundImage: photoUrl != null && photoUrl.isNotEmpty
                         ? NetworkImage(photoUrl)
                         : null,
                     child: photoUrl == null || photoUrl.isEmpty
                         ? const Icon(
                             Icons.person_rounded,
-                            color: AppTheme.labelSecondary,
+                            color: AppColors.labelSecondary,
                             size: 20,
                           )
                         : null,
@@ -507,7 +507,7 @@ class HomePage extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
-                            color: AppTheme.labelPrimary,
+                            color: AppColors.labelPrimary,
                             letterSpacing: -0.2,
                           ),
                         ),
@@ -516,7 +516,7 @@ class HomePage extends StatelessWidget {
                           action,
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppTheme.labelSecondary.withAlpha(180),
+                            color: AppColors.labelSecondary.withAlpha(180),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -532,7 +532,7 @@ class HomePage extends StatelessWidget {
                         time,
                         style: const TextStyle(
                           fontSize: 11,
-                          color: AppTheme.labelSecondary,
+                          color: AppColors.labelSecondary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -540,7 +540,7 @@ class HomePage extends StatelessWidget {
                       Icon(
                         Icons.chevron_right_rounded,
                         size: 18,
-                        color: AppTheme.labelSecondary.withAlpha(80),
+                        color: AppColors.labelSecondary.withAlpha(80),
                       ),
                     ],
                   ),

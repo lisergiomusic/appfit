@@ -96,13 +96,13 @@ class _LoginPageState extends State<LoginPage> {
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.labelPrimary,
+                  color: AppColors.labelPrimary,
                 ),
               ),
               const SizedBox(height: 8),
               const Text(
                 'Faça login para continuar',
-                style: TextStyle(fontSize: 16, color: AppTheme.labelSecondary),
+                style: TextStyle(fontSize: 16, color: AppColors.labelSecondary),
               ),
               const SizedBox(height: 48),
 
@@ -134,7 +134,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: const Text(
                     'Esqueci minha senha',
                     style: TextStyle(
-                      color: AppTheme.primary,
+                      color: AppColors.primary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -166,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   const Text(
                     'Ainda não tem uma conta?',
-                    style: TextStyle(color: AppTheme.labelSecondary),
+                    style: TextStyle(color: AppColors.labelSecondary),
                   ),
                   TextButton(
                     onPressed: () {
@@ -181,7 +181,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: const Text(
                       'Cadastre-se',
                       style: TextStyle(
-                        color: AppTheme.primary,
+                        color: AppColors.primary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -209,8 +209,8 @@ class _LoginPageState extends State<LoginPage> {
       controller: controller, // Repassando para o TextField real
       obscureText: obscureText,
       keyboardType: keyboardType,
-      style: const TextStyle(color: AppTheme.labelPrimary),
-      cursorColor: AppTheme.primary,
+      style: const TextStyle(color: AppColors.labelPrimary),
+      cursorColor: AppColors.primary,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon),

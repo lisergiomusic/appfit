@@ -92,7 +92,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Exercício criado com sucesso!'),
-            backgroundColor: AppTheme.success,
+            backgroundColor: AppColors.success,
           ),
         );
         Navigator.pop(
@@ -120,7 +120,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: AppTheme.primary),
+          Icon(icon, size: 18, color: AppColors.primary),
           const SizedBox(width: 8),
           Text(
             label,
@@ -139,9 +139,9 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.background,
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(CupertinoIcons.back, color: Colors.white),
@@ -179,10 +179,10 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                       decoration: InputDecoration(
                         hintText: 'Ex: Supino Reto com Halteres',
                         hintStyle: TextStyle(
-                          color: AppTheme.labelSecondary.withAlpha(100),
+                          color: AppColors.labelSecondary.withAlpha(100),
                         ),
                         filled: true,
-                        fillColor: AppTheme.surfaceDark,
+                        fillColor: AppColors.surfaceDark,
                         contentPadding: const EdgeInsets.all(16),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -191,7 +191,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: const BorderSide(
-                            color: AppTheme.primary,
+                            color: AppColors.primary,
                             width: 1,
                           ),
                         ),
@@ -221,13 +221,13 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                               }
                             });
                           },
-                          selectedColor: AppTheme.primary.withAlpha(40),
-                          checkmarkColor: AppTheme.primary,
-                          backgroundColor: AppTheme.surfaceDark,
+                          selectedColor: AppColors.primary.withAlpha(40),
+                          checkmarkColor: AppColors.primary,
+                          backgroundColor: AppColors.surfaceDark,
                           labelStyle: TextStyle(
                             color: isSelected
-                                ? AppTheme.primary
-                                : AppTheme.labelSecondary,
+                                ? AppColors.primary
+                                : AppColors.labelSecondary,
                             fontWeight: isSelected
                                 ? FontWeight.bold
                                 : FontWeight.normal,
@@ -236,7 +236,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                             borderRadius: BorderRadius.circular(12),
                             side: BorderSide(
                               color: isSelected
-                                  ? AppTheme.primary
+                                  ? AppColors.primary
                                   : Colors.transparent,
                             ),
                           ),
@@ -253,7 +253,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceDark,
+                        color: AppColors.surfaceDark,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: Colors.white.withAlpha(10),
@@ -271,7 +271,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                             decoration: InputDecoration(
                               hintText: 'Cole o link do YouTube ou GIF...',
                               hintStyle: TextStyle(
-                                color: AppTheme.labelSecondary.withAlpha(100),
+                                color: AppColors.labelSecondary.withAlpha(100),
                               ),
                               filled: true,
                               fillColor: Colors.black.withAlpha(50),
@@ -290,7 +290,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                             child: Text(
                               'OU',
                               style: TextStyle(
-                                color: AppTheme.labelSecondary,
+                                color: AppColors.labelSecondary,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -310,19 +310,19 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                               },
                               icon: const Icon(
                                 Icons.upload_file,
-                                color: AppTheme.primary,
+                                color: AppColors.primary,
                                 size: 18,
                               ),
                               label: const Text(
                                 'Enviar mídia do telemóvel',
-                                style: TextStyle(color: AppTheme.primary),
+                                style: TextStyle(color: AppColors.primary),
                               ),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 14,
                                 ),
                                 side: BorderSide(
-                                  color: AppTheme.primary.withAlpha(50),
+                                  color: AppColors.primary.withAlpha(50),
                                 ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -339,11 +339,11 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                     if (_isAdmin)
                       Container(
                         decoration: BoxDecoration(
-                          color: AppTheme.surfaceDark,
+                          color: AppColors.surfaceDark,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: _isPublico
-                                ? AppTheme.primary.withAlpha(100)
+                                ? AppColors.primary.withAlpha(100)
                                 : Colors.white.withAlpha(10),
                             width: 1,
                           ),
@@ -351,7 +351,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                         child: SwitchListTile(
                           value: _isPublico,
                           onChanged: (val) => setState(() => _isPublico = val),
-                          activeThumbColor: AppTheme.primary,
+                          activeThumbColor: AppColors.primary,
                           title: const Text(
                             'Salvar como Exercício Público (Global)',
                             style: TextStyle(
@@ -363,7 +363,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                           subtitle: Text(
                             'Este exercício ficará visível para todos os utilizadores da plataforma.',
                             style: TextStyle(
-                              color: AppTheme.labelSecondary.withAlpha(150),
+                              color: AppColors.labelSecondary.withAlpha(150),
                               fontSize: 12,
                             ),
                           ),
@@ -380,7 +380,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
             Container(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
               decoration: BoxDecoration(
-                color: AppTheme.background,
+                color: AppColors.background,
                 border: Border(
                   top: BorderSide(color: Colors.white.withAlpha(10)),
                 ),
@@ -391,7 +391,7 @@ class _CriarExercicioPageState extends State<CriarExercicioPage> {
                 child: ElevatedButton(
                   onPressed: _isSaving ? null : _salvarExercicio,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
+                    backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(26),
                     ),

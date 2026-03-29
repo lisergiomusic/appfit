@@ -49,7 +49,7 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
     return Container(
       padding: EdgeInsets.only(bottom: bottomInset),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceDark,
+        color: AppColors.surfaceDark,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32.0)),
         border: Border(
           top: BorderSide(color: Colors.white.withAlpha(15), width: 1),
@@ -88,7 +88,7 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
                   const Text(
                     'NOTAS DA SESSÃO',
                     style: TextStyle(
-                      color: AppTheme.labelSecondary,
+                      color: AppColors.labelSecondary,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.2,
@@ -99,18 +99,18 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
                     child: InkWell(
                       onTap: _handleSave,
                       borderRadius: BorderRadius.circular(100),
-                      splashColor: AppTheme.primary.withAlpha(30),
-                      highlightColor: AppTheme.primary.withAlpha(20),
+                      splashColor: AppColors.primary.withAlpha(30),
+                      highlightColor: AppColors.primary.withAlpha(20),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: AppTheme.primary.withAlpha(15),
+                          color: AppColors.primary.withAlpha(15),
                           borderRadius: BorderRadius.circular(100),
                           border: Border.all(
-                            color: AppTheme.primary.withAlpha(40),
+                            color: AppColors.primary.withAlpha(40),
                             width: 1,
                           ),
                         ),
@@ -119,14 +119,14 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
                           children: [
                             Icon(
                               Icons.check_circle_outline_rounded,
-                              color: AppTheme.primary,
+                              color: AppColors.primary,
                               size: 18,
                             ),
                             SizedBox(width: 6),
                             Text(
                               'Salvar',
                               style: TextStyle(
-                                color: AppTheme.primary,
+                                color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
                                 letterSpacing: 0.3,
@@ -170,7 +170,7 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
                       height: 1.6,
                       fontWeight: FontWeight.w400,
                     ),
-                    cursorColor: AppTheme.primary,
+                    cursorColor: AppColors.primary,
                     cursorWidth: 2.5,
                     cursorRadius: const Radius.circular(2),
                     buildCounter:
@@ -189,7 +189,7 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
                               style: TextStyle(
                                 color: isLimitReached
                                     ? Colors.redAccent
-                                    : AppTheme.labelSecondary.withAlpha(120),
+                                    : AppColors.labelSecondary.withAlpha(120),
                                 fontSize: 13,
                                 fontWeight: isLimitReached
                                     ? FontWeight.bold
@@ -208,7 +208,7 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
                       hintText:
                           'Digite as instruções, foco ou detalhes aqui...',
                       hintStyle: TextStyle(
-                        color: AppTheme.labelSecondary.withAlpha(120),
+                        color: AppColors.labelSecondary.withAlpha(120),
                         fontSize: 17,
                         fontStyle: FontStyle.italic,
                       ),
@@ -223,7 +223,7 @@ class _NoteEditorModalState extends State<NoteEditorModal> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide(
-                          color: AppTheme.primary.withAlpha(
+                          color: AppColors.primary.withAlpha(
                             120,
                           ), // Borda neon ao focar
                           width: 1.5,

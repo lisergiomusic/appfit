@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AlunoPerfilData {
   final Map<String, dynamic> aluno;

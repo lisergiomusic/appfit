@@ -40,7 +40,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
   void _showAddOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
@@ -85,7 +85,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                 );
               },
               icon: Icons.add_rounded,
-              color: AppTheme.primary,
+              color: AppColors.primary,
               title: 'Criar do zero',
               subtitle: 'Comece uma planilha personalizada agora',
             ),
@@ -104,7 +104,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                 );
               },
               icon: Icons.auto_awesome_motion_rounded,
-              color: AppTheme.iosBlue,
+              color: AppColors.iosBlue,
               title: 'Usar da Biblioteca',
               subtitle: 'Escolha um template pronto e economize tempo',
             ),
@@ -155,7 +155,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: AppTheme.labelSecondary.withValues(alpha: 0.7),
+                        color: AppColors.labelSecondary.withValues(alpha: 0.7),
                         fontSize: 13,
                       ),
                     ),
@@ -175,7 +175,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
       expandedHeight: 0,
       floating: true,
       pinned: true,
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_new, size: 20),
@@ -208,7 +208,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
         final historico = planilhas.where((doc) => (doc.data() as Map<String, dynamic>)['ativa'] != true).toList();
 
         return Scaffold(
-          backgroundColor: AppTheme.background,
+          backgroundColor: AppColors.background,
           body: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
@@ -269,10 +269,10 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
       decoration: BoxDecoration(
-        color: AppTheme.primary.withValues(alpha: 0.02),
+        color: AppColors.primary.withValues(alpha: 0.02),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: AppTheme.primary.withValues(alpha: 0.05),
+          color: AppColors.primary.withValues(alpha: 0.05),
           width: 1,
         ),
       ),
@@ -281,7 +281,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
           children: [
             Icon(
               Icons.add_rounded,
-              color: AppTheme.primary.withValues(alpha: 0.2),
+              color: AppColors.primary.withValues(alpha: 0.2),
               size: 28,
             ),
             const SizedBox(height: 12),
@@ -298,7 +298,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
               'Toque no botão abaixo para prescrever.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppTheme.labelSecondary.withValues(alpha: 0.3),
+                color: AppColors.labelSecondary.withValues(alpha: 0.3),
                 fontSize: 12,
               ),
             ),
@@ -326,7 +326,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
               'Planilhas vencidas aparecerão aqui',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppTheme.labelSecondary.withValues(alpha: 0.3),
+                color: AppColors.labelSecondary.withValues(alpha: 0.3),
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -377,15 +377,15 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
       infoLabel = DateFormat('dd MMM yyyy').format(dataC);
     }
 
-    final Color accentColor = isAtiva ? AppTheme.primary : (isProgramada ? AppTheme.iosBlue : AppTheme.labelSecondary);
+    final Color accentColor = isAtiva ? AppColors.primary : (isProgramada ? AppColors.iosBlue : AppColors.labelSecondary);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12, left: AppTheme.paddingScreen, right: AppTheme.paddingScreen),
       decoration: AppTheme.cardDecoration,
       child: InkWell(
         borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-        splashColor: AppTheme.splash.withAlpha(50),
-        highlightColor: AppTheme.splash.withAlpha(30),
+        splashColor: AppColors.splash.withAlpha(50),
+        highlightColor: AppColors.splash.withAlpha(30),
         onTap: () => _navegarParaDetalhes(context, data, id),
         child: Padding(
           padding: AppTheme.edgeInsetsSmall,
@@ -448,7 +448,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                         Text(
                           infoLabel,
                           style: TextStyle(
-                            color: AppTheme.labelSecondary.withValues(alpha: 0.6),
+                            color: AppColors.labelSecondary.withValues(alpha: 0.6),
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -468,7 +468,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                   Icons.more_vert_rounded,
                   color: Colors.white.withValues(alpha: 0.4),
                 ),
-                color: AppTheme.background,
+                color: AppColors.background,
                 offset: const Offset(0, 40),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -495,7 +495,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                     'alternar_status',
                     isAtiva ? 'Pausar Planilha' : 'Ativar Planilha',
                     isAtiva ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                    color: isAtiva ? Colors.orangeAccent : AppTheme.primary,
+                    color: isAtiva ? Colors.orangeAccent : AppColors.primary,
                   ),
                   _buildPopupItem('editar', 'Editar', Icons.edit_note_rounded),
                   _buildPopupItem('stats', 'Estatísticas', Icons.bar_chart_rounded, enabled: !isProgramada),

@@ -44,19 +44,19 @@ class AppFitSimpleAppBar extends StatelessWidget
               onPressed: onBack ?? () => Navigator.pop(context),
               icon: const Icon(
                 Icons.chevron_left,
-                color: AppTheme.primary,
+                color: AppColors.primary,
                 size: 18,
               ),
               label: Text(
                 backLabel,
                 style: const TextStyle(
-                  color: AppTheme.primary,
+                  color: AppColors.primary,
                   fontSize: 17,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               style: TextButton.styleFrom(
-                foregroundColor: AppTheme.primary,
+                foregroundColor: AppColors.primary,
                 minimumSize: const Size(44, 44),
                 padding: const EdgeInsets.only(left: 4, right: 8),
               ),
@@ -73,14 +73,14 @@ class AppFitSimpleAppBar extends StatelessWidget
           TextButton(
             onPressed: onAction,
             style: TextButton.styleFrom(
-              foregroundColor: AppTheme.primary,
+              foregroundColor: AppColors.primary,
               minimumSize: const Size(44, 44),
               padding: const EdgeInsets.symmetric(horizontal: 12),
             ),
             child: Text(
               actionLabel!,
               style: const TextStyle(
-                color: AppTheme.primary,
+                color: AppColors.primary,
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
               ),
