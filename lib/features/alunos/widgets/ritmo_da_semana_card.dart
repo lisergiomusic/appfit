@@ -25,27 +25,32 @@ class RitmoDaSemanaCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: AppTheme.paddingScreen, right: AppTheme.paddingScreen),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 4),
-                child: Text('Frequência semanal', style: AppTheme.sectionHeader),
-              ),
-              const Spacer(),
-              CupertinoButton(
-                padding: EdgeInsets.only(right: 8),
-                onPressed: () {},
-                child: const Text(
-                  'Ver mais',
-                  style: AppTheme.sectionAction,
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
+          child: SizedBox(
+            height: 32,
+            child: Row(
+              children: [
+                const SizedBox(width: 4),
+                Text('Frequência semanal', style: AppTheme.sectionHeader),
+                const Spacer(),
+                CupertinoButton(
+                  padding: const EdgeInsets.only(
+                    left: 8,
+                    right: 4,
+                    top: 4,
+                    bottom: 4,
+                  ),
+                  onPressed: () {},
+                  child: const Text(
+                    'Ver mais',
+                    style: AppTheme.sectionAction,
+                  ), minimumSize: Size(0, 0),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-
+        const SizedBox(height: 8),
         Container(
           margin: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
           padding: const EdgeInsets.all(16),

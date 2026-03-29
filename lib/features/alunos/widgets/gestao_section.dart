@@ -22,14 +22,21 @@ class GestaoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.lg),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
-            child: Text('Gestão', style: AppTheme.sectionHeader),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: SizedBox(
+              height: 32,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Gestão', style: AppTheme.sectionHeader),
+              ),
+            ),
           ),
+          const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
               color: AppColors.surfaceDark,

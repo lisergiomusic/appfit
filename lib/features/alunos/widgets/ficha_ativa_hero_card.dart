@@ -69,18 +69,20 @@ class FichaAtivaHeroCard extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 4, bottom: 0, right: 4),
+              SizedBox(
+                height: 32,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                     Text(
-                      'Planilha atual',
-                      style: AppTheme.sectionHeader,
-                    ),
+                    const SizedBox(width: 4),
+                    Text('Planilha atual', style: AppTheme.sectionHeader),
                     const Spacer(),
                     CupertinoButton(
-                      padding: EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.only(
+                        left: 8,
+                        right: 4,
+                        top: 4,
+                        bottom: 4,
+                      ),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -95,12 +97,15 @@ class FichaAtivaHeroCard extends StatelessWidget {
                           ),
                         );
                       },
-                      child: const Text('Ver todas', style: AppTheme.sectionAction),
+                      child: const Text(
+                        'Ver todas',
+                        style: AppTheme.sectionAction,
+                      ), minimumSize: Size(0, 0),
                     ),
-
                   ],
                 ),
               ),
+              const SizedBox(height: 8),
               Container(
                 decoration: AppTheme.cardDecoration,
                 child: InkWell(
