@@ -63,6 +63,13 @@ class AppTheme {
     color: AppColors.labelPrimary,
   );
 
+  static const navBarAction = TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.41,
+    color: AppTheme.primary,
+  );
+
   static const title1 = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w700,
@@ -212,6 +219,7 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         surfaceTintColor: Colors.transparent,
+        toolbarHeight: 44,
 
         titleTextStyle: TextStyle(
           fontSize: 17,

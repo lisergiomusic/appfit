@@ -73,13 +73,26 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new,
-            size: 20,
-            color: AppColors.labelPrimary,
-          ),
+        leadingWidth: 100,
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
           onPressed: () => Navigator.pop(context),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(width: 8),
+              Icon(
+                CupertinoIcons.back,
+                size: 20,
+                color: AppColors.primary,
+              ),
+              SizedBox(width: 4),
+              Text(
+                'Voltar',
+                style: AppTheme.navBarAction,
+              ),
+            ],
+          ),
         ),
         title: const Text('Perfil do Aluno'),
         bottom: PreferredSize(
@@ -277,6 +290,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
               onPressed: () => _abrirWhatsApp(context, telefone),
               child: Container(
                 height: ButtonTokens.primaryHeight,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withAlpha(25),
                   borderRadius: BorderRadius.circular(ButtonTokens.primaryRadius),
@@ -289,10 +303,18 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                       color: AppColors.primary,
                       size: 20,
                     ),
-                    const SizedBox(width: SpacingTokens.sm),
-                    Text('Conversar', style: ButtonTokens.primaryTextStyle.copyWith(
-                      color: AppColors.primary,
-                    )),
+                    const SizedBox(width: SpacingTokens.xs),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Conversar',
+                          style: ButtonTokens.primaryTextStyle.copyWith(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -305,6 +327,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
               onPressed: () => _irParaGerenciarAluno(context),
               child: Container(
                 height: ButtonTokens.secondaryHeight,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
                   color: AppColors.fillSecondary,
                   borderRadius: BorderRadius.circular(ButtonTokens.secondaryRadius),
@@ -317,8 +340,16 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                       color: AppColors.labelPrimary,
                       size: 20,
                     ),
-                    const SizedBox(width: SpacingTokens.sm),
-                    Text('Gerenciar', style: ButtonTokens.secondaryTextStyle),
+                    const SizedBox(width: SpacingTokens.xs),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Gerenciar',
+                          style: ButtonTokens.secondaryTextStyle,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

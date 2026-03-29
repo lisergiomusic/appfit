@@ -21,6 +21,7 @@ class SpacingTokens {
   // semânticos — navegação
   static const double navBarVertical      = sm;   // 8  — padding vertical nav bar
   static const double sectionHeaderBottom = sm;   // 8  — header → conteúdo
+  static const double navBarHeight = 44.0;
 
   // semânticos — componentes
   static const double cardPaddingH        = lg;   // 16
