@@ -547,8 +547,9 @@ class _AlunosPageState extends State<AlunosPage> {
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              fontSize: 13,
+              letterSpacing: -0.08,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               color: isSelected ? Colors.white : AppTheme.textSecondary,
             ),
           ),
@@ -556,7 +557,7 @@ class _AlunosPageState extends State<AlunosPage> {
           Text(
             '($count)',
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 11,
               color: isSelected ? AppTheme.primary : AppTheme.textTertiary,
               fontWeight: FontWeight.bold,
             ),
