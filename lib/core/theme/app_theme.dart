@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'tokens/spacing_tokens.dart';
+export 'tokens/spacing_tokens.dart';
 
 class AppTheme {
   // --- 1. CORES ---
   static const Color primary = Color(0xFF30D158);
-
   static const Color splash = primary;
   static const Color background = Color(0xFF131314);
   static const Color iosBlue = Color(0xFF00B4D8);
@@ -71,6 +70,20 @@ class AppTheme {
     fontWeight: FontWeight.w600,
     letterSpacing: -0.2,
     color: AppTheme.textPrimary,
+  );
+
+  static const TextStyle inputPlaceHolder = TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.41,
+    color: AppTheme.textTertiary,
+  );
+
+  static const inputText = TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.41,
+    color: textPrimary, // branco no dark, preto no light
   );
 
   static const TextStyle bodyText = TextStyle(

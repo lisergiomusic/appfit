@@ -4,10 +4,7 @@ import '../../../core/theme/app_theme.dart';
 InputDecoration rotinaInputDecoration({required String hintText}) {
   return InputDecoration(
     hintText: hintText,
-    hintStyle: TextStyle(
-      color: AppTheme.textTertiary,
-      fontSize: 12,
-    ),
+    hintStyle: AppTheme.inputPlaceHolder,
     filled: true,
     fillColor: AppTheme.surfaceDark,
     contentPadding: EdgeInsets.symmetric(
@@ -15,18 +12,18 @@ InputDecoration rotinaInputDecoration({required String hintText}) {
       vertical: AppTheme.space12,
     ),
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-      borderSide: BorderSide(color: Colors.white.withAlpha(15), width: 0.5),
+      borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+      borderSide: BorderSide.none,
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-      borderSide: BorderSide(color: Colors.white.withAlpha(15), width: 1),
+      borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+      borderSide: BorderSide.none,
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+      borderRadius: BorderRadius.circular(AppTheme.radiusMD),
       borderSide: BorderSide(
         color: AppTheme.primary.withAlpha(150),
-        width: 1,
+        width: 0.5,
       ),
     ),
   );

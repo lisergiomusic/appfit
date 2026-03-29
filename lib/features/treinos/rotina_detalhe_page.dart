@@ -941,10 +941,6 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
                   controller: localObjCtrl,
                   focusNode: objFocus,
                   maxLength: 50,
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 15,
-                  ),
                   decoration: rotinaInputDecoration(
                     hintText: 'Ex: Hipertrofia Máxima',
                   ).copyWith(counterText: objFocus.hasFocus ? null : ""),
@@ -953,7 +949,7 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
                       : null,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: SpacingTokens.formGroupGap),
               Row(
                 children: [
                   const SizedBox(width: AppTheme.space8),
@@ -963,12 +959,12 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: SpacingTokens.formLabelToField),
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: AppTheme.surfaceLight,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusLG),
                 ),
                 child: Column(
                   children: [
@@ -994,9 +990,6 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
                               key: const ValueKey('inputSessoes'),
                               keyboardType: TextInputType.number,
                               initialValue: sessoesInput,
-                              style: const TextStyle(
-                                color: AppTheme.textPrimary,
-                              ),
                               decoration: rotinaInputDecoration(
                                 hintText: 'Quantas sessões?',
                               ),
@@ -1006,7 +999,7 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
                               key: const ValueKey('inputData'),
                               tileColor: AppTheme.surfaceDark,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
                               ),
                               leading: const Icon(
                                 Icons.calendar_month,
@@ -1014,7 +1007,6 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
                               ),
                               title: Text(
                                 DateFormat('dd/MM/yyyy').format(dataTemp),
-                                style: const TextStyle(color: Colors.white),
                               ),
                               onTap: () async {
                                 final picked = await showDatePicker(

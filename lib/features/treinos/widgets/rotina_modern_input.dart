@@ -17,10 +17,10 @@ class RotinaModernInput extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.only(left: 0, bottom: AppTheme.space12),
+          padding: EdgeInsets.only(bottom: SpacingTokens.formLabelToField),
           child: Row(
             children: [
-              SizedBox(width: AppTheme.space8),
+              SizedBox(width: 8),
               Text(
                 label,
                 style: AppTheme.formLabel,
