@@ -57,7 +57,7 @@ class FichaAtivaHeroCard extends StatelessWidget {
             int totalSessoes = rotina['vencimentoSessoes'] ?? 1;
             int concluidas = rotina['sessoesConcluidas'] ?? 0;
             progressoAtual = (concluidas / totalSessoes).clamp(0.0, 1.0);
-            legendaVencimento = '$concluidas de $totalSessoes sessões';
+            legendaVencimento = '$concluidas de $totalSessoes ${totalSessoes == 1 ? 'sessão' : 'sessões'}';
           } else {
             DateTime hoje = DateTime.now();
             DateTime dataCriacao =

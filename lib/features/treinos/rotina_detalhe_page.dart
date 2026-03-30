@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_bar_divider.dart';
 import '../../core/services/rotina_service.dart';
 import 'configurar_exercicios_page.dart';
 import 'models/exercicio_model.dart';
@@ -487,16 +488,25 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         appBar: AppBar(
           backgroundColor: AppColors.background,
           elevation: 0,
+          leadingWidth: 100,
           leading: CupertinoButton(
-            padding: const EdgeInsets.only(left: 8),
-            child: const Icon(
-              CupertinoIcons.back,
-              color: AppColors.labelPrimary,
-              size: 24,
-            ),
+            padding: EdgeInsets.zero,
             onPressed: () => Navigator.of(context).maybePop(),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  CupertinoIcons.chevron_back,
+                  size: 17,
+                  color: AppColors.primary,
+                ),
+                SizedBox(width: 4),
+                Text('Voltar', style: AppTheme.navBarAction),
+              ],
+            ),
           ),
           title: const Text('Gerenciar Planilha', style: AppTheme.pageTitle),
+          bottom: const AppBarDivider(),
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -552,15 +562,14 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                 const SizedBox(width: 6),
                                 Text(
                                   _tipoVencimento == 'sessoes'
-                                      ? '$_vencimentoSessoes sessões'
+                                      ? '$_vencimentoSessoes ${_vencimentoSessoes == 1 ? 'sessão' : 'sessões'}'
                                       : 'Vence em ${DateFormat('dd/MM/yyyy').format(_vencimentoData)}',
                                   style: const TextStyle(
                                     color: AppColors.labelSecondary,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
                                   ),
-                                ),
-                              ],
+                                ),                              ],
                             ),
                           ],
                         ),
@@ -755,7 +764,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      '${sessao.exercicios.length} exercícios',
+                      '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}',
                       style: CardTokens.cardSubtitle,
                     ),
                   ],
