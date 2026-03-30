@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'tokens/app_colors.dart';
 export 'tokens/spacing_tokens.dart';
-import 'tokens/spacing_tokens.dart';
 export 'tokens/app_colors.dart';
 
 class AppTheme {

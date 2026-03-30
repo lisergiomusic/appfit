@@ -9,6 +9,7 @@ import 'configurar_exercicios_page.dart';
 import 'models/exercicio_model.dart';
 import 'widgets/rotina_modern_input.dart';
 import 'widgets/rotina_input_decoration.dart';
+import '../../core/widgets/app_primary_button.dart';
 
 class _TreinoData {
   String nome;
@@ -653,30 +654,10 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
   Widget _buildAddSessaoButton() {
-    return InkWell(
-      onTap: () => _exibirModalSessao(),
-      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.primary,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.add_circle_outline, color: Colors.black),
-            SizedBox(width: 8),
-            Text(
-              'Nova sessão',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return  AppPrimaryButton(
+      label: 'Nova sessão',
+      icon: CupertinoIcons.add_circled,
+      onPressed: () => _exibirModalSessao(),
     );
   }
 
