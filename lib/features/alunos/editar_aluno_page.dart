@@ -6,7 +6,6 @@ import '../../core/theme/app_theme.dart';
 import '../../core/services/aluno_service.dart';
 import '../../core/widgets/app_bar_divider.dart';
 
-
 class EditarAlunoPage extends StatefulWidget {
   final String alunoId;
 
@@ -178,15 +177,36 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
         ),
       ),
       title: const Text('Editar Aluno'),
+      actions: [
+        TextButton(
+          onPressed: _isSaving ? null : _salvar,
+          child: _isSaving
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    color: AppColors.primary,
+                    strokeWidth: 2.2,
+                  ),
+                )
+              : const Text('Salvar', style: AppBarTokens.actionButton),
+        ),
+      ],
       bottom: const AppBarDivider(),
     );
   }
+
   Widget _buildBody() {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(24, SpacingTokens.pageTopPadding, 24, 40),
+        padding: const EdgeInsets.fromLTRB(
+          SpacingTokens.pageHorizontalPadding,
+          SpacingTokens.pageTopPadding,
+          SpacingTokens.pageHorizontalPadding,
+          SpacingTokens.pageBottomPadding,
+        ),
         child: Form(
           key: _formKey,
           child: Column(
@@ -207,7 +227,8 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 icon: Icons.badge_rounded,
                 textCapitalization: TextCapitalization.words,
                 hint: 'Ex: Silva',
-                validator: (v) => v!.isEmpty ? 'O sobrenome é obrigatório' : null,
+                validator: (v) =>
+                    v!.isEmpty ? 'O sobrenome é obrigatório' : null,
               ),
               const SizedBox(height: 20),
               _buildDatePicker(),
@@ -230,8 +251,6 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 keyboardType: TextInputType.phone,
                 hint: '(00) 00000-0000',
               ),
-              const SizedBox(height: 56),
-              _buildSubmitButton(),
             ],
           ),
         ),
@@ -254,10 +273,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 8),
-          child: Text(
-            label,
-            style: AppTheme.formLabel,
-          ),
+          child: Text(label, style: AppTheme.formLabel),
         ),
         const SizedBox(height: SpacingTokens.labelToField),
         TextFormField(
@@ -296,10 +312,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: const BorderSide(
-                color: AppColors.primary,
-                width: 1,
-              ),
+              borderSide: const BorderSide(color: AppColors.primary, width: 1),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppTheme.radiusMD),
@@ -329,10 +342,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       children: [
         const Padding(
           padding: EdgeInsets.only(left: 8),
-          child: Text(
-            'Gênero',
-            style: AppTheme.formLabel,
-          ),
+          child: Text('Gênero', style: AppTheme.formLabel),
         ),
         const SizedBox(height: SpacingTokens.labelToField),
         DropdownButtonFormField<String>(
@@ -342,18 +352,12 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                   _generos.contains(_generoSelecionado)
               ? _generoSelecionado
               : null,
-          hint: Text(
-            _generoPlaceholder,
-            style: AppTheme.inputPlaceHolder,
-          ),
+          hint: Text(_generoPlaceholder, style: AppTheme.inputPlaceHolder),
           items: [
             DropdownMenuItem<String>(
               value: null,
               enabled: false,
-              child: Text(
-                _generoPlaceholder,
-                style: AppTheme.inputPlaceHolder,
-              ),
+              child: Text(_generoPlaceholder, style: AppTheme.inputPlaceHolder),
             ),
             ..._generos.map((g) => DropdownMenuItem(value: g, child: Text(g))),
           ],
@@ -388,10 +392,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       children: [
         const Padding(
           padding: EdgeInsets.only(left: 8),
-          child: Text(
-            'Nascimento',
-            style: AppTheme.formLabel,
-          ),
+          child: Text('Nascimento', style: AppTheme.formLabel),
         ),
         const SizedBox(height: SpacingTokens.labelToField),
         InkWell(
@@ -454,22 +455,6 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: _isSaving ? null : _salvar,
-      child: _isSaving
-          ? const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                color: Colors.black,
-                strokeWidth: 3,
-              ),
-            )
-          : const Text('Atualizar Perfil'),
     );
   }
 }

@@ -24,6 +24,7 @@ class SpacingTokens {
   static const double navBarHeight = 44.0;
   static const double pageTopPadding = lg;
   static const double pageBottomPadding = xxl;
+  static const double pageHorizontalPadding = lg;
 
   // semânticos — componentes
   static const double cardPaddingH        = lg;   // 16
