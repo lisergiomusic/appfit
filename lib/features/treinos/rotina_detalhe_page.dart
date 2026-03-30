@@ -30,6 +30,7 @@ class RotinaDetalhePage extends StatefulWidget {
   final String? rotinaId;
   final String? alunoId;
   final String? alunoNome;
+  final RotinaService? rotinaService;
 
   const RotinaDetalhePage({
     super.key,
@@ -37,6 +38,7 @@ class RotinaDetalhePage extends StatefulWidget {
     this.rotinaId,
     this.alunoId,
     this.alunoNome,
+    this.rotinaService,
   });
 
   @override
@@ -56,9 +58,13 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   bool _isSaving = false;
   bool _canPopNow = false;
 
+  late final RotinaService _rotinaService;
+
   @override
   void initState() {
     super.initState();
+
+    _rotinaService = widget.rotinaService ?? RotinaService();
 
     nomeCtrl = TextEditingController(text: widget.rotinaData?['nome'] ?? '');
     objCtrl = TextEditingController(text: widget.rotinaData?['objetivo'] ?? '');
@@ -313,7 +319,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           TextButton(
             onPressed: () async {
               setState(() => _isDeleting = true);
-              await RotinaService().excluirRotina(widget.rotinaId!);
+              await _rotinaService.excluirRotina(widget.rotinaId!);
               if (mounted) {
                 setState(() {
                   _canPopNow = true;
@@ -415,7 +421,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           .toList();
 
       if (widget.rotinaId != null) {
-        await RotinaService().atualizarRotina(
+        await _rotinaService.atualizarRotina(
           rotinaId: widget.rotinaId!,
           nome: nomeParaSalvar,
           objetivo: objetivoParaSalvar,
@@ -425,7 +431,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           dataVencimento: _tipoVencimento == 'data' ? _vencimentoData : null,
         );
       } else {
-        await RotinaService().criarRotina(
+        await _rotinaService.criarRotina(
           alunoId: widget.alunoId,
           nome: nomeParaSalvar,
           objetivo: objetivoParaSalvar,
@@ -493,17 +499,20 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           leading: CupertinoButton(
             padding: EdgeInsets.zero,
             onPressed: () => Navigator.of(context).maybePop(),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  CupertinoIcons.chevron_back,
-                  size: 17,
-                  color: AppColors.primary,
-                ),
-                SizedBox(width: 4),
-                Text('Voltar', style: AppTheme.navBarAction),
-              ],
+            child: const FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    CupertinoIcons.chevron_back,
+                    size: 17,
+                    color: AppColors.primary,
+                  ),
+                  SizedBox(width: 4),
+                  Text('Voltar', style: AppTheme.navBarAction),
+                ],
+              ),
             ),
           ),
           title: const Text('Gerenciar Planilha', style: AppTheme.pageTitle),

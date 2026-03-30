@@ -9,11 +9,15 @@ import 'rotina_detalhe_page.dart';
 class TreinosPage extends StatefulWidget {
   final String? alunoId;
   final String? alunoNome;
+  final AlunoService? alunoService;
+  final RotinaService? rotinaService;
 
   const TreinosPage({
     super.key,
     this.alunoId,
     this.alunoNome,
+    this.alunoService,
+    this.rotinaService,
   });
 
   @override
@@ -25,8 +29,18 @@ class _TreinosPageState extends State<TreinosPage> {
   final ScrollController _scrollController = ScrollController();
   String _searchQuery = "";
 
+  late final AlunoService _alunoService;
+  late final RotinaService _rotinaService;
+
+  @override
+  void initState() {
+    super.initState();
+    _alunoService = widget.alunoService ?? AlunoService();
+    _rotinaService = widget.rotinaService ?? RotinaService();
+  }
+
   Future<void> _deletarTreino(String id) async {
-    await RotinaService().excluirRotina(id);
+    await _rotinaService.excluirRotina(id);
   }
 
   @override
@@ -39,7 +53,6 @@ class _TreinosPageState extends State<TreinosPage> {
   @override
   Widget build(BuildContext context) {
     final bool isSelecting = widget.alunoId != null;
-    final AlunoService alunoService = AlunoService();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -52,7 +65,7 @@ class _TreinosPageState extends State<TreinosPage> {
           _buildSliverAppBar(isSelecting),
           SliverToBoxAdapter(child: _buildSearchBar()),
           StreamBuilder<QuerySnapshot>(
-            stream: alunoService.getRotinasTemplates(),
+            stream: _alunoService.getRotinasTemplates(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SliverFillRemaining(
@@ -125,7 +138,11 @@ class _TreinosPageState extends State<TreinosPage> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const RotinaDetalhePage()),
+                MaterialPageRoute(
+                  builder: (context) => RotinaDetalhePage(
+                    rotinaService: _rotinaService,
+                  ),
+                ),
               );
             },
             child: const Icon(
@@ -302,6 +319,7 @@ class _TreinosPageState extends State<TreinosPage> {
                       rotinaData: rotina,
                       alunoId: widget.alunoId,
                       alunoNome: widget.alunoNome,
+                      rotinaService: _rotinaService,
                     ),
                   ),
                 );
@@ -312,6 +330,7 @@ class _TreinosPageState extends State<TreinosPage> {
                     builder: (context) => RotinaDetalhePage(
                       rotinaData: rotina,
                       rotinaId: id,
+                      rotinaService: _rotinaService,
                     ),
                   ),
                 );
