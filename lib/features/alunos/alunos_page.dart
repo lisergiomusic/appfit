@@ -399,12 +399,7 @@ class _AlunosPageState extends State<AlunosPage> {
               opacity: isCollapsed ? 1.0 : 0.0,
               child: const Text(
                 'Meus Alunos',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 17,
-                  letterSpacing: -0.5,
-                ),
+                style: AppTheme.pageTitle,
               ),
             ),
             centerTitle: true,
@@ -414,11 +409,13 @@ class _AlunosPageState extends State<AlunosPage> {
               opacity: isCollapsed ? 0.0 : 1.0,
               child: Container(
                 color: AppColors.background,
-                padding: const EdgeInsets.only(left: 20, bottom: 10),
+                padding: const EdgeInsets.only(left: 20, bottom: SpacingTokens.xxl),
                 alignment: Alignment.bottomLeft,
-                child: const Text(
+                child: Text(
                   'Meus Alunos',
-                  style: AppTheme.bigTitle,
+                  style: AppTheme.bigTitle.copyWith(
+                    height: 1,
+                  )
                 ),
               ),
             ),
@@ -430,7 +427,7 @@ class _AlunosPageState extends State<AlunosPage> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Container(
         height: 36,
         decoration: BoxDecoration(

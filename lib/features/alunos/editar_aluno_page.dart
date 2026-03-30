@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/cupertino.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/aluno_service.dart';
+import '../../core/widgets/app_bar_divider.dart';
 
 class EditarAlunoPage extends StatefulWidget {
   final String alunoId;
 
-  const EditarAlunoPage({
-    super.key,
-    required this.alunoId,
-  });
+  const EditarAlunoPage({super.key, required this.alunoId});
 
   @override
   State<EditarAlunoPage> createState() => _EditarAlunoPageState();
@@ -49,10 +48,14 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       final data = doc.data() as Map<String, dynamic>;
 
       _nomeController = TextEditingController(text: data['nome'] ?? '');
-      _sobrenomeController = TextEditingController(text: data['sobrenome'] ?? '');
+      _sobrenomeController = TextEditingController(
+        text: data['sobrenome'] ?? '',
+      );
       _emailController = TextEditingController(text: data['email'] ?? '');
       _telefoneController = TextEditingController(text: data['telefone'] ?? '');
-      _pesoController = TextEditingController(text: data['pesoAtual']?.toString() ?? '');
+      _pesoController = TextEditingController(
+        text: data['pesoAtual']?.toString() ?? '',
+      );
 
       if (data['dataNascimento'] != null) {
         _dataNascimento = (data['dataNascimento'] as Timestamp).toDate();
@@ -68,9 +71,9 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao carregar dados: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao carregar dados: $e')));
         Navigator.pop(context);
       }
     }
@@ -116,9 +119,9 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao atualizar: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao atualizar: $e')));
       }
     }
   }
@@ -137,7 +140,9 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
         backgroundColor: AppColors.background,
         appBar: _buildAppBar(),
         body: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              )
             : _buildBody(),
       ),
     );
@@ -150,24 +155,29 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       centerTitle: true,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.labelPrimary, size: 20),
+      leadingWidth: 100,
+      leading: CupertinoButton(
+        padding: EdgeInsets.zero,
         onPressed: () async {
           if (_isSaving) return;
           await _salvar();
           // O _salvar já faz o pop
         },
-      ),
-      title: const Text(
-        'Editar Aluno',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-          color: AppColors.labelPrimary,
-          letterSpacing: -0.5,
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              CupertinoIcons.chevron_back,
+              size: 17,
+              color: AppColors.primary,
+            ),
+            SizedBox(width: 4),
+            Text('Voltar', style: AppTheme.navBarAction),
+          ],
         ),
       ),
-
+      title: const Text('Editar Aluno'),
+      bottom: const AppBarDivider(),
     );
   }
 
@@ -195,7 +205,8 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 label: 'SOBRENOME',
                 icon: Icons.badge_rounded,
                 textCapitalization: TextCapitalization.words,
-                validator: (v) => v!.isEmpty ? 'O sobrenome é obrigatório' : null,
+                validator: (v) =>
+                    v!.isEmpty ? 'O sobrenome é obrigatório' : null,
               ),
               const SizedBox(height: 20),
               _buildDatePicker(),
@@ -225,7 +236,6 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       ),
     );
   }
-
 
   Widget _buildTextField({
     required TextEditingController controller,
@@ -257,11 +267,22 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           keyboardType: keyboardType,
           textCapitalization: textCapitalization,
           validator: validator,
-          style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: AppColors.labelSecondary.withAlpha(80), fontSize: 14),
-            prefixIcon: Icon(icon, color: AppColors.labelSecondary.withAlpha(120), size: 20),
+            hintStyle: TextStyle(
+              color: AppColors.labelSecondary.withAlpha(80),
+              fontSize: 14,
+            ),
+            prefixIcon: Icon(
+              icon,
+              color: AppColors.labelSecondary.withAlpha(120),
+              size: 20,
+            ),
             suffixIcon: suffix != null
                 ? Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -270,20 +291,33 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 : null,
             filled: true,
             fillColor: AppColors.surfaceDark,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 1.5,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: Colors.redAccent.withAlpha(100), width: 1),
+              borderSide: BorderSide(
+                color: Colors.redAccent.withAlpha(100),
+                width: 1,
+              ),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
             ),
-            errorStyle: const TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.w500),
+            errorStyle: const TextStyle(
+              color: Colors.redAccent,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ],
@@ -308,20 +342,27 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
         ),
         DropdownButtonFormField<String>(
           isExpanded: true,
-          initialValue: _generoSelecionado?.isNotEmpty == true && _generos.contains(_generoSelecionado)
+          initialValue:
+              _generoSelecionado?.isNotEmpty == true &&
+                  _generos.contains(_generoSelecionado)
               ? _generoSelecionado
               : null,
-          hint: Text(_generoPlaceholder, style: TextStyle(color: AppColors.labelSecondary.withAlpha(120))),
+          hint: Text(
+            _generoPlaceholder,
+            style: TextStyle(color: AppColors.labelSecondary.withAlpha(120)),
+          ),
           items: [
             DropdownMenuItem<String>(
               value: null,
               enabled: false,
-              child: Text(_generoPlaceholder, style: TextStyle(color: AppColors.labelSecondary.withAlpha(120))),
+              child: Text(
+                _generoPlaceholder,
+                style: TextStyle(
+                  color: AppColors.labelSecondary.withAlpha(120),
+                ),
+              ),
             ),
-            ..._generos.map((g) => DropdownMenuItem(
-                  value: g,
-                  child: Text(g),
-                ))
+            ..._generos.map((g) => DropdownMenuItem(value: g, child: Text(g))),
           ],
           onChanged: (value) {
             setState(() {
@@ -331,13 +372,20 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.surfaceDark,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 10,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none,
             ),
           ),
-          style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
           dropdownColor: AppColors.surfaceDark,
           borderRadius: BorderRadius.circular(16),
         ),
@@ -378,7 +426,9 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                       onSurface: Colors.white,
                     ),
                     textButtonTheme: TextButtonThemeData(
-                      style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                      ),
                     ),
                   ),
                   child: child!,
@@ -398,7 +448,11 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
             ),
             child: Row(
               children: [
-                Icon(Icons.calendar_today_rounded, color: AppColors.labelSecondary.withAlpha(120), size: 18),
+                Icon(
+                  Icons.calendar_today_rounded,
+                  color: AppColors.labelSecondary.withAlpha(120),
+                  size: 18,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -406,7 +460,9 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                         ? DateFormat('dd/MM/yyyy').format(_dataNascimento!)
                         : 'Selecionar',
                     style: TextStyle(
-                      color: _dataNascimento != null ? Colors.white : AppColors.labelSecondary.withAlpha(80),
+                      color: _dataNascimento != null
+                          ? Colors.white
+                          : AppColors.labelSecondary.withAlpha(80),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -424,14 +480,15 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
     return ElevatedButton(
       onPressed: _isSaving ? null : _salvar,
       child: _isSaving
-        ? const SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(color: Colors.black, strokeWidth: 3),
-          )
-        : const Text(
-            'Atualizar Perfil',
-          ),
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                color: Colors.black,
+                strokeWidth: 3,
+              ),
+            )
+          : const Text('Atualizar Perfil'),
     );
   }
 }

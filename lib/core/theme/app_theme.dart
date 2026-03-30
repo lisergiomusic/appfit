@@ -41,6 +41,7 @@ class AppTheme {
     fontSize: 34,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.37,
+    height: 1,
     color: AppColors.labelPrimary,
   );
 
@@ -48,6 +49,7 @@ class AppTheme {
     fontSize: 28,
     fontWeight: FontWeight.w700,
     letterSpacing: 0.36,
+    height: 1,
     color: AppColors.labelPrimary,
   );
 
@@ -56,6 +58,7 @@ class AppTheme {
     fontWeight: FontWeight.w400,
     letterSpacing: -0.08,
     color: AppColors.labelSecondary,
+    height: 1,
   );
 
   static const sectionAction = TextStyle(
@@ -68,7 +71,7 @@ class AppTheme {
   static const TextStyle pageTitle = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
-    letterSpacing: -0.2,
+    letterSpacing: -0.41,
     color: AppColors.labelPrimary,
   );
 
@@ -203,12 +206,7 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         surfaceTintColor: Colors.transparent,
-        titleTextStyle: TextStyle(
-          fontSize: 17,
-          fontWeight: FontWeight.w600,
-          letterSpacing: -0.2,
-          color: AppColors.labelPrimary,
-        ),
+        titleTextStyle: AppBarTokens.pageTitle,
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
@@ -302,12 +300,18 @@ class CardTokens {
   );
 }
 
-class NavBarTokens {
+class AppBarTokens {
   static const actionButton = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
     color: AppColors.primary,
+  );
+  static const TextStyle pageTitle = TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.41,
+    color: AppColors.labelPrimary,
   );
 }
 

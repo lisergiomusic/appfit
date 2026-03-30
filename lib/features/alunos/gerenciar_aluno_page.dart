@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import '../../core/widgets/app_bar_divider.dart';
 import 'widgets/aluno_avatar.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/aluno_service.dart';
@@ -46,8 +48,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
       }
     } catch (e) {
       debugPrint("Erro ao buscar dados do aluno: $e");
-      if (mounted) {
-      }
+      if (mounted) {}
     }
   }
 
@@ -104,7 +105,9 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surfaceDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusXL)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        ),
         title: const Text(
           'Excluir Aluno?',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -118,7 +121,10 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
             onPressed: () => Navigator.pop(context, false),
             child: const Text(
               'CANCELAR',
-              style: TextStyle(color: AppColors.labelSecondary, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: AppColors.labelSecondary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           TextButton(
@@ -164,26 +170,25 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
         elevation: 0,
         centerTitle: true,
         surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.labelPrimary),
+        leadingWidth: 100,
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
           onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Gerenciar Aluno',
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            color: AppColors.labelPrimary,
-            letterSpacing: -0.3,
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                CupertinoIcons.chevron_back,
+                size: 17,
+                color: AppColors.primary,
+              ),
+              SizedBox(width: 4),
+              Text('Voltar', style: AppTheme.navBarAction),
+            ],
           ),
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
-          child: Container(
-            height: 0.5,
-            color: Colors.white.withAlpha(20),
-          ),
-        ),
+        title: const Text('Gerenciar Aluno'),
+        bottom: const AppBarDivider(),
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -270,11 +275,14 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
 
                 Text(
                   _dataCriacao != null
-                    ? () {
-                        String dataFormatada = DateFormat("MMMM 'de' y", "pt_BR").format(_dataCriacao!);
-                        return 'Aluno desde ${dataFormatada[0].toUpperCase()}${dataFormatada.substring(1)}';
-                      }()
-                    : 'Aluno Ativo',
+                      ? () {
+                          String dataFormatada = DateFormat(
+                            "MMMM 'de' y",
+                            "pt_BR",
+                          ).format(_dataCriacao!);
+                          return 'Aluno desde ${dataFormatada[0].toUpperCase()}${dataFormatada.substring(1)}';
+                        }()
+                      : 'Aluno Ativo',
                   style: AppTheme.cardSubtitle,
                 ),
               ],
@@ -315,20 +323,35 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                 child: InkWell(
                   onTap: item.onTap,
                   borderRadius: BorderRadius.vertical(
-                    top: index == 0 ? const Radius.circular(AppTheme.radiusXL) : Radius.zero,
-                    bottom: isLast ? const Radius.circular(AppTheme.radiusXL) : Radius.zero,
+                    top: index == 0
+                        ? const Radius.circular(AppTheme.radiusXL)
+                        : Radius.zero,
+                    bottom: isLast
+                        ? const Radius.circular(AppTheme.radiusXL)
+                        : Radius.zero,
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12), // mais compacto estilo iOS
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    // mais compacto estilo iOS
                     child: Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(8), // menor
                           decoration: BoxDecoration(
-                            color: (item.iconColor ?? AppColors.labelPrimary).withAlpha(15),
-                            borderRadius: BorderRadius.circular(10), // mais sutil
+                            color: (item.iconColor ?? AppColors.labelPrimary)
+                                .withAlpha(15),
+                            borderRadius: BorderRadius.circular(
+                              10,
+                            ), // mais sutil
                           ),
-                          child: Icon(item.icon, color: item.iconColor ?? AppColors.labelPrimary, size: 20), // menor
+                          child: Icon(
+                            item.icon,
+                            color: item.iconColor ?? AppColors.labelPrimary,
+                            size: 20,
+                          ), // menor
                         ),
                         const SizedBox(width: 12), // menor
                         Expanded(
@@ -337,12 +360,17 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                             children: [
                               Text(
                                 item.title,
-                                style: AppTheme.cardTitle.copyWith(fontSize: 15, fontWeight: FontWeight.w600), // menor
+                                style: AppTheme.cardTitle.copyWith(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ), // menor
                               ),
                               const SizedBox(height: 1),
                               Text(
                                 item.subtitle,
-                                style: AppTheme.cardSubtitle.copyWith(fontSize: 12), // menor
+                                style: AppTheme.cardSubtitle.copyWith(
+                                  fontSize: 12,
+                                ), // menor
                               ),
                             ],
                           ),
@@ -359,7 +387,8 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
               ),
               if (!isLast)
                 Padding(
-                  padding: const EdgeInsets.only(left: 52), // alinhado ao novo ícone
+                  padding: const EdgeInsets.only(left: 52),
+                  // alinhado ao novo ícone
                   child: Divider(height: 1, color: Colors.white.withAlpha(10)),
                 ),
             ],

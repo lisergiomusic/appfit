@@ -10,8 +10,8 @@ class SpacingTokens {
   static const double xxl  = 24;
 
   // semânticos — formulários
-  static const double formLabelToField    = sm;   // 8  — label → input
-  static const double formGroupGap        = xxl;  // 24 — entre grupos
+  static const double labelToField    = sm;   // 8  — label → input
+  static const double sectionGap        = xxl;  // 24 — entre grupos
   static const double formCounterTop      = xs;   // 4  — input → "0/40"
 
   // semânticos — listas

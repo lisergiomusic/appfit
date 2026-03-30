@@ -888,7 +888,7 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
                 Navigator.pop(context);
               }
             },
-            child: Text('Salvar', style: NavBarTokens.actionButton),
+            child: Text('Salvar', style: AppBarTokens.actionButton),
           ),
         ],
       ),
@@ -933,14 +933,14 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
                       : null,
                 ),
               ),
-              const SizedBox(height: SpacingTokens.formGroupGap),
+              const SizedBox(height: SpacingTokens.sectionGap),
               Row(
                 children: [
                   const SizedBox(width: AppTheme.space8),
                   const Text('Vencimento', style: AppTheme.formLabel),
                 ],
               ),
-              const SizedBox(height: SpacingTokens.formLabelToField),
+              const SizedBox(height: SpacingTokens.labelToField),
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/widgets/app_bar_divider.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -16,13 +17,8 @@ class HomePage extends StatelessWidget {
         backgroundColor: AppColors.background,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        centerTitle: false,
-        title: Row(
-          children: [
-            const SizedBox(width: 10),
-            const Text('Painel de Controle'),
-          ],
-        ),
+        centerTitle: true,
+        title: const Text('Painel de Controle'),
         actions: [
           IconButton(
             icon: Stack(
@@ -54,21 +50,7 @@ class HomePage extends StatelessWidget {
           ),
           const SizedBox(width: 8),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
-          child: Container(
-            height: 1.0,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.white.withAlpha(0),
-                  Colors.white.withAlpha(20),
-                  Colors.white.withAlpha(0),
-                ],
-              ),
-            ),
-          ),
-        ),
+        bottom: const AppBarDivider(),
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -89,7 +71,11 @@ class HomePage extends StatelessWidget {
                 }
 
                 return Padding(
-                  padding: const EdgeInsets.only(left:AppTheme.paddingScreen, right: AppTheme.paddingScreen, top: SpacingTokens.pageTopPadding),
+                  padding: const EdgeInsets.only(
+                    left: AppTheme.paddingScreen,
+                    right: AppTheme.paddingScreen,
+                    top: SpacingTokens.pageTopPadding,
+                  ),
                   child: Row(
                     children: [
                       Stack(
@@ -115,7 +101,8 @@ class HomePage extends StatelessWidget {
                       const SizedBox(width: 16),
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.only(bottom: 5), // ALinha titulo e pill ao centro do avatae
+                          padding: const EdgeInsets.only(bottom: 5),
+                          // ALinha titulo e pill ao centro do avatae
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -123,7 +110,7 @@ class HomePage extends StatelessWidget {
                                 '${_getSaudacao()}, $nome',
                                 style: AppTheme.title1,
                               ),
-                              const SizedBox(height:2),
+                              const SizedBox(height: AppTheme.radiusXS),
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8,
@@ -131,7 +118,9 @@ class HomePage extends StatelessWidget {
                                 ),
                                 decoration: BoxDecoration(
                                   color: AppColors.primary.withAlpha(25),
-                                  borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusFull,
+                                  ),
                                 ),
                                 child: Text(
                                   'Plano Premium',
@@ -181,7 +170,7 @@ class HomePage extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: SpacingTokens.xxl),
+            const SizedBox(height: SpacingTokens.sectionGap),
             // Quick Actions
             Padding(
               padding: const EdgeInsets.symmetric(
@@ -193,10 +182,10 @@ class HomePage extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(
                       left: 4,
-                      bottom: SpacingTokens.sm,
                     ),
                     child: Text('Ações rápidas', style: AppTheme.sectionHeader),
                   ),
+                  const SizedBox(height: SpacingTokens.labelToField),
                   Row(
                     children: [
                       _buildQuickActionButton(
@@ -224,9 +213,7 @@ class HomePage extends StatelessWidget {
                 ],
               ),
             ),
-
-            const SizedBox(height: 32),
-
+            const SizedBox(height: SpacingTokens.sectionGap),
             // Recent Activity
             Padding(
               padding: const EdgeInsets.symmetric(
@@ -236,7 +223,7 @@ class HomePage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(left: 4),
+                    padding: const EdgeInsets.only(left: 8),
                     child: Text(
                       'Atividade recente',
                       style: AppTheme.sectionHeader,
@@ -254,7 +241,7 @@ class HomePage extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: SpacingTokens.sm),
+            const SizedBox(height: SpacingTokens.labelToField),
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppTheme.paddingScreen,
