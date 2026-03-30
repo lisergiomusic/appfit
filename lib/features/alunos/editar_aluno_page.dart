@@ -194,7 +194,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
             children: [
               _buildTextField(
                 controller: _nomeController,
-                label: 'NOME',
+                label: 'Nome',
                 icon: Icons.person_rounded,
                 textCapitalization: TextCapitalization.words,
                 validator: (v) => v!.isEmpty ? 'O nome é obrigatório' : null,
@@ -202,11 +202,10 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
               const SizedBox(height: 20),
               _buildTextField(
                 controller: _sobrenomeController,
-                label: 'SOBRENOME',
+                label: 'Sobrenome',
                 icon: Icons.badge_rounded,
                 textCapitalization: TextCapitalization.words,
-                validator: (v) =>
-                    v!.isEmpty ? 'O sobrenome é obrigatório' : null,
+                validator: (v) => v!.isEmpty ? 'O sobrenome é obrigatório' : null,
               ),
               const SizedBox(height: 20),
               _buildDatePicker(),
@@ -215,7 +214,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
               const SizedBox(height: 20),
               _buildTextField(
                 controller: _emailController,
-                label: 'E-MAIL DE ACESSO',
+                label: 'E-mail de acesso',
                 icon: Icons.alternate_email_rounded,
                 keyboardType: TextInputType.emailAddress,
                 validator: (v) => v!.isEmpty ? 'O e-mail é obrigatório' : null,
@@ -223,7 +222,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
               const SizedBox(height: 20),
               _buildTextField(
                 controller: _telefoneController,
-                label: 'WHATSAPP / CONTATO',
+                label: 'Whatsapp / contato',
                 icon: Icons.phone_iphone_rounded,
                 keyboardType: TextInputType.phone,
                 hint: '(00) 00000-0000',
@@ -251,17 +250,13 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 10),
+          padding: const EdgeInsets.only(left: 8),
           child: Text(
             label,
-            style: const TextStyle(
-              color: AppColors.labelSecondary,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.0,
-            ),
+            style: AppTheme.formLabel,
           ),
         ),
+        const SizedBox(height: SpacingTokens.labelToField),
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
@@ -329,17 +324,13 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Padding(
-          padding: EdgeInsets.only(left: 4, bottom: 10),
+          padding: EdgeInsets.only(left: 8),
           child: Text(
-            'GÊNERO',
-            style: TextStyle(
-              color: AppColors.labelSecondary,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.0,
-            ),
+            'Gênero',
+            style: AppTheme.formLabel,
           ),
         ),
+        const SizedBox(height: SpacingTokens.labelToField),
         DropdownButtonFormField<String>(
           isExpanded: true,
           initialValue:
@@ -398,17 +389,13 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Padding(
-          padding: EdgeInsets.only(left: 4, bottom: 10),
+          padding: EdgeInsets.only(left: 8),
           child: Text(
-            'NASCIMENTO',
-            style: TextStyle(
-              color: AppColors.labelSecondary,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.0,
-            ),
+            'Nascimento',
+            style: AppTheme.formLabel,
           ),
         ),
+        const SizedBox(height: SpacingTokens.labelToField),
         InkWell(
           onTap: () async {
             final picked = await showDatePicker(

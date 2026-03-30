@@ -129,6 +129,7 @@ class AppTheme {
     letterSpacing: 0.07,
     fontWeight: FontWeight.w400,
   );
+
   static const TextStyle formLabel = TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w500,
