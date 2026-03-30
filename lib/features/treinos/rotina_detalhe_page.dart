@@ -1162,30 +1162,6 @@ class _SessaoTreinoPageState extends State<_SessaoTreinoPage> {
               ),
               const SizedBox(height: 24),
               RotinaModernInput(
-                label: 'DIA DA SEMANA',
-                child: DropdownButtonFormField<String>(
-                  initialValue: diaSemana,
-                  dropdownColor: AppColors.surfaceLight,
-                  items:
-                      [
-                            'Segunda',
-                            'Terça',
-                            'Quarta',
-                            'Quinta',
-                            'Sexta',
-                            'Sábado',
-                            'Domingo',
-                          ]
-                          .map(
-                            (d) => DropdownMenuItem(value: d, child: Text(d)),
-                          )
-                          .toList(),
-                  onChanged: (v) => setState(() => diaSemana = v),
-                  decoration: rotinaInputDecoration(hintText: 'Sem dia fixo'),
-                ),
-              ),
-              const SizedBox(height: 24),
-              RotinaModernInput(
                 label: 'NOTAS',
                 child: TextFormField(
                   controller: orientCtrl,

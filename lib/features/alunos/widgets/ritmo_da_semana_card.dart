@@ -7,7 +7,6 @@ class RitmoDaSemanaCard extends StatelessWidget {
 
   const RitmoDaSemanaCard({super.key, required this.alunoNome});
 
-
   @override
   Widget build(BuildContext context) {
     final String primeiroNome = alunoNome.split(' ').first;
@@ -25,7 +24,9 @@ class RitmoDaSemanaCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppTheme.paddingScreen,
+          ),
           child: SizedBox(
             height: 32,
             child: Row(
@@ -41,10 +42,8 @@ class RitmoDaSemanaCard extends StatelessWidget {
                     bottom: 4,
                   ),
                   onPressed: () {},
-                  child: const Text(
-                    'Ver mais',
-                    style: AppTheme.sectionAction,
-                  ), minimumSize: Size(0, 0),
+                  minimumSize: Size(0, 0),
+                  child: const Text('Ver mais', style: AppTheme.sectionAction),
                 ),
               ],
             ),
@@ -52,7 +51,9 @@ class RitmoDaSemanaCard extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppTheme.paddingScreen,
+          ),
           padding: const EdgeInsets.all(16),
           decoration: AppTheme.cardDecoration,
           child: Column(
@@ -70,7 +71,9 @@ class RitmoDaSemanaCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
-                          color: isFuturo ? AppColors.labelSecondary.withAlpha(100) : AppColors.labelSecondary,
+                          color: isFuturo
+                              ? AppColors.labelSecondary.withAlpha(100)
+                              : AppColors.labelSecondary,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -78,21 +81,31 @@ class RitmoDaSemanaCard extends StatelessWidget {
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          color: isFeito ? AppColors.primary : Colors.transparent,
+                          color: isFeito
+                              ? AppColors.primary
+                              : Colors.transparent,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: isFeito ? AppColors.primary : AppColors.labelSecondary.withAlpha(30),
+                            color: isFeito
+                                ? AppColors.primary
+                                : AppColors.labelSecondary.withAlpha(30),
                             width: 1.5,
                           ),
                         ),
                         child: Center(
                           child: isFeito
-                              ? const Icon(Icons.check, color: Colors.black, size: 18)
+                              ? const Icon(
+                                  Icons.check,
+                                  color: Colors.black,
+                                  size: 18,
+                                )
                               : Container(
                                   width: 4,
                                   height: 4,
                                   decoration: BoxDecoration(
-                                    color: AppColors.labelSecondary.withAlpha(50),
+                                    color: AppColors.labelSecondary.withAlpha(
+                                      50,
+                                    ),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -105,7 +118,9 @@ class RitmoDaSemanaCard extends StatelessWidget {
               const SizedBox(height: 16),
               Builder(
                 builder: (context) {
-                  final int diasTreinados = dias.where((d) => d['status'] == 'feito').length;
+                  final int diasTreinados = dias
+                      .where((d) => d['status'] == 'feito')
+                      .length;
                   return Center(
                     child: Text(
                       '$primeiroNome treinou $diasTreinados dias essa semana',
