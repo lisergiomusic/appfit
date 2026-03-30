@@ -178,18 +178,23 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       ),
       title: const Text('Editar Aluno'),
       actions: [
-        TextButton(
-          onPressed: _isSaving ? null : _salvar,
-          child: _isSaving
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                    strokeWidth: 2.2,
-                  ),
-                )
-              : const Text('Salvar', style: AppBarTokens.actionButton),
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: CupertinoButton(
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            minimumSize: Size(0, 0),
+            onPressed: _isSaving ? null : _salvar,
+            child: _isSaving
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      color: AppColors.primary,
+                      strokeWidth: 2.2,
+                    ),
+                  )
+                : const Text('Salvar', style: AppBarTokens.actionButton),
+          ),
         ),
       ],
       bottom: const AppBarDivider(),
