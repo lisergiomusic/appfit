@@ -6,6 +6,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/services/aluno_service.dart';
 import '../../core/widgets/app_bar_divider.dart';
 
+
 class EditarAlunoPage extends StatefulWidget {
   final String alunoId;
 
@@ -180,13 +181,12 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       bottom: const AppBarDivider(),
     );
   }
-
   Widget _buildBody() {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
+        padding: const EdgeInsets.fromLTRB(24, SpacingTokens.pageTopPadding, 24, 40),
         child: Form(
           key: _formKey,
           child: Column(
@@ -197,6 +197,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 label: 'Nome',
                 icon: Icons.person_rounded,
                 textCapitalization: TextCapitalization.words,
+                hint: 'Ex: João',
                 validator: (v) => v!.isEmpty ? 'O nome é obrigatório' : null,
               ),
               const SizedBox(height: 20),
@@ -205,6 +206,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 label: 'Sobrenome',
                 icon: Icons.badge_rounded,
                 textCapitalization: TextCapitalization.words,
+                hint: 'Ex: Silva',
                 validator: (v) => v!.isEmpty ? 'O sobrenome é obrigatório' : null,
               ),
               const SizedBox(height: 20),
@@ -217,6 +219,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 label: 'E-mail de acesso',
                 icon: Icons.alternate_email_rounded,
                 keyboardType: TextInputType.emailAddress,
+                hint: 'exemplo@email.com',
                 validator: (v) => v!.isEmpty ? 'O e-mail é obrigatório' : null,
               ),
               const SizedBox(height: 20),
@@ -262,17 +265,10 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           keyboardType: keyboardType,
           textCapitalization: textCapitalization,
           validator: validator,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTheme.inputText,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(
-              color: AppColors.labelSecondary.withAlpha(80),
-              fontSize: 14,
-            ),
+            hintStyle: AppTheme.inputPlaceHolder,
             prefixIcon: Icon(
               icon,
               color: AppColors.labelSecondary.withAlpha(120),
@@ -290,23 +286,31 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
               horizontal: 16,
               vertical: 12,
             ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderSide: BorderSide.none,
+            ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
               borderSide: const BorderSide(
                 color: AppColors.primary,
-                width: 1.5,
+                width: 1,
               ),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
               borderSide: BorderSide(
                 color: Colors.redAccent.withAlpha(100),
                 width: 1,
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderSide: const BorderSide(color: Colors.redAccent, width: 1),
             ),
             errorStyle: const TextStyle(
               color: Colors.redAccent,
@@ -340,7 +344,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
               : null,
           hint: Text(
             _generoPlaceholder,
-            style: TextStyle(color: AppColors.labelSecondary.withAlpha(120)),
+            style: AppTheme.inputPlaceHolder,
           ),
           items: [
             DropdownMenuItem<String>(
@@ -348,9 +352,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
               enabled: false,
               child: Text(
                 _generoPlaceholder,
-                style: TextStyle(
-                  color: AppColors.labelSecondary.withAlpha(120),
-                ),
+                style: AppTheme.inputPlaceHolder,
               ),
             ),
             ..._generos.map((g) => DropdownMenuItem(value: g, child: Text(g))),
@@ -368,17 +370,13 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
               vertical: 10,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
               borderSide: BorderSide.none,
             ),
           ),
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTheme.inputText,
           dropdownColor: AppColors.surfaceDark,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMD),
         ),
       ],
     );
@@ -426,12 +424,12 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
               setState(() => _dataNascimento = picked);
             }
           },
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMD),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: AppColors.surfaceDark,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
             ),
             child: Row(
               children: [
@@ -446,13 +444,9 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                     _dataNascimento != null
                         ? DateFormat('dd/MM/yyyy').format(_dataNascimento!)
                         : 'Selecionar',
-                    style: TextStyle(
-                      color: _dataNascimento != null
-                          ? Colors.white
-                          : AppColors.labelSecondary.withAlpha(80),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: _dataNascimento != null
+                        ? AppTheme.inputText
+                        : AppTheme.inputPlaceHolder,
                   ),
                 ),
               ],

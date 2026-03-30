@@ -8,8 +8,8 @@ InputDecoration rotinaInputDecoration({required String hintText}) {
     filled: true,
     fillColor: AppColors.surfaceDark,
     contentPadding: EdgeInsets.symmetric(
-      horizontal: AppTheme.space14,
-      vertical: AppTheme.space12,
+      horizontal: SpacingTokens.lg,
+      vertical: SpacingTokens.md,
     ),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppTheme.radiusMD),
