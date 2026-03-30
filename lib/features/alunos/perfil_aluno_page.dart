@@ -130,7 +130,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
             physics: const BouncingScrollPhysics(),
             child: Column(
               children: [
-                const SizedBox(height: 16),
+                const SizedBox(height: SpacingTokens.pageTopPadding),
                 AlunoHeaderSection(
                   alunoId: widget.alunoId,
                   alunoNome: nomeExibicao,

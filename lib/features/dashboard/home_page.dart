@@ -89,7 +89,7 @@ class HomePage extends StatelessWidget {
                 }
 
                 return Padding(
-                  padding: const EdgeInsets.all(AppTheme.paddingScreen),
+                  padding: const EdgeInsets.only(left:AppTheme.paddingScreen, right: AppTheme.paddingScreen, top: SpacingTokens.pageTopPadding),
                   child: Row(
                     children: [
                       Stack(
@@ -114,34 +114,34 @@ class HomePage extends StatelessWidget {
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${_getSaudacao()}, $nome',
-                              style: AppTheme.bigTitle,
-                            ),
-                            const SizedBox(height: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 5), // ALinha titulo e pill ao centro do avatae
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${_getSaudacao()}, $nome',
+                                style: AppTheme.title1,
                               ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withAlpha(25),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Text(
-                                'Plano Premium',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.primary,
-                                  letterSpacing: 0.5,
+                              const SizedBox(height:2),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withAlpha(25),
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                                ),
+                                child: Text(
+                                  'Plano Premium',
+                                  style: AppTheme.caption2.copyWith(
+                                    color: AppColors.primary,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -149,7 +149,7 @@ class HomePage extends StatelessWidget {
                 );
               },
             ),
-
+            const SizedBox(height: SpacingTokens.xxl),
             // Stats Row
             Padding(
               padding: const EdgeInsets.symmetric(

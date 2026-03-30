@@ -513,9 +513,11 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.paddingScreen,
-                vertical: 24,
+              padding: const EdgeInsets.only(
+                left: AppTheme.paddingScreen,
+                right: AppTheme.paddingScreen,
+                top: SpacingTokens.pageTopPadding,
+                bottom: SpacingTokens.pageBottomPadding,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -544,11 +546,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                   value.text.isEmpty
                                       ? 'Defina o objetivo'
                                       : value.text,
-                                  style: const TextStyle(
-                                    color: AppColors.labelSecondary,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                  style: CardTokens.cardSubtitle,
                                 );
                               },
                             ),
@@ -565,12 +563,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                   _tipoVencimento == 'sessoes'
                                       ? '$_vencimentoSessoes ${_vencimentoSessoes == 1 ? 'sessão' : 'sessões'}'
                                       : 'Vence em ${DateFormat('dd/MM/yyyy').format(_vencimentoData)}',
-                                  style: const TextStyle(
-                                    color: AppColors.labelSecondary,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),                              ],
+                                  style: AppTheme.caption,
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -584,10 +579,15 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: SpacingTokens.xxl),
                   if (isTemplate) _buildTemplateBadge(),
-                  Text('Lista de treinos', style: AppTheme.sectionHeader),
-                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const SizedBox(width: 4),
+                      Text('Lista de treinos', style: AppTheme.sectionHeader),
+                    ],
+                  ),
+                  const SizedBox(height: SpacingTokens.sm),
                   if (_treinos.isEmpty)
                     _buildEmptyState()
                   else
@@ -598,7 +598,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                         key: ValueKey(entry.value),
                       ),
                     ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: SpacingTokens.lg),
                   _buildAddSessaoButton(),
                 ],
               ),
@@ -654,7 +654,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
   Widget _buildAddSessaoButton() {
-    return  AppPrimaryButton(
+    return AppPrimaryButton(
       label: 'Nova sessão',
       icon: CupertinoIcons.add_circled,
       onPressed: () => _exibirModalSessao(),
@@ -692,7 +692,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       margin: const EdgeInsets.only(bottom: SpacingTokens.sm),
       decoration: AppTheme.cardDecoration,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
         onTap: () async {
           final result = await Navigator.push(
             context,
@@ -728,7 +728,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     style: const TextStyle(
                       color: AppColors.primary,
                       fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -752,6 +752,11 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 ),
               ),
               PopupMenuButton(
+                icon: Icon(
+                  CupertinoIcons.ellipsis_vertical,
+                  size: 20,
+                  color: AppColors.labelSecondary,
+                ),
                 onSelected: (v) {
                   if (v == 'edit') _exibirModalSessao(index: index);
                   if (v == 'delete') _excluirTreino(index);
