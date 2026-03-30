@@ -29,7 +29,6 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
   late TextEditingController _pesoController;
   DateTime? _dataNascimento;
 
-  // TODO: Atualizar os índices no Firestore para incluir o campo 'genero' quando integrar com backend.
   String? _generoSelecionado;
   final List<String> _generos = ['Masculino', 'Feminino', 'Outro'];
   final String _generoPlaceholder = 'Selecione o gênero';
@@ -61,11 +60,8 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
         _dataNascimento = (data['dataNascimento'] as Timestamp).toDate();
       }
 
-      // TODO: Remover este bloco quando a atualização do Firestore for realizada.
       if (data['genero'] != null && _generos.contains(data['genero'])) {
         _generoSelecionado = data['genero'];
-      } else {
-        _generoSelecionado = _generos.first;
       }
 
       setState(() => _isLoading = false);
@@ -102,8 +98,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
         telefone: _telefoneController.text.trim(),
         peso: double.tryParse(_pesoController.text),
         dataNascimento: _dataNascimento,
-        // TODO: Enviar o campo 'genero' para o backend quando o serviço for atualizado
-        // genero: _generoSelecionado,
+        genero: _generoSelecionado,
       );
 
       if (mounted) {

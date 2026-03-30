@@ -172,11 +172,12 @@ class _AlunosPageState extends State<AlunosPage> {
     String nome,
     String sobrenome,
     String email,
+    String? genero,
   ) async {
     if (nome.isEmpty || sobrenome.isEmpty || email.isEmpty) return;
 
     try {
-      await _alunoService.salvarAluno(nome, sobrenome, email);
+      await _alunoService.salvarAluno(nome, sobrenome, email, genero: genero);
       if (context.mounted) {
         Navigator.pop(context);
         _fetchInitialData();
@@ -190,111 +191,128 @@ class _AlunosPageState extends State<AlunosPage> {
     final nomeController = TextEditingController();
     final sobrenomeController = TextEditingController();
     final emailController = TextEditingController();
+    String? generoSelecionado;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surfaceDark,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-        ),
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom + 32,
-          left: 24,
-          right: 24,
-          top: 32,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Novo Aluno',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: -0.5,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surfaceDark,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+            left: 24,
+            right: 24,
+            top: 32,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Novo Aluno',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: -0.5,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'Preencha os dados do aluno abaixo',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.labelSecondary,
+                      Text(
+                        'Preencha os dados do aluno abaixo',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.labelSecondary,
+                        ),
                       ),
+                    ],
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close, color: AppColors.labelSecondary),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+              TextField(
+                controller: nomeController,
+                decoration: const InputDecoration(
+                  labelText: 'Nome',
+                  prefixIcon: Icon(Icons.person_outline),
+                ),
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: sobrenomeController,
+                decoration: const InputDecoration(
+                  labelText: 'Sobrenome',
+                  prefixIcon: Icon(Icons.person_outline),
+                ),
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                dropdownColor: AppColors.surfaceDark,
+                items: ['Masculino', 'Feminino', 'Outro']
+                    .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                    .toList(),
+                onChanged: (val) => generoSelecionado = val,
+                decoration: const InputDecoration(
+                  labelText: 'Gênero',
+                  prefixIcon: Icon(Icons.people_outline),
+                ),
+                style: const TextStyle(color: Colors.white),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(
+                  labelText: 'E-mail de Acesso',
+                  prefixIcon: Icon(Icons.alternate_email),
+                ),
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () => _salvarAluno(
+                    context,
+                    nomeController.text,
+                    sobrenomeController.text,
+                    emailController.text,
+                    generoSelecionado,
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  ],
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: AppColors.labelSecondary),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            TextField(
-              controller: nomeController,
-              decoration: const InputDecoration(
-                labelText: 'Nome',
-                prefixIcon: Icon(Icons.person_outline),
-              ),
-              textCapitalization: TextCapitalization.words,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: sobrenomeController,
-              decoration: const InputDecoration(
-                labelText: 'Sobrenome',
-                prefixIcon: Icon(Icons.person_outline),
-              ),
-              textCapitalization: TextCapitalization.words,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(
-                labelText: 'E-mail de Acesso',
-                prefixIcon: Icon(Icons.alternate_email),
-              ),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () => _salvarAluno(
-                  context,
-                  nomeController.text,
-                  sobrenomeController.text,
-                  emailController.text,
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Text(
+                    'CADASTRAR ALUNO',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.0,
+                    ),
                   ),
                 ),
-                child: const Text(
-                  'CADASTRAR ALUNO',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.0,
-                  ),
-                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

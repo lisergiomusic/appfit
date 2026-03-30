@@ -35,11 +35,11 @@ class AlunoService {
 
   String? get _currentPersonalId => _auth.currentUser?.uid;
 
-  Future<void> salvarAluno(String nome, String sobrenome, String email) async {
+  Future<void> salvarAluno(String nome, String sobrenome, String email, {String? genero}) async {
     final personalId = _currentPersonalId;
     if (personalId == null) throw Exception('Personal não autenticado');
 
-    await _firestore.collection('usuarios').add({
+    final Map<String, dynamic> data = {
       'nome': nome,
       'sobrenome': sobrenome,
       'email': email,
@@ -48,7 +48,11 @@ class AlunoService {
       'personalId': personalId,
       'dataCriacao': FieldValue.serverTimestamp(),
       'ultimoTreino': FieldValue.serverTimestamp(),
-    });
+    };
+
+    if (genero != null) data['genero'] = genero;
+
+    await _firestore.collection('usuarios').add(data);
   }
 
   Future<void> atualizarAluno({
@@ -60,6 +64,7 @@ class AlunoService {
     double? peso,
     DateTime? dataNascimento,
     String? objetivos,
+    String? genero,
   }) async {
     final Map<String, dynamic> data = {
       'nome': nome,
@@ -71,6 +76,7 @@ class AlunoService {
     if (peso != null) data['pesoAtual'] = peso;
     if (dataNascimento != null) data['dataNascimento'] = Timestamp.fromDate(dataNascimento);
     if (objetivos != null) data['objetivos'] = objetivos;
+    if (genero != null) data['genero'] = genero;
 
     await _firestore.collection('usuarios').doc(alunoId).update(data);
   }
