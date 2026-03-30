@@ -10,6 +10,8 @@ import 'models/exercicio_model.dart';
 import 'widgets/rotina_modern_input.dart';
 import 'widgets/rotina_input_decoration.dart';
 import '../../core/widgets/app_primary_button.dart';
+import '../../core/widgets/app_nav_back_button.dart';
+import '../../core/widgets/app_bar_text_button.dart';
 
 class _TreinoData {
   String nome;
@@ -496,24 +498,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           backgroundColor: AppColors.background,
           elevation: 0,
           leadingWidth: 100,
-          leading: CupertinoButton(
-            padding: EdgeInsets.zero,
+          leading: AppNavBackButton(
             onPressed: () => Navigator.of(context).maybePop(),
-            child: const FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    CupertinoIcons.chevron_back,
-                    size: 17,
-                    color: AppColors.primary,
-                  ),
-                  SizedBox(width: 4),
-                  Text('Voltar', style: AppTheme.navBarAction),
-                ],
-              ),
-            ),
           ),
           title: const Text('Gerenciar Planilha', style: AppTheme.pageTitle),
           bottom: const AppBarDivider(),
@@ -872,7 +858,8 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
         ),
         title: const Text('Configurações', style: AppTheme.pageTitle),
         actions: [
-          CupertinoButton(
+          AppBarTextButton(
+            label: 'Salvar',
             onPressed: () {
               if (_formKey.currentState!.validate()) {
                 final sessoes = int.tryParse(sessoesInput) ?? 20;
@@ -897,7 +884,6 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
                 Navigator.pop(context);
               }
             },
-            child: Text('Salvar', style: AppBarTokens.actionButton),
           ),
         ],
       ),

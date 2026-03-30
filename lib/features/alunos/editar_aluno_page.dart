@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter/cupertino.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/aluno_service.dart';
 import '../../core/widgets/app_bar_divider.dart';
+import '../../core/widgets/app_nav_back_button.dart';
+import '../../core/widgets/app_bar_text_button.dart';
 
 class EditarAlunoPage extends StatefulWidget {
   final String alunoId;
@@ -151,44 +152,21 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       surfaceTintColor: Colors.transparent,
       centerTitle: true,
       leadingWidth: 100,
-      leading: CupertinoButton(
-        padding: EdgeInsets.zero,
+      leading: AppNavBackButton(
         onPressed: () async {
           if (_isSaving) return;
           await _salvar();
           // O _salvar já faz o pop
         },
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              CupertinoIcons.chevron_back,
-              size: 17,
-              color: AppColors.primary,
-            ),
-            SizedBox(width: 4),
-            Text('Voltar', style: AppTheme.navBarAction),
-          ],
-        ),
       ),
       title: const Text('Editar Aluno'),
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 8.0),
-          child: CupertinoButton(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            minimumSize: Size(0, 0),
-            onPressed: _isSaving ? null : _salvar,
-            child: _isSaving
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      color: AppColors.primary,
-                      strokeWidth: 2.2,
-                    ),
-                  )
-                : const Text('Salvar', style: AppBarTokens.actionButton),
+          child: AppBarTextButton(
+            label: 'Salvar',
+            isLoading: _isSaving,
+            onPressed: _salvar,
           ),
         ),
       ],

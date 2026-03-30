@@ -5,6 +5,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/services/aluno_service.dart';
 import 'perfil_aluno_page.dart';
 import 'widgets/aluno_avatar.dart';
+import '../../core/widgets/app_bar_icon_button.dart';
 
 class AlunosPage extends StatefulWidget {
   const AlunosPage({super.key});
@@ -396,14 +397,10 @@ class _AlunosPageState extends State<AlunosPage> {
       leadingWidth: 0,
       centerTitle: true,
       actions: [
-        CupertinoButton(
+        AppBarIconButton(
+          icon: CupertinoIcons.add,
           padding: const EdgeInsets.only(right: 16, top: 4),
           onPressed: _exibirModalCadastro,
-          child: const Icon(
-            CupertinoIcons.add,
-            color: AppColors.primary,
-            size: 24,
-          ),
         ),
       ],
       flexibleSpace: LayoutBuilder(

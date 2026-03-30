@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/widgets/app_bar_divider.dart';
+import '../../core/widgets/app_section_link_button.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -229,14 +229,9 @@ class HomePage extends StatelessWidget {
                       style: AppTheme.sectionHeader,
                     ),
                   ),
-                  CupertinoButton(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    minimumSize: Size(0, 0),
+                  AppSectionLinkButton(
+                    label: 'Ver tudo',
                     onPressed: () {},
-                    child: const Text(
-                      'Ver tudo',
-                      style: AppTheme.sectionAction,
-                    ),
                   ),
                 ],
               ),

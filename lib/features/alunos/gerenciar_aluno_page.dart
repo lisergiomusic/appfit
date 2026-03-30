@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -8,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/services/aluno_service.dart';
 import 'editar_aluno_page.dart';
 import 'financeiro_aluno_page.dart';
+import '../../core/widgets/app_nav_back_button.dart';
 
 class GerenciarAlunoPage extends StatefulWidget {
   final String alunoId;
@@ -171,22 +171,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
         centerTitle: true,
         surfaceTintColor: Colors.transparent,
         leadingWidth: 100,
-        leading: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () => Navigator.pop(context),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                CupertinoIcons.chevron_back,
-                size: 17,
-                color: AppColors.primary,
-              ),
-              SizedBox(width: 4),
-              Text('Voltar', style: AppTheme.navBarAction),
-            ],
-          ),
-        ),
+        leading: const AppNavBackButton(),
         title: const Text('Gerenciar Aluno'),
         bottom: const AppBarDivider(),
       ),

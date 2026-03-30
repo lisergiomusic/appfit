@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_section_link_button.dart';
 
 class RitmoDaSemanaCard extends StatelessWidget {
   final String alunoNome;
@@ -27,26 +27,13 @@ class RitmoDaSemanaCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(
             horizontal: AppTheme.paddingScreen,
           ),
-          child: SizedBox(
-            height: 32,
-            child: Row(
-              children: [
-                const SizedBox(width: 4),
-                Text('Frequência semanal', style: AppTheme.sectionHeader),
-                const Spacer(),
-                CupertinoButton(
-                  padding: const EdgeInsets.only(
-                    left: 8,
-                    right: 4,
-                    top: 4,
-                    bottom: 4,
-                  ),
-                  onPressed: () {},
-                  minimumSize: Size(0, 0),
-                  child: const Text('Ver mais', style: AppTheme.sectionAction),
-                ),
-              ],
-            ),
+          child: Row(
+            children: [
+              const SizedBox(width: 4),
+              Text('Frequência semanal', style: AppTheme.sectionHeader),
+              const Spacer(),
+              AppSectionLinkButton(label: 'Ver mais', onPressed: () {}),
+            ],
           ),
         ),
         const SizedBox(height: 8),

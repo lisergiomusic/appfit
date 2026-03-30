@@ -28,12 +28,9 @@ class GestaoSection extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: SizedBox(
-              height: 32,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Gestão', style: AppTheme.sectionHeader),
-              ),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text('Gestão', style: AppTheme.sectionHeader),
             ),
           ),
           const SizedBox(height: 8),
@@ -67,7 +64,8 @@ class GestaoSection extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => FeedbackHistoricoPage(alunoNome: alunoNome),
+                        builder: (context) =>
+                            FeedbackHistoricoPage(alunoNome: alunoNome),
                       ),
                     );
                   },
@@ -82,12 +80,12 @@ class GestaoSection extends StatelessWidget {
   }
 
   Widget _buildManagementItem(
-      BuildContext context, {
-        required IconData icon,
-        required String title,
-        required VoidCallback onTap,
-        required bool showBorder,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    required bool showBorder,
+  }) {
     return CupertinoButton(
       padding: EdgeInsets.zero,
       onPressed: onTap,
@@ -102,9 +100,7 @@ class GestaoSection extends StatelessWidget {
               children: [
                 Icon(icon, color: AppColors.labelTertiary, size: 22),
                 const SizedBox(width: SpacingTokens.md),
-                Expanded(
-                  child: Text(title, style: AppTheme.bodyText),
-                ),
+                Expanded(child: Text(title, style: AppTheme.bodyText)),
                 Icon(
                   CupertinoIcons.chevron_forward,
                   color: AppColors.labelQuaternary,

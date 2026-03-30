@@ -13,6 +13,8 @@ import 'models/aluno_perfil_data.dart';
 import 'widgets/aluno_header_section.dart';
 import 'widgets/ficha_ativa_hero_card.dart';
 import 'widgets/gestao_section.dart';
+import '../../core/widgets/app_nav_back_button.dart';
+import '../../core/widgets/app_tappable.dart';
 import 'widgets/ritmo_da_semana_card.dart';
 
 class PerfilAlunoPage extends StatefulWidget {
@@ -74,22 +76,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leadingWidth: 100,
-        leading: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () => Navigator.pop(context),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                CupertinoIcons.chevron_back,
-                size: 17,
-                color: AppColors.primary,
-              ),
-              SizedBox(width: 4),
-              Text('Voltar', style: AppTheme.navBarAction),
-            ],
-          ),
-        ),
+        leading: const AppNavBackButton(),
         title: const Text('Perfil do Aluno'),
         bottom: const AppBarDivider(),
       ),
@@ -278,8 +265,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
       child: Row(
         children: [
           Expanded(
-            child: CupertinoButton(
-              padding: EdgeInsets.zero,
+            child: AppTappable(
               onPressed: () => _abrirWhatsApp(context, telefone),
               child: Container(
                 height: ButtonTokens.primaryHeight,
@@ -317,8 +303,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
           ),
           const SizedBox(width: SpacingTokens.sm),
           Expanded(
-            child: CupertinoButton(
-              padding: EdgeInsets.zero,
+            child: AppTappable(
               onPressed: () => _irParaGerenciarAluno(context),
               child: Container(
                 height: ButtonTokens.secondaryHeight,

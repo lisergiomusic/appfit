@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/widgets/app_section_link_button.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../treinos/rotina_detalhe_page.dart';
@@ -57,7 +57,8 @@ class FichaAtivaHeroCard extends StatelessWidget {
             int totalSessoes = rotina['vencimentoSessoes'] ?? 1;
             int concluidas = rotina['sessoesConcluidas'] ?? 0;
             progressoAtual = (concluidas / totalSessoes).clamp(0.0, 1.0);
-            legendaVencimento = '$concluidas de $totalSessoes ${totalSessoes == 1 ? 'sessão' : 'sessões'}';
+            legendaVencimento =
+                '$concluidas de $totalSessoes ${totalSessoes == 1 ? 'sessão' : 'sessões'}';
           } else {
             DateTime hoje = DateTime.now();
             DateTime dataCriacao =
@@ -76,42 +77,29 @@ class FichaAtivaHeroCard extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                height: 32,
-                child: Row(
-                  children: [
-                    const SizedBox(width: 4),
-                    Text('Planilha atual', style: AppTheme.sectionHeader),
-                    const Spacer(),
-                    CupertinoButton(
-                      padding: const EdgeInsets.only(
-                        left: 8,
-                        right: 4,
-                        top: 4,
-                        bottom: 4,
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => GerenciarPlanilhasPage(
-                              alunoId: alunoId,
-                              alunoNome: alunoNome,
-                              photoUrl: photoUrl,
-                              peso: peso,
-                              idade: idade,
-                            ),
+              Row(
+                children: [
+                  const SizedBox(width: 4),
+                  Text('Planilha atual', style: AppTheme.sectionHeader),
+                  const Spacer(),
+                  AppSectionLinkButton(
+                    label: 'Ver todas',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => GerenciarPlanilhasPage(
+                            alunoId: alunoId,
+                            alunoNome: alunoNome,
+                            photoUrl: photoUrl,
+                            peso: peso,
+                            idade: idade,
                           ),
-                        );
-                      },
-                      minimumSize: Size(0, 0),
-                      child: const Text(
-                        'Ver todas',
-                        style: AppTheme.sectionAction,
-                      ),
-                    ),
-                  ],
-                ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               Container(

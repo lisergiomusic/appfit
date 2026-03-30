@@ -5,6 +5,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/services/aluno_service.dart';
 import '../../core/services/rotina_service.dart';
 import 'rotina_detalhe_page.dart';
+import '../../core/widgets/app_bar_icon_button.dart';
 
 class TreinosPage extends StatefulWidget {
   final String? alunoId;
@@ -133,8 +134,9 @@ class _TreinosPageState extends State<TreinosPage> {
       centerTitle: true,
       actions: [
         if (!isSelecting)
-          CupertinoButton(
-            padding: const EdgeInsets.only(right: 16),
+          AppBarIconButton(
+            icon: CupertinoIcons.add,
+            size: 26,
             onPressed: () {
               Navigator.push(
                 context,
@@ -145,11 +147,6 @@ class _TreinosPageState extends State<TreinosPage> {
                 ),
               );
             },
-            child: const Icon(
-              CupertinoIcons.add,
-              color: AppColors.primary,
-              size: 26,
-            ),
           ),
       ],
       flexibleSpace: LayoutBuilder(
