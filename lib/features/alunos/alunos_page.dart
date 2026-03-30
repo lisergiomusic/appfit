@@ -609,75 +609,72 @@ class _AlunosPageState extends State<AlunosPage> {
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: SpacingTokens.sm),
       decoration: AppTheme.cardDecoration,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-          child: Padding(
-            padding: CardTokens.padding,
-            child: Row(
-              children: [
-                Stack(
-                  alignment: Alignment.bottomRight,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        child: Padding(
+          padding: CardTokens.padding,
+          child: Row(
+            children: [
+              Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  AlunoAvatar(
+                    alunoNome: nome,
+                    photoUrl: photoUrl,
+                    radius: 20,
+                  ),
+                ],
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AlunoAvatar(
-                      alunoNome: nome,
-                      photoUrl: photoUrl,
-                      radius: 20,
+                    Row(
+                      children: [
+                        Text(nome, style: AppTheme.cardTitle),
+                        if (emRisco) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.orangeAccent.withAlpha(40),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'RISCO',
+                              style: TextStyle(
+                                color: Colors.orangeAccent,
+                                fontSize: 8,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      email.toLowerCase(),
+                      style: AppTheme.cardSubtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(nome, style: AppTheme.cardTitle),
-                          if (emRisco) ...[
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.orangeAccent.withAlpha(40),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: const Text(
-                                'RISCO',
-                                style: TextStyle(
-                                  color: Colors.orangeAccent,
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        email.toLowerCase(),
-                        style: AppTheme.cardSubtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: AppColors.labelSecondary.withAlpha(100),
-                  size: 14,
-                ),
-              ],
-            ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: AppColors.labelSecondary.withAlpha(100),
+                size: 14,
+              ),
+            ],
           ),
         ),
       ),

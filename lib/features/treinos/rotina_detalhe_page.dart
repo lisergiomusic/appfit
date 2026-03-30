@@ -699,7 +699,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   Widget _buildSessaoCard(_TreinoData sessao, int index, {required Key key}) {
     return Container(
       key: key,
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: SpacingTokens.sm),
       decoration: AppTheme.cardDecoration,
       child: InkWell(
         borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -722,15 +722,15 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           }
         },
         child: Padding(
-          padding: const EdgeInsets.all(8),
+          padding: CardTokens.padding,
           child: Row(
             children: [
               Container(
-                width: 56,
-                height: 56,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
                   color: Colors.black.withAlpha(40),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSM),
                 ),
                 child: Center(
                   child: Text(
@@ -750,21 +750,13 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   children: [
                     Text(
                       sessao.nome,
-                      style: const TextStyle(
-                        color: AppColors.labelPrimary,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 17,
-                      ),
+                      style: CardTokens.cardTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 3),
                     Text(
                       '${sessao.exercicios.length} exercícios',
-                      style: const TextStyle(
-                        color: AppColors.labelSecondary,
-                        fontSize: 12,
-                      ),
+                      style: CardTokens.cardSubtitle,
                     ),
                   ],
                 ),
@@ -901,10 +893,7 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
                 Navigator.pop(context);
               }
             },
-            child: Text(
-              'Salvar',
-              style: NavBarTokens.actionButton,
-            ),
+            child: Text('Salvar', style: NavBarTokens.actionButton),
           ),
         ],
       ),
@@ -953,10 +942,7 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
               Row(
                 children: [
                   const SizedBox(width: AppTheme.space8),
-                  const Text(
-                    'Vencimento',
-                    style: AppTheme.formLabel,
-                  ),
+                  const Text('Vencimento', style: AppTheme.formLabel),
                 ],
               ),
               const SizedBox(height: SpacingTokens.formLabelToField),
@@ -999,7 +985,9 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
                               key: const ValueKey('inputData'),
                               tileColor: AppColors.surfaceDark,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusSM,
+                                ),
                               ),
                               leading: const Icon(
                                 Icons.calendar_month,

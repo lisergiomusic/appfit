@@ -29,7 +29,7 @@ class HomePage extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.notifications_rounded,
-                  color: AppColors.labelSecondary,
+                  color: AppColors.primary,
                   size: 26,
                 ),
                 Positioned(
@@ -181,9 +181,7 @@ class HomePage extends StatelessWidget {
                 ],
               ),
             ),
-
-            const SizedBox(height: 32),
-
+            const SizedBox(height: SpacingTokens.xxl),
             // Quick Actions
             Padding(
               padding: const EdgeInsets.symmetric(
@@ -193,11 +191,11 @@ class HomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(left: 4, bottom: SpacingTokens.sm),
-                    child: Text(
-                      'Ações rápidas',
-                      style: AppTheme.sectionHeader,
+                    padding: const EdgeInsets.only(
+                      left: 4,
+                      bottom: SpacingTokens.sm,
                     ),
+                    child: Text('Ações rápidas', style: AppTheme.sectionHeader),
                   ),
                   Row(
                     children: [
@@ -264,7 +262,7 @@ class HomePage extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: AppColors.surfaceDark,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusLG),
                   border: Border.all(color: Colors.white.withAlpha(5)),
                 ),
                 clipBehavior: Clip.antiAlias,
@@ -320,7 +318,7 @@ class HomePage extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppTheme.radiusLG),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: CardTokens.padding,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -334,10 +332,7 @@ class HomePage extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    Text(
-                      value,
-                      style: AppTheme.title1,
-                    ),
+                    Text(value, style: AppTheme.title1),
                     const SizedBox(height: 4),
                     Row(
                       children: [
@@ -346,9 +341,7 @@ class HomePage extends StatelessWidget {
                         Expanded(
                           child: Text(
                             trendText,
-                            style: AppTheme.caption.copyWith(
-                              color: trendColor,
-                            ),
+                            style: AppTheme.caption.copyWith(color: trendColor),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -398,9 +391,7 @@ class HomePage extends StatelessWidget {
             Text(
               label,
               textAlign: TextAlign.center,
-              style: AppTheme.caption.copyWith(
-                color: AppColors.labelPrimary,
-              ),
+              style: AppTheme.caption.copyWith(color: AppColors.labelPrimary),
             ),
           ],
         ),
@@ -415,80 +406,70 @@ class HomePage extends StatelessWidget {
     required bool showDivider,
     String? photoUrl,
   }) {
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-      child: InkWell(
-        onTap: () {},
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: AppColors.surfaceLight,
-                    backgroundImage: photoUrl != null && photoUrl.isNotEmpty
-                        ? NetworkImage(photoUrl)
-                        : null,
-                    child: photoUrl == null || photoUrl.isEmpty
-                        ? const Icon(
-                            Icons.person_rounded,
-                            color: AppColors.labelSecondary,
-                            size: 20,
-                          )
-                        : null,
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          name,
-                          style: AppTheme.cardTitle,
-                        ),
-                        const SizedBox(height: 1),
-                        Text(
-                          action,
-                          style: AppTheme.cardSubtitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
+    return InkWell(
+      onTap: () {},
+      child: Column(
+        children: [
+          Padding(
+            padding: CardTokens.padding,
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: AvatarTokens.md,
+                  backgroundColor: AppColors.surfaceLight,
+                  backgroundImage: photoUrl != null && photoUrl.isNotEmpty
+                      ? NetworkImage(photoUrl)
+                      : null,
+                  child: photoUrl == null || photoUrl.isEmpty
+                      ? const Icon(
+                          Icons.person_rounded,
+                          color: AppColors.labelSecondary,
+                          size: 20,
+                        )
+                      : null,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text(name, style: AppTheme.cardTitle),
+                      const SizedBox(height: 1),
                       Text(
-                        time,
-                        style: AppTheme.caption,
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        Icons.chevron_right_rounded,
-                        size: 18,
-                        color: AppColors.labelSecondary.withAlpha(80),
+                        action,
+                        style: AppTheme.cardSubtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
-                ],
+                ),
+                const SizedBox(width: 8),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(time, style: AppTheme.caption),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 18,
+                      color: AppColors.labelSecondary.withAlpha(80),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          if (showDivider)
+            Padding(
+              padding: const EdgeInsets.only(left: 68),
+              child: Divider(
+                height: 1,
+                thickness: 0.5,
+                color: AppColors.separator,
               ),
             ),
-            if (showDivider)
-              Padding(
-                padding: const EdgeInsets.only(left: 68),
-                child: Divider(
-                  height: 1,
-                  thickness: 0.5,
-                  color: Colors.white.withAlpha(10),
-                ),
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
