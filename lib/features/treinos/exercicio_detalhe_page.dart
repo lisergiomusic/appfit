@@ -1141,7 +1141,15 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         right: 16,
                         bottom: 20,
                       ),
-                      child: Text(exerciseTitle, style: AppTheme.bigTitle),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(exerciseTitle, style: AppTheme.bigTitle),
+                          const SizedBox(height: 4),
+                          Text(muscleGroupsText, style: _sectionEyebrowStyle()),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -1156,8 +1164,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(muscleGroupsText, style: _sectionEyebrowStyle()),
-                        const SizedBox(height: AppTheme.space16),
 
                         // Thumbnail do Vídeo
                         _ExerciseVideoCard(
