@@ -259,7 +259,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                           left: AppTheme.paddingScreen,
                           right: AppTheme.paddingScreen,
                           top: SpacingTokens.pageTopPadding,
-                          bottom: SpacingTokens.pageBottomPadding,
+                          bottom: SpacingTokens.screenBottomPadding,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

@@ -180,10 +180,10 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(
-          SpacingTokens.pageHorizontalPadding,
+          SpacingTokens.screenHorizontalPadding,
           SpacingTokens.pageTopPadding,
-          SpacingTokens.pageHorizontalPadding,
-          SpacingTokens.pageBottomPadding,
+          SpacingTokens.screenHorizontalPadding,
+          SpacingTokens.screenBottomPadding,
         ),
         child: Form(
           key: _formKey,

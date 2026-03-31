@@ -1136,14 +1136,23 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   background: Align(
                     alignment: Alignment.bottomLeft,
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        bottom: 20,
+                      ),
                       child: Text(exerciseTitle, style: AppTheme.bigTitle),
                     ),
                   ),
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.only(
+                      left: SpacingTokens.screenHorizontalPadding,
+                      right: SpacingTokens.screenHorizontalPadding,
+                      top: 4,
+                      bottom: SpacingTokens.screenBottomPadding,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
