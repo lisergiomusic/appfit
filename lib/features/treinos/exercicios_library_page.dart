@@ -365,14 +365,7 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                Text(
-                  ex.nome,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                Text(ex.nome, style: AppTheme.title1),
                 const SizedBox(height: 4),
                 Text(
                   ex.grupoMuscular.join(' • '),
@@ -415,8 +408,6 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
         },
       ),
     );
-
-
   }
 
   Widget _buildMediaPreview(String url) {
@@ -426,7 +417,29 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
       return Stack(
         fit: StackFit.expand,
         children: [
-          Image.network(thumbUrl, fit: BoxFit.cover),
+          CachedNetworkImage(
+            imageUrl: thumbUrl,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(
+              color: AppColors.surfaceLight,
+              child: const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+            errorWidget: (context, url, error) => Container(
+              color: AppColors.surfaceLight,
+              child: const Center(
+                child: Icon(
+                  Icons.videocam_off,
+                  color: AppColors.labelSecondary,
+                  size: 40,
+                ),
+              ),
+            ),
+          ),
           Center(
             child: Container(
               padding: const EdgeInsets.all(12),
@@ -434,14 +447,39 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                 color: Colors.black.withAlpha(150),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.play_arrow, color: Colors.white, size: 40),
+              child: const Icon(
+                Icons.play_arrow,
+                color: Colors.white,
+                size: 40,
+              ),
             ),
           ),
         ],
       );
     }
-    // Para GIFs, Image.network anima normalmente
-    return Image.network(url, fit: BoxFit.cover);
+    return CachedNetworkImage(
+      imageUrl: url,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => Container(
+        color: AppColors.surfaceLight,
+        child: const Center(
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: AppColors.primary,
+          ),
+        ),
+      ),
+      errorWidget: (context, url, error) => Container(
+        color: AppColors.surfaceLight,
+        child: const Center(
+          child: Icon(
+            Icons.image_not_supported_outlined,
+            color: AppColors.labelSecondary,
+            size: 40,
+          ),
+        ),
+      ),
+    );
   }
 
   String? _getYoutubeId(String url) {
@@ -499,7 +537,6 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     letterSpacing: -0.2,
                   ),
                 ),
-
               ),
             ),
           ),
@@ -508,300 +545,318 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
       body: SafeArea(
         child: Column(
           children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    focusNode: _searchFocusNode,
-                    style: const TextStyle(color: AppColors.labelPrimary, fontSize: 15),
-                    decoration: InputDecoration(
-                      hintText: 'Buscar exercícios...',
-                      prefixIcon: const Icon(
-                        Icons.search,
-                        color: AppColors.labelSecondary,
-                        size: 20,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      focusNode: _searchFocusNode,
+                      style: const TextStyle(
+                        color: AppColors.labelPrimary,
+                        fontSize: 15,
                       ),
-
-                      suffixIcon: ValueListenableBuilder<TextEditingValue>(
-                        valueListenable: _searchController,
-                        builder: (context, value, _) {
-                          return AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 200),
-                            child: value.text.isNotEmpty
-                                ? IconButton(
-                                    key: const ValueKey('clear_search'),
-                                    icon: const Icon(
-                                      Icons.close_rounded,
-                                      color: AppColors.labelSecondary,
-                                      size: 20,
-                                    ),
-                                    onPressed: _limparBusca,
-                                  )
-                                : const SizedBox.shrink(),
-                          );
-                        },
-                      ),
-                      filled: true,
-                      fillColor: AppColors.surfaceDark,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    onChanged: _onSearchChanged,
-                  ),
-                ),
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 250),
-                  transitionBuilder: (child, animation) {
-                    return FadeTransition(
-                      opacity: animation,
-                      child: SizeTransition(
-                        sizeFactor: animation,
-                        axis: Axis.horizontal,
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: _searchFocusNode.hasFocus
-                      ? Padding(
-                          padding: const EdgeInsets.only(left: 12),
-                          child: TextButton(
-                            onPressed: () {
-                              _searchFocusNode.unfocus();
-                              _limparBusca();
-                            },
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: const Text(
-                              'Cancelar',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(
-            height: 40,
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              scrollDirection: Axis.horizontal,
-              itemCount: _categorias.length,
-              itemBuilder: (context, index) {
-                final cat = _categorias[index];
-                final isSelected = _categoriaSelecionada == cat;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: ChoiceChip(
-                    label: Text(cat),
-                    selected: isSelected,
-                    onSelected: (val) {
-                      if (val) {
-                        setState(() => _categoriaSelecionada = cat);
-                        _carregarDados(reset: true);
-                      }
-                    },
-                    selectedColor: AppColors.primary,
-                    backgroundColor: AppColors.surfaceDark,
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.black : AppColors.labelSecondary,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 12,
-                      letterSpacing: 0.0,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadiusGeometry.circular(AppTheme.radiusLG),
-                    ),
-                    side: BorderSide.none,
-                    showCheckmark: false,
-                  ),
-                );
-              },
-            ),
-          ),
-          Expanded(
-            child: _listaExercicios.isEmpty && _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  )
-                : _listaExercicios.isEmpty
-                ? const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off,
-                          size: 64,
-                          color: AppColors.surfaceLight,
+                      decoration: InputDecoration(
+                        hintText: 'Buscar exercícios...',
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: AppColors.labelSecondary,
+                          size: 20,
                         ),
-                        SizedBox(height: 16),
-                        Text(
-                          'Nenhum exercício encontrado.',
-                          style: TextStyle(color: AppColors.labelSecondary),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                    itemCount: _listaExercicios.length + (_hasMore ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == _listaExercicios.length) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 32),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
-                              strokeWidth: 2,
-                            ),
-                          ),
-                        );
-                      }
 
-                      final ex = _listaExercicios[index];
-                      final isSelected = _selecionados.contains(ex);
-
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                            onTap: () => _mostrarPreviewExercicio(ex),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    width: 56,
-                                    height: 56,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.surfaceDark,
-                                      borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-                                      border: ex.personalId != null
-                                          ? Border.all(
-                                              color: AppColors.accentMetrics
-                                                  .withAlpha(100),
-                                              width: 2,
-                                            )
-                                          : null,
-                                    ),
-                                    child: ex.personalId != null
-                                        ? const Center(
-                                            child: Icon(
-                                              Icons.star_rounded,
-                                              color: AppColors.accentMetrics,
-                                              size: 28,
-                                            ),
-                                          )
-                                        : (ex.imagemUrl != null &&
-                                              ex.imagemUrl!.isNotEmpty)
-                                        ? ClipRRect(
-                                            borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-                                            child: _StaticImage(url: ex.imagemUrl!),
-                                          )
-                                        : const Center(
-                                            child: Icon(
-                                              Icons.fitness_center,
-                                              color: AppColors.primary,
-                                            ),
-                                          ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          ex.nome,
-                                          style: const TextStyle(
-                                            color: AppColors.labelPrimary,
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 17,
-                                            letterSpacing: -0.1,
-                                          ),
-                                        ),
-
-                                        Text(
-                                          ex.grupoMuscular.join(' • '),
-                                          style: const TextStyle(
-                                            color: AppColors.labelSecondary,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                            letterSpacing: 0.0,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTap: () => _alternarSelecao(ex),
-                                    child: Container(
-                                      padding: const EdgeInsets.only(
-                                        left: 16,
-                                        top: 8,
-                                        bottom: 8,
+                        suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                          valueListenable: _searchController,
+                          builder: (context, value, _) {
+                            return AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 200),
+                              child: value.text.isNotEmpty
+                                  ? IconButton(
+                                      key: const ValueKey('clear_search'),
+                                      icon: const Icon(
+                                        Icons.close_rounded,
+                                        color: AppColors.labelSecondary,
+                                        size: 20,
                                       ),
-                                      child: Container(
-                                        width: 24,
-                                        height: 24,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: isSelected
-                                                ? AppColors.primary
-                                                : AppColors.labelSecondary
-                                                      .withAlpha(50),
-                                            width: 2,
-                                          ),
-                                          color: isSelected
-                                              ? AppColors.primary
-                                              : Colors.transparent,
-                                        ),
-                                        child: isSelected
-                                            ? const Icon(
-                                                Icons.check,
-                                                size: 16,
-                                                color: Colors.black,
-                                              )
-                                            : null,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                                      onPressed: _limparBusca,
+                                    )
+                                  : const SizedBox.shrink(),
+                            );
+                          },
+                        ),
+                        filled: true,
+                        fillColor: AppColors.surfaceDark,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      onChanged: _onSearchChanged,
+                    ),
+                  ),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SizeTransition(
+                          sizeFactor: animation,
+                          axis: Axis.horizontal,
+                          child: child,
                         ),
                       );
                     },
+                    child: _searchFocusNode.hasFocus
+                        ? Padding(
+                            padding: const EdgeInsets.only(left: 12),
+                            child: TextButton(
+                              onPressed: () {
+                                _searchFocusNode.unfocus();
+                                _limparBusca();
+                              },
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: const Text(
+                                'Cancelar',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(),
                   ),
-          ),
-        ],
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 40,
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                scrollDirection: Axis.horizontal,
+                itemCount: _categorias.length,
+                itemBuilder: (context, index) {
+                  final cat = _categorias[index];
+                  final isSelected = _categoriaSelecionada == cat;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: ChoiceChip(
+                      label: Text(cat),
+                      selected: isSelected,
+                      onSelected: (val) {
+                        if (val) {
+                          setState(() => _categoriaSelecionada = cat);
+                          _carregarDados(reset: true);
+                        }
+                      },
+                      selectedColor: AppColors.primary,
+                      backgroundColor: AppColors.surfaceDark,
+                      labelStyle: TextStyle(
+                        color: isSelected
+                            ? Colors.black
+                            : AppColors.labelSecondary,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
+                        letterSpacing: 0.0,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadiusGeometry.circular(
+                          AppTheme.radiusLG,
+                        ),
+                      ),
+                      side: BorderSide.none,
+                      showCheckmark: false,
+                    ),
+                  );
+                },
+              ),
+            ),
+            Expanded(
+              child: _listaExercicios.isEmpty && _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
+                    )
+                  : _listaExercicios.isEmpty
+                  ? const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search_off,
+                            size: 64,
+                            color: AppColors.surfaceLight,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Nenhum exercício encontrado.',
+                            style: TextStyle(color: AppColors.labelSecondary),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                      itemCount: _listaExercicios.length + (_hasMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == _listaExercicios.length) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 32),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.primary,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          );
+                        }
+
+                        final ex = _listaExercicios[index];
+                        final isSelected = _selecionados.contains(ex);
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusXL,
+                              ),
+                              onTap: () => _mostrarPreviewExercicio(ex),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      width: 56,
+                                      height: 56,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.surfaceDark,
+                                        borderRadius: BorderRadius.circular(
+                                          AppTheme.radiusLG,
+                                        ),
+                                        border: ex.personalId != null
+                                            ? Border.all(
+                                                color: AppColors.accentMetrics
+                                                    .withAlpha(100),
+                                                width: 2,
+                                              )
+                                            : null,
+                                      ),
+                                      child: ex.personalId != null
+                                          ? const Center(
+                                              child: Icon(
+                                                Icons.star_rounded,
+                                                color: AppColors.accentMetrics,
+                                                size: 28,
+                                              ),
+                                            )
+                                          : (ex.imagemUrl != null &&
+                                                ex.imagemUrl!.isNotEmpty)
+                                          ? ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    AppTheme.radiusLG,
+                                                  ),
+                                              child: _StaticImage(
+                                                url: ex.imagemUrl!,
+                                              ),
+                                            )
+                                          : const Center(
+                                              child: Icon(
+                                                Icons.fitness_center,
+                                                color: AppColors.primary,
+                                              ),
+                                            ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            ex.nome,
+                                            style: const TextStyle(
+                                              color: AppColors.labelPrimary,
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 17,
+                                              letterSpacing: -0.1,
+                                            ),
+                                          ),
+
+                                          Text(
+                                            ex.grupoMuscular.join(' • '),
+                                            style: const TextStyle(
+                                              color: AppColors.labelSecondary,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              letterSpacing: 0.0,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () => _alternarSelecao(ex),
+                                      child: Container(
+                                        padding: const EdgeInsets.only(
+                                          left: 16,
+                                          top: 8,
+                                          bottom: 8,
+                                        ),
+                                        child: Container(
+                                          width: 24,
+                                          height: 24,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: isSelected
+                                                  ? AppColors.primary
+                                                  : AppColors.labelSecondary
+                                                        .withAlpha(50),
+                                              width: 2,
+                                            ),
+                                            color: isSelected
+                                                ? AppColors.primary
+                                                : Colors.transparent,
+                                          ),
+                                          child: isSelected
+                                              ? const Icon(
+                                                  Icons.check,
+                                                  size: 16,
+                                                  color: Colors.black,
+                                                )
+                                              : null,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
-    ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: _selecionados.isNotEmpty
           ? Container(
@@ -829,12 +884,16 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                     flex: 1,
                     child: Material(
                       color: Colors.transparent,
-                        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                       child: InkWell(
                         onTap: _abrirResumoSelecao,
                         borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                        splashColor: AppColors.primary.withAlpha(30), // ~12% opacity
-                        highlightColor: AppColors.primary.withAlpha(20), // ~8% opacity
+                        splashColor: AppColors.primary.withAlpha(
+                          30,
+                        ), // ~12% opacity
+                        highlightColor: AppColors.primary.withAlpha(
+                          20,
+                        ), // ~8% opacity
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -885,14 +944,20 @@ class _ExerciciosLibraryPageState extends State<ExerciciosLibraryPage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: AppTheme.space12),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppTheme.space12,
+                        ),
                         textStyle: const TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
                           letterSpacing: 0.2,
                         ),
                       ),
-                      icon: const Icon(Icons.check, size: 20, color: Colors.black),
+                      icon: const Icon(
+                        Icons.check,
+                        size: 20,
+                        color: Colors.black,
+                      ),
                       label: const Text('Salvar'),
                     ),
                   ),
@@ -942,7 +1007,9 @@ class _StaticImageState extends State<_StaticImage> {
         ? 'https://img.youtube.com/vi/$videoId/0.jpg'
         : widget.url;
 
-    _imageStream = CachedNetworkImageProvider(finalUrl).resolve(createLocalImageConfiguration(context));
+    _imageStream = CachedNetworkImageProvider(
+      finalUrl,
+    ).resolve(createLocalImageConfiguration(context));
 
     _listener = ImageStreamListener(
       (info, _) {
@@ -989,16 +1056,15 @@ class _StaticImageState extends State<_StaticImage> {
         width: 56,
         height: 56,
         color: AppColors.surfaceLight,
-        child: const Icon(Icons.fitness_center, color: AppColors.labelSecondary),
+        child: const Icon(
+          Icons.fitness_center,
+          color: AppColors.labelSecondary,
+        ),
       );
     }
 
     if (_imageInfo == null) {
-      return Container(
-        width: 56,
-        height: 56,
-        color: AppColors.surfaceLight,
-      );
+      return Container(width: 56, height: 56, color: AppColors.surfaceLight);
     }
 
     return RawImage(

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:appfit/core/widgets/app_section_link_button.dart';
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -307,6 +308,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                             AppSectionLinkButton(label: 'Reorganizar'),
                           ],
                         ),
+                        const SizedBox(height: SpacingTokens.labelToField),
                       ],
                     ),
                   ),
@@ -523,23 +525,15 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
     final wrapper = controller.exercicios[exIndex];
     final ex = wrapper.item;
 
-    const String defaultThumbnail =
-        'https://firebasestorage.googleapis.com/v0/b/appfit-6028c.firebasestorage.app/o/exercicios%2Fplaceholder_exercicio.png?alt=media&token=784e622b-285b-4c91-9549-31c34954060b';
-
     return Padding(
       padding: const EdgeInsets.only(bottom: AppTheme.space12),
       child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surfaceDark,
-          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-          boxShadow: [AppTheme.cardShadow],
-          border: AppTheme.cardBorder,
-        ),
+        decoration: AppTheme.cardDecoration,
         child: Material(
           type: MaterialType.transparency,
           elevation: 0,
           child: InkWell(
-            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+            borderRadius: CardTokens.cardRadius,
             splashColor: AppColors.splash.withAlpha(50),
             highlightColor: AppColors.splash.withAlpha(30),
             onTap: () async {
@@ -554,7 +548,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
               );
             },
             child: Padding(
-              padding: const EdgeInsets.all(8),
+              padding: CardTokens.padding,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -562,35 +556,34 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      width: 56,
-                      height: 56,
+                      width: 48,
+                      height: 48,
                       color: Colors.black.withAlpha(40),
-                      child: Image.network(
-                        (ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty)
-                            ? ex.imagemUrl!
-                            : defaultThumbnail,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Center(
+                      child: (ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty)
+                          ? CachedNetworkImage(
+                              imageUrl: ex.imagemUrl!,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.primary.withAlpha(100),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Center(
+                                child: Icon(
+                                  Icons.fitness_center,
+                                  color: AppColors.labelSecondary,
+                                  size: 24,
+                                ),
+                              ),
+                            )
+                          : Center(
                               child: Icon(
                                 Icons.fitness_center,
                                 color: AppColors.labelSecondary,
+                                size: 24,
                               ),
                             ),
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                  : null,
-                              strokeWidth: 2,
-                              color: AppColors.primary.withAlpha(100),
-                            ),
-                          );
-                        },
-                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -601,38 +594,26 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                       children: [
                         Text(
                           ex.nome,
-                          style: const TextStyle(
-                            color: AppColors.labelPrimary,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 17,
-                            letterSpacing: -0.1,
-                          ),
+                          style: CardTokens.cardTitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 3),
                         RichText(
                           text: TextSpan(
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 0.0,
-                            ),
+                            style: CardTokens.cardSubtitle,
                             children: [
                               TextSpan(
                                 text:
                                     '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
                                 style: const TextStyle(
                                   color: AppColors.primary,
-                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               if (ex.grupoMuscular.isNotEmpty)
                                 TextSpan(
                                   text: ' • ${ex.grupoMuscular.join(' • ')}',
-                                  style: const TextStyle(
-                                    color: AppColors.labelSecondary,
-                                  ),
+                                  style: const TextStyle(),
                                 ),
                             ],
                           ),
