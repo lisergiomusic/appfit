@@ -1133,7 +1133,7 @@ class _SessaoTreinoPageState extends State<_SessaoTreinoPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               RotinaModernInput(
-                label: 'NOME DO TREINO',
+                label: 'Nome da sessão',
                 child: TextFormField(
                   controller: sNomeCtrl,
                   autofocus: true,
@@ -1148,7 +1148,7 @@ class _SessaoTreinoPageState extends State<_SessaoTreinoPage> {
               ),
               const SizedBox(height: 24),
               RotinaModernInput(
-                label: 'NOTAS',
+                label: 'Instruções gerais (Opcional)',
                 child: TextFormField(
                   controller: orientCtrl,
                   maxLines: 5,
