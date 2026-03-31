@@ -180,9 +180,7 @@ class HomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(
-                      left: 4,
-                    ),
+                    padding: const EdgeInsets.only(left: 4),
                     child: Text('Ações rápidas', style: AppTheme.sectionHeader),
                   ),
                   const SizedBox(height: SpacingTokens.labelToField),
@@ -229,10 +227,7 @@ class HomePage extends StatelessWidget {
                       style: AppTheme.sectionHeader,
                     ),
                   ),
-                  AppSectionLinkButton(
-                    label: 'Ver tudo',
-                    onPressed: () {},
-                  ),
+                  AppSectionLinkButton(label: 'Ver tudo', onPressed: () {}),
                 ],
               ),
             ),
@@ -314,6 +309,7 @@ class HomePage extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: SpacingTokens.labelToField),
                     Text(value, style: AppTheme.title1),
                     const SizedBox(height: 4),
                     Row(

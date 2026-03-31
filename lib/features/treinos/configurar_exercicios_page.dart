@@ -703,12 +703,7 @@ class _MetricCard extends StatelessWidget {
 
     Widget card = Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
-        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-        border: AppTheme.cardBorder,
-        boxShadow: [AppTheme.cardShadow],
-      ),
+      decoration: AppTheme.cardDecoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
