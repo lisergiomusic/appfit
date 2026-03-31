@@ -298,6 +298,7 @@ class CardTokens {
   );
   static const TextStyle cardSubtitle = TextStyle(
     fontSize: 15,
+    height: 1,
     color: AppColors.labelSecondary,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.24,

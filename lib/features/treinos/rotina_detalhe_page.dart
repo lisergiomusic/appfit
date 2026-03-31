@@ -452,9 +452,6 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isTemplate =
-        widget.rotinaData != null && widget.rotinaData!['alunoId'] == null;
-
     return PopScope(
       canPop: _canPopNow,
       onPopInvokedWithResult: (didPop, result) async {
@@ -497,7 +494,6 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         appBar: AppBar(
           backgroundColor: AppColors.background,
           elevation: 0,
-          leadingWidth: 100,
           leading: AppNavBackButton(
             onPressed: () => Navigator.of(context).maybePop(),
           ),
@@ -530,10 +526,11 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                   value.text.isEmpty
                                       ? 'Nova Rotina'
                                       : value.text,
-                                  style: AppTheme.bigTitle,
+                                  style: AppTheme.title1,
                                 );
                               },
                             ),
+                            const SizedBox(height: SpacingTokens.xs),
                             ValueListenableBuilder(
                               valueListenable: objCtrl,
                               builder: (context, value, _) {
@@ -545,15 +542,15 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                 );
                               },
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: SpacingTokens.xs),
                             Row(
                               children: [
                                 const Icon(
                                   Icons.schedule,
-                                  size: 14,
+                                  size: 12,
                                   color: AppColors.labelSecondary,
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(width: 4),
                                 Text(
                                   _tipoVencimento == 'sessoes'
                                       ? '$_vencimentoSessoes ${_vencimentoSessoes == 1 ? 'sessão' : 'sessões'}'
@@ -567,15 +564,17 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       ),
                       IconButton(
                         onPressed: () => _exibirModalInfo(context),
+                        style: IconButton.styleFrom(
+                          backgroundColor: AppColors.buttonSurface,
+                        ),
                         icon: const Icon(
-                          CupertinoIcons.ellipsis_vertical,
-                          color: AppColors.labelSecondary,
+                          CupertinoIcons.pencil,
+                          color: AppColors.labelPrimary,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: SpacingTokens.xxl),
-                  if (isTemplate) _buildTemplateBadge(),
                   Row(
                     children: [
                       const SizedBox(width: 4),
@@ -656,31 +655,6 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     );
   }
 
-  Widget _buildTemplateBadge() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.only(bottom: 24),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withAlpha(15),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.primary.withAlpha(30)),
-      ),
-      child: const Row(
-        children: [
-          Icon(Icons.collections_bookmark, color: AppColors.primary, size: 18),
-          SizedBox(width: 12),
-          Text(
-            'Template de Biblioteca',
-            style: TextStyle(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSessaoCard(_TreinoData sessao, int index, {required Key key}) {
     return Container(
       key: key,
@@ -750,7 +724,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 icon: Icon(
                   CupertinoIcons.ellipsis_vertical,
                   size: 20,
-                  color: AppColors.labelSecondary,
+                  color: AppColors.labelTertiary,
                 ),
                 onSelected: (v) {
                   if (v == 'edit') _exibirModalSessao(index: index);
