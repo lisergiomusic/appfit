@@ -425,24 +425,20 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
   }
 
-  TextStyle _microLabelStyle() => const TextStyle(
-    color: AppColors.labelSecondary,
-    fontSize: 10,
-    fontWeight: FontWeight.w600,
-    letterSpacing: 0.8,
-  );
-
   InputDecoration _editableFieldDecoration() {
     return const InputDecoration(
       isDense: true,
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: AppTheme.space12,
-        vertical: AppTheme.space10,
+      contentPadding: EdgeInsets.symmetric(horizontal: 1, vertical: 1),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: AppColors.primary, width: 0.5),
+        borderRadius: BorderRadius.all(Radius.circular(AppTheme.radiusSM)),
       ),
-      focusedBorder: InputBorder.none,
-      enabledBorder: InputBorder.none,
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(AppTheme.radiusSM)),
+        borderSide: BorderSide.none,
+      ),
       filled: true,
-      fillColor: Colors.transparent,
+      fillColor: AppColors.surfaceLight,
     );
   }
 
@@ -554,10 +550,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             : Colors.transparent;
 
         return Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.space8,
-            vertical: AppTheme.space4,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           color: flashColor ?? editFlashColor,
           child: Row(
             children: [
@@ -593,14 +586,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOutCubic,
                   padding: EdgeInsets.only(left: isEditingSection ? 0 : 18),
-                  child: Text(
-                    '$visualNumber',
-                    style: const TextStyle(
-                      color: AppColors.labelSecondary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  child: Text('$visualNumber', style: AppTheme.bodyText),
                 ),
               ),
               const SizedBox(width: AppTheme.space8),
@@ -704,12 +690,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       inputFormatters: inputFormatters,
       textAlign: TextAlign.center,
       keyboardType: TextInputType.text,
-      style: const TextStyle(
-        color: AppColors.labelPrimary,
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-        letterSpacing: -0.0,
-      ),
+      style: AppTheme.bodyText,
       decoration: _editableFieldDecoration(),
     );
   }
@@ -760,10 +741,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                    horizontal: 16,
-                  ),
+                  padding: const EdgeInsets.only(top: 12, left: 16, right: 16),
                   child: Row(
                     children: [
                       AnimatedContainer(
