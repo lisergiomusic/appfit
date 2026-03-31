@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
+import 'package:flutter/cupertino.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'dart:ui';
 import 'package:flutter/services.dart';
@@ -13,19 +14,63 @@ class SessaoNoteWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = context.watch<ConfigurarTreinoController>();
     final noteText = controller.sessaoNote;
-    bool isEmpty = noteText.trim().isEmpty;
+    final isEmpty = noteText.trim().isEmpty;
+
+    if (isEmpty) {
+      return GestureDetector(
+        onTap: () => _showEditNoteSheet(context, controller),
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                CupertinoIcons.doc_text,
+                size: 14,
+                color: AppColors.labelSecondary,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Adicionar instruções gerais',
+                style: TextStyle(
+                  color: AppColors.labelSecondary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Notas da sessão', style: AppTheme.sectionHeader),
-        const SizedBox(height: 10),
+        Row(
+          children: [
+            Text('Nota de sessão', style: AppTheme.sectionHeader),
+            const Spacer(),
+            GestureDetector(
+              onTap: () => _showEditNoteSheet(context, controller),
+              child: Text(
+                'Editar',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
         GestureDetector(
           onTap: () => _showEditNoteSheet(context, controller),
           child: Container(
             width: double.infinity,
-            constraints: const BoxConstraints(minHeight: 80),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               color: AppColors.surfaceDark,
               borderRadius: BorderRadius.circular(AppTheme.radiusLG),
@@ -35,17 +80,15 @@ class SessaoNoteWidget extends StatelessWidget {
                   blurRadius: 2,
                   offset: const Offset(0, 2),
                   inset: true,
-                )
-              ]
+                ),
+              ],
             ),
             child: Text(
-              isEmpty
-                  ? 'Toque para adicionar orientações gerais para este treino...'
-                  : noteText,
-              style: TextStyle(
-                color: isEmpty
-                    ? AppColors.labelSecondary.withAlpha(80)
-                    : Colors.white,
+              noteText,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
                 fontSize: 14,
                 height: 1.5,
                 fontWeight: FontWeight.w400,
@@ -57,7 +100,10 @@ class SessaoNoteWidget extends StatelessWidget {
     );
   }
 
-  void _showEditNoteSheet(BuildContext context, ConfigurarTreinoController controller) {
+  void _showEditNoteSheet(
+    BuildContext context,
+    ConfigurarTreinoController controller,
+  ) {
     HapticFeedback.lightImpact();
     final ctrl = TextEditingController(text: controller.sessaoNote);
 
@@ -68,17 +114,21 @@ class SessaoNoteWidget extends StatelessWidget {
       builder: (context) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
           child: Container(
             decoration: BoxDecoration(
               color: AppColors.background.withAlpha(235),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withAlpha(100),
                   blurRadius: 40,
                   spreadRadius: 10,
-                )
+                ),
               ],
             ),
             child: Column(
@@ -147,7 +197,8 @@ class SessaoNoteWidget extends StatelessWidget {
                           height: 1.5,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Ex: "Focar na cadência do movimento e manter o abdômen contraído em todos os exercícios."',
+                          hintText:
+                              'Ex: "Focar na cadência do movimento e manter o abdômen contraído em todos os exercícios."',
                           hintStyle: TextStyle(
                             color: Colors.white.withAlpha(40),
                             fontSize: 15,
