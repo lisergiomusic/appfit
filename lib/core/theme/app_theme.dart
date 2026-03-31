@@ -129,6 +129,7 @@ class AppTheme {
 
   static const caption2 = TextStyle(
     fontSize: 11,
+    color: AppColors.labelSecondary,
     letterSpacing: 0.07,
     fontWeight: FontWeight.w400,
   );

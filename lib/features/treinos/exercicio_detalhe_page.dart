@@ -732,50 +732,37 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: titleColor ?? Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                    letterSpacing: 0.5,
-                  ),
-                ),
+                Text(title, style: AppTheme.sectionHeader),
                 const Spacer(),
-                IconButton(
-                  icon: Icon(
-                    isEditingSection ? Icons.check : Icons.more_vert,
-                    color: AppColors.labelSecondary,
-                    size: 20,
-                  ),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
                   onPressed: () {
                     setState(() {
                       controller.toggleEditing(tipo);
                     });
                   },
-                  splashRadius: 20,
-                  tooltip: 'Mais opções',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
+                  child: Icon(
+                    isEditingSection ? Icons.check : Icons.more_vert,
+                    color: AppColors.labelSecondary,
+                    size: 20,
+                  ),
                 ),
               ],
             ),
           ),
+          const SizedBox(height: SpacingTokens.labelToField),
           Container(
-            decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
-              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-              border: Border.all(color: Colors.white.withAlpha(20), width: 0.5),
-            ),
+            decoration: AppTheme.cardDecoration,
             child: Column(
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     vertical: 12,
-                    horizontal: 8,
+                    horizontal: 16,
                   ),
                   child: Row(
                     children: [
@@ -794,26 +781,26 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                             padding: EdgeInsets.only(
                               left: isEditingSection ? 0 : 8,
                             ),
-                            child: Text('SÉRIE', style: _microLabelStyle()),
+                            child: Text('Série', style: AppTheme.caption2),
                           ),
                         ),
                       ),
                       Expanded(
                         flex: 3,
                         child: Center(
-                          child: Text('REPS', style: _microLabelStyle()),
+                          child: Text('Reps', style: AppTheme.caption2),
                         ),
                       ),
                       Expanded(
                         flex: 3,
                         child: Center(
-                          child: Text('PESO', style: _microLabelStyle()),
+                          child: Text('Peso', style: AppTheme.caption2),
                         ),
                       ),
                       Expanded(
                         flex: 3,
                         child: Center(
-                          child: Text('PAUSA', style: _microLabelStyle()),
+                          child: Text('Pausa', style: AppTheme.caption2),
                         ),
                       ),
                       AnimatedContainer(
@@ -1187,12 +1174,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           exerciseTitle: exerciseTitle,
                           onTap: () {},
                         ),
-                        const SizedBox(height: AppTheme.space24),
-
+                        const SizedBox(height: SpacingTokens.sectionGap),
                         // Campo de Instruções
                         _buildInstructionsField(),
-                        const SizedBox(height: AppTheme.space32),
-
+                        const SizedBox(height: SpacingTokens.sectionGap),
                         if (ex.series.isEmpty)
                           Column(
                             children: [
