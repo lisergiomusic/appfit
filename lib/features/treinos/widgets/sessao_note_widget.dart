@@ -25,18 +25,13 @@ class SessaoNoteWidget extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                CupertinoIcons.doc_text,
-                size: 14,
-                color: AppColors.labelSecondary,
-              ),
+              Icon(CupertinoIcons.doc_text, size: 15, color: AppColors.primary),
               const SizedBox(width: 6),
               Text(
                 'Adicionar instruções gerais',
-                style: TextStyle(
-                  color: AppColors.labelSecondary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
+                style: AppTheme.bodyText.copyWith(
+                  color: AppColors.primary,
+                  fontSize: 15,
                 ),
               ),
             ],
