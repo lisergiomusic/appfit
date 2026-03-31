@@ -430,12 +430,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     fontWeight: FontWeight.w600,
     letterSpacing: 0.8,
   );
-  TextStyle _sectionEyebrowStyle() => const TextStyle(
-    color: AppColors.labelSecondary,
-    fontSize: 10,
-    fontWeight: FontWeight.w600,
-    letterSpacing: 1.0,
-  );
 
   InputDecoration _editableFieldDecoration() {
     return const InputDecoration(
@@ -1112,10 +1106,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         .where((e) => e.value.tipo == TipoSerie.trabalho)
         .toList();
 
-    final muscleGroupsText = ex.grupoMuscular.isEmpty
-        ? 'GERAL'
-        : ex.grupoMuscular.join(' • ').toUpperCase();
-
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: ScaffoldMessenger(
@@ -1146,8 +1136,34 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(exerciseTitle, style: AppTheme.bigTitle),
-                          const SizedBox(height: 4),
-                          Text(muscleGroupsText, style: _sectionEyebrowStyle()),
+                          const SizedBox(height: SpacingTokens.xs),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children:
+                                (ex.grupoMuscular.isEmpty
+                                        ? ['Geral']
+                                        : ex.grupoMuscular)
+                                    .map(
+                                      (g) => Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: SpacingTokens.md, // 12
+                                          vertical: SpacingTokens.xs, // 4
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.surfaceLight,
+                                          borderRadius: BorderRadius.circular(
+                                            999,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          g,
+                                          style: AppTheme.caption2,
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                          ),
                         ],
                       ),
                     ),
@@ -1164,7 +1180,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
                         // Thumbnail do Vídeo
                         _ExerciseVideoCard(
                           imageUrl: ex.imagemUrl,

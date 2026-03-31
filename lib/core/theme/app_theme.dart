@@ -35,6 +35,7 @@ class AppTheme {
   static const double radiusXXL = 20.0;
   static const double radiusLarge = 24.0;
   static const double radiusFull = 9999.0;
+  static const Radius pill = Radius.circular(9999);
 
   // --- 4. ESTILOS DE TEXTO ---
   static const TextStyle bigTitle = TextStyle(
