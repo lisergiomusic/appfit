@@ -11,6 +11,7 @@ import '../../core/widgets/app_bar_text_button.dart';
 import '../../core/widgets/sliver_safe_title.dart';
 import 'models/exercicio_model.dart';
 import 'exercicio_detalhe_controller.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ExercicioDetalhePage extends StatefulWidget {
   final ExercicioItem exercicio;
@@ -1279,7 +1280,7 @@ class _ExerciseVideoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withAlpha(8),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withAlpha(30), width: 0.5),
+        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
@@ -1288,38 +1289,48 @@ class _ExerciseVideoCard extends StatelessWidget {
           child: Stack(
             children: [
               Positioned.fill(
-                child: Image.network(
-                  imageUrl ??
-                      'https://lh3.googleusercontent.com/aida-public/AB6AXuAXzEmkEB7BMnRUWQ6iIDF5Oc_gVzBjCjxHaac9LYJyL8KxdAi-mTOKK2v2nO9Vt3-DXPcDcoSM3RkTh-iDX0q8oShyD0TllFVTVsQBP3fKU0HPHHtOlkO5uRRx_yIiMes1tmlEr6VkkMyvhy-LTIzYuWYuJaLsSzeba5FPnNX9_RQjcusWmbIyWrBVLVSmLZjDaMcPJMKiSSY6S-RSZFaAzRzHQdDbWnPbv1aUP1akkwSiPE9Rriwmdn8VrF3w0ZIWei1Cxfd7B2Ut',
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, _, _) => Container(
-                    color: AppColors.surfaceDark,
+                child: imageUrl != null && imageUrl!.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: imageUrl!,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: AppColors.surfaceDark,
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: AppColors.surfaceDark,
+                          child: const Icon(
+                            Icons.videocam_off,
+                            color: Colors.white38,
+                          ),
+                        ),
+                      )
+                    : Container(
+                        color: AppColors.surfaceDark,
+                        child: const Icon(
+                          Icons.videocam_off,
+                          color: Colors.white38,
+                        ),
+                      ),
+              ),
+              if (imageUrl != null && imageUrl!.isNotEmpty)
+                Center(
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withAlpha(64),
+                      shape: BoxShape.circle,
+                    ),
                     child: const Icon(
-                      Icons.videocam_off,
-                      color: Colors.white38,
+                      CupertinoIcons.play_fill,
+                      color: Colors.white,
+                      size: 26,
                     ),
                   ),
                 ),
-              ),
-              Center(
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withAlpha(64),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withAlpha(38),
-                      width: 0.9,
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.play_arrow,
-                    color: Colors.white,
-                    size: 26,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
