@@ -1,11 +1,12 @@
 import 'dart:async';
+import 'package:appfit/core/widgets/app_section_link_button.dart';
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/widgets/orange_glass_action_button.dart';
+import '../../core/widgets/app_primary_button.dart';
 import '../../core/widgets/sliver_safe_title.dart';
 import 'configurar_treino_controller.dart';
 import 'exercicio_detalhe_page.dart';
@@ -280,22 +281,22 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                 value: '${controller.exercicios.length}',
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: _MetricCard(
                                 label: 'Séries',
                                 value: '${controller.totalSeries}',
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 8),
                             const Expanded(
                               child: _MetricCard(label: 'Tempo', value: '45m'),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: SpacingTokens.sectionGap),
                         const SessaoNoteWidget(),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: SpacingTokens.sectionGap),
                         Row(
                           children: [
                             Text(
@@ -303,19 +304,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                               style: AppTheme.sectionHeader,
                             ),
                             const Spacer(),
-                            TextButton(
-                              onPressed: () {
-                                // TODO: Implementar ação de edição
-                              },
-                              style: TextButton.styleFrom(
-                                foregroundColor: AppColors.primary,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppTheme.space8,
-                                ),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: const Text('Editar'),
-                            ),
+                            AppSectionLinkButton(label: 'Reorganizar'),
                           ],
                         ),
                       ],
@@ -451,30 +440,15 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                     ),
                   ),
                 ),
-              if (controller.exercicios.isNotEmpty)
-                SliverToBoxAdapter(
-                  child: Center(
-                    child: IgnorePointer(
-                      ignoring: !shouldShowFab,
-                      child: AnimatedScale(
-                        scale: shouldShowFab ? 1.0 : 0.0,
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.easeOutCubic,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 4, bottom: 96.0),
-                          child: Container(
-                            key: _addButtonKey,
-                            child: OrangeGlassActionButton(
-                              label: 'Adicionar Exercícios',
-                              onTap: () => _openLibrary(context),
-                              bottomMargin: 0,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: AppPrimaryButton(
+                    label: 'Adicionar Exercícios',
+                    onPressed: () => _openLibrary(context),
                   ),
                 ),
+              ),
             ],
           ),
         ),
@@ -486,7 +460,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
     return SliverFillRemaining(
       hasScrollBody: false,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           children: [
             const Spacer(flex: 2),
@@ -534,10 +508,10 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                 curve: Curves.easeOutCubic,
                 child: Container(
                   key: _addButtonKey,
-                  child: OrangeGlassActionButton(
+                  child: AppPrimaryButton(
                     label: 'Adicionar Exercícios',
-                    onTap: () => _openLibrary(context),
-                    bottomMargin: 0,
+                    icon: CupertinoIcons.add_circled,
+                    onPressed: () => _openLibrary(context),
                   ),
                 ),
               ),

@@ -1,3 +1,4 @@
+import 'package:appfit/core/widgets/app_nav_back_button.dart';
 import 'package:appfit/core/widgets/sliver_safe_title.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -25,28 +26,13 @@ class AppFitSliverAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Widget effectiveLeading = leading ??
-        Align(
-          alignment: Alignment.centerLeft,
-          child: CupertinoButton(
-            onPressed: onBackPressed ?? () => Navigator.pop(context),
-            padding: const EdgeInsets.only(left: 8),
-            child: const Icon(
-              CupertinoIcons.back,
-              color: AppColors.labelPrimary,
-              size: 24,
-            ),
-          ),
-        );
-
     return SliverAppBar(
       automaticallyImplyLeading: false,
       backgroundColor: AppColors.background,
       surfaceTintColor: Colors.transparent,
       pinned: isPinned,
       expandedHeight: expandedHeight,
-      leadingWidth: 100,
-      leading: effectiveLeading,
+      leading: leading ?? AppNavBackButton(),
       actions: actions,
       flexibleSpace: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
