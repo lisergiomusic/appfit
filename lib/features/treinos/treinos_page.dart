@@ -103,9 +103,7 @@ class _TreinosPageState extends State<TreinosPage> {
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Nome do treino',
-          ),
+          decoration: const InputDecoration(hintText: 'Nome do treino'),
         ),
         actions: [
           TextButton(
@@ -178,24 +176,42 @@ class _TreinosPageState extends State<TreinosPage> {
                 );
               }
 
-              return SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    var doc = filteredDocs[index];
-                    var rotina = doc.data() as Map<String, dynamic>;
-                    int qtdSessoes = rotina['sessoes'] != null
-                        ? (rotina['sessoes'] as List).length
-                        : 0;
+              return SliverMainAxisGroup(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        24,
+                        0,
+                        16,
+                        SpacingTokens.labelToField,
+                      ),
+                      child: Text(
+                        'Templates (${filteredDocs.length})',
+                        style: AppTheme.sectionHeader,
+                      ),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        var doc = filteredDocs[index];
+                        var rotina = doc.data() as Map<String, dynamic>;
+                        int qtdSessoes = rotina['sessoes'] != null
+                            ? (rotina['sessoes'] as List).length
+                            : 0;
 
-                    return _buildTreinoCard(
-                      doc.id,
-                      rotina,
-                      qtdSessoes,
-                      isSelecting,
-                    );
-                  }, childCount: filteredDocs.length),
-                ),
+                        return _buildTreinoCard(
+                          doc.id,
+                          rotina,
+                          qtdSessoes,
+                          isSelecting,
+                        );
+                      }, childCount: filteredDocs.length),
+                    ),
+                  ),
+                ],
               );
             },
           ),

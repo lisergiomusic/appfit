@@ -497,7 +497,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         appBar: AppBar(
           backgroundColor: AppColors.background,
           elevation: 0,
-          leadingWidth: 100,
+          leadingWidth: 150,
           leading: AppNavBackButton(
             onPressed: () => Navigator.of(context).maybePop(),
           ),
