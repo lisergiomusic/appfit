@@ -440,15 +440,6 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                     ),
                   ),
                 ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: AppPrimaryButton(
-                    label: 'Adicionar Exercícios',
-                    onPressed: () => _openLibrary(context),
-                  ),
-                ),
-              ),
             ],
           ),
         ),
