@@ -160,8 +160,8 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                   child: Padding(
                     padding: const EdgeInsets.only(
                       left: 16,
-                      bottom: 16,
                       right: 16,
+                      bottom: 20,
                     ),
                     child: Row(
                       crossAxisAlignment: controller.isEditingTitle
@@ -234,12 +234,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                   },
                                   child: Text(
                                     safeTreinoTitle,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 34,
-                                      letterSpacing: -0.5,
-                                    ),
+                                    style: AppTheme.bigTitle,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -277,7 +272,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(
                       AppTheme.paddingScreen,
-                      AppTheme.space8,
+                      SpacingTokens.pageTopPadding,
                       AppTheme.paddingScreen,
                       0,
                     ),
@@ -301,10 +296,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                             ),
                             const SizedBox(width: 12),
                             const Expanded(
-                              child: _MetricCard(
-                                label: 'Tempo',
-                                value: '45m',
-                              ),
+                              child: _MetricCard(label: 'Tempo', value: '45m'),
                             ),
                           ],
                         ),
@@ -324,7 +316,9 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                               },
                               style: TextButton.styleFrom(
                                 foregroundColor: AppColors.primary,
-                                padding: const EdgeInsets.symmetric(horizontal: AppTheme.space8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppTheme.space8,
+                                ),
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
                               child: const Text('Editar'),
@@ -407,7 +401,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                               bottom: AppTheme.space12,
                             ),
                             child: Container(
-                               padding: const EdgeInsets.only(right: 16),
+                              padding: const EdgeInsets.only(right: 16),
                               alignment: Alignment.centerRight,
                               decoration: BoxDecoration(
                                 color: Colors.redAccent,
@@ -488,7 +482,6 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                     ),
                   ),
                 ),
-
             ],
           ),
         ),
@@ -498,69 +491,69 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
 
   SliverFillRemaining emptyState(bool shouldShowFab, BuildContext context) {
     return SliverFillRemaining(
-                hasScrollBody: false,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: Column(
-                    children: [
-                      const Spacer(flex: 2),
-                      Container(
-                        width: 88,
-                        height: 88,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(10),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.fitness_center_outlined,
-                            size: 40,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      const Text(
-                        'Nenhum exercício adicionado',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Toque no botão abaixo para começar a\n'
-                        'montar o seu treino.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: AppColors.labelSecondary,
-                          fontSize: 14,
-                          height: 1.4,
-                        ),
-                      ),
-                      const Spacer(flex: 2),
-                      IgnorePointer(
-                        ignoring: !shouldShowFab,
-                        child: AnimatedScale(
-                          scale: shouldShowFab ? 1.0 : 0.0,
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.easeOutCubic,
-                          child: Container(
-                            key: _addButtonKey,
-                            child: OrangeGlassActionButton(
-                              label: 'Adicionar Exercícios',
-                              onTap: () => _openLibrary(context),
-                              bottomMargin: 0,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const Spacer(flex: 3),
-                    ],
+      hasScrollBody: false,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          children: [
+            const Spacer(flex: 2),
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(10),
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.fitness_center_outlined,
+                  size: 40,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Nenhum exercício adicionado',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Toque no botão abaixo para começar a\n'
+              'montar o seu treino.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppColors.labelSecondary,
+                fontSize: 14,
+                height: 1.4,
+              ),
+            ),
+            const Spacer(flex: 2),
+            IgnorePointer(
+              ignoring: !shouldShowFab,
+              child: AnimatedScale(
+                scale: shouldShowFab ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
+                child: Container(
+                  key: _addButtonKey,
+                  child: OrangeGlassActionButton(
+                    label: 'Adicionar Exercícios',
+                    onTap: () => _openLibrary(context),
+                    bottomMargin: 0,
                   ),
                 ),
-              );
+              ),
+            ),
+            const Spacer(flex: 3),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildCardContent(
@@ -572,7 +565,8 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
     final wrapper = controller.exercicios[exIndex];
     final ex = wrapper.item;
 
-    const String defaultThumbnail = 'https://firebasestorage.googleapis.com/v0/b/appfit-6028c.firebasestorage.app/o/exercicios%2Fplaceholder_exercicio.png?alt=media&token=784e622b-285b-4c91-9549-31c34954060b';
+    const String defaultThumbnail =
+        'https://firebasestorage.googleapis.com/v0/b/appfit-6028c.firebasestorage.app/o/exercicios%2Fplaceholder_exercicio.png?alt=media&token=784e622b-285b-4c91-9549-31c34954060b';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppTheme.space12),
@@ -620,18 +614,18 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) =>
                             const Center(
-                          child: Icon(
-                            Icons.fitness_center,
-                            color: AppColors.labelSecondary,
-                          ),
-                        ),
+                              child: Icon(
+                                Icons.fitness_center,
+                                color: AppColors.labelSecondary,
+                              ),
+                            ),
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
                           return Center(
                             child: CircularProgressIndicator(
                               value: loadingProgress.expectedTotalBytes != null
                                   ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
+                                        loadingProgress.expectedTotalBytes!
                                   : null,
                               strokeWidth: 2,
                               color: AppColors.primary.withAlpha(100),
@@ -720,9 +714,7 @@ class _MetricCard extends StatelessWidget {
         color: AppColors.surfaceDark,
         borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         border: AppTheme.cardBorder,
-        boxShadow: [
-          AppTheme.cardShadow,
-        ],
+        boxShadow: [AppTheme.cardShadow],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -863,11 +855,17 @@ class _HintingExercicioAnimatorState extends State<_HintingExercicioAnimator>
     _colorAnimation =
         TweenSequence<Color?>([
           TweenSequenceItem(
-            tween: ColorTween(begin: AppColors.surfaceDark, end: highlightColor),
+            tween: ColorTween(
+              begin: AppColors.surfaceDark,
+              end: highlightColor,
+            ),
             weight: 50.0,
           ),
           TweenSequenceItem(
-            tween: ColorTween(begin: highlightColor, end: AppColors.surfaceDark),
+            tween: ColorTween(
+              begin: highlightColor,
+              end: AppColors.surfaceDark,
+            ),
             weight: 50.0,
           ),
         ]).animate(
@@ -922,7 +920,7 @@ class _HintingExercicioAnimatorState extends State<_HintingExercicioAnimator>
                         width: bgWidth,
                         color: Colors.redAccent,
                         alignment: Alignment.centerRight,
-                         padding: const EdgeInsets.only(right: 16),
+                        padding: const EdgeInsets.only(right: 16),
                         child: Opacity(
                           opacity: (bgWidth / 72.0).clamp(0.0, 1.0),
                           child: const Icon(

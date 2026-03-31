@@ -457,14 +457,11 @@ class _TreinosPageState extends State<TreinosPage> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      width: 40,
-                      height: 40,
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
-                        color:
-                            (isSelecting
-                                    ? const Color.fromARGB(255, 12, 12, 12)
-                                    : AppColors.primary)
-                                .withAlpha(20),
+                        color: Colors.black.withAlpha(40),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
                       ),
                       child: Icon(
                         isSelecting ? Icons.add_task : Icons.fitness_center,

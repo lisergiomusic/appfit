@@ -94,7 +94,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
   void _exibirModalInfo(BuildContext context) async {
-    final bool isInitialSetup = widget.rotinaId == null && _controller.nomeCtrl.text.isEmpty;
+    final bool isInitialSetup =
+        widget.rotinaId == null && _controller.nomeCtrl.text.isEmpty;
 
     await Navigator.of(context).push(
       MaterialPageRoute(
@@ -122,7 +123,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       ),
     );
 
-    if (isInitialSetup && context.mounted && _controller.nomeCtrl.text.isEmpty) {
+    if (isInitialSetup &&
+        context.mounted &&
+        _controller.nomeCtrl.text.isEmpty) {
       Navigator.of(context).pop();
     }
   }
@@ -229,12 +232,19 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
               leading: AppNavBackButton(
                 onPressed: () => Navigator.of(context).maybePop(),
               ),
-              title: const Text('Gerenciar Planilha', style: AppTheme.pageTitle),
+              title: const Text(
+                'Gerenciar Planilha',
+                style: AppTheme.pageTitle,
+              ),
               bottom: const AppBarDivider(),
             ),
             body: SafeArea(
               child: _controller.isDeleting || _controller.isSaving
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
+                    )
                   : SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
                       child: Padding(
@@ -248,16 +258,17 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _buildHeader(),
-                            const SizedBox(height: SpacingTokens.xxl),
+                            const SizedBox(height: SpacingTokens.sectionGap),
                             _buildSectionHeader(),
                             const SizedBox(height: SpacingTokens.sm),
                             if (_controller.treinos.isEmpty)
                               _buildEmptyState()
                             else
                               ..._controller.treinos.asMap().entries.map(
-                                    (entry) => _buildSessaoCard(entry.value, entry.key),
-                                  ),
-                            const SizedBox(height: SpacingTokens.lg),
+                                (entry) =>
+                                    _buildSessaoCard(entry.value, entry.key),
+                              ),
+                            const SizedBox(height: SpacingTokens.sectionGap),
                             AppPrimaryButton(
                               label: 'Nova sessão',
                               icon: CupertinoIcons.add_circled,
@@ -282,18 +293,26 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                _controller.nomeCtrl.text.isEmpty ? 'Nova Rotina' : _controller.nomeCtrl.text,
+                _controller.nomeCtrl.text.isEmpty
+                    ? 'Nova Rotina'
+                    : _controller.nomeCtrl.text,
                 style: AppTheme.title1,
               ),
               const SizedBox(height: SpacingTokens.xs),
               Text(
-                _controller.objCtrl.text.isEmpty ? 'Defina o objetivo' : _controller.objCtrl.text,
+                _controller.objCtrl.text.isEmpty
+                    ? 'Defina o objetivo'
+                    : _controller.objCtrl.text,
                 style: CardTokens.cardSubtitle,
               ),
               const SizedBox(height: SpacingTokens.xs),
               Row(
                 children: [
-                  const Icon(Icons.schedule, size: 12, color: AppColors.labelSecondary),
+                  const Icon(
+                    Icons.schedule,
+                    size: 12,
+                    color: AppColors.labelSecondary,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     _controller.tipoVencimento == 'sessoes'
@@ -309,7 +328,10 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         IconButton(
           onPressed: () => _exibirModalInfo(context),
           style: IconButton.styleFrom(backgroundColor: AppColors.buttonSurface),
-          icon: const Icon(CupertinoIcons.pencil, color: AppColors.labelPrimary),
+          icon: const Icon(
+            CupertinoIcons.pencil,
+            color: AppColors.labelPrimary,
+          ),
         ),
       ],
     );
@@ -346,13 +368,21 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
             const SizedBox(height: 24),
             const Text(
               'Sua planilha está vazia',
-              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             const Text(
               'Adicione as sessões de treino (ex: Treino A, Treino B)\npara começar a configurar os exercícios.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.labelSecondary, fontSize: 14, height: 1.5),
+              style: TextStyle(
+                color: AppColors.labelSecondary,
+                fontSize: 14,
+                height: 1.5,
+              ),
             ),
           ],
         ),
@@ -411,7 +441,11 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 ),
               ),
               PopupMenuButton<String>(
-                icon: const Icon(CupertinoIcons.ellipsis_vertical, size: 20, color: AppColors.labelTertiary),
+                icon: const Icon(
+                  CupertinoIcons.ellipsis_vertical,
+                  size: 20,
+                  color: AppColors.labelTertiary,
+                ),
                 onSelected: (v) {
                   if (v == 'edit') _exibirModalSessao(index: index);
                   if (v == 'delete') _controller.removerSessao(index);
@@ -430,8 +464,8 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
 
   Widget _buildSessaoIndex(int index) {
     return Container(
-      width: 52,
-      height: 52,
+      width: 48,
+      height: 48,
       decoration: BoxDecoration(
         color: Colors.black.withAlpha(40),
         borderRadius: BorderRadius.circular(AppTheme.radiusSM),
@@ -439,7 +473,11 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       child: Center(
         child: Text(
           String.fromCharCode(65 + index),
-          style: const TextStyle(color: AppColors.primary, fontSize: 20, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            color: AppColors.primary,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
