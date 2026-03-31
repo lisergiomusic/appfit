@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/orange_glass_action_button.dart';
+import '../../core/widgets/app_bar_text_button.dart';
 import '../../core/widgets/sliver_safe_title.dart';
 import 'models/exercicio_model.dart';
 import 'exercicio_detalhe_controller.dart';
@@ -838,6 +839,12 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
               slivers: [
                 AppFitSliverAppBar(
                     title: exerciseTitle,
+                    actions: [
+                      AppBarTextButton(
+                        label: 'Salvar',
+                        onPressed: () => Navigator.of(context).maybePop(),
+                      ),
+                    ],
                     background: Align(
                         alignment: Alignment.bottomLeft,
                         child: Padding(

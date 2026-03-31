@@ -11,6 +11,7 @@ import 'widgets/planilha_settings_modal.dart';
 import 'widgets/sessao_treino_modal.dart';
 import '../../core/widgets/app_primary_button.dart';
 import '../../core/widgets/app_nav_back_button.dart';
+import '../../core/widgets/app_bar_text_button.dart';
 
 class RotinaDetalhePage extends StatefulWidget {
   final Map<String, dynamic>? rotinaData;
@@ -236,6 +237,12 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 'Gerenciar Planilha',
                 style: AppTheme.pageTitle,
               ),
+              actions: [
+                AppBarTextButton(
+                  label: 'Salvar',
+                  onPressed: () => Navigator.of(context).maybePop(),
+                ),
+              ],
               bottom: const AppBarDivider(),
             ),
             body: SafeArea(
