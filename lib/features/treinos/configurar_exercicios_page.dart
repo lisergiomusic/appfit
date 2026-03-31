@@ -527,7 +527,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
     final ex = wrapper.item;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppTheme.space12),
+      padding: const EdgeInsets.only(bottom: SpacingTokens.listItemGap),
       child: Container(
         decoration: AppTheme.cardDecoration,
         child: Material(
@@ -599,7 +599,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 3),
+                        const SizedBox(height: SpacingTokens.xs),
                         RichText(
                           text: TextSpan(
                             style: CardTokens.cardSubtitle,

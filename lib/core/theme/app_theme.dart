@@ -292,6 +292,7 @@ class CardTokens {
   static BorderRadius cardRadius = BorderRadius.circular(AppTheme.radiusLG);
   static const TextStyle cardTitle = TextStyle(
     fontSize: 17,
+    height: 1,
     fontWeight: FontWeight.w600,
     color: AppColors.labelPrimary,
     letterSpacing: -0.41,
