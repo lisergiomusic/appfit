@@ -241,24 +241,17 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                 ),
                         ),
                         const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () {
+                        IconButton(
+                          onPressed: () {
                             HapticFeedback.lightImpact();
                             controller.toggleEditTitle();
                           },
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              top: controller.isEditingTitle ? 8.0 : 0.0,
-                            ),
-                            child: Icon(
-                              controller.isEditingTitle
-                                  ? Icons.check_circle_rounded
-                                  : Icons.edit_note,
-                              color: controller.isEditingTitle
-                                  ? AppColors.primary
-                                  : Colors.white.withAlpha(80),
-                              size: 44,
-                            ),
+                          style: IconButton.styleFrom(
+                            backgroundColor: AppColors.buttonSurface,
+                          ),
+                          icon: const Icon(
+                            CupertinoIcons.pencil,
+                            color: AppColors.labelPrimary,
                           ),
                         ),
                       ],
