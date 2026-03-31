@@ -108,10 +108,12 @@ class AppTheme {
     fontWeight: FontWeight.w600,
     color: AppColors.labelPrimary,
     letterSpacing: -0.41,
+    height: 1,
   );
 
   static const TextStyle cardSubtitle = TextStyle(
     fontSize: 15,
+    height: 1,
     color: AppColors.labelSecondary,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.24,
@@ -286,7 +288,8 @@ class AppTheme {
 }
 
 class CardTokens {
-  static const padding = EdgeInsets.symmetric(horizontal: 16, vertical: 12);
+  static const padding = EdgeInsets.symmetric(horizontal: 16, vertical: 16);
+  static BorderRadius cardRadius = BorderRadius.circular(AppTheme.radiusLG);
   static const TextStyle cardTitle = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
@@ -357,7 +360,7 @@ class ButtonTokens {
 }
 
 class AvatarTokens {
-  static const double sm = 14.0;  // diâmetro 28 — tab bar, listas densas
-  static const double md = 20.0;  // diâmetro 40 — listas padrão
-  static const double lg = 28.0;  // diâmetro 56 — cabeçalhos de perfil, home
+  static const double sm = 14.0; // diâmetro 28 — tab bar, listas densas
+  static const double md = 20.0; // diâmetro 40 — listas padrão
+  static const double lg = 28.0; // diâmetro 56 — cabeçalhos de perfil, home
 }

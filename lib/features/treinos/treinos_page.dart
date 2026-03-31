@@ -93,18 +93,20 @@ class _TreinosPageState extends State<TreinosPage> {
               return SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                 sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      var doc = filteredDocs[index];
-                      var rotina = doc.data() as Map<String, dynamic>;
-                      int qtdSessoes = rotina['sessoes'] != null
-                          ? (rotina['sessoes'] as List).length
-                          : 0;
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    var doc = filteredDocs[index];
+                    var rotina = doc.data() as Map<String, dynamic>;
+                    int qtdSessoes = rotina['sessoes'] != null
+                        ? (rotina['sessoes'] as List).length
+                        : 0;
 
-                      return _buildTreinoCard(doc.id, rotina, qtdSessoes, isSelecting);
-                    },
-                    childCount: filteredDocs.length,
-                  ),
+                    return _buildTreinoCard(
+                      doc.id,
+                      rotina,
+                      qtdSessoes,
+                      isSelecting,
+                    );
+                  }, childCount: filteredDocs.length),
                 ),
               );
             },
@@ -126,7 +128,11 @@ class _TreinosPageState extends State<TreinosPage> {
       scrolledUnderElevation: 0.5,
       leading: widget.alunoId != null
           ? IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.primary, size: 20),
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: AppColors.primary,
+                size: 20,
+              ),
               onPressed: () => Navigator.pop(context),
             )
           : const SizedBox.shrink(),
@@ -141,9 +147,8 @@ class _TreinosPageState extends State<TreinosPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => RotinaDetalhePage(
-                    rotinaService: _rotinaService,
-                  ),
+                  builder: (context) =>
+                      RotinaDetalhePage(rotinaService: _rotinaService),
                 ),
               );
             },
@@ -151,17 +156,15 @@ class _TreinosPageState extends State<TreinosPage> {
       ],
       flexibleSpace: LayoutBuilder(
         builder: (context, constraints) {
-          final bool isCollapsed = constraints.biggest.height <=
+          final bool isCollapsed =
+              constraints.biggest.height <=
               (kToolbarHeight + MediaQuery.of(context).padding.top + 10);
 
           return FlexibleSpaceBar(
             title: AnimatedOpacity(
               duration: const Duration(milliseconds: 200),
               opacity: isCollapsed ? 1.0 : 0.0,
-              child: Text(
-                titleStr,
-                style: AppTheme.pageTitle,
-              ),
+              child: Text(titleStr, style: AppTheme.pageTitle),
             ),
             centerTitle: true,
             titlePadding: const EdgeInsets.only(bottom: 14),
@@ -172,10 +175,7 @@ class _TreinosPageState extends State<TreinosPage> {
                 color: AppColors.background,
                 padding: const EdgeInsets.only(left: 20, bottom: 10),
                 alignment: Alignment.bottomLeft,
-                child: Text(
-                  titleStr,
-                  style: AppTheme.bigTitle,
-                ),
+                child: Text(titleStr, style: AppTheme.bigTitle),
               ),
             ),
           );
@@ -242,10 +242,17 @@ class _TreinosPageState extends State<TreinosPage> {
     );
   }
 
-  Widget _buildTreinoCard(String id, Map<String, dynamic> rotina, int qtdSessoes, bool isSelecting) {
+  Widget _buildTreinoCard(
+    String id,
+    Map<String, dynamic> rotina,
+    int qtdSessoes,
+    bool isSelecting,
+  ) {
     return Dismissible(
       key: Key(id),
-      direction: isSelecting ? DismissDirection.none : DismissDirection.endToStart,
+      direction: isSelecting
+          ? DismissDirection.none
+          : DismissDirection.endToStart,
       confirmDismiss: (direction) async {
         return await showDialog(
           context: context,
@@ -301,12 +308,12 @@ class _TreinosPageState extends State<TreinosPage> {
       ),
       onDismissed: (direction) => _deletarTreino(id),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: SpacingTokens.listItemGap),
         decoration: AppTheme.cardDecoration,
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+            borderRadius: CardTokens.cardRadius,
             onTap: () {
               if (isSelecting) {
                 Navigator.push(
@@ -334,20 +341,28 @@ class _TreinosPageState extends State<TreinosPage> {
               }
             },
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: CardTokens.padding,
               child: Row(
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: (isSelecting ? AppColors.iosBlue : AppColors.primary).withAlpha(20),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      isSelecting ? Icons.add_task : Icons.fitness_center,
-                      color: isSelecting ? AppColors.iosBlue : AppColors.primary,
-                      size: 20,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color:
+                            (isSelecting
+                                    ? const Color.fromARGB(255, 12, 12, 12)
+                                    : AppColors.primary)
+                                .withAlpha(20),
+                      ),
+                      child: Icon(
+                        isSelecting ? Icons.add_task : Icons.fitness_center,
+                        color: isSelecting
+                            ? AppColors.iosBlue
+                            : AppColors.primary,
+                        size: 20,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -359,9 +374,9 @@ class _TreinosPageState extends State<TreinosPage> {
                           rotina['nome'] ?? 'Sem título',
                           style: AppTheme.cardTitle,
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: SpacingTokens.xs),
                         Text(
-                          '$qtdSessoes sessões de treino',
+                          rotina['objetivo'] ?? '',
                           style: AppTheme.cardSubtitle,
                         ),
                       ],
