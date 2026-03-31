@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
+import 'package:flutter/cupertino.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'dart:ui';
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
@@ -100,7 +101,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     return _controllers[fieldKey]!;
   }
 
-  void _setControllerText(String fieldKey, TextEditingController controller, String value) {
+  void _setControllerText(
+    String fieldKey,
+    TextEditingController controller,
+    String value,
+  ) {
     _suppressNextOnChanged.add(fieldKey);
     controller.value = TextEditingValue(
       text: value,
@@ -173,10 +178,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
 
     _animatedListKeys[serie.tipo]?.currentState?.removeItem(
       sectionIndex,
-      (context, animation) => SizeTransition(
-        sizeFactor: animation,
-        child: Container(),
-      ),
+      (context, animation) =>
+          SizeTransition(sizeFactor: animation, child: Container()),
     );
 
     controller.cancelSnackBarTimer();
@@ -193,7 +196,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
           final restoredIndex = controller.undoDelete();
           if (restoredIndex != null) {
             final restoredSerie = ex.series[restoredIndex];
-            final restoredSectionIndex = controller.sectionIndexOf(restoredSerie);
+            final restoredSectionIndex = controller.sectionIndexOf(
+              restoredSerie,
+            );
             setState(() {});
             _animatedListKeys[restoredSerie.tipo]?.currentState?.insertItem(
               restoredSectionIndex,
@@ -206,7 +211,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       behavior: SnackBarBehavior.floating,
     );
 
-    final snackBarController = _scaffoldMessengerKey.currentState?.showSnackBar(snackBar);
+    final snackBarController = _scaffoldMessengerKey.currentState?.showSnackBar(
+      snackBar,
+    );
 
     if (snackBarController != null) {
       controller.startSnackBarTimer(() {
@@ -269,9 +276,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           title: 'Aquecimento',
                           icon: Icons.whatshot_rounded,
                           color: const Color(0xFF00B4D8),
-                          onTap: () => Navigator.pop(context, TipoSerie.aquecimento),
+                          onTap: () =>
+                              Navigator.pop(context, TipoSerie.aquecimento),
                           showDivider: true,
-                          subtitle: 'Prepara as articulações e o sistema nervoso.',
+                          subtitle:
+                              'Prepara as articulações e o sistema nervoso.',
                         ),
                         _buildModalOption(
                           title: 'Aproximação',
@@ -285,7 +294,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           title: 'Série de Trabalho',
                           icon: Icons.fitness_center_rounded,
                           color: const Color(0xFFFF3366),
-                          onTap: () => Navigator.pop(context, TipoSerie.trabalho),
+                          onTap: () =>
+                              Navigator.pop(context, TipoSerie.trabalho),
                           showDivider: false,
                           subtitle: 'Série efetiva para hipertrofia ou força.',
                         ),
@@ -303,30 +313,50 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     if (tipoEscolhido != null) {
       String alvoToClone = '10', cargaToClone = '-', descansoToClone = '60s';
       if (ex.series.isNotEmpty) {
-        final ultimaSerie = ex.series.lastWhere((s) => s.tipo == tipoEscolhido, orElse: () => ex.series.last);
+        final ultimaSerie = ex.series.lastWhere(
+          (s) => s.tipo == tipoEscolhido,
+          orElse: () => ex.series.last,
+        );
         alvoToClone = ultimaSerie.alvo;
         cargaToClone = ultimaSerie.carga;
         descansoToClone = ultimaSerie.descanso;
       }
 
-      final newSerie = SerieItem(tipo: tipoEscolhido, alvo: alvoToClone, carga: cargaToClone, descanso: descansoToClone);
+      final newSerie = SerieItem(
+        tipo: tipoEscolhido,
+        alvo: alvoToClone,
+        carga: cargaToClone,
+        descanso: descansoToClone,
+      );
       controller.markAsNew(newSerie.id);
 
       final sectionList = controller.entriesForTipo(tipoEscolhido);
       final insertSectionIndex = sectionList.length;
       final insertRealIndex = controller.computeInsertRealIndex(tipoEscolhido);
 
-      setState(() { controller.insertAt(insertRealIndex, newSerie); });
+      setState(() {
+        controller.insertAt(insertRealIndex, newSerie);
+      });
 
       Future.microtask(() {
-        _animatedListKeys[tipoEscolhido]?.currentState?.insertItem(insertSectionIndex, duration: const Duration(milliseconds: 300));
+        _animatedListKeys[tipoEscolhido]?.currentState?.insertItem(
+          insertSectionIndex,
+          duration: const Duration(milliseconds: 300),
+        );
       });
 
       widget.onChanged();
     }
   }
 
-  Widget _buildModalOption({required String title, required IconData icon, required Color color, required VoidCallback onTap, required bool showDivider, required String subtitle}) {
+  Widget _buildModalOption({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+    required bool showDivider,
+    required String subtitle,
+  }) {
     return Column(
       children: [
         Material(
@@ -394,13 +424,26 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
   }
 
-  TextStyle _microLabelStyle() => const TextStyle(color: AppColors.labelSecondary, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 0.8);
-  TextStyle _sectionEyebrowStyle() => const TextStyle(color: AppColors.labelSecondary, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 1.0);
+  TextStyle _microLabelStyle() => const TextStyle(
+    color: AppColors.labelSecondary,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.8,
+  );
+  TextStyle _sectionEyebrowStyle() => const TextStyle(
+    color: AppColors.labelSecondary,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 1.0,
+  );
 
   InputDecoration _editableFieldDecoration() {
     return const InputDecoration(
       isDense: true,
-      contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.space12, vertical: AppTheme.space10),
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: AppTheme.space12,
+        vertical: AppTheme.space10,
+      ),
       focusedBorder: InputBorder.none,
       enabledBorder: InputBorder.none,
       filled: true,
@@ -409,7 +452,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   }
 
   // --- WIDGET DE LINHA DA SÉRIE ---
-  Widget _buildSerieRow(SerieItem serie, int realIndex, int visualNumber, bool isFirst, bool isLast) {
+  Widget _buildSerieRow(
+    SerieItem serie,
+    int realIndex,
+    int visualNumber,
+    bool isFirst,
+    bool isLast,
+  ) {
     final isNew = controller.newSeriesIds.contains(serie.id);
     final radius = Radius.circular(AppTheme.radiusXL);
     final borderRadius = BorderRadius.only(
@@ -420,7 +469,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
 
     Widget rowContent(Color? flashColor) {
-      return _buildSerieRowContent(serie, realIndex, visualNumber, isFirst, isLast, flashColor: flashColor);
+      return _buildSerieRowContent(
+        serie,
+        realIndex,
+        visualNumber,
+        isFirst,
+        isLast,
+        flashColor: flashColor,
+      );
     }
 
     Widget card;
@@ -448,10 +504,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             direction: DismissDirection.endToStart,
             onDismissed: (_) => _onDeleteSerie(serie),
             background: Container(
-                color: Colors.redAccent,
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.only(right: 20),
-                child: const Icon(Icons.delete_outline, color: Colors.white)
+              color: Colors.redAccent,
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 20),
+              child: const Icon(Icons.delete_outline, color: Colors.white),
             ),
             child: card,
           ),
@@ -469,23 +525,44 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
   }
 
-  Widget _buildSerieRowContent(SerieItem serie, int realIndex, int visualNumber, bool isFirst, bool isLast, {Color? flashColor}) {
+  Widget _buildSerieRowContent(
+    SerieItem serie,
+    int realIndex,
+    int visualNumber,
+    bool isFirst,
+    bool isLast, {
+    Color? flashColor,
+  }) {
     final stableId = serie.id;
     final repsController = _getController('reps_$stableId', serie.alvo);
-    final cargaController = _getController('carga_$stableId', _formatCargaInputValue(serie.carga));
-    final descansoController = _getController('descanso_$stableId', _formatDescansoInputValue(serie.descanso));
+    final cargaController = _getController(
+      'carga_$stableId',
+      _formatCargaInputValue(serie.carga),
+    );
+    final descansoController = _getController(
+      'descanso_$stableId',
+      _formatDescansoInputValue(serie.descanso),
+    );
     final isEditingSection = controller.isSectionEditing(serie.tipo);
 
     return AnimatedBuilder(
-      animation: _flashControllers[serie.hashCode] ?? const AlwaysStoppedAnimation(0.0),
+      animation:
+          _flashControllers[serie.hashCode] ??
+          const AlwaysStoppedAnimation(0.0),
       builder: (context, child) {
         final editFlashCtrl = _flashControllers[serie.hashCode];
         final editFlashColor = editFlashCtrl != null
-            ? ColorTween(begin: AppColors.accentMetrics.withAlpha(50), end: Colors.transparent).animate(editFlashCtrl).value
+            ? ColorTween(
+                begin: AppColors.accentMetrics.withAlpha(50),
+                end: Colors.transparent,
+              ).animate(editFlashCtrl).value
             : Colors.transparent;
 
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.space8, vertical: AppTheme.space4),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppTheme.space8,
+            vertical: AppTheme.space4,
+          ),
           color: flashColor ?? editFlashColor,
           child: Row(
             children: [
@@ -498,7 +575,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   duration: const Duration(milliseconds: 200),
                   opacity: isEditingSection ? 1.0 : 0.0,
                   child: IconButton(
-                    icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent, size: 20),
+                    icon: const Icon(
+                      Icons.remove_circle_outline,
+                      color: Colors.redAccent,
+                      size: 20,
+                    ),
                     onPressed: () => _onDeleteSerie(serie),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -517,15 +598,63 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOutCubic,
                   padding: EdgeInsets.only(left: isEditingSection ? 0 : 18),
-                  child: Text('$visualNumber', style: const TextStyle(color: AppColors.labelSecondary, fontSize: 14, fontWeight: FontWeight.w700)),
+                  child: Text(
+                    '$visualNumber',
+                    style: const TextStyle(
+                      color: AppColors.labelSecondary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: AppTheme.space8),
-              Expanded(flex: 3, child: _buildEditableField(repsController, (val) => _handleFieldChanged(fieldKey: 'reps_$realIndex', controller: repsController, value: val, emptyFallback: '0', onSave: (s) => serie.alvo = s, serieHash: serie.hashCode))),
+              Expanded(
+                flex: 3,
+                child: _buildEditableField(
+                  repsController,
+                  (val) => _handleFieldChanged(
+                    fieldKey: 'reps_$realIndex',
+                    controller: repsController,
+                    value: val,
+                    emptyFallback: '0',
+                    onSave: (s) => serie.alvo = s,
+                    serieHash: serie.hashCode,
+                  ),
+                ),
+              ),
               const SizedBox(width: AppTheme.space8),
-              Expanded(flex: 3, child: _buildEditableField(cargaController, (val) => _handleFieldChanged(fieldKey: 'carga_$realIndex', controller: cargaController, value: val, emptyFallback: '-', onSave: (s) => serie.carga = s, serieHash: serie.hashCode), inputFormatters: [const _CargaKgInputFormatter()])),
+              Expanded(
+                flex: 3,
+                child: _buildEditableField(
+                  cargaController,
+                  (val) => _handleFieldChanged(
+                    fieldKey: 'carga_$realIndex',
+                    controller: cargaController,
+                    value: val,
+                    emptyFallback: '-',
+                    onSave: (s) => serie.carga = s,
+                    serieHash: serie.hashCode,
+                  ),
+                  inputFormatters: [const _CargaKgInputFormatter()],
+                ),
+              ),
               const SizedBox(width: AppTheme.space8),
-              Expanded(flex: 3, child: _buildEditableField(descansoController, (val) => _handleFieldChanged(fieldKey: 'descanso_$realIndex', controller: descansoController, value: val, emptyFallback: '0', onSave: (s) => serie.descanso = s, serieHash: serie.hashCode), inputFormatters: [const _DescansoSecondsInputFormatter()])),
+              Expanded(
+                flex: 3,
+                child: _buildEditableField(
+                  descansoController,
+                  (val) => _handleFieldChanged(
+                    fieldKey: 'descanso_$realIndex',
+                    controller: descansoController,
+                    value: val,
+                    emptyFallback: '0',
+                    onSave: (s) => serie.descanso = s,
+                    serieHash: serie.hashCode,
+                  ),
+                  inputFormatters: [const _DescansoSecondsInputFormatter()],
+                ),
+              ),
 
               // Botão de Duplicar (Animado)
               AnimatedContainer(
@@ -541,7 +670,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   duration: const Duration(milliseconds: 200),
                   opacity: isEditingSection ? 1.0 : 0.0,
                   child: IconButton(
-                    icon: const Icon(Icons.copy_rounded, color: AppColors.primary, size: 18),
+                    icon: const Icon(
+                      Icons.copy_rounded,
+                      color: AppColors.primary,
+                      size: 18,
+                    ),
                     onPressed: () {
                       final sectionIndex = controller.sectionIndexOf(serie);
                       controller.duplicateSerie(serie);
@@ -565,20 +698,34 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
   }
 
-  Widget _buildEditableField(TextEditingController ctrl, ValueChanged<String> onChanged, {List<TextInputFormatter>? inputFormatters}) {
+  Widget _buildEditableField(
+    TextEditingController ctrl,
+    ValueChanged<String> onChanged, {
+    List<TextInputFormatter>? inputFormatters,
+  }) {
     return TextFormField(
       controller: ctrl,
       onChanged: onChanged,
       inputFormatters: inputFormatters,
       textAlign: TextAlign.center,
       keyboardType: TextInputType.text,
-      style: const TextStyle(color: AppColors.labelPrimary, fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: -0.0),
+      style: const TextStyle(
+        color: AppColors.labelPrimary,
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        letterSpacing: -0.0,
+      ),
       decoration: _editableFieldDecoration(),
     );
   }
 
   // --- WIDGET DA SEÇÃO DE SÉRIES (O CARD AGRUPADO) ---
-  Widget _buildSeriesSection({required String title, required List<MapEntry<int, SerieItem>> entries, Color? titleColor, bool showDot = false}) {
+  Widget _buildSeriesSection({
+    required String title,
+    required List<MapEntry<int, SerieItem>> entries,
+    Color? titleColor,
+    bool showDot = false,
+  }) {
     if (entries.isEmpty) return const SizedBox.shrink();
 
     final tipo = entries.first.value.tipo;
@@ -591,36 +738,36 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: titleColor ?? Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                      letterSpacing: 0.5,
-                    ),
+            child: Row(
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: titleColor ?? Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    letterSpacing: 0.5,
                   ),
-                  const Spacer(),
-                  IconButton(
-                    icon: Icon(
-                      isEditingSection ? Icons.check : Icons.more_vert,
-                      color: AppColors.labelSecondary,
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        controller.toggleEditing(tipo);
-                      });
-                    },
-                    splashRadius: 20,
-                    tooltip: 'Mais opções',
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: Icon(
+                    isEditingSection ? Icons.check : Icons.more_vert,
+                    color: AppColors.labelSecondary,
+                    size: 20,
                   ),
-                ],
-              ),
+                  onPressed: () {
+                    setState(() {
+                      controller.toggleEditing(tipo);
+                    });
+                  },
+                  splashRadius: 20,
+                  tooltip: 'Mais opções',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
           ),
           Container(
             decoration: BoxDecoration(
@@ -631,34 +778,56 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                  child: Row(children: [
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOutCubic,
-                      width: isEditingSection ? 28 : 0,
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: AnimatedPadding(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOutCubic,
-                          padding: EdgeInsets.only(left: isEditingSection ? 0 : 8),
-                          child: Text('SÉRIE', style: _microLabelStyle()),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOutCubic,
+                        width: isEditingSection ? 28 : 0,
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: AnimatedPadding(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOutCubic,
+                            padding: EdgeInsets.only(
+                              left: isEditingSection ? 0 : 8,
+                            ),
+                            child: Text('SÉRIE', style: _microLabelStyle()),
+                          ),
                         ),
                       ),
-                    ),
-                    Expanded(flex: 3, child: Center(child: Text('REPS', style: _microLabelStyle()))),
-                    Expanded(flex: 3, child: Center(child: Text('PESO', style: _microLabelStyle()))),
-                    Expanded(flex: 3, child: Center(child: Text('PAUSA', style: _microLabelStyle()))),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOutCubic,
-                      width: isEditingSection ? 26 : 0,
-                    ),
-                  ]),
+                      Expanded(
+                        flex: 3,
+                        child: Center(
+                          child: Text('REPS', style: _microLabelStyle()),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Center(
+                          child: Text('PESO', style: _microLabelStyle()),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Center(
+                          child: Text('PAUSA', style: _microLabelStyle()),
+                        ),
+                      ),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOutCubic,
+                        width: isEditingSection ? 26 : 0,
+                      ),
+                    ],
+                  ),
                 ),
                 AnimatedList(
                   key: _animatedListKeys[entries.first.value.tipo],
@@ -669,7 +838,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                     final mapped = entries[index];
                     return SizeTransition(
                       sizeFactor: animation,
-                      child: _buildSerieRow(mapped.value, mapped.key, index + 1, index == 0, index == entries.length - 1),
+                      child: _buildSerieRow(
+                        mapped.value,
+                        mapped.key,
+                        index + 1,
+                        index == 0,
+                        index == entries.length - 1,
+                      ),
                     );
                   },
                 ),
@@ -682,42 +857,92 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   }
 
   Widget _buildInstructionsField() {
+    final isEmpty = ex.instrucoes?.trim().isEmpty ?? true;
+
+    if (isEmpty) {
+      return GestureDetector(
+        onTap: _showEditInstructionsSheet,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(CupertinoIcons.doc_text, size: 15, color: AppColors.primary),
+              const SizedBox(width: 6),
+              Text(
+                'Adicionar instruções',
+                style: AppTheme.bodyText.copyWith(
+                  color: AppColors.primary,
+                  fontSize: 15,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Instruções', style: AppTheme.sectionHeader),
-        const SizedBox(height: 10),
+        Row(
+          children: [
+            Text('Instruções', style: AppTheme.sectionHeader),
+            const Spacer(),
+          ],
+        ),
+        const SizedBox(height: 8),
         GestureDetector(
           onTap: _showEditInstructionsSheet,
           child: Container(
             width: double.infinity,
-            constraints: const BoxConstraints(minHeight: 80),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.surfaceDark.withAlpha(180),
-              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(50),
-                    blurRadius: 2,
-                    offset: const Offset(0, 2),
-                    inset: true,
-                  )
-                ]
-
+              color: AppColors.surfaceDark,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(50),
+                  blurRadius: 2,
+                  offset: const Offset(0, 2),
+                  inset: true,
+                ),
+              ],
             ),
-            child: Text(
-              ex.instrucoes?.isEmpty ?? true
-                  ? 'Toque para adicionar orientações técnicas...'
-                  : ex.instrucoes!,
-              style: TextStyle(
-                color: ex.instrucoes?.isEmpty ?? true
-                    ? AppColors.labelSecondary.withAlpha(80)
-                    : Colors.white,
-                fontSize: 14,
-                height: 1.5,
-                fontWeight: FontWeight.w400,
-              ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 3),
+                  child: Icon(
+                    CupertinoIcons.doc_text,
+                    size: 16,
+                    color: AppColors.labelTertiary,
+                  ),
+                ),
+                const SizedBox(width: SpacingTokens.sm),
+                Expanded(
+                  child: Text(
+                    ex.instrucoes ?? '',
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTheme.bodyText.copyWith(
+                      color: AppColors.labelSecondary,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: SpacingTokens.sm),
+                Padding(
+                  padding: const EdgeInsets.only(top: 3),
+                  child: Icon(
+                    CupertinoIcons.pencil,
+                    size: 16,
+                    color: AppColors.labelTertiary,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -735,12 +960,22 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       builder: (context) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
           child: Container(
             decoration: BoxDecoration(
               color: AppColors.background.withAlpha(235),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-              boxShadow: [BoxShadow(color: Colors.black.withAlpha(100), blurRadius: 40, spreadRadius: 10)],
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(100),
+                  blurRadius: 40,
+                  spreadRadius: 10,
+                ),
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -753,21 +988,47 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                     children: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: Text('Cancelar', style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 15)),
+                        child: Text(
+                          'Cancelar',
+                          style: TextStyle(
+                            color: Colors.white.withAlpha(120),
+                            fontSize: 15,
+                          ),
+                        ),
                       ),
-                      const Text('Instruções', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                      const Text(
+                        'Instruções',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
                       TextButton(
                         onPressed: () {
-                          setState(() { ex.instrucoes = ctrl.text.trim(); });
+                          setState(() {
+                            ex.instrucoes = ctrl.text.trim();
+                          });
                           widget.onChanged();
                           Navigator.pop(context);
                         },
-                        child: const Text('OK', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w800, fontSize: 15)),
+                        child: const Text(
+                          'OK',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Divider(height: 1, thickness: 0.5, color: Colors.white.withAlpha(20)),
+                Divider(
+                  height: 1,
+                  thickness: 0.5,
+                  color: Colors.white.withAlpha(20),
+                ),
                 // Campo de Texto
                 Padding(
                   padding: const EdgeInsets.all(20),
@@ -776,29 +1037,39 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                       TextField(
                         controller: ctrl,
                         maxLines: 8,
-                        maxLength: 250,
+                        maxLength: 500,
                         autofocus: true,
                         cursorColor: AppColors.primary,
-                        style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.5),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          height: 1.5,
+                        ),
                         decoration: InputDecoration(
-                          hintText: 'Ex: "Mantenha o cotovelo fixo e faça o movimento de forma controlada."',
-                          hintStyle: TextStyle(color: Colors.white.withAlpha(40), fontSize: 15),
+                          hintText:
+                              'Ex: "Focar na cadência do movimento e manter o abdômen contraído em todos os exercícios."',
+                          hintStyle: TextStyle(
+                            color: Colors.white.withAlpha(40),
+                            fontSize: 15,
+                          ),
                           border: InputBorder.none,
-                          counterText: '', // Ocultamos para usar o nosso personalizado
+                          counterText: '',
                         ),
                       ),
                       const SizedBox(height: 12),
                       ValueListenableBuilder<TextEditingValue>(
                         valueListenable: ctrl,
                         builder: (context, value, child) {
-                          final remaining = 250 - value.text.length;
+                          final remaining = 500 - value.text.length;
                           return Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               Text(
                                 '$remaining caracteres disponíveis',
                                 style: TextStyle(
-                                  color: remaining < 20 ? Colors.redAccent.withAlpha(200) : Colors.white.withAlpha(60),
+                                  color: remaining < 50
+                                      ? Colors.redAccent.withAlpha(200)
+                                      : Colors.white.withAlpha(60),
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -821,12 +1092,29 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
 
   @override
   Widget build(BuildContext context) {
-    final exerciseTitle = SliverSafeTitle.safeTitle(ex.nome, fallback: 'Exercício');
-    final warmup = ex.series.asMap().entries.where((e) => e.value.tipo == TipoSerie.aquecimento).toList();
-    final feeder = ex.series.asMap().entries.where((e) => e.value.tipo == TipoSerie.feeder).toList();
-    final work = ex.series.asMap().entries.where((e) => e.value.tipo == TipoSerie.trabalho).toList();
+    final exerciseTitle = SliverSafeTitle.safeTitle(
+      ex.nome,
+      fallback: 'Exercício',
+    );
+    final warmup = ex.series
+        .asMap()
+        .entries
+        .where((e) => e.value.tipo == TipoSerie.aquecimento)
+        .toList();
+    final feeder = ex.series
+        .asMap()
+        .entries
+        .where((e) => e.value.tipo == TipoSerie.feeder)
+        .toList();
+    final work = ex.series
+        .asMap()
+        .entries
+        .where((e) => e.value.tipo == TipoSerie.trabalho)
+        .toList();
 
-    final muscleGroupsText = ex.grupoMuscular.isEmpty ? 'GERAL' : ex.grupoMuscular.join(' • ').toUpperCase();
+    final muscleGroupsText = ex.grupoMuscular.isEmpty
+        ? 'GERAL'
+        : ex.grupoMuscular.join(' • ').toUpperCase();
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -838,20 +1126,20 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             child: CustomScrollView(
               slivers: [
                 AppFitSliverAppBar(
-                    title: exerciseTitle,
-                    actions: [
-                      AppBarTextButton(
-                        label: 'Salvar',
-                        onPressed: () => Navigator.of(context).maybePop(),
-                      ),
-                    ],
-                    background: Align(
-                        alignment: Alignment.bottomLeft,
-                        child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Text(exerciseTitle, style: AppTheme.bigTitle),
-                        )
-                    )
+                  title: exerciseTitle,
+                  actions: [
+                    AppBarTextButton(
+                      label: 'Salvar',
+                      onPressed: () => Navigator.of(context).maybePop(),
+                    ),
+                  ],
+                  background: Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(exerciseTitle, style: AppTheme.bigTitle),
+                    ),
+                  ),
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
@@ -875,20 +1163,60 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         const SizedBox(height: AppTheme.space32),
 
                         if (ex.series.isEmpty)
-                          Column(children: [
-                            const SizedBox(height: 48),
-                            const Icon(Icons.fitness_center_rounded, size: 50, color: AppColors.primary),
-                            const SizedBox(height: 24),
-                            const Text('Prescreva o exercício', style: TextStyle(color: AppColors.labelPrimary, fontSize: 22, fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 32),
-                            OrangeGlassActionButton(label: 'Adicionar Série', onTap: _adicionarSerie, bottomMargin: 0, showGlow: false),
-                          ])
+                          Column(
+                            children: [
+                              const SizedBox(height: 48),
+                              const Icon(
+                                Icons.fitness_center_rounded,
+                                size: 50,
+                                color: AppColors.primary,
+                              ),
+                              const SizedBox(height: 24),
+                              const Text(
+                                'Prescreva o exercício',
+                                style: TextStyle(
+                                  color: AppColors.labelPrimary,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                              OrangeGlassActionButton(
+                                label: 'Adicionar Série',
+                                onTap: _adicionarSerie,
+                                bottomMargin: 0,
+                                showGlow: false,
+                              ),
+                            ],
+                          )
                         else ...[
-                          _buildSeriesSection(title: 'Aquecimento', entries: warmup, titleColor: const Color(0xFF00B4D8), showDot: true),
-                          _buildSeriesSection(title: 'Séries de aproximação', entries: feeder, titleColor: const Color(0xFFFFB703), showDot: true),
-                          _buildSeriesSection(title: 'Séries de trabalho', entries: work, titleColor: const Color(0xFFFF3366), showDot: true),
+                          _buildSeriesSection(
+                            title: 'Aquecimento',
+                            entries: warmup,
+                            titleColor: const Color(0xFF00B4D8),
+                            showDot: true,
+                          ),
+                          _buildSeriesSection(
+                            title: 'Séries de aproximação',
+                            entries: feeder,
+                            titleColor: const Color(0xFFFFB703),
+                            showDot: true,
+                          ),
+                          _buildSeriesSection(
+                            title: 'Séries de trabalho',
+                            entries: work,
+                            titleColor: const Color(0xFFFF3366),
+                            showDot: true,
+                          ),
                           const SizedBox(height: 12),
-                          Center(child: OrangeGlassActionButton(label: 'Adicionar Série', onTap: _adicionarSerie, bottomMargin: 0, showGlow: false)),
+                          Center(
+                            child: OrangeGlassActionButton(
+                              label: 'Adicionar Série',
+                              onTap: _adicionarSerie,
+                              bottomMargin: 0,
+                              showGlow: false,
+                            ),
+                          ),
                         ],
                       ],
                     ),
@@ -909,7 +1237,11 @@ class _ExerciseVideoCard extends StatelessWidget {
   final String exerciseTitle;
   final VoidCallback onTap;
 
-  const _ExerciseVideoCard({required this.imageUrl, required this.exerciseTitle, required this.onTap});
+  const _ExerciseVideoCard({
+    required this.imageUrl,
+    required this.exerciseTitle,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -927,9 +1259,16 @@ class _ExerciseVideoCard extends StatelessWidget {
             children: [
               Positioned.fill(
                 child: Image.network(
-                  imageUrl ?? 'https://lh3.googleusercontent.com/aida-public/AB6AXuAXzEmkEB7BMnRUWQ6iIDF5Oc_gVzBjCjxHaac9LYJyL8KxdAi-mTOKK2v2nO9Vt3-DXPcDcoSM3RkTh-iDX0q8oShyD0TllFVTVsQBP3fKU0HPHHtOlkO5uRRx_yIiMes1tmlEr6VkkMyvhy-LTIzYuWYuJaLsSzeba5FPnNX9_RQjcusWmbIyWrBVLVSmLZjDaMcPJMKiSSY6S-RSZFaAzRzHQdDbWnPbv1aUP1akkwSiPE9Rriwmdn8VrF3w0ZIWei1Cxfd7B2Ut',
+                  imageUrl ??
+                      'https://lh3.googleusercontent.com/aida-public/AB6AXuAXzEmkEB7BMnRUWQ6iIDF5Oc_gVzBjCjxHaac9LYJyL8KxdAi-mTOKK2v2nO9Vt3-DXPcDcoSM3RkTh-iDX0q8oShyD0TllFVTVsQBP3fKU0HPHHtOlkO5uRRx_yIiMes1tmlEr6VkkMyvhy-LTIzYuWYuJaLsSzeba5FPnNX9_RQjcusWmbIyWrBVLVSmLZjDaMcPJMKiSSY6S-RSZFaAzRzHQdDbWnPbv1aUP1akkwSiPE9Rriwmdn8VrF3w0ZIWei1Cxfd7B2Ut',
                   fit: BoxFit.cover,
-                  errorBuilder: (context, _, _) => Container(color: AppColors.surfaceDark, child: const Icon(Icons.videocam_off, color: Colors.white38)),
+                  errorBuilder: (context, _, _) => Container(
+                    color: AppColors.surfaceDark,
+                    child: const Icon(
+                      Icons.videocam_off,
+                      color: Colors.white38,
+                    ),
+                  ),
                 ),
               ),
               Center(
@@ -939,9 +1278,16 @@ class _ExerciseVideoCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.black.withAlpha(64),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white.withAlpha(38), width: 0.9),
+                    border: Border.all(
+                      color: Colors.white.withAlpha(38),
+                      width: 0.9,
+                    ),
                   ),
-                  child: const Icon(Icons.play_arrow, color: Colors.white, size: 26),
+                  child: const Icon(
+                    Icons.play_arrow,
+                    color: Colors.white,
+                    size: 26,
+                  ),
                 ),
               ),
             ],
@@ -955,18 +1301,34 @@ class _ExerciseVideoCard extends StatelessWidget {
 class _CargaKgInputFormatter extends TextInputFormatter {
   const _CargaKgInputFormatter();
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue old, TextEditingValue next) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue old,
+    TextEditingValue next,
+  ) {
     final d = next.text.replaceAll(RegExp(r'[^0-9]'), '');
-    return d.isEmpty ? const TextEditingValue(text: '') : TextEditingValue(text: '${d}kg', selection: TextSelection.collapsed(offset: d.length));
+    return d.isEmpty
+        ? const TextEditingValue(text: '')
+        : TextEditingValue(
+            text: '${d}kg',
+            selection: TextSelection.collapsed(offset: d.length),
+          );
   }
 }
 
 class _DescansoSecondsInputFormatter extends TextInputFormatter {
   const _DescansoSecondsInputFormatter();
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue old, TextEditingValue next) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue old,
+    TextEditingValue next,
+  ) {
     final d = next.text.replaceAll(RegExp(r'[^0-9]'), '');
-    return d.isEmpty ? const TextEditingValue(text: '') : TextEditingValue(text: '${d}s', selection: TextSelection.collapsed(offset: d.length));
+    return d.isEmpty
+        ? const TextEditingValue(text: '')
+        : TextEditingValue(
+            text: '${d}s',
+            selection: TextSelection.collapsed(offset: d.length),
+          );
   }
 }
 
@@ -977,8 +1339,7 @@ class _HintingSerieAnimator extends StatefulWidget {
   const _HintingSerieAnimator({required this.builder, required this.onEnd});
 
   @override
-  _HintingSerieAnimatorState createState() =>
-      _HintingSerieAnimatorState();
+  _HintingSerieAnimatorState createState() => _HintingSerieAnimatorState();
 }
 
 class _HintingSerieAnimatorState extends State<_HintingSerieAnimator>
@@ -1004,12 +1365,7 @@ class _HintingSerieAnimatorState extends State<_HintingSerieAnimator>
         tween: ColorTween(begin: highlightColor, end: Colors.transparent),
         weight: 50.0,
       ),
-    ]).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOut,
-      ),
-    );
+    ]).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
     Future.delayed(const Duration(milliseconds: 400), () {
       if (mounted) {
