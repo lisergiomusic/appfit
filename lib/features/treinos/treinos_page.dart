@@ -44,6 +44,94 @@ class _TreinosPageState extends State<TreinosPage> {
     await _rotinaService.excluirRotina(id);
   }
 
+  Future<void> _confirmarExcluir(String id) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        ),
+        title: const Text(
+          'Excluir template?',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Isso removerá a ficha da sua biblioteca permanentemente.',
+          style: TextStyle(color: AppColors.labelSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: AppColors.labelSecondary),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text(
+              'Excluir',
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      try {
+        await _deletarTreino(id);
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Erro ao excluir: $e')));
+        }
+      }
+    }
+  }
+
+  Future<void> _renomearTreino(String id, String nomeAtual) async {
+    final controller = TextEditingController(text: nomeAtual);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Renomear treino'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Nome do treino',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Salvar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && controller.text.trim().isNotEmpty) {
+      try {
+        await _rotinaService.renomearRotina(id, controller.text.trim());
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Erro ao renomear: $e')));
+        }
+      }
+    }
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -173,7 +261,12 @@ class _TreinosPageState extends State<TreinosPage> {
               opacity: isCollapsed ? 0.0 : 1.0,
               child: Container(
                 color: AppColors.background,
-                padding: const EdgeInsets.fromLTRB(20, SpacingTokens.pageTopPadding, 0, 10),
+                padding: const EdgeInsets.fromLTRB(
+                  20,
+                  SpacingTokens.pageTopPadding,
+                  0,
+                  10,
+                ),
                 alignment: Alignment.bottomLeft,
                 child: Text(titleStr, style: AppTheme.bigTitle),
               ),
@@ -312,6 +405,7 @@ class _TreinosPageState extends State<TreinosPage> {
         decoration: AppTheme.cardDecoration,
         child: Material(
           color: Colors.transparent,
+          elevation: 0,
           child: InkWell(
             borderRadius: CardTokens.cardRadius,
             onTap: () {
@@ -382,10 +476,60 @@ class _TreinosPageState extends State<TreinosPage> {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: AppColors.labelSecondary.withAlpha(100),
-                    size: 20,
+                  PopupMenuButton<String>(
+                    icon: Icon(
+                      Icons.more_vert,
+                      color: AppColors.labelSecondary,
+                      size: 22,
+                    ),
+                    padding: EdgeInsets.zero,
+                    color: AppColors.surfaceDark,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                    ),
+                    onSelected: (value) {
+                      if (value == 'editar') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => RotinaDetalhePage(
+                              rotinaData: rotina,
+                              rotinaId: isSelecting ? null : id,
+                              alunoId: isSelecting ? widget.alunoId : null,
+                              alunoNome: isSelecting ? widget.alunoNome : null,
+                              rotinaService: _rotinaService,
+                            ),
+                          ),
+                        );
+                      } else if (value == 'renomear') {
+                        _renomearTreino(id, rotina['nome'] ?? '');
+                      } else if (value == 'excluir') {
+                        _confirmarExcluir(id);
+                      }
+                    },
+                    itemBuilder: (_) => [
+                      const PopupMenuItem(
+                        value: 'editar',
+                        child: Text(
+                          'Editar',
+                          style: TextStyle(color: AppColors.labelPrimary),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'renomear',
+                        child: Text(
+                          'Renomear',
+                          style: TextStyle(color: AppColors.labelPrimary),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'excluir',
+                        child: Text(
+                          'Excluir',
+                          style: TextStyle(color: Colors.redAccent),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

@@ -97,6 +97,10 @@ class RotinaService {
     await _db.collection('rotinas').doc(rotinaId).update(updateData);
   }
 
+  Future<void> renomearRotina(String rotinaId, String novoNome) async {
+    await _db.collection('rotinas').doc(rotinaId).update({'nome': novoNome});
+  }
+
   Future<void> excluirRotina(String rotinaId) async {
     await _db.collection('rotinas').doc(rotinaId).delete();
   }
