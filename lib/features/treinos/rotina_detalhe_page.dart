@@ -497,7 +497,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         appBar: AppBar(
           backgroundColor: AppColors.background,
           elevation: 0,
-          leadingWidth: 150,
+          leadingWidth: 100,
           leading: AppNavBackButton(
             onPressed: () => Navigator.of(context).maybePop(),
           ),
@@ -808,11 +808,30 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
   late DateTime dataTemp;
   final _formKey = GlobalKey<FormState>();
 
+  final List<String> _objetivos = [
+    'Hipertrofia',
+    'Emagrecimento',
+    'Condicionamento Físico',
+    'Ganho de Força',
+    'Resistência Muscular',
+    'Definição Muscular',
+    'Saúde e Bem-estar',
+    'Performance Atleta',
+    'Reabilitação',
+  ];
+
   @override
   void initState() {
     super.initState();
     localNomeCtrl = TextEditingController(text: widget.nomeInicial);
     localObjCtrl = TextEditingController(text: widget.objetivoInicial);
+
+    // Se o objetivo inicial não estiver na lista e não for vazio, adicionamos temporariamente
+    if (widget.objetivoInicial.isNotEmpty &&
+        !_objetivos.contains(widget.objetivoInicial)) {
+      _objetivos.insert(0, widget.objetivoInicial);
+    }
+
     nomeFocus = FocusNode();
     objFocus = FocusNode();
 
@@ -844,7 +863,7 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
+          icon: const Icon(Icons.close, color: AppColors.primary),
           onPressed: () async {
             if (localNomeCtrl.text.trim().isNotEmpty &&
                 localObjCtrl.text.trim().isNotEmpty) {
@@ -916,13 +935,35 @@ class _PlanilhaSettingsPageState extends State<_PlanilhaSettingsPage> {
               const SizedBox(height: 20),
               RotinaModernInput(
                 label: 'Objetivo Principal',
-                child: TextFormField(
-                  controller: localObjCtrl,
-                  focusNode: objFocus,
-                  maxLength: 50,
+                child: DropdownButtonFormField<String>(
+                  value: _objetivos.contains(localObjCtrl.text)
+                      ? localObjCtrl.text
+                      : null,
+                  dropdownColor: AppColors.surfaceDark,
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down,
+                    color: AppColors.labelSecondary,
+                  ),
+                  style: const TextStyle(
+                    color: AppColors.labelPrimary,
+                    fontSize: 15,
+                  ),
                   decoration: rotinaInputDecoration(
-                    hintText: 'Ex: Hipertrofia Máxima',
-                  ).copyWith(counterText: objFocus.hasFocus ? null : ""),
+                    hintText: 'Selecione o objetivo',
+                  ),
+                  items: _objetivos.map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        localObjCtrl.text = newValue;
+                      });
+                    }
+                  },
                   validator: (value) => (value == null || value.trim().isEmpty)
                       ? 'Campo obrigatório'
                       : null,

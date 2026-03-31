@@ -1,3 +1,5 @@
+import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
+
 import 'package:flutter/cupertino.dart';
 import '../theme/app_theme.dart';
 
@@ -7,11 +9,7 @@ class AppNavBackButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
 
-  const AppNavBackButton({
-    super.key,
-    this.label = 'Voltar',
-    this.onPressed,
-  });
+  const AppNavBackButton({super.key, this.label = 'Voltar', this.onPressed});
 
   @override
   Widget build(BuildContext context) {
