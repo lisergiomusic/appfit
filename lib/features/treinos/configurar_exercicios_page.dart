@@ -265,7 +265,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(
                       AppTheme.paddingScreen,
-                      SpacingTokens.pageTopPadding,
+                      4,
                       AppTheme.paddingScreen,
                       0,
                     ),
@@ -711,11 +711,7 @@ class _MetricCard extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppColors.labelSecondary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTheme.formLabel,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -729,16 +725,8 @@ class _MetricCard extends StatelessWidget {
               ],
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              height: 1.1,
-            ),
-          ),
+          const SizedBox(height: SpacingTokens.labelToField),
+          Text(value, style: AppTheme.title1),
         ],
       ),
     );
