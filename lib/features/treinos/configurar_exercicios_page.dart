@@ -243,17 +243,26 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                                 ),
                         ),
                         const SizedBox(width: 8),
-                        IconButton(
-                          onPressed: () {
-                            HapticFeedback.lightImpact();
-                            controller.toggleEditTitle();
-                          },
-                          style: IconButton.styleFrom(
-                            backgroundColor: AppColors.buttonSurface,
-                          ),
-                          icon: const Icon(
-                            CupertinoIcons.pencil,
-                            color: AppColors.labelPrimary,
+                        Container(
+                          margin: controller.isEditingTitle
+                              ? EdgeInsets.only(top: 10)
+                              : EdgeInsets.zero,
+                          child: IconButton(
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              controller.toggleEditTitle();
+                            },
+                            style: IconButton.styleFrom(
+                              backgroundColor: AppColors.buttonSurface,
+                            ),
+                            icon: Icon(
+                              controller.isEditingTitle
+                                  ? CupertinoIcons.check_mark
+                                  : CupertinoIcons.pencil,
+                              color: controller.isEditingTitle
+                                  ? AppColors.primary
+                                  : AppColors.labelPrimary,
+                            ),
                           ),
                         ),
                       ],
@@ -351,31 +360,8 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                       },
                       itemBuilder: (context, index) {
                         final wrapper = controller.exercicios[index];
-                        final isNew = controller.newExercicios.contains(
-                          wrapper.id,
-                        );
 
-                        Widget card;
-                        if (isNew) {
-                          card = _HintingExercicioAnimator(
-                            onEnd: () {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (mounted) {
-                                  controller.markHintAsShown(wrapper.id);
-                                }
-                              });
-                            },
-                            builder: (context, color) {
-                              return _buildCardContent(
-                                context,
-                                index,
-                                flashColor: color,
-                              );
-                            },
-                          );
-                        } else {
-                          card = _buildCardContent(context, index);
-                        }
+                        final card = _buildCardContent(context, index);
 
                         return Dismissible(
                           key: Key(wrapper.id),
@@ -439,6 +425,25 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                           child: card,
                         );
                       },
+                    ),
+                  ),
+                ),
+              if (controller.exercicios.isNotEmpty)
+                SliverOpacity(
+                  opacity: controller.isEditingTitle ? 0.3 : 1.0,
+                  sliver: SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppTheme.paddingScreen,
+                        24,
+                        AppTheme.paddingScreen,
+                        24,
+                      ),
+                      child: AppPrimaryButton(
+                        label: 'Adicionar Exercícios',
+                        icon: CupertinoIcons.add_circled,
+                        onPressed: () => _openLibrary(context),
+                      ),
                     ),
                   ),
                 ),
@@ -516,11 +521,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
     );
   }
 
-  Widget _buildCardContent(
-    BuildContext context,
-    int exIndex, {
-    Color? flashColor,
-  }) {
+  Widget _buildCardContent(BuildContext context, int exIndex) {
     final controller = context.read<ConfigurarTreinoController>();
     final wrapper = controller.exercicios[exIndex];
     final ex = wrapper.item;
@@ -707,162 +708,5 @@ class _MetricCard extends StatelessWidget {
     }
 
     return card;
-  }
-}
-
-class _HintingExercicioAnimator extends StatefulWidget {
-  final Widget Function(BuildContext context, Color? color) builder;
-  final VoidCallback onEnd;
-
-  const _HintingExercicioAnimator({required this.builder, required this.onEnd});
-
-  @override
-  _HintingExercicioAnimatorState createState() =>
-      _HintingExercicioAnimatorState();
-}
-
-class _HintingExercicioAnimatorState extends State<_HintingExercicioAnimator>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Color?> _colorAnimation;
-  late Animation<double> _swipeHintAnimation;
-  late Animation<double> _swipeHintBgAnimation;
-
-  static final _swipeHintTween = TweenSequence<double>([
-    TweenSequenceItem(
-      tween: Tween(
-        begin: 0.0,
-        end: -72.0,
-      ).chain(CurveTween(curve: Curves.easeOutCubic)),
-      weight: 35,
-    ),
-    TweenSequenceItem(tween: ConstantTween<double>(-72.0), weight: 15),
-    TweenSequenceItem(
-      tween: Tween(
-        begin: -72.0,
-        end: 0.0,
-      ).chain(CurveTween(curve: Curves.easeInOut)),
-      weight: 50,
-    ),
-  ]);
-
-  static final _swipeHintBgTween = TweenSequence<double>([
-    TweenSequenceItem(
-      tween: Tween(
-        begin: 0.0,
-        end: 72.0,
-      ).chain(CurveTween(curve: Curves.easeOutCubic)),
-      weight: 35,
-    ),
-    TweenSequenceItem(tween: ConstantTween<double>(72.0), weight: 15),
-    TweenSequenceItem(
-      tween: Tween(
-        begin: 72.0,
-        end: 0.0,
-      ).chain(CurveTween(curve: Curves.easeInOut)),
-      weight: 50,
-    ),
-  ]);
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 2600),
-      vsync: this,
-    );
-
-    final highlightColor = AppColors.primary.withValues(alpha: 0.12);
-    // Sequência 1: Animação de flash (0ms a 1200ms)
-    _colorAnimation =
-        TweenSequence<Color?>([
-          TweenSequenceItem(
-            tween: ColorTween(
-              begin: AppColors.surfaceDark,
-              end: highlightColor,
-            ),
-            weight: 50.0,
-          ),
-          TweenSequenceItem(
-            tween: ColorTween(
-              begin: highlightColor,
-              end: AppColors.surfaceDark,
-            ),
-            weight: 50.0,
-          ),
-        ]).animate(
-          CurvedAnimation(
-            parent: _controller,
-            curve: const Interval(0.0, 1200 / 2600, curve: Curves.easeOut),
-          ),
-        );
-    final swipeInterval = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.5, 1.0, curve: Curves.linear),
-    );
-    _swipeHintAnimation = _swipeHintTween.animate(swipeInterval);
-    _swipeHintBgAnimation = _swipeHintBgTween.animate(swipeInterval);
-
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (mounted) {
-        _controller.forward().whenComplete(() {
-          if (mounted) {
-            widget.onEnd();
-          }
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) {
-        final dx = _swipeHintAnimation.value;
-        final bgWidth = _swipeHintBgAnimation.value;
-
-        return Stack(
-          children: [
-            if (bgWidth > 0)
-              Positioned.fill(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: AppTheme.space12),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-                      child: Container(
-                        width: bgWidth,
-                        color: Colors.redAccent,
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 16),
-                        child: Opacity(
-                          opacity: (bgWidth / 72.0).clamp(0.0, 1.0),
-                          child: const Icon(
-                            Icons.delete_outline,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            Transform.translate(
-              offset: Offset(dx, 0),
-              child: widget.builder(context, _colorAnimation.value),
-            ),
-          ],
-        );
-      },
-    );
   }
 }
