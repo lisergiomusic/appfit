@@ -173,7 +173,7 @@ class _TreinosPageState extends State<TreinosPage> {
               opacity: isCollapsed ? 0.0 : 1.0,
               child: Container(
                 color: AppColors.background,
-                padding: const EdgeInsets.only(left: 20, bottom: 10),
+                padding: const EdgeInsets.fromLTRB(20, SpacingTokens.pageTopPadding, 0, 10),
                 alignment: Alignment.bottomLeft,
                 child: Text(titleStr, style: AppTheme.bigTitle),
               ),
@@ -186,7 +186,7 @@ class _TreinosPageState extends State<TreinosPage> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, SpacingTokens.sectionGap),
       child: Container(
         height: 36,
         decoration: BoxDecoration(
