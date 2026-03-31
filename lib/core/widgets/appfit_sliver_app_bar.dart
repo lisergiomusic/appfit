@@ -1,6 +1,5 @@
 import 'package:appfit/core/widgets/app_nav_back_button.dart';
 import 'package:appfit/core/widgets/sliver_safe_title.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 

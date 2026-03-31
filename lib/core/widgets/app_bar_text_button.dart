@@ -19,7 +19,7 @@ class AppBarTextButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoButton(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       minimumSize: const Size(0, 0),
       onPressed: isLoading ? null : onPressed,
       child: isLoading

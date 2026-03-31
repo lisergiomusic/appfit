@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:appfit/core/widgets/app_bar_text_button.dart';
 import 'package:appfit/core/widgets/app_section_link_button.dart';
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -156,7 +157,12 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                 leading: controller.isEditingTitle
                     ? const SizedBox.shrink()
                     : null,
-                actions: const [],
+                actions: [
+                  AppBarTextButton(
+                    label: 'Salvar',
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
+                ],
                 background: Align(
                   alignment: Alignment.bottomLeft,
                   child: Padding(
