@@ -1,3 +1,4 @@
+import 'package:appfit/core/widgets/app_section_link_button.dart';
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter/cupertino.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
@@ -47,17 +48,6 @@ class SessaoNoteWidget extends StatelessWidget {
           children: [
             Text('Nota de sessão', style: AppTheme.sectionHeader),
             const Spacer(),
-            GestureDetector(
-              onTap: () => _showEditNoteSheet(context, controller),
-              child: Text(
-                'Editar',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -65,7 +55,7 @@ class SessaoNoteWidget extends StatelessWidget {
           onTap: () => _showEditNoteSheet(context, controller),
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: AppColors.surfaceDark,
               borderRadius: BorderRadius.circular(AppTheme.radiusLG),
@@ -78,16 +68,36 @@ class SessaoNoteWidget extends StatelessWidget {
                 ),
               ],
             ),
-            child: Text(
-              noteText,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                height: 1.5,
-                fontWeight: FontWeight.w400,
-              ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 3),
+                  child: Icon(
+                    CupertinoIcons.doc_text,
+                    size: 16,
+                    color: AppColors.labelTertiary,
+                  ),
+                ),
+                const SizedBox(width: SpacingTokens.sm),
+                Expanded(
+                  child: Text(
+                    noteText,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTheme.bodyText.copyWith(
+                      color: AppColors.labelSecondary,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+                Icon(
+                  CupertinoIcons.pencil,
+                  size: 16,
+                  color: AppColors.labelTertiary,
+                ),
+              ],
             ),
           ),
         ),
