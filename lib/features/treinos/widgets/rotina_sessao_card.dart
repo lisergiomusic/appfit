@@ -85,7 +85,7 @@ class RotinaSessaoCard extends StatelessWidget {
                       itemBuilder: (context) => const [
                         PopupMenuItem(
                           value: RotinaSessaoMenuAction.edit,
-                          child: Text('Editar'),
+                          child: Text('Renomear'),
                         ),
                         PopupMenuItem(
                           value: RotinaSessaoMenuAction.delete,

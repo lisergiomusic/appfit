@@ -272,6 +272,93 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     );
   }
 
+  Future<void> _renomearSessao(SessaoTreinoModel sessao) async {
+    final currentIndex = _controller.indexOfSessao(sessao);
+    if (currentIndex < 0) return;
+
+    var nomeDigitado = sessao.nome;
+    var mostrarErroNome = false;
+
+    final novoNome = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          final nomeValido = nomeDigitado.trim().isNotEmpty;
+
+          return AlertDialog(
+            backgroundColor: AppColors.surfaceDark,
+            title: const Text(
+              'Renomear sessão',
+              style: TextStyle(color: Colors.white),
+            ),
+            content: TextFormField(
+              initialValue: sessao.nome,
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Nome da sessão',
+                labelStyle: const TextStyle(color: Colors.white70),
+                errorText: mostrarErroNome && !nomeValido
+                    ? 'Informe um nome para a sessão'
+                    : null,
+              ),
+              onChanged: (value) {
+                nomeDigitado = value;
+                if (mostrarErroNome) {
+                  setDialogState(() => mostrarErroNome = false);
+                }
+              },
+              onFieldSubmitted: (value) {
+                if (value.trim().isEmpty) {
+                  setDialogState(() => mostrarErroNome = true);
+                  return;
+                }
+
+                Navigator.of(dialogContext).pop(value);
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text(
+                  'CANCELAR',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  if (!nomeValido) {
+                    setDialogState(() => mostrarErroNome = true);
+                    return;
+                  }
+
+                  Navigator.of(dialogContext).pop(nomeDigitado);
+                },
+                child: const Text(
+                  'SALVAR',
+                  style: TextStyle(color: AppColors.primary),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    if (!mounted || novoNome == null) return;
+
+    final nomeAjustado = novoNome.trim();
+    if (nomeAjustado.isEmpty || nomeAjustado == sessao.nome) return;
+
+    _controller.atualizarSessao(
+      currentIndex,
+      nomeAjustado,
+      sessao.diaSemana,
+      sessao.orientacoes ?? '',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -413,11 +500,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                 }
                               },
                               onEdit: () {
-                                final currentIndex = _controller.indexOfSessao(
-                                  sessao,
-                                );
-                                if (currentIndex < 0) return;
-                                _exibirModalSessao(index: currentIndex);
+                                _renomearSessao(sessao);
                               },
                               onDelete: () => _removerSessaoComUndo(sessao),
                             );
