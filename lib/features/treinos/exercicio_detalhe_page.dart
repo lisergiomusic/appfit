@@ -120,15 +120,16 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   void _onDeleteSerie(SerieItem serie) {
     final sectionIndex = controller.sectionIndexOf(serie);
     controller.deleteSerie(serie);
-    setState(() {
-      _clearEditingState();
-    });
 
     _animatedListKeys[serie.tipo]?.currentState?.removeItem(
       sectionIndex,
       (context, animation) =>
           SizeTransition(sizeFactor: animation, child: const SizedBox.shrink()),
     );
+
+    setState(() {
+      _clearEditingState();
+    });
 
     controller.cancelSnackBarTimer();
     _scaffoldMessengerKey.currentState?.removeCurrentSnackBar();
@@ -185,6 +186,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   }
 
   Future<void> _adicionarSerie() async {
+    FocusScope.of(context).unfocus();
     final tipoEscolhido = await _showSerieTypeSelector();
 
     if (tipoEscolhido != null) {
