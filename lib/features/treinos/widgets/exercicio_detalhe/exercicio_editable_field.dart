@@ -34,6 +34,12 @@ class _ExercicioEditableFieldState extends State<ExercicioEditableField> {
     super.initState();
     _focusNode = FocusNode();
     _focusNode.addListener(() {
+      if (_focusNode.hasFocus) {
+        final text = widget.controller.text;
+        widget.controller.selection = TextSelection.collapsed(
+          offset: text.length,
+        );
+      }
       setState(() {});
     });
   }

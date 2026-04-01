@@ -775,6 +775,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                               showGlow: false,
                             ),
                           ),
+                          const SizedBox(height: SpacingTokens.screenBottomPadding),
                         ],
                       ],
                     ),
@@ -803,31 +804,53 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   }
 
   Widget _buildEmptyState() {
-    return Column(
-      children: [
-        const SizedBox(height: 48),
-        const Icon(
-          Icons.fitness_center_rounded,
-          size: 50,
-          color: AppColors.primary,
-        ),
-        const SizedBox(height: 24),
-        const Text(
-          'Prescreva o exercício',
-          style: TextStyle(
-            color: AppColors.labelPrimary,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppTheme.space48),
+      child: Column(
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withAlpha(25),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.fitness_center_rounded,
+              size: 36,
+              color: AppColors.primary,
+            ),
           ),
-        ),
-        const SizedBox(height: 32),
-        OrangeGlassActionButton(
-          label: 'Adicionar Série',
-          onTap: _adicionarSerie,
-          bottomMargin: 0,
-          showGlow: false,
-        ),
-      ],
+          const SizedBox(height: AppTheme.space24),
+          const Text(
+            'Prescreva o exercício',
+            style: TextStyle(
+              color: AppColors.labelPrimary,
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.3,
+            ),
+          ),
+          const SizedBox(height: AppTheme.space8),
+          const Text(
+            'Adicione séries de aquecimento,\naproximação ou trabalho.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.labelTertiary,
+              fontSize: 15,
+              height: 1.4,
+              letterSpacing: -0.2,
+            ),
+          ),
+          const SizedBox(height: AppTheme.space32),
+          OrangeGlassActionButton(
+            label: 'Adicionar Série',
+            onTap: _adicionarSerie,
+            bottomMargin: 0,
+            showGlow: false,
+          ),
+        ],
+      ),
     );
   }
 
