@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_primary_button.dart';
+import '../../core/widgets/app_swipe_to_delete.dart';
 import '../../core/widgets/sliver_safe_title.dart';
 import 'configurar_treino_controller.dart';
 import 'exercicio_detalhe_page.dart';
@@ -412,43 +413,8 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                             borderRadius: BorderRadius.circular(
                               AppTheme.radiusLG,
                             ),
-                            child: Dismissible(
-                              key: Key(wrapper.id),
-                              direction: DismissDirection.endToStart,
-                              background: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.transparent,
-                                      AppColors.systemRed.withAlpha(220),
-                                    ],
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                  ),
-                                ),
-                                alignment: Alignment.centerRight,
-                                padding: const EdgeInsets.only(right: 18),
-                                child: const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.delete_rounded,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                                    SizedBox(height: 3),
-                                    Text(
-                                      'Remover',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: 0.3,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                            child: AppSwipeToDelete(
+                              dismissibleKey: Key(wrapper.id),
                               onDismissed: (direction) {
                                 final removedItemName =
                                     controller.exercicios[index].item.nome;

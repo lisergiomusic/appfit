@@ -11,6 +11,7 @@ import 'widgets/planilha_settings_modal.dart';
 import 'widgets/sessao_treino_modal.dart';
 import '../../core/widgets/app_primary_button.dart';
 import '../../core/widgets/app_bar_text_button.dart';
+import '../../core/widgets/app_swipe_to_delete.dart';
 
 class RotinaDetalhePage extends StatefulWidget {
   final Map<String, dynamic>? rotinaData;
@@ -34,6 +35,7 @@ class RotinaDetalhePage extends StatefulWidget {
 
 class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   late RotinaDetalheController _controller;
+  final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   bool _canPopNow = false;
 
   @override
@@ -242,6 +244,31 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     }
   }
 
+  int _indexOfSessao(SessaoTreinoModel sessao) {
+    return _controller.treinos.indexWhere((item) => identical(item, sessao));
+  }
+
+  void _removerSessaoComUndo(SessaoTreinoModel sessao) {
+    final removedIndex = _indexOfSessao(sessao);
+    if (removedIndex < 0) return;
+
+    final removed = _controller.removerSessaoComRetorno(removedIndex);
+    if (removed == null) return;
+
+    _scaffoldMessengerKey.currentState?.removeCurrentSnackBar();
+    _scaffoldMessengerKey.currentState?.showSnackBar(
+      SnackBar(
+        content: Text('${removed.nome} removido'),
+        action: SnackBarAction(
+          label: 'DESFAZER',
+          textColor: AppColors.primary,
+          onPressed: () => _controller.inserirSessao(removedIndex, removed),
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -254,97 +281,100 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         return PopScope(
           canPop: _canPopNow,
           onPopInvokedWithResult: (didPop, result) => _handlePop(didPop),
-          child: Scaffold(
-            backgroundColor: AppColors.background,
-            body: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: BouncingScrollPhysics(),
-              ),
-              slivers: [
-                AppFitSliverAppBar(
-                  title: routineName,
-                  expandedHeight: 140,
-                  onBackPressed: () => Navigator.of(context).maybePop(),
-                  actions: [
-                    AppBarTextButton(
-                      label: 'Salvar',
-                      onPressed: () => Navigator.of(context).maybePop(),
-                    ),
-                  ],
-                  background: Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        left: SpacingTokens.screenHorizontalPadding,
-                        right: SpacingTokens.screenHorizontalPadding,
-                        bottom: 0,
-                      ),
-                      child: _buildHeader(),
-                    ),
-                  ),
+          child: ScaffoldMessenger(
+            key: _scaffoldMessengerKey,
+            child: Scaffold(
+              backgroundColor: AppColors.background,
+              body: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
                 ),
-                if (_controller.isDeleting || _controller.isSaving)
-                  const SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
+                slivers: [
+                  AppFitSliverAppBar(
+                    title: routineName,
+                    expandedHeight: 140,
+                    onBackPressed: () => Navigator.of(context).maybePop(),
+                    actions: [
+                      AppBarTextButton(
+                        label: 'Salvar',
+                        onPressed: () => Navigator.of(context).maybePop(),
+                      ),
+                    ],
+                    background: Align(
+                      alignment: Alignment.bottomLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: SpacingTokens.screenHorizontalPadding,
+                          right: SpacingTokens.screenHorizontalPadding,
+                          bottom: 0,
+                        ),
+                        child: _buildHeader(),
                       ),
                     ),
-                  )
-                else ...[
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppTheme.paddingScreen,
-                        SpacingTokens.sectionGap,
-                        AppTheme.paddingScreen,
-                        0,
-                      ),
-                      child: _buildSectionHeader(),
-                    ),
                   ),
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: SpacingTokens.labelToField),
-                  ),
-                  if (_controller.treinos.isEmpty)
-                    SliverFillRemaining(
+                  if (_controller.isDeleting || _controller.isSaving)
+                    const SliverFillRemaining(
                       hasScrollBody: false,
-                      child: _buildEmptyState(),
-                    )
-                  else ...[
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.paddingScreen,
-                      ),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) => _buildSessaoCard(
-                            _controller.treinos[index],
-                            index,
-                          ),
-                          childCount: _controller.treinos.length,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
                         ),
                       ),
-                    ),
+                    )
+                  else ...[
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(
                           AppTheme.paddingScreen,
                           SpacingTokens.sectionGap,
                           AppTheme.paddingScreen,
-                          SpacingTokens.screenBottomPadding,
+                          0,
                         ),
-                        child: AppPrimaryButton(
-                          label: 'Nova sessão',
-                          icon: CupertinoIcons.add_circled,
-                          onPressed: () => _exibirModalSessao(),
-                        ),
+                        child: _buildSectionHeader(),
                       ),
                     ),
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: SpacingTokens.labelToField),
+                    ),
+                    if (_controller.treinos.isEmpty)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: _buildEmptyState(),
+                      )
+                    else ...[
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.paddingScreen,
+                        ),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) => _buildSessaoCard(
+                              _controller.treinos[index],
+                              index,
+                            ),
+                            childCount: _controller.treinos.length,
+                          ),
+                        ),
+                      ),
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppTheme.paddingScreen,
+                            SpacingTokens.sectionGap,
+                            AppTheme.paddingScreen,
+                            SpacingTokens.screenBottomPadding,
+                          ),
+                          child: AppPrimaryButton(
+                            label: 'Nova sessão',
+                            icon: CupertinoIcons.add_circled,
+                            onPressed: () => _exibirModalSessao(),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ],
-              ],
+              ),
             ),
           ),
         );
@@ -477,72 +507,94 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
   Widget _buildSessaoCard(SessaoTreinoModel sessao, int index) {
-    return Container(
-      key: ValueKey(sessao),
-      margin: const EdgeInsets.only(bottom: SpacingTokens.sm),
-      decoration: AppTheme.cardDecoration,
-      child: InkWell(
+    final sessaoIndex = _indexOfSessao(sessao);
+
+    return Padding(
+      key: ValueKey('sessao-${identityHashCode(sessao)}'),
+      padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
+      child: ClipRRect(
         borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-        onTap: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ConfigurarExerciciosPage(
-                nomeTreino: sessao.nome,
-                exercicios: sessao.exercicios,
-                sessaoNote: sessao.orientacoes ?? '',
-              ),
-            ),
-          );
-          if (mounted && result is Map<String, dynamic>) {
-            _controller.atualizarSessao(
-              index,
-              result['nome'],
-              sessao.diaSemana,
-              result['sessaoNote'],
-            );
-          }
-        },
-        child: Padding(
-          padding: CardTokens.padding,
-          child: Row(
-            children: [
-              _buildSessaoIndex(index),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      sessao.nome,
-                      style: CardTokens.cardTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+        child: AppSwipeToDelete(
+          dismissibleKey: ValueKey(
+            'dismiss-sessao-${identityHashCode(sessao)}',
+          ),
+          onDismissed: (_) => _removerSessaoComUndo(sessao),
+          child: Container(
+            decoration: AppTheme.cardDecoration,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              onTap: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ConfigurarExerciciosPage(
+                      nomeTreino: sessao.nome,
+                      exercicios: sessao.exercicios,
+                      sessaoNote: sessao.orientacoes ?? '',
                     ),
-                    const SizedBox(height: SpacingTokens.titleToSubtitle),
-                    Text(
-                      '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}',
-                      style: CardTokens.cardSubtitle,
+                  ),
+                );
+                if (mounted && result is Map<String, dynamic>) {
+                  final currentIndex = _indexOfSessao(sessao);
+                  if (currentIndex < 0) return;
+                  _controller.atualizarSessao(
+                    currentIndex,
+                    result['nome'],
+                    sessao.diaSemana,
+                    result['sessaoNote'],
+                  );
+                }
+              },
+              child: Padding(
+                padding: CardTokens.padding,
+                child: Row(
+                  children: [
+                    _buildSessaoIndex(index),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            sessao.nome,
+                            style: CardTokens.cardTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: SpacingTokens.titleToSubtitle),
+                          Text(
+                            '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}',
+                            style: CardTokens.cardSubtitle,
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuButton<String>(
+                      icon: const Icon(
+                        CupertinoIcons.ellipsis_vertical,
+                        size: 20,
+                        color: AppColors.labelTertiary,
+                      ),
+                      onSelected: (v) {
+                        if (sessaoIndex < 0) return;
+                        if (v == 'edit') _exibirModalSessao(index: sessaoIndex);
+                        if (v == 'delete') _removerSessaoComUndo(sessao);
+                      },
+                      itemBuilder: (c) => [
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Text('Editar'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Text('Excluir'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              PopupMenuButton<String>(
-                icon: const Icon(
-                  CupertinoIcons.ellipsis_vertical,
-                  size: 20,
-                  color: AppColors.labelTertiary,
-                ),
-                onSelected: (v) {
-                  if (v == 'edit') _exibirModalSessao(index: index);
-                  if (v == 'delete') _controller.removerSessao(index);
-                },
-                itemBuilder: (c) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Editar')),
-                  const PopupMenuItem(value: 'delete', child: Text('Excluir')),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),

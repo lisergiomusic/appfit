@@ -29,7 +29,7 @@ class RotinaDetalheController extends ChangeNotifier {
     nomeCtrl = TextEditingController(text: initialData?['nome'] ?? '');
     objCtrl = TextEditingController(text: initialData?['objetivo'] ?? '');
     _preencherDados();
-    
+
     nomeCtrl.addListener(notifyListeners);
     objCtrl.addListener(notifyListeners);
   }
@@ -42,7 +42,8 @@ class RotinaDetalheController extends ChangeNotifier {
         vencimentoSessoes = initialData!['vencimentoSessoes'] ?? 20;
       } else {
         if (initialData!['dataVencimento'] != null) {
-          vencimentoData = (initialData!['dataVencimento'] as Timestamp).toDate();
+          vencimentoData = (initialData!['dataVencimento'] as Timestamp)
+              .toDate();
         }
       }
 
@@ -84,8 +85,10 @@ class RotinaDetalheController extends ChangeNotifier {
       final sessaoRaw = sessoesRaw[i];
 
       if (sessao.nome != sessaoRaw['nome']) return true;
-      if ((sessao.diaSemana ?? '') != (sessaoRaw['diaSemana'] ?? '')) return true;
-      if ((sessao.orientacoes ?? '') != (sessaoRaw['orientacoes'] ?? '')) return true;
+      if ((sessao.diaSemana ?? '') != (sessaoRaw['diaSemana'] ?? ''))
+        return true;
+      if ((sessao.orientacoes ?? '') != (sessaoRaw['orientacoes'] ?? ''))
+        return true;
 
       final List<dynamic> exerciciosRaw = sessaoRaw['exercicios'] ?? [];
       if (sessao.exercicios.length != exerciciosRaw.length) return true;
@@ -131,7 +134,9 @@ class RotinaDetalheController extends ChangeNotifier {
   }
 
   void adicionarSessao(String nome, String? dia, String notas) {
-    treinos.add(SessaoTreinoModel(nome: nome, diaSemana: dia, orientacoes: notas));
+    treinos.add(
+      SessaoTreinoModel(nome: nome, diaSemana: dia, orientacoes: notas),
+    );
     notifyListeners();
   }
 
@@ -144,6 +149,19 @@ class RotinaDetalheController extends ChangeNotifier {
 
   void removerSessao(int index) {
     treinos.removeAt(index);
+    notifyListeners();
+  }
+
+  SessaoTreinoModel? removerSessaoComRetorno(int index) {
+    if (index < 0 || index >= treinos.length) return null;
+    final removida = treinos.removeAt(index);
+    notifyListeners();
+    return removida;
+  }
+
+  void inserirSessao(int index, SessaoTreinoModel sessao) {
+    final safeIndex = index.clamp(0, treinos.length);
+    treinos.insert(safeIndex, sessao);
     notifyListeners();
   }
 
@@ -171,7 +189,9 @@ class RotinaDetalheController extends ChangeNotifier {
       return true;
     }
 
-    if (nomeParaSalvar.isEmpty || objetivoParaSalvar.isEmpty || treinos.isEmpty) {
+    if (nomeParaSalvar.isEmpty ||
+        objetivoParaSalvar.isEmpty ||
+        treinos.isEmpty) {
       return false;
     }
 
@@ -179,7 +199,9 @@ class RotinaDetalheController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      List<Map<String, dynamic>> sessoesJson = treinos.map((t) => t.toFirestore()).toList();
+      List<Map<String, dynamic>> sessoesJson = treinos
+          .map((t) => t.toFirestore())
+          .toList();
 
       if (rotinaId != null) {
         await _rotinaService.atualizarRotina(
