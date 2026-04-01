@@ -372,66 +372,90 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
 
                         final card = _buildCardContent(context, index);
 
-                        return Dismissible(
-                          key: Key(wrapper.id),
-                          direction: DismissDirection.endToStart,
-                          background: Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: AppTheme.space12,
+                        return Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: SpacingTokens.listItemGap,
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusLG,
                             ),
-                            child: Container(
-                              padding: const EdgeInsets.only(right: 16),
-                              alignment: Alignment.centerRight,
-                              decoration: BoxDecoration(
-                                color: Colors.redAccent,
-                                borderRadius: BorderRadius.circular(
-                                  AppTheme.radiusLarge,
+                            child: Dismissible(
+                              key: Key(wrapper.id),
+                              direction: DismissDirection.endToStart,
+                              background: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.transparent,
+                                      AppColors.systemRed.withAlpha(220),
+                                    ],
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                  ),
+                                ),
+                                alignment: Alignment.centerRight,
+                                padding: const EdgeInsets.only(right: 18),
+                                child: const Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.delete_rounded,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                    SizedBox(height: 3),
+                                    Text(
+                                      'Remover',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              child: const Icon(
-                                Icons.delete_outline,
-                                color: Colors.white,
-                                size: 28,
-                              ),
+                              onDismissed: (direction) {
+                                final removedItemName =
+                                    controller.exercicios[index].item.nome;
+                                controller.deleteExercicio(index);
+
+                                controller.cancelSnackBarTimer();
+                                _scaffoldMessengerKey.currentState
+                                    ?.removeCurrentSnackBar();
+
+                                final snackBar = SnackBar(
+                                  content: Text('$removedItemName removido'),
+                                  action: SnackBarAction(
+                                    label: 'DESFAZER',
+                                    textColor: AppColors.primary,
+                                    onPressed: () {
+                                      controller.cancelSnackBarTimer();
+                                      _scaffoldMessengerKey.currentState
+                                          ?.hideCurrentSnackBar();
+                                      controller.undoDelete();
+                                    },
+                                  ),
+                                  duration: const Duration(days: 365),
+                                  behavior: SnackBarBehavior.floating,
+                                );
+
+                                final snackBarController = _scaffoldMessengerKey
+                                    .currentState
+                                    ?.showSnackBar(snackBar);
+
+                                if (snackBarController != null) {
+                                  controller.startSnackBarTimer(() {
+                                    snackBarController.close();
+                                    controller.clearUndoState();
+                                  });
+                                }
+                              },
+                              child: card,
                             ),
                           ),
-                          onDismissed: (direction) {
-                            final removedItemName =
-                                controller.exercicios[index].item.nome;
-                            controller.deleteExercicio(index);
-
-                            controller.cancelSnackBarTimer();
-                            _scaffoldMessengerKey.currentState
-                                ?.removeCurrentSnackBar();
-
-                            final snackBar = SnackBar(
-                              content: Text('$removedItemName removido'),
-                              action: SnackBarAction(
-                                label: 'DESFAZER',
-                                textColor: AppColors.primary,
-                                onPressed: () {
-                                  controller.cancelSnackBarTimer();
-                                  _scaffoldMessengerKey.currentState
-                                      ?.hideCurrentSnackBar();
-                                  controller.undoDelete();
-                                },
-                              ),
-                              duration: const Duration(days: 365),
-                              behavior: SnackBarBehavior.floating,
-                            );
-
-                            final snackBarController = _scaffoldMessengerKey
-                                .currentState
-                                ?.showSnackBar(snackBar);
-
-                            if (snackBarController != null) {
-                              controller.startSnackBarTimer(() {
-                                snackBarController.close();
-                                controller.clearUndoState();
-                              });
-                            }
-                          },
-                          child: card,
                         );
                       },
                     ),
@@ -535,110 +559,105 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
     final wrapper = controller.exercicios[exIndex];
     final ex = wrapper.item;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: SpacingTokens.listItemGap),
-      child: Container(
-        decoration: AppTheme.cardDecoration,
-        child: Material(
-          type: MaterialType.transparency,
-          elevation: 0,
-          child: InkWell(
-            borderRadius: CardTokens.cardRadius,
-            splashColor: AppColors.splash.withAlpha(50),
-            highlightColor: AppColors.splash.withAlpha(30),
-            onTap: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ExercicioDetalhePage(
-                    exercicio: ex,
-                    onChanged: () => controller.onExercicioChanged(),
-                  ),
+    return Container(
+      decoration: AppTheme.cardDecoration,
+      child: Material(
+        type: MaterialType.transparency,
+        elevation: 0,
+        child: InkWell(
+          borderRadius: CardTokens.cardRadius,
+          splashColor: AppColors.splash.withAlpha(50),
+          highlightColor: AppColors.splash.withAlpha(30),
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ExercicioDetalhePage(
+                  exercicio: ex,
+                  onChanged: () => controller.onExercicioChanged(),
                 ),
-              );
-            },
-            child: Padding(
-              padding: CardTokens.padding,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Thumbnail do Exercício
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      color: Colors.black.withAlpha(40),
-                      child: (ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty)
-                          ? CachedNetworkImage(
-                              imageUrl: ex.imagemUrl!,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.primary.withAlpha(100),
-                                ),
+              ),
+            );
+          },
+          child: Padding(
+            padding: CardTokens.padding,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Thumbnail do Exercício
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    color: Colors.black.withAlpha(40),
+                    child: (ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty)
+                        ? CachedNetworkImage(
+                            imageUrl: ex.imagemUrl!,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.primary.withAlpha(100),
                               ),
-                              errorWidget: (context, url, error) => Center(
-                                child: Icon(
-                                  Icons.fitness_center,
-                                  color: AppColors.labelSecondary,
-                                  size: 24,
-                                ),
-                              ),
-                            )
-                          : Center(
+                            ),
+                            errorWidget: (context, url, error) => Center(
                               child: Icon(
                                 Icons.fitness_center,
                                 color: AppColors.labelSecondary,
                                 size: 24,
                               ),
                             ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          ex.nome,
-                          style: CardTokens.cardTitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: SpacingTokens.xs),
-                        RichText(
-                          text: TextSpan(
-                            style: CardTokens.cardSubtitle,
-                            children: [
-                              TextSpan(
-                                text:
-                                    '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
-                                style: const TextStyle(
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                              if (ex.grupoMuscular.isNotEmpty)
-                                TextSpan(
-                                  text: ' • ${ex.grupoMuscular.join(' • ')}',
-                                  style: const TextStyle(),
-                                ),
-                            ],
+                          )
+                        : Center(
+                            child: Icon(
+                              Icons.fitness_center,
+                              color: AppColors.labelSecondary,
+                              size: 24,
+                            ),
                           ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        ex.nome,
+                        style: CardTokens.cardTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: SpacingTokens.xs),
+                      RichText(
+                        text: TextSpan(
+                          style: CardTokens.cardSubtitle,
+                          children: [
+                            TextSpan(
+                              text:
+                                  '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
+                              style: const TextStyle(color: AppColors.primary),
+                            ),
+                            if (ex.grupoMuscular.isNotEmpty)
+                              TextSpan(
+                                text: ' • ${ex.grupoMuscular.join(' • ')}',
+                                style: const TextStyle(),
+                              ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    CupertinoIcons.chevron_right,
-                    color: AppColors.labelSecondary.withAlpha(100),
-                    size: 20.0,
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  CupertinoIcons.chevron_right,
+                  color: AppColors.labelSecondary.withAlpha(100),
+                  size: 20.0,
+                ),
+              ],
             ),
           ),
         ),
