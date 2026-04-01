@@ -13,6 +13,7 @@ class SpacingTokens {
   static const double labelToField = sm; // 8  — label → input
   static const double sectionGap = xxl; // 24 — entre grupos
   static const double formCounterTop = xs; // 4  — input → "0/40"
+  static const double titleToSubtitle = xs;
 
   // semânticos — listas
   static const double listItemGap = sm; // 8  — entre cards

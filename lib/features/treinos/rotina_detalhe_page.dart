@@ -130,8 +130,10 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     }
   }
 
-  void _exibirModalSessao({int? index}) {
-    Navigator.of(context).push(
+  void _exibirModalSessao({int? index}) async {
+    final countBefore = index == null ? _controller.treinos.length : -1;
+
+    await Navigator.of(context).push(
       MaterialPageRoute(
         fullscreenDialog: true,
         builder: (pageContext) => SessaoTreinoModal(
@@ -146,6 +148,30 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         ),
       ),
     );
+
+    // Navega automaticamente para a sessão recém-criada
+    if (index == null && mounted && _controller.treinos.length > countBefore) {
+      final newIndex = _controller.treinos.length - 1;
+      final sessao = _controller.treinos[newIndex];
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ConfigurarExerciciosPage(
+            nomeTreino: sessao.nome,
+            exercicios: sessao.exercicios,
+            sessaoNote: sessao.orientacoes ?? '',
+          ),
+        ),
+      );
+      if (mounted && result is Map<String, dynamic>) {
+        _controller.atualizarSessao(
+          newIndex,
+          result['nome'],
+          sessao.diaSemana,
+          result['sessaoNote'],
+        );
+      }
+    }
   }
 
   void _confirmarExclusao() {
@@ -279,14 +305,14 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     ),
                   ),
                   const SliverToBoxAdapter(
-                    child: SizedBox(height: SpacingTokens.sm),
+                    child: SizedBox(height: SpacingTokens.labelToField),
                   ),
                   if (_controller.treinos.isEmpty)
                     SliverFillRemaining(
                       hasScrollBody: false,
                       child: _buildEmptyState(),
                     )
-                  else
+                  else ...[
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppTheme.paddingScreen,
@@ -301,21 +327,22 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                         ),
                       ),
                     ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppTheme.paddingScreen,
-                        SpacingTokens.sectionGap,
-                        AppTheme.paddingScreen,
-                        SpacingTokens.screenBottomPadding,
-                      ),
-                      child: AppPrimaryButton(
-                        label: 'Nova sessão',
-                        icon: CupertinoIcons.add_circled,
-                        onPressed: () => _exibirModalSessao(),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppTheme.paddingScreen,
+                          SpacingTokens.sectionGap,
+                          AppTheme.paddingScreen,
+                          SpacingTokens.screenBottomPadding,
+                        ),
+                        child: AppPrimaryButton(
+                          label: 'Nova sessão',
+                          icon: CupertinoIcons.add_circled,
+                          onPressed: () => _exibirModalSessao(),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ],
             ),
@@ -341,28 +368,23 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: SpacingTokens.xs),
+              const SizedBox(height: SpacingTokens.titleToSubtitle),
               Text(
                 _controller.objCtrl.text.isEmpty
                     ? 'Defina o objetivo'
                     : _controller.objCtrl.text,
                 style: CardTokens.cardSubtitle,
               ),
-              const SizedBox(height: SpacingTokens.xs),
+              const SizedBox(height: SpacingTokens.titleToSubtitle),
               Row(
                 children: [
                   const Icon(
                     Icons.schedule,
-                    size: 12,
+                    size: 11,
                     color: AppColors.labelSecondary,
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    _controller.tipoVencimento == 'sessoes'
-                        ? '${_controller.vencimentoSessoes} ${_controller.vencimentoSessoes == 1 ? 'sessão' : 'sessões'}'
-                        : 'Vence em ${DateFormat('dd/MM/yyyy').format(_controller.vencimentoData)}',
-                    style: AppTheme.caption,
-                  ),
+                  Text(_buildVencimentoLabel(), style: AppTheme.caption),
                 ],
               ),
             ],
@@ -380,6 +402,18 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     );
   }
 
+  String _buildVencimentoLabel() {
+    if (_controller.tipoVencimento == 'sessoes') {
+      final sessoes = _controller.vencimentoSessoes;
+      if (sessoes <= 0) {
+        return 'Sem vencimento';
+      }
+      return '$sessoes ${sessoes == 1 ? 'sessão' : 'sessões'}';
+    }
+
+    return 'Vence em ${DateFormat('dd/MM/yyyy').format(_controller.vencimentoData)}';
+  }
+
   Widget _buildSectionHeader() {
     return Row(
       children: [
@@ -390,45 +424,54 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 48),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceLight.withAlpha(40),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                CupertinoIcons.square_list,
-                size: 48,
-                color: AppColors.primary.withAlpha(150),
-              ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppTheme.paddingScreen,
+        0,
+        AppTheme.paddingScreen,
+        SpacingTokens.screenBottomPadding,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceLight.withAlpha(40),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: 24),
-            const Text(
-              'Sua planilha está vazia',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            child: Icon(
+              CupertinoIcons.square_list,
+              size: 48,
+              color: AppColors.primary.withAlpha(150),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'Adicione as sessões de treino (ex: Treino A, Treino B)\npara começar a configurar os exercícios.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.labelSecondary,
-                fontSize: 14,
-                height: 1.5,
-              ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Sua planilha está vazia',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Adicione as sessões de treino (ex: Treino A, Treino B)\npara começar a configurar os exercícios.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.labelSecondary,
+              fontSize: 14,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 32),
+          AppPrimaryButton(
+            label: 'Criar sessão',
+            icon: CupertinoIcons.add_circled,
+            onPressed: () => _exibirModalSessao(),
+          ),
+        ],
       ),
     );
   }
@@ -476,6 +519,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: SpacingTokens.titleToSubtitle),
                     Text(
                       '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}',
                       style: CardTokens.cardSubtitle,

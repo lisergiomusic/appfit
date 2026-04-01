@@ -32,10 +32,10 @@ void main() {
     alunoService = AlunoService(firestore: fakeFirestore, auth: mockAuth);
     mockRotinaService = MockRotinaService();
 
-    when(() => mockRotinaService.excluirRotina(any()))
-        .thenAnswer((_) async {});
-    when(() => mockRotinaService.renomearRotina(any(), any()))
-        .thenAnswer((_) async {});
+    when(() => mockRotinaService.excluirRotina(any())).thenAnswer((_) async {});
+    when(
+      () => mockRotinaService.renomearRotina(any(), any()),
+    ).thenAnswer((_) async {});
   });
 
   /// Insere uma rotina no Firestore fake e retorna seu id.
@@ -68,20 +68,23 @@ void main() {
   // Helper: abre o PopupMenu do card de uma rotina pelo nome
   Future<void> abrirMenu(WidgetTester tester, String nomeRotina) async {
     await tester.pumpAndSettle();
-    
+
     // Encontra o card pelo texto do nome da rotina
-    final cardFinder = find.ancestor(
-      of: find.text(nomeRotina),
-      matching: find.byType(Container),
-    ).first;
-    
+    final cardFinder = find
+        .ancestor(of: find.text(nomeRotina), matching: find.byType(Container))
+        .first;
+
     // O ícone more_vert fica dentro de um PopupMenuButton no card
     final menuBtn = find.descendant(
       of: cardFinder,
       matching: find.byType(PopupMenuButton<String>),
     );
-    
-    expect(menuBtn, findsOneWidget, reason: 'Não encontrou o PopupMenuButton para a rotina $nomeRotina');
+
+    expect(
+      menuBtn,
+      findsOneWidget,
+      reason: 'Não encontrou o PopupMenuButton para a rotina $nomeRotina',
+    );
     await tester.tap(menuBtn);
     await tester.pumpAndSettle();
   }
@@ -128,7 +131,8 @@ void main() {
 
       final searchField = find.byType(TextField).first;
       await tester.enterText(searchField, 'Peito');
-      await tester.pumpAndSettle(); // Usar pumpAndSettle para garantir que a UI filtrou
+      await tester
+          .pumpAndSettle(); // Usar pumpAndSettle para garantir que a UI filtrou
 
       expect(find.text('Peito e Tríceps'), findsOneWidget);
       expect(find.text('Costas e Bíceps'), findsNothing);
@@ -138,10 +142,26 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Costas e Bíceps'), findsOneWidget);
     });
+
+    testWidgets('quando busca não encontra resultados exibe estado vazio', (
+      tester,
+    ) async {
+      await seedRotina('Treino Funcional');
+      await tester.pumpWidget(buildPage());
+      await tester.pumpAndSettle();
+
+      final searchField = find.byType(TextField).first;
+      await tester.enterText(searchField, 'inexistente');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Biblioteca vazia'), findsOneWidget);
+    });
   });
 
   group('TreinosPage - Ações e Navegação', () {
-    testWidgets('navega para RotinaDetalhePage ao clicar no botão adicionar', (tester) async {
+    testWidgets('navega para RotinaDetalhePage ao clicar no botão adicionar', (
+      tester,
+    ) async {
       await tester.binding.setSurfaceSize(const Size(1200, 1200));
       await tester.pumpWidget(buildPage());
       await tester.pumpAndSettle();
@@ -153,30 +173,47 @@ void main() {
       expect(find.text('Configurações'), findsOneWidget);
     });
 
-    testWidgets('navega para RotinaDetalhePage ao clicar em um card (modo biblioteca)', (tester) async {
-      await tester.binding.setSurfaceSize(const Size(1200, 1200));
-      await seedRotina('Treino Clique');
-      await tester.pumpWidget(buildPage());
-      await tester.pumpAndSettle();
+    testWidgets(
+      'navega para RotinaDetalhePage ao clicar em um card (modo biblioteca)',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(1200, 1200));
+        await seedRotina('Treino Clique');
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Treino Clique'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Treino Clique'));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(RotinaDetalhePage), findsOneWidget);
-    });
+        expect(find.byType(RotinaDetalhePage), findsOneWidget);
+      },
+    );
 
-    testWidgets('navega para RotinaDetalhePage ao clicar em um card (modo seleção para aluno)', (tester) async {
-      await tester.binding.setSurfaceSize(const Size(1200, 1200));
-      await seedRotina('Treino Seleção');
+    testWidgets(
+      'navega para RotinaDetalhePage ao clicar em um card (modo seleção para aluno)',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(1200, 1200));
+        await seedRotina('Treino Seleção');
+        await tester.pumpWidget(
+          buildPage(alunoId: 'aluno_1', alunoNome: 'João'),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Treino Seleção'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(RotinaDetalhePage), findsOneWidget);
+        final page = tester.widget<RotinaDetalhePage>(
+          find.byType(RotinaDetalhePage),
+        );
+        expect(page.alunoId, equals('aluno_1'));
+      },
+    );
+
+    testWidgets('não exibe botão adicionar no modo seleção', (tester) async {
       await tester.pumpWidget(buildPage(alunoId: 'aluno_1', alunoNome: 'João'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Treino Seleção'));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(RotinaDetalhePage), findsOneWidget);
-      final page = tester.widget<RotinaDetalhePage>(find.byType(RotinaDetalhePage));
-      expect(page.alunoId, equals('aluno_1'));
+      expect(find.byIcon(CupertinoIcons.add), findsNothing);
     });
   });
 
@@ -211,7 +248,28 @@ void main() {
       await tester.tap(find.text('Salvar'));
       await tester.pumpAndSettle();
 
-      verify(() => mockRotinaService.renomearRotina(id, 'Treino Renomeado')).called(1);
+      verify(
+        () => mockRotinaService.renomearRotina(id, 'Treino Renomeado'),
+      ).called(1);
+    });
+
+    testWidgets('Renomear com valor vazio não chama serviço', (tester) async {
+      await seedRotina('Treino Sem Rename');
+      await tester.pumpWidget(buildPage());
+      await abrirMenu(tester, 'Treino Sem Rename');
+
+      await tester.tap(find.text('Renomear'));
+      await tester.pumpAndSettle();
+
+      final dialogField = find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(TextField),
+      );
+      await tester.enterText(dialogField, '   ');
+      await tester.tap(find.text('Salvar'));
+      await tester.pumpAndSettle();
+
+      verifyNever(() => mockRotinaService.renomearRotina(any(), any()));
     });
 
     testWidgets('Excluir abre confirmação e deleta', (tester) async {
@@ -223,7 +281,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Excluir template?'), findsOneWidget);
-      
+
       final deleteBtn = find.descendant(
         of: find.byType(AlertDialog),
         matching: find.text('Excluir'),
@@ -236,7 +294,9 @@ void main() {
   });
 
   group('TreinosPage - Swipe to Delete', () {
-    testWidgets('swipe para a esquerda abre dialog de exclusão', (tester) async {
+    testWidgets('swipe para a esquerda abre dialog de exclusão', (
+      tester,
+    ) async {
       await seedRotina('Treino Swipe');
       await tester.pumpWidget(buildPage());
       await tester.pumpAndSettle();
@@ -248,10 +308,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Excluir template?'), findsOneWidget);
-      
+
       await tester.tap(find.text('Cancelar'));
       await tester.pumpAndSettle();
-      
+
       verifyNever(() => mockRotinaService.excluirRotina(any()));
     });
 
@@ -263,13 +323,82 @@ void main() {
       await tester.drag(find.byType(Dismissible), const Offset(-500, 0));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.text('Excluir'),
-      ));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text('Excluir'),
+        ),
+      );
       await tester.pumpAndSettle();
 
       verify(() => mockRotinaService.excluirRotina(id)).called(1);
+    });
+
+    testWidgets('no modo seleção swipe delete fica desabilitado', (
+      tester,
+    ) async {
+      await seedRotina('Treino Seleção Swipe');
+      await tester.pumpWidget(buildPage(alunoId: 'aluno_1', alunoNome: 'João'));
+      await tester.pumpAndSettle();
+
+      await tester.drag(find.byType(Dismissible), const Offset(-500, 0));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Excluir template?'), findsNothing);
+      verifyNever(() => mockRotinaService.excluirRotina(any()));
+    });
+  });
+
+  group('TreinosPage - Tratamento de erros', () {
+    testWidgets('mostra SnackBar quando excluir falha pelo menu', (
+      tester,
+    ) async {
+      final id = await seedRotina('Treino Erro Excluir');
+      when(
+        () => mockRotinaService.excluirRotina(any()),
+      ).thenThrow(Exception('falha excluir'));
+
+      await tester.pumpWidget(buildPage());
+      await abrirMenu(tester, 'Treino Erro Excluir');
+
+      await tester.tap(find.text('Excluir'));
+      await tester.pumpAndSettle();
+
+      final deleteBtn = find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text('Excluir'),
+      );
+      await tester.tap(deleteBtn);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Erro ao excluir:'), findsOneWidget);
+      verify(() => mockRotinaService.excluirRotina(id)).called(1);
+    });
+
+    testWidgets('mostra SnackBar quando renomear falha', (tester) async {
+      final id = await seedRotina('Treino Erro Renomear');
+      when(
+        () => mockRotinaService.renomearRotina(any(), any()),
+      ).thenThrow(Exception('falha renomear'));
+
+      await tester.pumpWidget(buildPage());
+      await abrirMenu(tester, 'Treino Erro Renomear');
+
+      await tester.tap(find.text('Renomear'));
+      await tester.pumpAndSettle();
+
+      final dialogField = find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(TextField),
+      );
+      await tester.enterText(dialogField, 'Treino Novo Nome');
+      await tester.tap(find.text('Salvar'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Erro ao renomear:'), findsOneWidget);
+      verify(
+        () => mockRotinaService.renomearRotina(id, 'Treino Novo Nome'),
+      ).called(1);
     });
   });
 }

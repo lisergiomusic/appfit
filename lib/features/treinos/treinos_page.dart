@@ -181,9 +181,9 @@ class _TreinosPageState extends State<TreinosPage> {
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(
-                        24,
+                        SpacingTokens.screenHorizontalPadding,
                         0,
-                        16,
+                        SpacingTokens.screenHorizontalPadding,
                         SpacingTokens.labelToField,
                       ),
                       child: Text(

@@ -116,16 +116,7 @@ class _PlanilhaSettingsModalState extends State<PlanilhaSettingsModal> {
             label: 'Salvar',
             onPressed: () {
               if (_formKey.currentState!.validate()) {
-                final sessoes = int.tryParse(sessoesInput) ?? 20;
-                if (tipoTemp == 'sessoes' &&
-                    (int.tryParse(sessoesInput) == null || sessoes <= 0)) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Informe uma quantidade válida de sessões.'),
-                    ),
-                  );
-                  return;
-                }
+                final sessoes = int.tryParse(sessoesInput) ?? 0;
                 widget.onSave(
                   localNomeCtrl.text.trim(),
                   localObjCtrl.text.trim(),
