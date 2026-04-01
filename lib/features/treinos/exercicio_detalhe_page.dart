@@ -425,17 +425,31 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
   }
 
+  Color _colorForTipo(TipoSerie tipo) {
+    switch (tipo) {
+      case TipoSerie.aquecimento:
+        return const Color(0xFF00B4D8);
+      case TipoSerie.feeder:
+        return const Color(0xFFFFB703);
+      case TipoSerie.trabalho:
+        return const Color(0xFFFF3366);
+    }
+  }
+
   InputDecoration _editableFieldDecoration() {
-    return const InputDecoration(
+    return InputDecoration(
       isDense: true,
-      contentPadding: EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: SpacingTokens.sm,
+        vertical: 7,
+      ),
       focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: AppColors.primary, width: 0.5),
-        borderRadius: BorderRadius.all(Radius.circular(AppTheme.radiusSM)),
+        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(AppTheme.radiusSM)),
-        borderSide: BorderSide.none,
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
+        borderSide: BorderSide(color: Colors.white.withAlpha(14), width: 1),
       ),
       filled: true,
       fillColor: AppColors.surfaceLight,
@@ -486,33 +500,44 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       card = rowContent(null);
     }
 
-    return Column(
-      children: [
-        ClipRRect(
-          borderRadius: borderRadius,
-          child: Dismissible(
-            key: ValueKey(serie.id),
-            direction: DismissDirection.endToStart,
-            onDismissed: (_) => _onDeleteSerie(serie),
-            background: Container(
-              color: Colors.redAccent,
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 20),
-              child: const Icon(Icons.delete_outline, color: Colors.white),
+    return ClipRRect(
+      borderRadius: borderRadius,
+      child: Dismissible(
+        key: ValueKey(serie.id),
+        direction: DismissDirection.endToStart,
+        onDismissed: (_) => _onDeleteSerie(serie),
+        background: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.transparent,
+                AppColors.systemRed.withAlpha(220),
+              ],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
             ),
-            child: card,
+          ),
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 18),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.delete_rounded, color: Colors.white, size: 20),
+              const SizedBox(height: 3),
+              const Text(
+                'Remover',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ],
           ),
         ),
-
-        if (!isLast)
-          Divider(
-            height: 1,
-            thickness: 0.5,
-            color: Colors.white.withAlpha(15),
-            indent: AppTheme.space16,
-            endIndent: AppTheme.space16,
-          ),
-      ],
+        child: card,
+      ),
     );
   }
 
@@ -536,149 +561,190 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
     final isEditingSection = controller.isSectionEditing(serie.tipo);
 
-    return AnimatedBuilder(
-      animation:
-          _flashControllers[serie.hashCode] ??
-          const AlwaysStoppedAnimation(0.0),
-      builder: (context, child) {
-        final editFlashCtrl = _flashControllers[serie.hashCode];
-        final editFlashColor = editFlashCtrl != null
-            ? ColorTween(
-                begin: AppColors.accentMetrics.withAlpha(50),
-                end: Colors.transparent,
-              ).animate(editFlashCtrl).value
-            : Colors.transparent;
+    final accentColor = _colorForTipo(serie.tipo);
 
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          color: flashColor ?? editFlashColor,
-          child: Row(
-            children: [
-              // Botão de Deletar (Animado)
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOutCubic,
-                width: isEditingSection ? 28 : 0,
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 200),
-                  opacity: isEditingSection ? 1.0 : 0.0,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.remove_circle_outline,
-                      color: Colors.redAccent,
-                      size: 20,
-                    ),
-                    onPressed: () => _onDeleteSerie(serie),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    splashRadius: 20,
-                  ),
-                ),
-              ),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOutCubic,
-                width: isEditingSection ? 8 : 0,
-              ),
-              Expanded(
-                flex: 3,
-                child: AnimatedPadding(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOutCubic,
-                  padding: EdgeInsets.only(left: isEditingSection ? 0 : 16),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('$visualNumber', style: AppTheme.bodyText),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 3,
-                child: _buildEditableField(
-                  repsController,
-                  (val) => _handleFieldChanged(
-                    fieldKey: 'reps_$realIndex',
-                    controller: repsController,
-                    value: val,
-                    emptyFallback: '0',
-                    onSave: (s) => serie.alvo = s,
-                    serieHash: serie.hashCode,
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppTheme.space8),
-              Expanded(
-                flex: 3,
-                child: _buildEditableField(
-                  cargaController,
-                  (val) => _handleFieldChanged(
-                    fieldKey: 'carga_$realIndex',
-                    controller: cargaController,
-                    value: val,
-                    emptyFallback: '-',
-                    onSave: (s) => serie.carga = s,
-                    serieHash: serie.hashCode,
-                  ),
-                  inputFormatters: [const _CargaKgInputFormatter()],
-                ),
-              ),
-              const SizedBox(width: AppTheme.space8),
-              Expanded(
-                flex: 3,
-                child: _buildEditableField(
-                  descansoController,
-                  (val) => _handleFieldChanged(
-                    fieldKey: 'descanso_$realIndex',
-                    controller: descansoController,
-                    value: val,
-                    emptyFallback: '0',
-                    onSave: (s) => serie.descanso = s,
-                    serieHash: serie.hashCode,
-                  ),
-                  inputFormatters: [const _DescansoSecondsInputFormatter()],
-                ),
-              ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AnimatedBuilder(
+          animation:
+              _flashControllers[serie.hashCode] ??
+              const AlwaysStoppedAnimation(0.0),
+          builder: (context, child) {
+            final editFlashCtrl = _flashControllers[serie.hashCode];
+            final editFlashColor = editFlashCtrl != null
+                ? ColorTween(
+                    begin: accentColor.withAlpha(40),
+                    end: Colors.transparent,
+                  ).animate(editFlashCtrl).value
+                : Colors.transparent;
 
-              // Botão de Duplicar (Animado)
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOutCubic,
-                width: isEditingSection ? 8 : 0,
+            return Container(
+              constraints: const BoxConstraints(minHeight: 48),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.space16,
+                vertical: 6,
               ),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOutCubic,
-                width: isEditingSection ? 26 : 0,
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 200),
-                  opacity: isEditingSection ? 1.0 : 0.0,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.copy_rounded,
-                      color: AppColors.primary,
-                      size: 18,
+              color: flashColor ?? editFlashColor,
+              child: Row(
+                children: [
+                  // Botão de Deletar (Animado)
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOutCubic,
+                    width: isEditingSection ? 28 : 0,
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: isEditingSection ? 1.0 : 0.0,
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.remove_circle_outline,
+                          color: Colors.redAccent,
+                          size: 20,
+                        ),
+                        onPressed: () => _onDeleteSerie(serie),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        splashRadius: 20,
+                      ),
                     ),
-                    onPressed: () {
-                      final sectionIndex = controller.sectionIndexOf(serie);
-                      controller.duplicateSerie(serie);
-                      setState(() {});
-                      _animatedListKeys[serie.tipo]?.currentState?.insertItem(
-                        sectionIndex + 1,
-                        duration: const Duration(milliseconds: 300),
-                      );
-                      widget.onChanged();
-                    },
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    splashRadius: 20,
                   ),
-                ),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOutCubic,
+                    width: isEditingSection ? 8 : 0,
+                  ),
+                  // Badge do número da série
+                  Expanded(
+                    flex: 2,
+                    child: AnimatedPadding(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOutCubic,
+                      padding: EdgeInsets.only(left: isEditingSection ? 0 : 4),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          width: 26,
+                          height: 26,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: accentColor.withAlpha(22),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusSM,
+                            ),
+                          ),
+                          child: Text(
+                            '$visualNumber',
+                            style: TextStyle(
+                              color: accentColor,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    flex: 3,
+                    child: _buildEditableField(
+                      repsController,
+                      (val) => _handleFieldChanged(
+                        fieldKey: 'reps_$realIndex',
+                        controller: repsController,
+                        value: val,
+                        emptyFallback: '0',
+                        onSave: (s) => serie.alvo = s,
+                        serieHash: serie.hashCode,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppTheme.space8),
+                  Expanded(
+                    flex: 3,
+                    child: _buildEditableField(
+                      cargaController,
+                      (val) => _handleFieldChanged(
+                        fieldKey: 'carga_$realIndex',
+                        controller: cargaController,
+                        value: val,
+                        emptyFallback: '-',
+                        onSave: (s) => serie.carga = s,
+                        serieHash: serie.hashCode,
+                      ),
+                      inputFormatters: [const _CargaKgInputFormatter()],
+                    ),
+                  ),
+                  const SizedBox(width: AppTheme.space8),
+                  Expanded(
+                    flex: 3,
+                    child: _buildEditableField(
+                      descansoController,
+                      (val) => _handleFieldChanged(
+                        fieldKey: 'descanso_$realIndex',
+                        controller: descansoController,
+                        value: val,
+                        emptyFallback: '0',
+                        onSave: (s) => serie.descanso = s,
+                        serieHash: serie.hashCode,
+                      ),
+                      inputFormatters: [const _DescansoSecondsInputFormatter()],
+                    ),
+                  ),
+
+                  // Botão de Duplicar (Animado)
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOutCubic,
+                    width: isEditingSection ? 8 : 0,
+                  ),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOutCubic,
+                    width: isEditingSection ? 26 : 0,
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: isEditingSection ? 1.0 : 0.0,
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.copy_rounded,
+                          color: AppColors.primary,
+                          size: 18,
+                        ),
+                        onPressed: () {
+                          final sectionIndex = controller.sectionIndexOf(serie);
+                          controller.duplicateSerie(serie);
+                          setState(() {});
+                          _animatedListKeys[serie.tipo]?.currentState
+                              ?.insertItem(
+                                sectionIndex + 1,
+                                duration: const Duration(milliseconds: 300),
+                              );
+                          widget.onChanged();
+                        },
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        splashRadius: 20,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            );
+          },
+        ),
+        if (!isLast)
+          Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: Divider(
+              height: 1,
+              thickness: 0.5,
+              color: Colors.white.withAlpha(10),
+            ),
           ),
-        );
-      },
+      ],
     );
   }
 
@@ -693,7 +759,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       inputFormatters: inputFormatters,
       textAlign: TextAlign.center,
       keyboardType: TextInputType.text,
-      style: AppTheme.bodyText,
+      style: AppTheme.bodyText.copyWith(
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+      ),
       decoration: _editableFieldDecoration(),
     );
   }
@@ -710,6 +779,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     final tipo = entries.first.value.tipo;
     final isEditingSection = controller.isSectionEditing(tipo);
 
+    final accentColor = titleColor ?? AppColors.labelTertiary;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: AppTheme.space24),
       child: Column(
@@ -719,6 +790,15 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(
               children: [
+                Container(
+                  width: 7,
+                  height: 7,
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
                 Text(title, style: AppTheme.sectionHeader),
                 const Spacer(),
                 CupertinoButton(
@@ -740,84 +820,113 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
           ),
           const SizedBox(height: SpacingTokens.labelToField),
           Container(
-            decoration: AppTheme.cardDecoration,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 12, left: 16, right: 16),
-                  child: Row(
-                    children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOutCubic,
-                        width: isEditingSection ? 28 : 0,
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: AnimatedPadding(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOutCubic,
-                            padding: EdgeInsets.only(
-                              left: isEditingSection ? 0 : 8,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDark,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              border: Border.all(
+                color: Colors.white.withAlpha(8),
+                width: 0.5,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              child: Column(
+                children: [
+                  // Faixa de acento colorida no topo
+                  Container(
+                    height: 3,
+                    color: accentColor.withAlpha(160),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 10,
+                      left: 16,
+                      right: 16,
+                      bottom: 4,
+                    ),
+                    child: Row(
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOutCubic,
+                          width: isEditingSection ? 36 : 0,
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: AnimatedPadding(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOutCubic,
+                              padding: EdgeInsets.only(
+                                left: isEditingSection ? 0 : 4,
+                              ),
+                              child: Text(
+                                'SÉRIE',
+                                style: AppTheme.microLabelTextStyle,
+                              ),
                             ),
-                            child: Text('Série', style: AppTheme.caption2),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 3,
-                        child: Center(
-                          child: Text('Reps', style: AppTheme.caption2),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          flex: 3,
+                          child: Center(
+                            child: Text(
+                              'REPS',
+                              style: AppTheme.microLabelTextStyle,
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-
-                      Expanded(
-                        flex: 3,
-                        child: Center(
-                          child: Text('Peso', style: AppTheme.caption2),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          flex: 3,
+                          child: Center(
+                            child: Text(
+                              'PESO',
+                              style: AppTheme.microLabelTextStyle,
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 3,
-                        child: Center(
-                          child: Text('Pausa', style: AppTheme.caption2),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          flex: 3,
+                          child: Center(
+                            child: Text(
+                              'PAUSA',
+                              style: AppTheme.microLabelTextStyle,
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 4),
-
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOutCubic,
-                        width: isEditingSection ? 26 : 0,
-                      ),
-                    ],
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOutCubic,
+                          width: isEditingSection ? 34 : 0,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                AnimatedList(
-                  key: _animatedListKeys[entries.first.value.tipo],
-                  initialItemCount: entries.length,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index, animation) {
-                    final mapped = entries[index];
-                    return SizeTransition(
-                      sizeFactor: animation,
-                      child: _buildSerieRow(
-                        mapped.value,
-                        mapped.key,
-                        index + 1,
-                        index == 0,
-                        index == entries.length - 1,
-                      ),
-                    );
-                  },
-                ),
-              ],
+                  AnimatedList(
+                    key: _animatedListKeys[entries.first.value.tipo],
+                    initialItemCount: entries.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index, animation) {
+                      final mapped = entries[index];
+                      return SizeTransition(
+                        sizeFactor: animation,
+                        child: _buildSerieRow(
+                          mapped.value,
+                          mapped.key,
+                          index + 1,
+                          index == 0,
+                          index == entries.length - 1,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ],
