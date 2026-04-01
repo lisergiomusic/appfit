@@ -2,15 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/widgets/app_bar_divider.dart';
 import '../../core/services/rotina_service.dart';
+import '../../core/widgets/appfit_sliver_app_bar.dart';
 import 'configurar_exercicios_page.dart';
 import 'models/rotina_model.dart';
 import 'rotina_detalhe_controller.dart';
 import 'widgets/planilha_settings_modal.dart';
 import 'widgets/sessao_treino_modal.dart';
 import '../../core/widgets/app_primary_button.dart';
-import '../../core/widgets/app_nav_back_button.dart';
 import '../../core/widgets/app_bar_text_button.dart';
 
 class RotinaDetalhePage extends StatefulWidget {
@@ -222,69 +221,103 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, _) {
+        final routineName = _controller.nomeCtrl.text.isEmpty
+            ? 'Nova Rotina'
+            : _controller.nomeCtrl.text;
+
         return PopScope(
           canPop: _canPopNow,
           onPopInvokedWithResult: (didPop, result) => _handlePop(didPop),
           child: Scaffold(
             backgroundColor: AppColors.background,
-            appBar: AppBar(
-              backgroundColor: AppColors.background,
-              elevation: 0,
-              leading: AppNavBackButton(
-                onPressed: () => Navigator.of(context).maybePop(),
+            body: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
               ),
-              title: const Text(
-                'Gerenciar Planilha',
-                style: AppTheme.pageTitle,
-              ),
-              actions: [
-                AppBarTextButton(
-                  label: 'Salvar',
-                  onPressed: () => Navigator.of(context).maybePop(),
+              slivers: [
+                AppFitSliverAppBar(
+                  title: routineName,
+                  expandedHeight: 140,
+                  onBackPressed: () => Navigator.of(context).maybePop(),
+                  actions: [
+                    AppBarTextButton(
+                      label: 'Salvar',
+                      onPressed: () => Navigator.of(context).maybePop(),
+                    ),
+                  ],
+                  background: Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: SpacingTokens.screenHorizontalPadding,
+                        right: SpacingTokens.screenHorizontalPadding,
+                        bottom: 0,
+                      ),
+                      child: _buildHeader(),
+                    ),
+                  ),
                 ),
-              ],
-              bottom: const AppBarDivider(),
-            ),
-            body: SafeArea(
-              child: _controller.isDeleting || _controller.isSaving
-                  ? const Center(
+                if (_controller.isDeleting || _controller.isSaving)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
                       child: CircularProgressIndicator(
                         color: AppColors.primary,
                       ),
+                    ),
+                  )
+                else ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppTheme.paddingScreen,
+                        SpacingTokens.sectionGap,
+                        AppTheme.paddingScreen,
+                        0,
+                      ),
+                      child: _buildSectionHeader(),
+                    ),
+                  ),
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: SpacingTokens.sm),
+                  ),
+                  if (_controller.treinos.isEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: _buildEmptyState(),
                     )
-                  : SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: AppTheme.paddingScreen,
-                          right: AppTheme.paddingScreen,
-                          top: SpacingTokens.pageTopPadding,
-                          bottom: SpacingTokens.screenBottomPadding,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildHeader(),
-                            const SizedBox(height: SpacingTokens.sectionGap),
-                            _buildSectionHeader(),
-                            const SizedBox(height: SpacingTokens.sm),
-                            if (_controller.treinos.isEmpty)
-                              _buildEmptyState()
-                            else
-                              ..._controller.treinos.asMap().entries.map(
-                                (entry) =>
-                                    _buildSessaoCard(entry.value, entry.key),
-                              ),
-                            const SizedBox(height: SpacingTokens.sectionGap),
-                            AppPrimaryButton(
-                              label: 'Nova sessão',
-                              icon: CupertinoIcons.add_circled,
-                              onPressed: () => _exibirModalSessao(),
-                            ),
-                          ],
+                  else
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppTheme.paddingScreen,
+                      ),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) => _buildSessaoCard(
+                            _controller.treinos[index],
+                            index,
+                          ),
+                          childCount: _controller.treinos.length,
                         ),
                       ),
                     ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppTheme.paddingScreen,
+                        SpacingTokens.sectionGap,
+                        AppTheme.paddingScreen,
+                        SpacingTokens.screenBottomPadding,
+                      ),
+                      child: AppPrimaryButton(
+                        label: 'Nova sessão',
+                        icon: CupertinoIcons.add_circled,
+                        onPressed: () => _exibirModalSessao(),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         );
@@ -297,13 +330,16 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       children: [
         Expanded(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 _controller.nomeCtrl.text.isEmpty
                     ? 'Nova Rotina'
                     : _controller.nomeCtrl.text,
-                style: AppTheme.title1,
+                style: AppTheme.bigTitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: SpacingTokens.xs),
               Text(
