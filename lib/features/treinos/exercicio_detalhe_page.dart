@@ -428,7 +428,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   InputDecoration _editableFieldDecoration() {
     return const InputDecoration(
       isDense: true,
-      contentPadding: EdgeInsets.symmetric(horizontal: 1, vertical: 1),
+      contentPadding: EdgeInsets.symmetric(horizontal: 2, vertical: 2),
       focusedBorder: OutlineInputBorder(
         borderSide: BorderSide(color: AppColors.primary, width: 0.5),
         borderRadius: BorderRadius.all(Radius.circular(AppTheme.radiusSM)),
@@ -585,11 +585,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                 child: AnimatedPadding(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOutCubic,
-                  padding: EdgeInsets.only(left: isEditingSection ? 0 : 18),
-                  child: Text('$visualNumber', style: AppTheme.bodyText),
+                  padding: EdgeInsets.only(left: isEditingSection ? 0 : 16),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('$visualNumber', style: AppTheme.bodyText),
+                  ),
                 ),
               ),
-              const SizedBox(width: AppTheme.space8),
+              const SizedBox(width: 8),
               Expanded(
                 flex: 3,
                 child: _buildEditableField(
@@ -763,24 +766,30 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           ),
                         ),
                       ),
+                      const SizedBox(width: 8),
                       Expanded(
                         flex: 3,
                         child: Center(
                           child: Text('Reps', style: AppTheme.caption2),
                         ),
                       ),
+                      const SizedBox(width: 8),
+
                       Expanded(
                         flex: 3,
                         child: Center(
                           child: Text('Peso', style: AppTheme.caption2),
                         ),
                       ),
+                      const SizedBox(width: 8),
                       Expanded(
                         flex: 3,
                         child: Center(
                           child: Text('Pausa', style: AppTheme.caption2),
                         ),
                       ),
+                      const SizedBox(width: 4),
+
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeInOutCubic,
