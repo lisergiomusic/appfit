@@ -165,6 +165,13 @@ class RotinaDetalheController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void onReorderSessoes(int oldIndex, int newIndex) {
+    if (newIndex > oldIndex) newIndex -= 1;
+    final item = treinos.removeAt(oldIndex);
+    treinos.insert(newIndex, item);
+    notifyListeners();
+  }
+
   Future<bool> excluirRotina() async {
     if (rotinaId == null) return false;
     isDeleting = true;

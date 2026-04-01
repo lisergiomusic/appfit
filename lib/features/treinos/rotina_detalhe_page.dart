@@ -11,6 +11,7 @@ import 'widgets/planilha_settings_modal.dart';
 import 'widgets/sessao_treino_modal.dart';
 import '../../core/widgets/app_primary_button.dart';
 import '../../core/widgets/app_bar_text_button.dart';
+import '../../core/widgets/app_section_link_button.dart';
 import '../../core/widgets/app_swipe_to_delete.dart';
 
 class RotinaDetalhePage extends StatefulWidget {
@@ -37,6 +38,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
   late RotinaDetalheController _controller;
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   bool _canPopNow = false;
+  bool _isReordering = false;
 
   @override
   void initState() {
@@ -346,13 +348,36 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppTheme.paddingScreen,
                         ),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) => _buildSessaoCard(
-                              _controller.treinos[index],
-                              index,
-                            ),
-                            childCount: _controller.treinos.length,
+                        sliver: SliverReorderableList(
+                          itemCount: _controller.treinos.length,
+                          onReorder: _controller.onReorderSessoes,
+                          proxyDecorator: (child, index, animation) {
+                            final curvedAnimation = CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeInOut,
+                            );
+
+                            return ScaleTransition(
+                              scale: Tween<double>(
+                                begin: 1.0,
+                                end: 1.02,
+                              ).animate(curvedAnimation),
+                              child: Material(
+                                elevation: 2.0,
+                                shadowColor: Colors.black.withAlpha(60),
+                                color: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusLarge,
+                                  ),
+                                ),
+                                child: child,
+                              ),
+                            );
+                          },
+                          itemBuilder: (context, index) => _buildSessaoCard(
+                            _controller.treinos[index],
+                            index,
                           ),
                         ),
                       ),
@@ -449,6 +474,13 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       children: [
         const SizedBox(width: 4),
         Text('Lista de treinos', style: AppTheme.sectionHeader),
+        const Spacer(),
+        AppSectionLinkButton(
+          label: _isReordering ? 'Concluir' : 'Reorganizar',
+          onPressed: _controller.treinos.length < 2
+              ? null
+              : () => setState(() => _isReordering = !_isReordering),
+        ),
       ],
     );
   }
@@ -514,16 +546,31 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
       padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-        child: AppSwipeToDelete(
-          dismissibleKey: ValueKey(
-            'dismiss-sessao-${identityHashCode(sessao)}',
-          ),
-          onDismissed: (_) => _removerSessaoComUndo(sessao),
-          child: Container(
-            decoration: AppTheme.cardDecoration,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-              onTap: () async {
+        child: _isReordering
+            ? _buildSessaoCardContent(sessao, index, sessaoIndex)
+            : AppSwipeToDelete(
+                dismissibleKey: ValueKey(
+                  'dismiss-sessao-${identityHashCode(sessao)}',
+                ),
+                onDismissed: (_) => _removerSessaoComUndo(sessao),
+                child: _buildSessaoCardContent(sessao, index, sessaoIndex),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildSessaoCardContent(
+    SessaoTreinoModel sessao,
+    int index,
+    int sessaoIndex,
+  ) {
+    return Container(
+      decoration: AppTheme.cardDecoration,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        onTap: _isReordering
+            ? null
+            : () async {
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -545,31 +592,43 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                   );
                 }
               },
-              child: Padding(
-                padding: CardTokens.padding,
-                child: Row(
+        child: Padding(
+          padding: CardTokens.padding,
+          child: Row(
+            children: [
+              _buildSessaoIndex(index),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSessaoIndex(index),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            sessao.nome,
-                            style: CardTokens.cardTitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: SpacingTokens.titleToSubtitle),
-                          Text(
-                            '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}',
-                            style: CardTokens.cardSubtitle,
-                          ),
-                        ],
-                      ),
+                    Text(
+                      sessao.nome,
+                      style: CardTokens.cardTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    PopupMenuButton<String>(
+                    const SizedBox(height: SpacingTokens.titleToSubtitle),
+                    Text(
+                      '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}',
+                      style: CardTokens.cardSubtitle,
+                    ),
+                  ],
+                ),
+              ),
+              _isReordering
+                  ? ReorderableDragStartListener(
+                      index: index,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Icon(
+                          Icons.drag_handle_rounded,
+                          color: AppColors.labelSecondary,
+                          size: 24,
+                        ),
+                      ),
+                    )
+                  : PopupMenuButton<String>(
                       icon: const Icon(
                         CupertinoIcons.ellipsis_vertical,
                         size: 20,
@@ -577,7 +636,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                       ),
                       onSelected: (v) {
                         if (sessaoIndex < 0) return;
-                        if (v == 'edit') _exibirModalSessao(index: sessaoIndex);
+                        if (v == 'edit') {
+                          _exibirModalSessao(index: sessaoIndex);
+                        }
                         if (v == 'delete') _removerSessaoComUndo(sessao);
                       },
                       itemBuilder: (c) => [
@@ -591,10 +652,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-            ),
+            ],
           ),
         ),
       ),
