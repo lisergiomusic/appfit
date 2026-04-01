@@ -509,10 +509,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         background: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                Colors.transparent,
-                AppColors.systemRed.withAlpha(220),
-              ],
+              colors: [Colors.transparent, AppColors.systemRed.withAlpha(220)],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
             ),
@@ -620,7 +617,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                     child: AnimatedPadding(
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOutCubic,
-                      padding: EdgeInsets.only(left: isEditingSection ? 0 : 4),
+                      padding: EdgeInsets.only(left: isEditingSection ? 2 : 6),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Container(
@@ -823,20 +820,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             decoration: BoxDecoration(
               color: AppColors.surfaceDark,
               borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-              border: Border.all(
-                color: Colors.white.withAlpha(8),
-                width: 0.5,
-              ),
+              border: Border.all(color: Colors.white.withAlpha(8), width: 0.5),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               child: Column(
                 children: [
                   // Faixa de acento colorida no topo
-                  Container(
-                    height: 3,
-                    color: accentColor.withAlpha(160),
-                  ),
+                  Container(height: 3, color: accentColor.withAlpha(160)),
                   Padding(
                     padding: const EdgeInsets.only(
                       top: 10,
