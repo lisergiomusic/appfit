@@ -57,6 +57,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
   final GlobalKey _addButtonKey = GlobalKey();
   bool _canPopNow = false;
   bool _isSaving = false;
+  bool _isReordering = false;
 
   @override
   void initState() {
@@ -323,7 +324,17 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                               style: AppTheme.sectionHeader,
                             ),
                             const Spacer(),
-                            AppSectionLinkButton(label: 'Reorganizar'),
+                            AppSectionLinkButton(
+                              label: _isReordering ? 'Concluir' : 'Reorganizar',
+                              onPressed: controller.exercicios.length < 2
+                                  ? null
+                                  : () {
+                                      HapticFeedback.lightImpact();
+                                      setState(
+                                        () => _isReordering = !_isReordering,
+                                      );
+                                    },
+                            ),
                           ],
                         ),
                         const SizedBox(height: SpacingTokens.labelToField),
@@ -356,7 +367,8 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                             end: 1.02,
                           ).animate(curvedAnimation),
                           child: Material(
-                            elevation: 6.0,
+                            elevation: 2.0,
+                            shadowColor: Colors.black.withAlpha(60),
                             color: Colors.transparent,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(
@@ -370,7 +382,26 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                       itemBuilder: (context, index) {
                         final wrapper = controller.exercicios[index];
 
-                        final card = _buildCardContent(context, index);
+                        final card = _buildCardContent(
+                          context,
+                          index,
+                          isReordering: _isReordering,
+                        );
+
+                        if (_isReordering) {
+                          return Padding(
+                            key: Key(wrapper.id),
+                            padding: const EdgeInsets.only(
+                              bottom: SpacingTokens.listItemGap,
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusLG,
+                              ),
+                              child: card,
+                            ),
+                          );
+                        }
 
                         return Padding(
                           key: Key(wrapper.id),
@@ -555,7 +586,11 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
     );
   }
 
-  Widget _buildCardContent(BuildContext context, int exIndex) {
+  Widget _buildCardContent(
+    BuildContext context,
+    int exIndex, {
+    bool isReordering = false,
+  }) {
     final controller = context.read<ConfigurarTreinoController>();
     final wrapper = controller.exercicios[exIndex];
     final ex = wrapper.item;
@@ -569,17 +604,19 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
           borderRadius: CardTokens.cardRadius,
           splashColor: AppColors.splash.withAlpha(50),
           highlightColor: AppColors.splash.withAlpha(30),
-          onTap: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ExercicioDetalhePage(
-                  exercicio: ex,
-                  onChanged: () => controller.onExercicioChanged(),
-                ),
-              ),
-            );
-          },
+          onTap: isReordering
+              ? null
+              : () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ExercicioDetalhePage(
+                        exercicio: ex,
+                        onChanged: () => controller.onExercicioChanged(),
+                      ),
+                    ),
+                  );
+                },
           child: Padding(
             padding: CardTokens.padding,
             child: Row(
@@ -653,11 +690,23 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Icon(
-                  CupertinoIcons.chevron_right,
-                  color: AppColors.labelSecondary.withAlpha(100),
-                  size: 20.0,
-                ),
+                isReordering
+                    ? ReorderableDragStartListener(
+                        index: exIndex,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Icon(
+                            Icons.drag_handle_rounded,
+                            color: AppColors.labelSecondary,
+                            size: 24,
+                          ),
+                        ),
+                      )
+                    : Icon(
+                        CupertinoIcons.chevron_right,
+                        color: AppColors.labelSecondary.withAlpha(100),
+                        size: 20.0,
+                      ),
               ],
             ),
           ),
