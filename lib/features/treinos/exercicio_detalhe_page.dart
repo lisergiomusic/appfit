@@ -4,7 +4,6 @@ import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'dart:ui';
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
 import 'package:flutter/services.dart';
-import 'dart:async';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/orange_glass_action_button.dart';
 import '../../core/widgets/app_bar_text_button.dart';
@@ -26,6 +25,58 @@ class ExercicioDetalhePage extends StatefulWidget {
   @override
   State<ExercicioDetalhePage> createState() => _ExercicioDetalhePageState();
 }
+
+class _DetalhePageConstants {
+  static const int instructionsMaxLength = 500;
+  static const int warningRemainingChars = 50;
+  static const Duration rowAnimationDuration = Duration(milliseconds: 300);
+  static const Duration fadeAnimationDuration = Duration(milliseconds: 200);
+  static const Duration flashAnimationDuration = Duration(milliseconds: 400);
+  static const Duration newHintDelay = Duration(milliseconds: 400);
+  static const Duration newHintAnimationDuration = Duration(milliseconds: 1200);
+  static const Duration snackBarDuration = Duration(seconds: 4);
+  static const double videoAspectRatio = 16 / 9;
+}
+
+class _SerieTypeOption {
+  final String title;
+  final String subtitle;
+  final TipoSerie type;
+  final IconData icon;
+  final Color color;
+
+  const _SerieTypeOption({
+    required this.title,
+    required this.subtitle,
+    required this.type,
+    required this.icon,
+    required this.color,
+  });
+}
+
+const List<_SerieTypeOption> _serieTypeOptions = [
+  _SerieTypeOption(
+    title: 'Aquecimento',
+    subtitle: 'Prepara as articulações e o sistema nervoso.',
+    type: TipoSerie.aquecimento,
+    icon: Icons.whatshot_rounded,
+    color: Color(0xFF00B4D8),
+  ),
+  _SerieTypeOption(
+    title: 'Aproximação',
+    subtitle: 'Sobe a carga progressivamente sem fadiga.',
+    type: TipoSerie.feeder,
+    icon: Icons.speed_rounded,
+    color: Color(0xFFFFB703),
+  ),
+  _SerieTypeOption(
+    title: 'Série de Trabalho',
+    subtitle: 'Série efetiva para hipertrofia ou força.',
+    type: TipoSerie.trabalho,
+    icon: Icons.fitness_center_rounded,
+    color: Color(0xFFFF3366),
+  ),
+];
 
 class _EditableFieldWidget extends StatefulWidget {
   final TextEditingController controller;
@@ -71,10 +122,7 @@ class _EditableFieldWidgetState extends State<_EditableFieldWidget> {
   InputDecoration _buildDecoration() {
     return InputDecoration(
       isDense: true,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 7,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
       hintText: _focusNode.hasFocus ? null : widget.hintText,
       hintStyle: TextStyle(
         color: Colors.white.withAlpha(40),
@@ -131,13 +179,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     TipoSerie.feeder: GlobalKey<AnimatedListState>(),
     TipoSerie.trabalho: GlobalKey<AnimatedListState>(),
   };
-  final ScrollController _scrollController = ScrollController();
-  final Map<int, AnimationController> _swipeHintControllers = {};
-  final Map<int, AnimationController> _rippleControllers = {};
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   final Map<String, TextEditingController> _controllers = {};
-  final Map<String, String> _lastValues = {};
-  final Map<String, bool> _hasUserEdited = {};
   final Set<String> _suppressNextOnChanged = {};
   final Map<int, AnimationController> _flashControllers = {};
 
@@ -151,10 +194,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   @override
   void dispose() {
     _disposeControllers();
-    _disposeCardAnimationControllers();
     _disposeFlashControllers();
     controller.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -163,17 +204,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       ctrl.dispose();
     }
     _flashControllers.clear();
-  }
-
-  void _disposeCardAnimationControllers() {
-    for (final ctrl in _swipeHintControllers.values) {
-      ctrl.dispose();
-    }
-    _swipeHintControllers.clear();
-    for (final ctrl in _rippleControllers.values) {
-      ctrl.dispose();
-    }
-    _rippleControllers.clear();
   }
 
   void _disposeControllers() {
@@ -185,8 +215,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
 
   void _clearEditingState() {
     _disposeControllers();
-    _lastValues.clear();
-    _hasUserEdited.clear();
     _suppressNextOnChanged.clear();
   }
 
@@ -212,7 +240,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   void _playFlashAnimation(int serieHash) {
     _flashControllers[serieHash]?.dispose();
     final flashController = AnimationController(
-      duration: const Duration(milliseconds: 400),
+      duration: _DetalhePageConstants.flashAnimationDuration,
       vsync: this,
     );
     _flashControllers[serieHash] = flashController;
@@ -240,7 +268,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       _suppressNextOnChanged.remove(fieldKey);
     }
 
-    _hasUserEdited[fieldKey] = true;
     final nextValue = value.isEmpty ? emptyFallback : value;
     if (nextValue != value) {
       _setControllerText(fieldKey, controller, nextValue);
@@ -292,12 +319,12 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             setState(() {});
             _animatedListKeys[restoredSerie.tipo]?.currentState?.insertItem(
               restoredSectionIndex,
-              duration: const Duration(milliseconds: 300),
+              duration: _DetalhePageConstants.rowAnimationDuration,
             );
           }
         },
       ),
-      duration: const Duration(seconds: 4),
+      duration: _DetalhePageConstants.snackBarDuration,
       behavior: SnackBarBehavior.floating,
     );
 
@@ -315,8 +342,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     widget.onChanged();
   }
 
-  Future<void> _adicionarSerie() async {
-    final TipoSerie? tipoEscolhido = await showModalBottomSheet<TipoSerie>(
+  Future<TipoSerie?> _showSerieTypeSelector() {
+    return showModalBottomSheet<TipoSerie>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -361,35 +388,22 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                       borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                     ),
                     child: Column(
-                      children: [
-                        _buildModalOption(
-                          title: 'Aquecimento',
-                          icon: Icons.whatshot_rounded,
-                          color: const Color(0xFF00B4D8),
-                          onTap: () =>
-                              Navigator.pop(context, TipoSerie.aquecimento),
-                          showDivider: true,
-                          subtitle:
-                              'Prepara as articulações e o sistema nervoso.',
-                        ),
-                        _buildModalOption(
-                          title: 'Aproximação',
-                          icon: Icons.speed_rounded,
-                          color: const Color(0xFFFFB703),
-                          onTap: () => Navigator.pop(context, TipoSerie.feeder),
-                          showDivider: true,
-                          subtitle: 'Sobe a carga progressivamente sem fadiga.',
-                        ),
-                        _buildModalOption(
-                          title: 'Série de Trabalho',
-                          icon: Icons.fitness_center_rounded,
-                          color: const Color(0xFFFF3366),
-                          onTap: () =>
-                              Navigator.pop(context, TipoSerie.trabalho),
-                          showDivider: false,
-                          subtitle: 'Série efetiva para hipertrofia ou força.',
-                        ),
-                      ],
+                      children: _serieTypeOptions
+                          .asMap()
+                          .entries
+                          .map(
+                            (entry) => _buildModalOption(
+                              title: entry.value.title,
+                              icon: entry.value.icon,
+                              color: entry.value.color,
+                              onTap: () =>
+                                  Navigator.pop(context, entry.value.type),
+                              showDivider:
+                                  entry.key != _serieTypeOptions.length - 1,
+                              subtitle: entry.value.subtitle,
+                            ),
+                          )
+                          .toList(),
                     ),
                   ),
                 ],
@@ -399,25 +413,33 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         );
       },
     );
+  }
+
+  SerieItem _buildSerieFromSelection(TipoSerie tipoEscolhido) {
+    String alvoToClone = '', cargaToClone = '-', descansoToClone = '';
+    if (ex.series.isNotEmpty) {
+      final ultimaSerie = ex.series.lastWhere(
+        (s) => s.tipo == tipoEscolhido,
+        orElse: () => ex.series.last,
+      );
+      alvoToClone = ultimaSerie.alvo;
+      cargaToClone = ultimaSerie.carga;
+      descansoToClone = ultimaSerie.descanso;
+    }
+
+    return SerieItem(
+      tipo: tipoEscolhido,
+      alvo: alvoToClone,
+      carga: cargaToClone,
+      descanso: descansoToClone,
+    );
+  }
+
+  Future<void> _adicionarSerie() async {
+    final tipoEscolhido = await _showSerieTypeSelector();
 
     if (tipoEscolhido != null) {
-      String alvoToClone = '', cargaToClone = '-', descansoToClone = '';
-      if (ex.series.isNotEmpty) {
-        final ultimaSerie = ex.series.lastWhere(
-          (s) => s.tipo == tipoEscolhido,
-          orElse: () => ex.series.last,
-        );
-        alvoToClone = ultimaSerie.alvo;
-        cargaToClone = ultimaSerie.carga;
-        descansoToClone = ultimaSerie.descanso;
-      }
-
-      final newSerie = SerieItem(
-        tipo: tipoEscolhido,
-        alvo: alvoToClone,
-        carga: cargaToClone,
-        descanso: descansoToClone,
-      );
+      final newSerie = _buildSerieFromSelection(tipoEscolhido);
       controller.markAsNew(newSerie.id);
 
       final sectionList = controller.entriesForTipo(tipoEscolhido);
@@ -431,7 +453,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       Future.microtask(() {
         _animatedListKeys[tipoEscolhido]?.currentState?.insertItem(
           insertSectionIndex,
-          duration: const Duration(milliseconds: 300),
+          duration: _DetalhePageConstants.rowAnimationDuration,
         );
       });
 
@@ -515,14 +537,18 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   }
 
   Color _colorForTipo(TipoSerie tipo) {
-    switch (tipo) {
-      case TipoSerie.aquecimento:
-        return const Color(0xFF00B4D8);
-      case TipoSerie.feeder:
-        return const Color(0xFFFFB703);
-      case TipoSerie.trabalho:
-        return const Color(0xFFFF3366);
-    }
+    return _serieTypeOptions.firstWhere((option) => option.type == tipo).color;
+  }
+
+  void _onDuplicateSerie(SerieItem serie) {
+    final sectionIndex = controller.sectionIndexOf(serie);
+    controller.duplicateSerie(serie);
+    setState(() {});
+    _animatedListKeys[serie.tipo]?.currentState?.insertItem(
+      sectionIndex + 1,
+      duration: _DetalhePageConstants.rowAnimationDuration,
+    );
+    widget.onChanged();
   }
 
   // --- WIDGET DE LINHA DA SÉRIE ---
@@ -547,7 +573,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         serie,
         realIndex,
         visualNumber,
-        isFirst,
         isLast,
         flashColor: flashColor,
       );
@@ -611,7 +636,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     SerieItem serie,
     int realIndex,
     int visualNumber,
-    bool isFirst,
     bool isLast, {
     Color? flashColor,
   }) {
@@ -656,11 +680,11 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                 children: [
                   // Botão de Deletar (Animado)
                   AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
+                    duration: _DetalhePageConstants.rowAnimationDuration,
                     curve: Curves.easeInOutCubic,
                     width: isEditingSection ? 28 : 0,
                     child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 200),
+                      duration: _DetalhePageConstants.fadeAnimationDuration,
                       opacity: isEditingSection ? 1.0 : 0.0,
                       child: IconButton(
                         icon: const Icon(
@@ -676,7 +700,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                     ),
                   ),
                   AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
+                    duration: _DetalhePageConstants.rowAnimationDuration,
                     curve: Curves.easeInOutCubic,
                     width: isEditingSection ? 8 : 0,
                   ),
@@ -684,7 +708,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   Expanded(
                     flex: 2,
                     child: AnimatedPadding(
-                      duration: const Duration(milliseconds: 300),
+                      duration: _DetalhePageConstants.rowAnimationDuration,
                       curve: Curves.easeInOutCubic,
                       padding: EdgeInsets.only(left: isEditingSection ? 2 : 6),
                       child: Align(
@@ -767,16 +791,16 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
 
                   // Botão de Duplicar (Animado)
                   AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
+                    duration: _DetalhePageConstants.rowAnimationDuration,
                     curve: Curves.easeInOutCubic,
                     width: isEditingSection ? 8 : 0,
                   ),
                   AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
+                    duration: _DetalhePageConstants.rowAnimationDuration,
                     curve: Curves.easeInOutCubic,
                     width: isEditingSection ? 26 : 0,
                     child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 200),
+                      duration: _DetalhePageConstants.fadeAnimationDuration,
                       opacity: isEditingSection ? 1.0 : 0.0,
                       child: IconButton(
                         icon: const Icon(
@@ -784,17 +808,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           color: AppColors.primary,
                           size: 18,
                         ),
-                        onPressed: () {
-                          final sectionIndex = controller.sectionIndexOf(serie);
-                          controller.duplicateSerie(serie);
-                          setState(() {});
-                          _animatedListKeys[serie.tipo]?.currentState
-                              ?.insertItem(
-                                sectionIndex + 1,
-                                duration: const Duration(milliseconds: 300),
-                              );
-                          widget.onChanged();
-                        },
+                        onPressed: () => _onDuplicateSerie(serie),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                         splashRadius: 20,
@@ -844,7 +858,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     required String title,
     required List<MapEntry<int, SerieItem>> entries,
     Color? titleColor,
-    bool showDot = false,
   }) {
     if (entries.isEmpty) return const SizedBox.shrink();
 
@@ -913,7 +926,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                     child: Row(
                       children: [
                         AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
+                          duration: _DetalhePageConstants.rowAnimationDuration,
                           curve: Curves.easeInOutCubic,
                           width: isEditingSection ? 36 : 0,
                         ),
@@ -922,7 +935,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: AnimatedPadding(
-                              duration: const Duration(milliseconds: 300),
+                              duration:
+                                  _DetalhePageConstants.rowAnimationDuration,
                               curve: Curves.easeInOutCubic,
                               padding: EdgeInsets.only(
                                 left: isEditingSection ? 0 : 4,
@@ -965,7 +979,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           ),
                         ),
                         AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
+                          duration: _DetalhePageConstants.rowAnimationDuration,
                           curve: Curves.easeInOutCubic,
                           width: isEditingSection ? 34 : 0,
                         ),
@@ -1181,7 +1195,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                       TextField(
                         controller: ctrl,
                         maxLines: 8,
-                        maxLength: 500,
+                        maxLength: _DetalhePageConstants.instructionsMaxLength,
                         autofocus: true,
                         cursorColor: AppColors.primary,
                         style: const TextStyle(
@@ -1204,14 +1218,19 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                       ValueListenableBuilder<TextEditingValue>(
                         valueListenable: ctrl,
                         builder: (context, value, child) {
-                          final remaining = 500 - value.text.length;
+                          final remaining =
+                              _DetalhePageConstants.instructionsMaxLength -
+                              value.text.length;
                           return Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               Text(
                                 '$remaining caracteres disponíveis',
                                 style: TextStyle(
-                                  color: remaining < 50
+                                  color:
+                                      remaining <
+                                          _DetalhePageConstants
+                                              .warningRemainingChars
                                       ? Colors.redAccent.withAlpha(200)
                                       : Colors.white.withAlpha(60),
                                   fontSize: 11,
@@ -1240,21 +1259,12 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       ex.nome,
       fallback: 'Exercício',
     );
-    final warmup = ex.series
-        .asMap()
-        .entries
-        .where((e) => e.value.tipo == TipoSerie.aquecimento)
-        .toList();
-    final feeder = ex.series
-        .asMap()
-        .entries
-        .where((e) => e.value.tipo == TipoSerie.feeder)
-        .toList();
-    final work = ex.series
-        .asMap()
-        .entries
-        .where((e) => e.value.tipo == TipoSerie.trabalho)
-        .toList();
+    final warmup = controller.entriesForTipo(TipoSerie.aquecimento);
+    final feeder = controller.entriesForTipo(TipoSerie.feeder);
+    final work = controller.entriesForTipo(TipoSerie.trabalho);
+    final muscleGroups = ex.grupoMuscular.isEmpty
+        ? const ['Geral']
+        : ex.grupoMuscular;
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -1290,29 +1300,21 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           Wrap(
                             spacing: 6,
                             runSpacing: 6,
-                            children:
-                                (ex.grupoMuscular.isEmpty
-                                        ? ['Geral']
-                                        : ex.grupoMuscular)
-                                    .map(
-                                      (g) => Container(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: SpacingTokens.md, // 12
-                                          vertical: SpacingTokens.xs, // 4
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.surfaceLight,
-                                          borderRadius: BorderRadius.circular(
-                                            999,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          g,
-                                          style: AppTheme.caption2,
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
+                            children: muscleGroups
+                                .map(
+                                  (g) => Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: SpacingTokens.md,
+                                      vertical: SpacingTokens.xs,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.surfaceLight,
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: Text(g, style: AppTheme.caption2),
+                                  ),
+                                )
+                                .toList(),
                           ),
                         ],
                       ),
@@ -1334,7 +1336,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         _ExerciseVideoCard(
                           imageUrl: ex.imagemUrl,
                           exerciseTitle: exerciseTitle,
-                          onTap: () {},
                         ),
                         const SizedBox(height: SpacingTokens.sectionGap),
                         // Campo de Instruções
@@ -1372,19 +1373,16 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                             title: 'Aquecimento',
                             entries: warmup,
                             titleColor: const Color(0xFF00B4D8),
-                            showDot: true,
                           ),
                           _buildSeriesSection(
                             title: 'Séries de aproximação',
                             entries: feeder,
                             titleColor: const Color(0xFFFFB703),
-                            showDot: true,
                           ),
                           _buildSeriesSection(
                             title: 'Séries de trabalho',
                             entries: work,
                             titleColor: const Color(0xFFFF3366),
-                            showDot: true,
                           ),
                           const SizedBox(height: 12),
                           Center(
@@ -1413,12 +1411,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
 class _ExerciseVideoCard extends StatelessWidget {
   final String? imageUrl;
   final String exerciseTitle;
-  final VoidCallback onTap;
 
   const _ExerciseVideoCard({
     required this.imageUrl,
     required this.exerciseTitle,
-    required this.onTap,
   });
 
   @override
@@ -1432,7 +1428,7 @@ class _ExerciseVideoCard extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: AspectRatio(
-          aspectRatio: 16 / 9,
+          aspectRatio: _DetalhePageConstants.videoAspectRatio,
           child: Stack(
             children: [
               Positioned.fill(
@@ -1486,7 +1482,6 @@ class _ExerciseVideoCard extends StatelessWidget {
   }
 }
 
-
 class _HintingSerieAnimator extends StatefulWidget {
   final Widget Function(BuildContext context, Color? color) builder;
   final VoidCallback onEnd;
@@ -1506,7 +1501,7 @@ class _HintingSerieAnimatorState extends State<_HintingSerieAnimator>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1200),
+      duration: _DetalhePageConstants.newHintAnimationDuration,
       vsync: this,
     );
 
@@ -1522,7 +1517,7 @@ class _HintingSerieAnimatorState extends State<_HintingSerieAnimator>
       ),
     ]).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
-    Future.delayed(const Duration(milliseconds: 400), () {
+    Future.delayed(_DetalhePageConstants.newHintDelay, () {
       if (mounted) {
         _controller.forward().whenComplete(() {
           if (mounted) {
