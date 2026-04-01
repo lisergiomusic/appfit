@@ -305,8 +305,11 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            const Expanded(
-                              child: _MetricCard(label: 'Tempo', value: '45m'),
+                            Expanded(
+                              child: _MetricCard(
+                                label: 'Tempo',
+                                value: controller.estimatedDurationLabel,
+                              ),
                             ),
                           ],
                         ),

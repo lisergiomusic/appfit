@@ -98,8 +98,49 @@ class ConfigurarTreinoController extends ChangeNotifier {
   // INÍCIO: LÓGICA DE NEGÓCIO
   // =================================================================================
 
+  static const int _kSecondsPerRep = 4;
+  static const int _kTransitionSeconds = 120; // 2 min entre exercícios
+
   int get totalSeries =>
       _exercicios.fold(0, (sum, wrapper) => sum + wrapper.item.series.length);
+
+  /// Parseia strings como "60s", "2m", "1m30s" para segundos.
+  static int _parseDurationString(String value) {
+    final v = value.trim().toLowerCase();
+    final mMatch = RegExp(r'^(\d+)m$').firstMatch(v);
+    if (mMatch != null) return int.parse(mMatch.group(1)!) * 60;
+    final sMatch = RegExp(r'^(\d+)s$').firstMatch(v);
+    if (sMatch != null) return int.parse(sMatch.group(1)!);
+    final msMatch = RegExp(r'^(\d+)m(\d+)s$').firstMatch(v);
+    if (msMatch != null) {
+      return int.parse(msMatch.group(1)!) * 60 + int.parse(msMatch.group(2)!);
+    }
+    return int.tryParse(v) ?? 0;
+  }
+
+  Duration get estimatedDuration {
+    int totalSeconds = 0;
+    for (final wrapper in _exercicios) {
+      final ex = wrapper.item;
+      totalSeconds += _kTransitionSeconds;
+      for (final serie in ex.series) {
+        final execTime = ex.tipoAlvo == 'Tempo'
+            ? _parseDurationString(serie.alvo)
+            : (int.tryParse(serie.alvo) ?? 0) * _kSecondsPerRep;
+        final restTime = _parseDurationString(serie.descanso);
+        totalSeconds += execTime + restTime;
+      }
+    }
+    return Duration(seconds: totalSeconds);
+  }
+
+  String get estimatedDurationLabel {
+    final d = estimatedDuration;
+    final hours = d.inHours;
+    final minutes = d.inMinutes.remainder(60);
+    if (hours > 0) return '${hours}h ${minutes}m';
+    return '${minutes}m';
+  }
 
   void toggleEditTitle() {
     _isEditingTitle = !_isEditingTitle;
