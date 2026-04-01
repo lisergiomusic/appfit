@@ -27,6 +27,101 @@ class ExercicioDetalhePage extends StatefulWidget {
   State<ExercicioDetalhePage> createState() => _ExercicioDetalhePageState();
 }
 
+class _EditableFieldWidget extends StatefulWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  final List<TextInputFormatter>? inputFormatters;
+  final int maxLength;
+  final String? suffixText;
+  final String? hintText;
+  final TextInputType keyboardType;
+
+  const _EditableFieldWidget({
+    required this.controller,
+    required this.onChanged,
+    this.inputFormatters,
+    this.maxLength = 8,
+    this.suffixText,
+    this.hintText,
+    this.keyboardType = TextInputType.text,
+  });
+
+  @override
+  State<_EditableFieldWidget> createState() => _EditableFieldWidgetState();
+}
+
+class _EditableFieldWidgetState extends State<_EditableFieldWidget> {
+  late FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _focusNode.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  InputDecoration _buildDecoration() {
+    return InputDecoration(
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 7,
+      ),
+      hintText: _focusNode.hasFocus ? null : widget.hintText,
+      hintStyle: TextStyle(
+        color: Colors.white.withAlpha(40),
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+      ),
+      suffixText: widget.suffixText,
+      suffixStyle: const TextStyle(
+        color: AppColors.labelSecondary,
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        letterSpacing: -0.2,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
+        borderSide: BorderSide(color: Colors.white.withAlpha(14), width: 1),
+      ),
+      filled: true,
+      fillColor: AppColors.surfaceLight,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      focusNode: _focusNode,
+      controller: widget.controller,
+      onChanged: widget.onChanged,
+      inputFormatters: [
+        LengthLimitingTextInputFormatter(widget.maxLength),
+        ...?widget.inputFormatters,
+      ],
+      textAlign: TextAlign.center,
+      keyboardType: widget.keyboardType,
+      style: AppTheme.bodyText.copyWith(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+      ),
+      decoration: _buildDecoration(),
+    );
+  }
+}
+
 class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     with TickerProviderStateMixin {
   late final ExercicioItem ex;
@@ -155,19 +250,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     _playFlashAnimation(serieHash);
   }
 
-  String _extractDigits(String value) {
-    return value.replaceAll(RegExp(r'[^0-9]'), '');
-  }
-
   String _formatCargaInputValue(String value) {
     if (value.trim() == '-') return '-';
-    final digits = _extractDigits(value);
-    return digits.isEmpty ? '' : '${digits}kg';
+    return value.replaceAll(RegExp(r'kg$', caseSensitive: false), '').trim();
   }
 
   String _formatDescansoInputValue(String value) {
-    final digits = _extractDigits(value);
-    return digits.isEmpty ? '' : '${digits}s';
+    return value.replaceAll(RegExp(r's$', caseSensitive: false), '').trim();
   }
 
   void _onDeleteSerie(SerieItem serie) {
@@ -312,7 +401,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
 
     if (tipoEscolhido != null) {
-      String alvoToClone = '10', cargaToClone = '-', descansoToClone = '60s';
+      String alvoToClone = '', cargaToClone = '-', descansoToClone = '';
       if (ex.series.isNotEmpty) {
         final ultimaSerie = ex.series.lastWhere(
           (s) => s.tipo == tipoEscolhido,
@@ -434,26 +523,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       case TipoSerie.trabalho:
         return const Color(0xFFFF3366);
     }
-  }
-
-  InputDecoration _editableFieldDecoration() {
-    return InputDecoration(
-      isDense: true,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: SpacingTokens.sm,
-        vertical: 7,
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-        borderSide: BorderSide(color: Colors.white.withAlpha(14), width: 1),
-      ),
-      filled: true,
-      fillColor: AppColors.surfaceLight,
-    );
   }
 
   // --- WIDGET DE LINHA DA SÉRIE ---
@@ -656,6 +725,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         onSave: (s) => serie.alvo = s,
                         serieHash: serie.hashCode,
                       ),
+                      hintText: 'Ex: 8 a 12',
                     ),
                   ),
                   const SizedBox(width: AppTheme.space8),
@@ -671,7 +741,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         onSave: (s) => serie.carga = s,
                         serieHash: serie.hashCode,
                       ),
-                      inputFormatters: [const _CargaKgInputFormatter()],
+                      maxLength: 5,
+                      suffixText: 'kg',
                     ),
                   ),
                   const SizedBox(width: AppTheme.space8),
@@ -683,11 +754,14 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         fieldKey: 'descanso_$realIndex',
                         controller: descansoController,
                         value: val,
-                        emptyFallback: '0',
+                        emptyFallback: '',
                         onSave: (s) => serie.descanso = s,
                         serieHash: serie.hashCode,
                       ),
-                      inputFormatters: [const _DescansoSecondsInputFormatter()],
+                      maxLength: 8,
+                      suffixText: 's',
+                      hintText: 'Ex: 60s',
+                      keyboardType: TextInputType.text,
                     ),
                   ),
 
@@ -749,18 +823,19 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     TextEditingController ctrl,
     ValueChanged<String> onChanged, {
     List<TextInputFormatter>? inputFormatters,
+    int maxLength = 8,
+    String? suffixText,
+    String? hintText,
+    TextInputType keyboardType = TextInputType.text,
   }) {
-    return TextFormField(
+    return _EditableFieldWidget(
       controller: ctrl,
       onChanged: onChanged,
       inputFormatters: inputFormatters,
-      textAlign: TextAlign.center,
-      keyboardType: TextInputType.text,
-      style: AppTheme.bodyText.copyWith(
-        fontSize: 15,
-        fontWeight: FontWeight.w500,
-      ),
-      decoration: _editableFieldDecoration(),
+      maxLength: maxLength,
+      suffixText: suffixText,
+      hintText: hintText,
+      keyboardType: keyboardType,
     );
   }
 
@@ -1411,39 +1486,6 @@ class _ExerciseVideoCard extends StatelessWidget {
   }
 }
 
-class _CargaKgInputFormatter extends TextInputFormatter {
-  const _CargaKgInputFormatter();
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue old,
-    TextEditingValue next,
-  ) {
-    final d = next.text.replaceAll(RegExp(r'[^0-9]'), '');
-    return d.isEmpty
-        ? const TextEditingValue(text: '')
-        : TextEditingValue(
-            text: '${d}kg',
-            selection: TextSelection.collapsed(offset: d.length),
-          );
-  }
-}
-
-class _DescansoSecondsInputFormatter extends TextInputFormatter {
-  const _DescansoSecondsInputFormatter();
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue old,
-    TextEditingValue next,
-  ) {
-    final d = next.text.replaceAll(RegExp(r'[^0-9]'), '');
-    return d.isEmpty
-        ? const TextEditingValue(text: '')
-        : TextEditingValue(
-            text: '${d}s',
-            selection: TextSelection.collapsed(offset: d.length),
-          );
-  }
-}
 
 class _HintingSerieAnimator extends StatefulWidget {
   final Widget Function(BuildContext context, Color? color) builder;
