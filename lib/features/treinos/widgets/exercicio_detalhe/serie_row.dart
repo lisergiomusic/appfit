@@ -225,7 +225,7 @@ class _SerieRowState extends State<SerieRow> with TickerProviderStateMixin {
                         widget.onFieldChanged('reps', val);
                         playFlash();
                       },
-                      hintText: 'Ex: 8 a 12',
+                      hintText: 'Ex: 8-12',
                     ),
                   ),
                   const SizedBox(width: AppTheme.space8),
@@ -253,7 +253,7 @@ class _SerieRowState extends State<SerieRow> with TickerProviderStateMixin {
                       maxLength: 8,
                       suffixText: 's',
                       hintText: 'Ex: 60s',
-                      keyboardType: TextInputType.text,
+                      keyboardType: TextInputType.number,
                     ),
                   ),
 

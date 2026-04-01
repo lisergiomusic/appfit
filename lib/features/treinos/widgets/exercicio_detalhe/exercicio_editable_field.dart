@@ -50,9 +50,10 @@ class _ExercicioEditableFieldState extends State<ExercicioEditableField> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
       hintText: _focusNode.hasFocus ? null : widget.hintText,
       hintStyle: TextStyle(
-        color: Colors.white.withAlpha(40),
+        color: AppColors.labelTertiary,
+        letterSpacing: -0.41,
         fontSize: 14,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w400,
       ),
       suffixText: widget.suffixText,
       suffixStyle: const TextStyle(
@@ -62,12 +63,12 @@ class _ExercicioEditableFieldState extends State<ExercicioEditableField> {
         letterSpacing: -0.2,
       ),
       focusedBorder: const OutlineInputBorder(
-        borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+        borderSide: BorderSide.none,
         borderRadius: BorderRadius.all(Radius.circular(10)),
       ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-        borderSide: BorderSide(color: Colors.white.withAlpha(14), width: 1),
+      enabledBorder: const OutlineInputBorder(
+        borderSide: BorderSide.none,
+        borderRadius: BorderRadius.all(Radius.circular(10)),
       ),
       filled: true,
       fillColor: AppColors.surfaceLight,

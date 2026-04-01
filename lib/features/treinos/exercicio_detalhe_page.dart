@@ -211,7 +211,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   }
 
   SerieItem _buildSerieFromSelection(TipoSerie tipoEscolhido) {
-    String alvoToClone = '', cargaToClone = '-', descansoToClone = '';
+    String alvoToClone = '', cargaToClone = '', descansoToClone = '';
     if (ex.series.isNotEmpty) {
       final ultimaSerie = ex.series.lastWhere(
         (s) => s.tipo == tipoEscolhido,
@@ -652,7 +652,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             value: val,
             emptyFallback: field == 'reps'
                 ? '0'
-                : (field == 'carga' ? '-' : ''),
+                : '',
             onSave: (s) {
               if (field == 'reps') serie.alvo = s;
               if (field == 'carga') serie.carga = s;

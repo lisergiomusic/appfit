@@ -16,7 +16,8 @@ class SeriesSection extends StatelessWidget {
     int index,
     Animation<double> animation,
     MapEntry<int, SerieItem> entry,
-  ) itemBuilder;
+  )
+  itemBuilder;
 
   const SeriesSection({
     super.key,
@@ -73,7 +74,6 @@ class SeriesSection extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.surfaceDark,
               borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-              border: Border.all(color: Colors.white.withAlpha(8), width: 0.5),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(AppTheme.radiusLG),
@@ -91,7 +91,8 @@ class SeriesSection extends StatelessWidget {
                     child: Row(
                       children: [
                         AnimatedContainer(
-                          duration: ExercicioDetalheConstants.rowAnimationDuration,
+                          duration:
+                              ExercicioDetalheConstants.rowAnimationDuration,
                           curve: Curves.easeInOutCubic,
                           width: isEditingSection ? 36 : 0,
                         ),
@@ -100,7 +101,8 @@ class SeriesSection extends StatelessWidget {
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: AnimatedPadding(
-                              duration: ExercicioDetalheConstants.rowAnimationDuration,
+                              duration: ExercicioDetalheConstants
+                                  .rowAnimationDuration,
                               curve: Curves.easeInOutCubic,
                               padding: EdgeInsets.only(
                                 left: isEditingSection ? 0 : 4,
@@ -143,7 +145,8 @@ class SeriesSection extends StatelessWidget {
                           ),
                         ),
                         AnimatedContainer(
-                          duration: ExercicioDetalheConstants.rowAnimationDuration,
+                          duration:
+                              ExercicioDetalheConstants.rowAnimationDuration,
                           curve: Curves.easeInOutCubic,
                           width: isEditingSection ? 34 : 0,
                         ),
@@ -156,7 +159,12 @@ class SeriesSection extends StatelessWidget {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemBuilder: (context, index, animation) {
-                      return itemBuilder(context, index, animation, entries[index]);
+                      return itemBuilder(
+                        context,
+                        index,
+                        animation,
+                        entries[index],
+                      );
                     },
                   ),
                 ],
