@@ -87,8 +87,29 @@ class RotinaDetalheController extends ChangeNotifier {
       if ((sessao.diaSemana ?? '') != (sessaoRaw['diaSemana'] ?? '')) return true;
       if ((sessao.orientacoes ?? '') != (sessaoRaw['orientacoes'] ?? '')) return true;
 
-      List<dynamic> exerciciosRaw = sessaoRaw['exercicios'] ?? [];
+      final List<dynamic> exerciciosRaw = sessaoRaw['exercicios'] ?? [];
       if (sessao.exercicios.length != exerciciosRaw.length) return true;
+
+      for (int j = 0; j < sessao.exercicios.length; j++) {
+        final ex = sessao.exercicios[j];
+        final exRaw = exerciciosRaw[j] as Map<String, dynamic>;
+
+        if (ex.nome != (exRaw['nome'] ?? '')) return true;
+
+        final List<dynamic> seriesRaw = exRaw['series'] ?? [];
+        if (ex.series.length != seriesRaw.length) return true;
+
+        for (int k = 0; k < ex.series.length; k++) {
+          final s = ex.series[k];
+          final sRaw = seriesRaw[k] as Map<String, dynamic>;
+          if (s.tipo.name != (sRaw['tipo'] ?? '') ||
+              s.alvo != (sRaw['alvo'] ?? '') ||
+              s.carga != (sRaw['carga'] ?? '') ||
+              s.descanso != (sRaw['descanso'] ?? '')) {
+            return true;
+          }
+        }
+      }
     }
 
     return false;

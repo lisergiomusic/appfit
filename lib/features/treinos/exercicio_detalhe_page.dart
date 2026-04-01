@@ -693,6 +693,27 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         key: _scaffoldMessengerKey,
         child: Scaffold(
           backgroundColor: AppColors.background,
+          bottomNavigationBar: ex.series.isNotEmpty
+              ? ColoredBox(
+                  color: AppColors.background,
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        SpacingTokens.screenHorizontalPadding,
+                        8,
+                        SpacingTokens.screenHorizontalPadding,
+                        SpacingTokens.md,
+                      ),
+                      child: OrangeGlassActionButton(
+                        label: 'Adicionar Série',
+                        onTap: _adicionarSerie,
+                        bottomMargin: 0,
+                        showGlow: false,
+                      ),
+                    ),
+                  ),
+                )
+              : null,
           body: SafeArea(
             child: CustomScrollView(
               slivers: [
@@ -765,15 +786,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                             title: 'Séries de trabalho',
                             entries: work,
                             tipo: TipoSerie.trabalho,
-                          ),
-                          const SizedBox(height: 12),
-                          Center(
-                            child: OrangeGlassActionButton(
-                              label: 'Adicionar Série',
-                              onTap: _adicionarSerie,
-                              bottomMargin: 0,
-                              showGlow: false,
-                            ),
                           ),
                           const SizedBox(height: SpacingTokens.screenBottomPadding),
                         ],
