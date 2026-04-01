@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
-import 'package:flutter/cupertino.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'dart:ui';
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
@@ -12,6 +11,7 @@ import 'exercicio_detalhe_controller.dart';
 import 'widgets/exercicio_detalhe/exercicio_constants.dart';
 import 'widgets/exercicio_detalhe/exercise_video_card.dart';
 import 'widgets/exercicio_detalhe/serie_row.dart';
+import '../../core/widgets/note_display_field.dart';
 import 'widgets/exercicio_detalhe/series_section.dart';
 
 class ExercicioDetalhePage extends StatefulWidget {
@@ -512,98 +512,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
   }
 
-  Widget _buildInstructionsField() {
-    final isEmpty = ex.instrucoes?.trim().isEmpty ?? true;
-
-    if (isEmpty) {
-      return GestureDetector(
-        onTap: _showEditInstructionsSheet,
-        behavior: HitTestBehavior.opaque,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                CupertinoIcons.doc_text,
-                size: 15,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'Adicionar instruções',
-                style: AppTheme.bodyText.copyWith(
-                  color: AppColors.primary,
-                  fontSize: 15,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Instruções', style: AppTheme.sectionHeader),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: _showEditInstructionsSheet,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
-              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(50),
-                  blurRadius: 2,
-                  offset: const Offset(0, 2),
-                  inset: true,
-                ),
-              ],
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.only(top: 3),
-                  child: Icon(
-                    CupertinoIcons.doc_text,
-                    size: 16,
-                    color: AppColors.labelTertiary,
-                  ),
-                ),
-                const SizedBox(width: SpacingTokens.sm),
-                Expanded(
-                  child: Text(
-                    ex.instrucoes ?? '',
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTheme.bodyText.copyWith(
-                      color: AppColors.labelSecondary,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: SpacingTokens.sm),
-                const Padding(
-                  padding: EdgeInsets.only(top: 3),
-                  child: Icon(
-                    CupertinoIcons.pencil,
-                    size: 16,
-                    color: AppColors.labelTertiary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildSerieRow(
     BuildContext context,
@@ -652,9 +560,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                 ? repsController
                 : (field == 'carga' ? cargaController : descansoController),
             value: val,
-            emptyFallback: field == 'reps'
-                ? '0'
-                : '',
+            emptyFallback: field == 'reps' ? '0' : '',
             onSave: (s) {
               if (field == 'reps') serie.alvo = s;
               if (field == 'carga') serie.carga = s;
@@ -729,16 +635,16 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                     alignment: Alignment.bottomLeft,
                     child: Padding(
                       padding: const EdgeInsets.only(
-                        left: 16,
-                        right: 16,
-                        bottom: 20,
+                        left: SpacingTokens.screenHorizontalPadding,
+                        right: SpacingTokens.screenHorizontalPadding,
+                        bottom: SpacingTokens.sm,
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(exerciseTitle, style: AppTheme.bigTitle),
-                          const SizedBox(height: SpacingTokens.xs),
+                          const SizedBox(height: SpacingTokens.sm),
                           Wrap(
                             spacing: 6,
                             runSpacing: 6,
@@ -767,7 +673,12 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           exerciseTitle: exerciseTitle,
                         ),
                         const SizedBox(height: SpacingTokens.sectionGap),
-                        _buildInstructionsField(),
+                        NoteDisplayField(
+                          text: ex.instrucoes,
+                          label: 'Instruções',
+                          addLabel: 'Adicionar instruções',
+                          onTap: _showEditInstructionsSheet,
+                        ),
                         const SizedBox(height: SpacingTokens.sectionGap),
                         if (ex.series.isEmpty)
                           _buildEmptyState()
@@ -787,7 +698,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                             entries: work,
                             tipo: TipoSerie.trabalho,
                           ),
-                          const SizedBox(height: SpacingTokens.screenBottomPadding),
+                          const SizedBox(
+                            height: SpacingTokens.screenBottomPadding,
+                          ),
                         ],
                       ],
                     ),

@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
-import 'package:flutter/cupertino.dart' hide BoxDecoration, BoxShadow;
-import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'dart:ui';
+import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter/services.dart';
+import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/note_display_field.dart';
 import '../configurar_treino_controller.dart';
 
 class SessaoNoteWidget extends StatelessWidget {
@@ -13,94 +13,13 @@ class SessaoNoteWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<ConfigurarTreinoController>();
-    final noteText = controller.sessaoNote;
-    final isEmpty = noteText.trim().isEmpty;
 
-    if (isEmpty) {
-      return GestureDetector(
-        onTap: () => _showEditNoteSheet(context, controller),
-        behavior: HitTestBehavior.opaque,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(CupertinoIcons.doc_text, size: 15, color: AppColors.primary),
-              const SizedBox(width: 6),
-              Text(
-                'Adicionar instruções gerais',
-                style: AppTheme.bodyText.copyWith(
-                  color: AppColors.primary,
-                  fontSize: 15,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text('Nota de sessão', style: AppTheme.sectionHeader),
-            const Spacer(),
-          ],
-        ),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: () => _showEditNoteSheet(context, controller),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
-              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(50),
-                  blurRadius: 2,
-                  offset: const Offset(0, 2),
-                  inset: true,
-                ),
-              ],
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 3),
-                  child: Icon(
-                    CupertinoIcons.doc_text,
-                    size: 16,
-                    color: AppColors.labelTertiary,
-                  ),
-                ),
-                const SizedBox(width: SpacingTokens.sm),
-                Expanded(
-                  child: Text(
-                    noteText,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTheme.bodyText.copyWith(
-                      color: AppColors.labelSecondary,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-                Icon(
-                  CupertinoIcons.pencil,
-                  size: 16,
-                  color: AppColors.labelTertiary,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+    return NoteDisplayField(
+      text: controller.sessaoNote,
+      label: 'Nota de sessão',
+      addLabel: 'Adicionar instruções gerais',
+      onTap: () => _showEditNoteSheet(context, controller),
+      showInsetShadow: true,
     );
   }
 
