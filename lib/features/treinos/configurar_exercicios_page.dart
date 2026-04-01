@@ -373,6 +373,7 @@ class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
                         final card = _buildCardContent(context, index);
 
                         return Padding(
+                          key: Key(wrapper.id),
                           padding: const EdgeInsets.only(
                             bottom: SpacingTokens.listItemGap,
                           ),
