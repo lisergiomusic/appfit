@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import '../../core/services/rotina_service.dart';
 import 'models/rotina_model.dart';
+
+class RemovedSessaoResult {
+  final int index;
+  final SessaoTreinoModel sessao;
+
+  const RemovedSessaoResult({required this.index, required this.sessao});
+}
 
 class RotinaDetalheController extends ChangeNotifier {
   final String? rotinaId;
@@ -32,6 +40,26 @@ class RotinaDetalheController extends ChangeNotifier {
 
     nomeCtrl.addListener(notifyListeners);
     objCtrl.addListener(notifyListeners);
+  }
+
+  String get nomeRotinaExibicao =>
+      nomeCtrl.text.isEmpty ? 'Nova Rotina' : nomeCtrl.text;
+
+  String get objetivoExibicao =>
+      objCtrl.text.isEmpty ? 'Defina o objetivo' : objCtrl.text;
+
+  bool get canReorderSessoes => treinos.length >= 2;
+
+  String get vencimentoLabel {
+    if (tipoVencimento == 'sessoes') {
+      if (vencimentoSessoes <= 0) {
+        return 'Sem vencimento';
+      }
+
+      return '$vencimentoSessoes ${vencimentoSessoes == 1 ? 'sessão' : 'sessões'}';
+    }
+
+    return 'Vence em ${DateFormat('dd/MM/yyyy').format(vencimentoData)}';
   }
 
   void _preencherDados() {
@@ -85,10 +113,12 @@ class RotinaDetalheController extends ChangeNotifier {
       final sessaoRaw = sessoesRaw[i];
 
       if (sessao.nome != sessaoRaw['nome']) return true;
-      if ((sessao.diaSemana ?? '') != (sessaoRaw['diaSemana'] ?? ''))
+      if ((sessao.diaSemana ?? '') != (sessaoRaw['diaSemana'] ?? '')) {
         return true;
-      if ((sessao.orientacoes ?? '') != (sessaoRaw['orientacoes'] ?? ''))
+      }
+      if ((sessao.orientacoes ?? '') != (sessaoRaw['orientacoes'] ?? '')) {
         return true;
+      }
 
       final List<dynamic> exerciciosRaw = sessaoRaw['exercicios'] ?? [];
       if (sessao.exercicios.length != exerciciosRaw.length) return true;
@@ -157,6 +187,20 @@ class RotinaDetalheController extends ChangeNotifier {
     final removida = treinos.removeAt(index);
     notifyListeners();
     return removida;
+  }
+
+  int indexOfSessao(SessaoTreinoModel sessao) {
+    return treinos.indexWhere((item) => identical(item, sessao));
+  }
+
+  RemovedSessaoResult? removerSessaoPorReferencia(SessaoTreinoModel sessao) {
+    final index = indexOfSessao(sessao);
+    if (index < 0) return null;
+
+    final removida = removerSessaoComRetorno(index);
+    if (removida == null) return null;
+
+    return RemovedSessaoResult(index: index, sessao: removida);
   }
 
   void inserirSessao(int index, SessaoTreinoModel sessao) {

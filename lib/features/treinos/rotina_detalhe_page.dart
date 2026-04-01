@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/rotina_service.dart';
 import '../../core/widgets/appfit_sliver_app_bar.dart';
@@ -8,11 +7,13 @@ import 'configurar_exercicios_page.dart';
 import 'models/rotina_model.dart';
 import 'rotina_detalhe_controller.dart';
 import 'widgets/planilha_settings_modal.dart';
+import 'widgets/rotina_detalhe_header.dart';
+import 'widgets/rotina_empty_state.dart';
+import 'widgets/rotina_section_header.dart';
+import 'widgets/rotina_sessao_card.dart';
 import 'widgets/sessao_treino_modal.dart';
 import '../../core/widgets/app_primary_button.dart';
 import '../../core/widgets/app_bar_text_button.dart';
-import '../../core/widgets/app_section_link_button.dart';
-import '../../core/widgets/app_swipe_to_delete.dart';
 
 class RotinaDetalhePage extends StatefulWidget {
   final Map<String, dynamic>? rotinaData;
@@ -97,6 +98,21 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
         false;
   }
 
+  Future<Map<String, dynamic>?> _abrirConfigurarExercicios(
+    SessaoTreinoModel sessao,
+  ) {
+    return Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ConfigurarExerciciosPage(
+          nomeTreino: sessao.nome,
+          exercicios: sessao.exercicios,
+          sessaoNote: sessao.orientacoes ?? '',
+        ),
+      ),
+    );
+  }
+
   void _exibirModalInfo(BuildContext context) async {
     final bool isInitialSetup =
         widget.rotinaId == null && _controller.nomeCtrl.text.isEmpty;
@@ -157,16 +173,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     if (index == null && mounted && _controller.treinos.length > countBefore) {
       final newIndex = _controller.treinos.length - 1;
       final sessao = _controller.treinos[newIndex];
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ConfigurarExerciciosPage(
-            nomeTreino: sessao.nome,
-            exercicios: sessao.exercicios,
-            sessaoNote: sessao.orientacoes ?? '',
-          ),
-        ),
-      );
+      final result = await _abrirConfigurarExercicios(sessao);
       if (mounted && result is Map<String, dynamic>) {
         _controller.atualizarSessao(
           newIndex,
@@ -246,25 +253,19 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     }
   }
 
-  int _indexOfSessao(SessaoTreinoModel sessao) {
-    return _controller.treinos.indexWhere((item) => identical(item, sessao));
-  }
-
   void _removerSessaoComUndo(SessaoTreinoModel sessao) {
-    final removedIndex = _indexOfSessao(sessao);
-    if (removedIndex < 0) return;
-
-    final removed = _controller.removerSessaoComRetorno(removedIndex);
+    final removed = _controller.removerSessaoPorReferencia(sessao);
     if (removed == null) return;
 
     _scaffoldMessengerKey.currentState?.removeCurrentSnackBar();
     _scaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
-        content: Text('${removed.nome} removido'),
+        content: Text('${removed.sessao.nome} removido'),
         action: SnackBarAction(
           label: 'DESFAZER',
           textColor: AppColors.primary,
-          onPressed: () => _controller.inserirSessao(removedIndex, removed),
+          onPressed: () =>
+              _controller.inserirSessao(removed.index, removed.sessao),
         ),
         behavior: SnackBarBehavior.floating,
       ),
@@ -276,10 +277,6 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, _) {
-        final routineName = _controller.nomeCtrl.text.isEmpty
-            ? 'Nova Rotina'
-            : _controller.nomeCtrl.text;
-
         return PopScope(
           canPop: _canPopNow,
           onPopInvokedWithResult: (didPop, result) => _handlePop(didPop),
@@ -293,7 +290,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 ),
                 slivers: [
                   AppFitSliverAppBar(
-                    title: routineName,
+                    title: _controller.nomeRotinaExibicao,
                     expandedHeight: 140,
                     onBackPressed: () => Navigator.of(context).maybePop(),
                     actions: [
@@ -310,7 +307,12 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                           right: SpacingTokens.screenHorizontalPadding,
                           bottom: 0,
                         ),
-                        child: _buildHeader(),
+                        child: RotinaDetalheHeader(
+                          title: _controller.nomeRotinaExibicao,
+                          subtitle: _controller.objetivoExibicao,
+                          vencimentoLabel: _controller.vencimentoLabel,
+                          onEdit: () => _exibirModalInfo(context),
+                        ),
                       ),
                     ),
                   ),
@@ -332,7 +334,13 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                           AppTheme.paddingScreen,
                           0,
                         ),
-                        child: _buildSectionHeader(),
+                        child: RotinaSectionHeader(
+                          isReordering: _isReordering,
+                          canReorder: _controller.canReorderSessoes,
+                          onToggleReordering: () {
+                            setState(() => _isReordering = !_isReordering);
+                          },
+                        ),
                       ),
                     ),
                     const SliverToBoxAdapter(
@@ -341,7 +349,9 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                     if (_controller.treinos.isEmpty)
                       SliverFillRemaining(
                         hasScrollBody: false,
-                        child: _buildEmptyState(),
+                        child: RotinaEmptyState(
+                          onCreateSession: () => _exibirModalSessao(),
+                        ),
                       )
                     else ...[
                       SliverPadding(
@@ -375,10 +385,43 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                               ),
                             );
                           },
-                          itemBuilder: (context, index) => _buildSessaoCard(
-                            _controller.treinos[index],
-                            index,
-                          ),
+                          itemBuilder: (context, index) {
+                            final sessao = _controller.treinos[index];
+
+                            return RotinaSessaoCard(
+                              key: ValueKey(
+                                'sessao-${identityHashCode(sessao)}',
+                              ),
+                              sessao: sessao,
+                              index: index,
+                              isReordering: _isReordering,
+                              onOpen: () async {
+                                final result = await _abrirConfigurarExercicios(
+                                  sessao,
+                                );
+                                if (mounted && result is Map<String, dynamic>) {
+                                  final currentIndex = _controller
+                                      .indexOfSessao(sessao);
+                                  if (currentIndex < 0) return;
+
+                                  _controller.atualizarSessao(
+                                    currentIndex,
+                                    result['nome'],
+                                    sessao.diaSemana,
+                                    result['sessaoNote'],
+                                  );
+                                }
+                              },
+                              onEdit: () {
+                                final currentIndex = _controller.indexOfSessao(
+                                  sessao,
+                                );
+                                if (currentIndex < 0) return;
+                                _exibirModalSessao(index: currentIndex);
+                              },
+                              onDelete: () => _removerSessaoComUndo(sessao),
+                            );
+                          },
                         ),
                       ),
                       SliverToBoxAdapter(
@@ -404,279 +447,6 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _controller.nomeCtrl.text.isEmpty
-                    ? 'Nova Rotina'
-                    : _controller.nomeCtrl.text,
-                style: AppTheme.bigTitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: SpacingTokens.titleToSubtitle),
-              Text(
-                _controller.objCtrl.text.isEmpty
-                    ? 'Defina o objetivo'
-                    : _controller.objCtrl.text,
-                style: CardTokens.cardSubtitle,
-              ),
-              const SizedBox(height: SpacingTokens.titleToSubtitle),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.schedule,
-                    size: 11,
-                    color: AppColors.labelSecondary,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(_buildVencimentoLabel(), style: AppTheme.caption),
-                ],
-              ),
-            ],
-          ),
-        ),
-        IconButton(
-          onPressed: () => _exibirModalInfo(context),
-          style: IconButton.styleFrom(backgroundColor: AppColors.buttonSurface),
-          icon: const Icon(
-            CupertinoIcons.pencil,
-            color: AppColors.labelPrimary,
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _buildVencimentoLabel() {
-    if (_controller.tipoVencimento == 'sessoes') {
-      final sessoes = _controller.vencimentoSessoes;
-      if (sessoes <= 0) {
-        return 'Sem vencimento';
-      }
-      return '$sessoes ${sessoes == 1 ? 'sessão' : 'sessões'}';
-    }
-
-    return 'Vence em ${DateFormat('dd/MM/yyyy').format(_controller.vencimentoData)}';
-  }
-
-  Widget _buildSectionHeader() {
-    return Row(
-      children: [
-        const SizedBox(width: 4),
-        Text('Lista de treinos', style: AppTheme.sectionHeader),
-        const Spacer(),
-        AppSectionLinkButton(
-          label: _isReordering ? 'Concluir' : 'Reorganizar',
-          onPressed: _controller.treinos.length < 2
-              ? null
-              : () => setState(() => _isReordering = !_isReordering),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppTheme.paddingScreen,
-        0,
-        AppTheme.paddingScreen,
-        SpacingTokens.screenBottomPadding,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceLight.withAlpha(40),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              CupertinoIcons.square_list,
-              size: 48,
-              color: AppColors.primary.withAlpha(150),
-            ),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Sua planilha está vazia',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Adicione as sessões de treino (ex: Treino A, Treino B)\npara começar a configurar os exercícios.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.labelSecondary,
-              fontSize: 14,
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 32),
-          AppPrimaryButton(
-            label: 'Criar sessão',
-            icon: CupertinoIcons.add_circled,
-            onPressed: () => _exibirModalSessao(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSessaoCard(SessaoTreinoModel sessao, int index) {
-    final sessaoIndex = _indexOfSessao(sessao);
-
-    return Padding(
-      key: ValueKey('sessao-${identityHashCode(sessao)}'),
-      padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-        child: _isReordering
-            ? _buildSessaoCardContent(sessao, index, sessaoIndex)
-            : AppSwipeToDelete(
-                dismissibleKey: ValueKey(
-                  'dismiss-sessao-${identityHashCode(sessao)}',
-                ),
-                onDismissed: (_) => _removerSessaoComUndo(sessao),
-                child: _buildSessaoCardContent(sessao, index, sessaoIndex),
-              ),
-      ),
-    );
-  }
-
-  Widget _buildSessaoCardContent(
-    SessaoTreinoModel sessao,
-    int index,
-    int sessaoIndex,
-  ) {
-    return Container(
-      decoration: AppTheme.cardDecoration,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-        onTap: _isReordering
-            ? null
-            : () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ConfigurarExerciciosPage(
-                      nomeTreino: sessao.nome,
-                      exercicios: sessao.exercicios,
-                      sessaoNote: sessao.orientacoes ?? '',
-                    ),
-                  ),
-                );
-                if (mounted && result is Map<String, dynamic>) {
-                  final currentIndex = _indexOfSessao(sessao);
-                  if (currentIndex < 0) return;
-                  _controller.atualizarSessao(
-                    currentIndex,
-                    result['nome'],
-                    sessao.diaSemana,
-                    result['sessaoNote'],
-                  );
-                }
-              },
-        child: Padding(
-          padding: CardTokens.padding,
-          child: Row(
-            children: [
-              _buildSessaoIndex(index),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      sessao.nome,
-                      style: CardTokens.cardTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: SpacingTokens.titleToSubtitle),
-                    Text(
-                      '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}',
-                      style: CardTokens.cardSubtitle,
-                    ),
-                  ],
-                ),
-              ),
-              _isReordering
-                  ? ReorderableDragStartListener(
-                      index: index,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Icon(
-                          Icons.drag_handle_rounded,
-                          color: AppColors.labelSecondary,
-                          size: 24,
-                        ),
-                      ),
-                    )
-                  : PopupMenuButton<String>(
-                      icon: const Icon(
-                        CupertinoIcons.ellipsis_vertical,
-                        size: 20,
-                        color: AppColors.labelTertiary,
-                      ),
-                      onSelected: (v) {
-                        if (sessaoIndex < 0) return;
-                        if (v == 'edit') {
-                          _exibirModalSessao(index: sessaoIndex);
-                        }
-                        if (v == 'delete') _removerSessaoComUndo(sessao);
-                      },
-                      itemBuilder: (c) => [
-                        const PopupMenuItem(
-                          value: 'edit',
-                          child: Text('Editar'),
-                        ),
-                        const PopupMenuItem(
-                          value: 'delete',
-                          child: Text('Excluir'),
-                        ),
-                      ],
-                    ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSessaoIndex(int index) {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: Colors.black.withAlpha(40),
-        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-      ),
-      child: Center(
-        child: Text(
-          String.fromCharCode(65 + index),
-          style: const TextStyle(
-            color: AppColors.primary,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
     );
   }
 }
