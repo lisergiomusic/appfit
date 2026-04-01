@@ -46,7 +46,7 @@ class SessaoTreinoModel {
           SerieItem(
             tipo: _parseTipoSerie(s['tipo']),
             alvo: s['alvo'] ?? '10',
-            carga: s['carga'] ?? '-',
+            carga: s['carga'] ?? '',
             descanso: s['descanso'] ?? '60s',
           ),
         );

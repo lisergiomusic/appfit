@@ -3,14 +3,16 @@ import 'package:flutter/cupertino.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'dart:ui';
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
-import 'package:flutter/services.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/orange_glass_action_button.dart';
 import '../../core/widgets/app_bar_text_button.dart';
 import '../../core/widgets/sliver_safe_title.dart';
 import 'models/exercicio_model.dart';
 import 'exercicio_detalhe_controller.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'widgets/exercicio_detalhe/exercicio_constants.dart';
+import 'widgets/exercicio_detalhe/exercise_video_card.dart';
+import 'widgets/exercicio_detalhe/serie_row.dart';
+import 'widgets/exercicio_detalhe/series_section.dart';
 
 class ExercicioDetalhePage extends StatefulWidget {
   final ExercicioItem exercicio;
@@ -26,163 +28,20 @@ class ExercicioDetalhePage extends StatefulWidget {
   State<ExercicioDetalhePage> createState() => _ExercicioDetalhePageState();
 }
 
-class _DetalhePageConstants {
-  static const int instructionsMaxLength = 500;
-  static const int warningRemainingChars = 50;
-  static const Duration rowAnimationDuration = Duration(milliseconds: 300);
-  static const Duration fadeAnimationDuration = Duration(milliseconds: 200);
-  static const Duration flashAnimationDuration = Duration(milliseconds: 400);
-  static const Duration newHintDelay = Duration(milliseconds: 400);
-  static const Duration newHintAnimationDuration = Duration(milliseconds: 1200);
-  static const Duration snackBarDuration = Duration(seconds: 4);
-  static const double videoAspectRatio = 16 / 9;
-}
-
-class _SerieTypeOption {
-  final String title;
-  final String subtitle;
-  final TipoSerie type;
-  final IconData icon;
-  final Color color;
-
-  const _SerieTypeOption({
-    required this.title,
-    required this.subtitle,
-    required this.type,
-    required this.icon,
-    required this.color,
-  });
-}
-
-const List<_SerieTypeOption> _serieTypeOptions = [
-  _SerieTypeOption(
-    title: 'Aquecimento',
-    subtitle: 'Prepara as articulações e o sistema nervoso.',
-    type: TipoSerie.aquecimento,
-    icon: Icons.whatshot_rounded,
-    color: Color(0xFF00B4D8),
-  ),
-  _SerieTypeOption(
-    title: 'Aproximação',
-    subtitle: 'Sobe a carga progressivamente sem fadiga.',
-    type: TipoSerie.feeder,
-    icon: Icons.speed_rounded,
-    color: Color(0xFFFFB703),
-  ),
-  _SerieTypeOption(
-    title: 'Série de Trabalho',
-    subtitle: 'Série efetiva para hipertrofia ou força.',
-    type: TipoSerie.trabalho,
-    icon: Icons.fitness_center_rounded,
-    color: Color(0xFFFF3366),
-  ),
-];
-
-class _EditableFieldWidget extends StatefulWidget {
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-  final List<TextInputFormatter>? inputFormatters;
-  final int maxLength;
-  final String? suffixText;
-  final String? hintText;
-  final TextInputType keyboardType;
-
-  const _EditableFieldWidget({
-    required this.controller,
-    required this.onChanged,
-    this.inputFormatters,
-    this.maxLength = 8,
-    this.suffixText,
-    this.hintText,
-    this.keyboardType = TextInputType.text,
-  });
-
-  @override
-  State<_EditableFieldWidget> createState() => _EditableFieldWidgetState();
-}
-
-class _EditableFieldWidgetState extends State<_EditableFieldWidget> {
-  late FocusNode _focusNode;
-
-  @override
-  void initState() {
-    super.initState();
-    _focusNode = FocusNode();
-    _focusNode.addListener(() {
-      setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  InputDecoration _buildDecoration() {
-    return InputDecoration(
-      isDense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-      hintText: _focusNode.hasFocus ? null : widget.hintText,
-      hintStyle: TextStyle(
-        color: Colors.white.withAlpha(40),
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-      ),
-      suffixText: widget.suffixText,
-      suffixStyle: const TextStyle(
-        color: AppColors.labelSecondary,
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-        letterSpacing: -0.2,
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-        borderSide: BorderSide(color: Colors.white.withAlpha(14), width: 1),
-      ),
-      filled: true,
-      fillColor: AppColors.surfaceLight,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      focusNode: _focusNode,
-      controller: widget.controller,
-      onChanged: widget.onChanged,
-      inputFormatters: [
-        LengthLimitingTextInputFormatter(widget.maxLength),
-        ...?widget.inputFormatters,
-      ],
-      textAlign: TextAlign.center,
-      keyboardType: widget.keyboardType,
-      style: AppTheme.bodyText.copyWith(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-      ),
-      decoration: _buildDecoration(),
-    );
-  }
-}
-
 class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     with TickerProviderStateMixin {
   late final ExercicioItem ex;
   late final ExercicioDetalheController controller;
+
   final Map<TipoSerie, GlobalKey<AnimatedListState>> _animatedListKeys = {
     TipoSerie.aquecimento: GlobalKey<AnimatedListState>(),
     TipoSerie.feeder: GlobalKey<AnimatedListState>(),
     TipoSerie.trabalho: GlobalKey<AnimatedListState>(),
   };
+
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   final Map<String, TextEditingController> _controllers = {};
   final Set<String> _suppressNextOnChanged = {};
-  final Map<int, AnimationController> _flashControllers = {};
 
   @override
   void initState() {
@@ -194,16 +53,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   @override
   void dispose() {
     _disposeControllers();
-    _disposeFlashControllers();
     controller.dispose();
     super.dispose();
-  }
-
-  void _disposeFlashControllers() {
-    for (final ctrl in _flashControllers.values) {
-      ctrl.dispose();
-    }
-    _flashControllers.clear();
   }
 
   void _disposeControllers() {
@@ -237,35 +88,16 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
   }
 
-  void _playFlashAnimation(int serieHash) {
-    _flashControllers[serieHash]?.dispose();
-    final flashController = AnimationController(
-      duration: _DetalhePageConstants.flashAnimationDuration,
-      vsync: this,
-    );
-    _flashControllers[serieHash] = flashController;
-    flashController.forward().then((_) {
-      if (mounted) {
-        flashController.dispose();
-        _flashControllers.remove(serieHash);
-      }
-    });
-  }
-
   void _handleFieldChanged({
     required String fieldKey,
     required TextEditingController controller,
     required String value,
     required String emptyFallback,
     required void Function(String) onSave,
-    required int serieHash,
   }) {
     if (_suppressNextOnChanged.contains(fieldKey)) {
-      if (value.isEmpty) {
-        _suppressNextOnChanged.remove(fieldKey);
-        return;
-      }
       _suppressNextOnChanged.remove(fieldKey);
+      if (value.isEmpty) return;
     }
 
     final nextValue = value.isEmpty ? emptyFallback : value;
@@ -274,7 +106,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     }
     onSave(nextValue);
     widget.onChanged();
-    _playFlashAnimation(serieHash);
   }
 
   String _formatCargaInputValue(String value) {
@@ -296,7 +127,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     _animatedListKeys[serie.tipo]?.currentState?.removeItem(
       sectionIndex,
       (context, animation) =>
-          SizeTransition(sizeFactor: animation, child: Container()),
+          SizeTransition(sizeFactor: animation, child: const SizedBox.shrink()),
     );
 
     controller.cancelSnackBarTimer();
@@ -319,12 +150,12 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             setState(() {});
             _animatedListKeys[restoredSerie.tipo]?.currentState?.insertItem(
               restoredSectionIndex,
-              duration: _DetalhePageConstants.rowAnimationDuration,
+              duration: ExercicioDetalheConstants.rowAnimationDuration,
             );
           }
         },
       ),
-      duration: _DetalhePageConstants.snackBarDuration,
+      duration: ExercicioDetalheConstants.snackBarDuration,
       behavior: SnackBarBehavior.floating,
     );
 
@@ -342,77 +173,41 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     widget.onChanged();
   }
 
-  Future<TipoSerie?> _showSerieTypeSelector() {
-    return showModalBottomSheet<TipoSerie>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surfaceDark,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Drag Handle
-                  Container(
-                    width: 36,
-                    height: 5,
-                    margin: const EdgeInsets.only(bottom: 24),
-                    decoration: BoxDecoration(
-                      color: AppColors.textLabel.withAlpha(50),
-                      borderRadius: BorderRadius.circular(2.5),
-                    ),
-                  ),
-
-                  const Text(
-                    'Tipo de Série',
-                    style: TextStyle(
-                      color: AppColors.labelPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceLight,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                    ),
-                    child: Column(
-                      children: _serieTypeOptions
-                          .asMap()
-                          .entries
-                          .map(
-                            (entry) => _buildModalOption(
-                              title: entry.value.title,
-                              icon: entry.value.icon,
-                              color: entry.value.color,
-                              onTap: () =>
-                                  Navigator.pop(context, entry.value.type),
-                              showDivider:
-                                  entry.key != _serieTypeOptions.length - 1,
-                              subtitle: entry.value.subtitle,
-                            ),
-                          )
-                          .toList(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
+  void _onDuplicateSerie(SerieItem serie) {
+    final sectionIndex = controller.sectionIndexOf(serie);
+    controller.duplicateSerie(serie);
+    setState(() {});
+    _animatedListKeys[serie.tipo]?.currentState?.insertItem(
+      sectionIndex + 1,
+      duration: ExercicioDetalheConstants.rowAnimationDuration,
     );
+    widget.onChanged();
+  }
+
+  Future<void> _adicionarSerie() async {
+    final tipoEscolhido = await _showSerieTypeSelector();
+
+    if (tipoEscolhido != null) {
+      final newSerie = _buildSerieFromSelection(tipoEscolhido);
+      controller.markAsNew(newSerie.id);
+
+      final sectionList = controller.entriesForTipo(tipoEscolhido);
+      final insertSectionIndex = sectionList.length;
+      final insertRealIndex = controller.computeInsertRealIndex(tipoEscolhido);
+
+      setState(() {
+        controller.insertAt(insertRealIndex, newSerie);
+      });
+
+      Future.microtask(() {
+        _animatedListKeys[tipoEscolhido]?.currentState?.insertItem(
+          insertSectionIndex,
+          duration: ExercicioDetalheConstants.rowAnimationDuration,
+        );
+      });
+
+      widget.onChanged();
+    }
   }
 
   SerieItem _buildSerieFromSelection(TipoSerie tipoEscolhido) {
@@ -435,39 +230,77 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     );
   }
 
-  Future<void> _adicionarSerie() async {
-    final tipoEscolhido = await _showSerieTypeSelector();
-
-    if (tipoEscolhido != null) {
-      final newSerie = _buildSerieFromSelection(tipoEscolhido);
-      controller.markAsNew(newSerie.id);
-
-      final sectionList = controller.entriesForTipo(tipoEscolhido);
-      final insertSectionIndex = sectionList.length;
-      final insertRealIndex = controller.computeInsertRealIndex(tipoEscolhido);
-
-      setState(() {
-        controller.insertAt(insertRealIndex, newSerie);
-      });
-
-      Future.microtask(() {
-        _animatedListKeys[tipoEscolhido]?.currentState?.insertItem(
-          insertSectionIndex,
-          duration: _DetalhePageConstants.rowAnimationDuration,
+  Future<TipoSerie?> _showSerieTypeSelector() {
+    return showModalBottomSheet<TipoSerie>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surfaceDark,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 36,
+                    height: 5,
+                    margin: const EdgeInsets.only(bottom: 24),
+                    decoration: BoxDecoration(
+                      color: AppColors.textLabel.withAlpha(50),
+                      borderRadius: BorderRadius.circular(2.5),
+                    ),
+                  ),
+                  const Text(
+                    'Tipo de Série',
+                    style: TextStyle(
+                      color: AppColors.labelPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceLight,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                    ),
+                    child: Column(
+                      children: serieTypeOptions
+                          .asMap()
+                          .entries
+                          .map(
+                            (entry) => _buildModalOption(
+                              option: entry.value,
+                              onTap: () =>
+                                  Navigator.pop(context, entry.value.type),
+                              showDivider:
+                                  entry.key != serieTypeOptions.length - 1,
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
-      });
-
-      widget.onChanged();
-    }
+      },
+    );
   }
 
   Widget _buildModalOption({
-    required String title,
-    required IconData icon,
-    required Color color,
+    required SerieTypeOption option,
     required VoidCallback onTap,
     required bool showDivider,
-    required String subtitle,
   }) {
     return Column(
       children: [
@@ -483,10 +316,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: color.withAlpha(30),
+                      color: option.color.withAlpha(30),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(icon, color: color, size: 22),
+                    child: Icon(option.icon, color: option.color, size: 22),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -494,21 +327,19 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          title,
+                          option.title,
                           style: const TextStyle(
                             color: AppColors.labelPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-
                         Text(
-                          subtitle,
-                          style: TextStyle(
+                          option.subtitle,
+                          style: const TextStyle(
                             color: AppColors.labelTertiary,
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            letterSpacing: 0.0,
                           ),
                         ),
                       ],
@@ -525,585 +356,13 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         ),
         if (showDivider)
           Padding(
-            padding: const EdgeInsets.only(left: 0),
+            padding: const EdgeInsets.symmetric(horizontal: 0),
             child: Divider(
               height: 1,
               thickness: 0.5,
               color: Colors.white.withAlpha(15),
             ),
           ),
-      ],
-    );
-  }
-
-  Color _colorForTipo(TipoSerie tipo) {
-    return _serieTypeOptions.firstWhere((option) => option.type == tipo).color;
-  }
-
-  void _onDuplicateSerie(SerieItem serie) {
-    final sectionIndex = controller.sectionIndexOf(serie);
-    controller.duplicateSerie(serie);
-    setState(() {});
-    _animatedListKeys[serie.tipo]?.currentState?.insertItem(
-      sectionIndex + 1,
-      duration: _DetalhePageConstants.rowAnimationDuration,
-    );
-    widget.onChanged();
-  }
-
-  // --- WIDGET DE LINHA DA SÉRIE ---
-  Widget _buildSerieRow(
-    SerieItem serie,
-    int realIndex,
-    int visualNumber,
-    bool isFirst,
-    bool isLast,
-  ) {
-    final isNew = controller.newSeriesIds.contains(serie.id);
-    final radius = Radius.circular(AppTheme.radiusXL);
-    final borderRadius = BorderRadius.only(
-      topLeft: isFirst ? radius : Radius.zero,
-      topRight: isFirst ? radius : Radius.zero,
-      bottomLeft: isLast ? radius : Radius.zero,
-      bottomRight: isLast ? radius : Radius.zero,
-    );
-
-    Widget rowContent(Color? flashColor) {
-      return _buildSerieRowContent(
-        serie,
-        realIndex,
-        visualNumber,
-        isLast,
-        flashColor: flashColor,
-      );
-    }
-
-    Widget card;
-    if (isNew) {
-      card = _HintingSerieAnimator(
-        onEnd: () {
-          if (mounted) {
-            setState(() {
-              controller.markHintAsShown(serie.id);
-            });
-          }
-        },
-        builder: (context, color) => rowContent(color),
-      );
-    } else {
-      card = rowContent(null);
-    }
-
-    return ClipRRect(
-      borderRadius: borderRadius,
-      child: Dismissible(
-        key: ValueKey(serie.id),
-        direction: DismissDirection.endToStart,
-        onDismissed: (_) => _onDeleteSerie(serie),
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.transparent, AppColors.systemRed.withAlpha(220)],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-          ),
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 18),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.delete_rounded, color: Colors.white, size: 20),
-              const SizedBox(height: 3),
-              const Text(
-                'Remover',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ],
-          ),
-        ),
-        child: card,
-      ),
-    );
-  }
-
-  Widget _buildSerieRowContent(
-    SerieItem serie,
-    int realIndex,
-    int visualNumber,
-    bool isLast, {
-    Color? flashColor,
-  }) {
-    final stableId = serie.id;
-    final repsController = _getController('reps_$stableId', serie.alvo);
-    final cargaController = _getController(
-      'carga_$stableId',
-      _formatCargaInputValue(serie.carga),
-    );
-    final descansoController = _getController(
-      'descanso_$stableId',
-      _formatDescansoInputValue(serie.descanso),
-    );
-    final isEditingSection = controller.isSectionEditing(serie.tipo);
-
-    final accentColor = _colorForTipo(serie.tipo);
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        AnimatedBuilder(
-          animation:
-              _flashControllers[serie.hashCode] ??
-              const AlwaysStoppedAnimation(0.0),
-          builder: (context, child) {
-            final editFlashCtrl = _flashControllers[serie.hashCode];
-            final editFlashColor = editFlashCtrl != null
-                ? ColorTween(
-                    begin: accentColor.withAlpha(40),
-                    end: Colors.transparent,
-                  ).animate(editFlashCtrl).value
-                : Colors.transparent;
-
-            return Container(
-              constraints: const BoxConstraints(minHeight: 48),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.space16,
-                vertical: 6,
-              ),
-              color: flashColor ?? editFlashColor,
-              child: Row(
-                children: [
-                  // Botão de Deletar (Animado)
-                  AnimatedContainer(
-                    duration: _DetalhePageConstants.rowAnimationDuration,
-                    curve: Curves.easeInOutCubic,
-                    width: isEditingSection ? 28 : 0,
-                    child: AnimatedOpacity(
-                      duration: _DetalhePageConstants.fadeAnimationDuration,
-                      opacity: isEditingSection ? 1.0 : 0.0,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.remove_circle_outline,
-                          color: Colors.redAccent,
-                          size: 20,
-                        ),
-                        onPressed: () => _onDeleteSerie(serie),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        splashRadius: 20,
-                      ),
-                    ),
-                  ),
-                  AnimatedContainer(
-                    duration: _DetalhePageConstants.rowAnimationDuration,
-                    curve: Curves.easeInOutCubic,
-                    width: isEditingSection ? 8 : 0,
-                  ),
-                  // Badge do número da série
-                  Expanded(
-                    flex: 2,
-                    child: AnimatedPadding(
-                      duration: _DetalhePageConstants.rowAnimationDuration,
-                      curve: Curves.easeInOutCubic,
-                      padding: EdgeInsets.only(left: isEditingSection ? 2 : 6),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Container(
-                          width: 26,
-                          height: 26,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: accentColor.withAlpha(22),
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusSM,
-                            ),
-                          ),
-                          child: Text(
-                            '$visualNumber',
-                            style: TextStyle(
-                              color: accentColor,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.3,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 3,
-                    child: _buildEditableField(
-                      repsController,
-                      (val) => _handleFieldChanged(
-                        fieldKey: 'reps_$realIndex',
-                        controller: repsController,
-                        value: val,
-                        emptyFallback: '0',
-                        onSave: (s) => serie.alvo = s,
-                        serieHash: serie.hashCode,
-                      ),
-                      hintText: 'Ex: 8 a 12',
-                    ),
-                  ),
-                  const SizedBox(width: AppTheme.space8),
-                  Expanded(
-                    flex: 3,
-                    child: _buildEditableField(
-                      cargaController,
-                      (val) => _handleFieldChanged(
-                        fieldKey: 'carga_$realIndex',
-                        controller: cargaController,
-                        value: val,
-                        emptyFallback: '-',
-                        onSave: (s) => serie.carga = s,
-                        serieHash: serie.hashCode,
-                      ),
-                      maxLength: 5,
-                      suffixText: 'kg',
-                    ),
-                  ),
-                  const SizedBox(width: AppTheme.space8),
-                  Expanded(
-                    flex: 3,
-                    child: _buildEditableField(
-                      descansoController,
-                      (val) => _handleFieldChanged(
-                        fieldKey: 'descanso_$realIndex',
-                        controller: descansoController,
-                        value: val,
-                        emptyFallback: '',
-                        onSave: (s) => serie.descanso = s,
-                        serieHash: serie.hashCode,
-                      ),
-                      maxLength: 8,
-                      suffixText: 's',
-                      hintText: 'Ex: 60s',
-                      keyboardType: TextInputType.text,
-                    ),
-                  ),
-
-                  // Botão de Duplicar (Animado)
-                  AnimatedContainer(
-                    duration: _DetalhePageConstants.rowAnimationDuration,
-                    curve: Curves.easeInOutCubic,
-                    width: isEditingSection ? 8 : 0,
-                  ),
-                  AnimatedContainer(
-                    duration: _DetalhePageConstants.rowAnimationDuration,
-                    curve: Curves.easeInOutCubic,
-                    width: isEditingSection ? 26 : 0,
-                    child: AnimatedOpacity(
-                      duration: _DetalhePageConstants.fadeAnimationDuration,
-                      opacity: isEditingSection ? 1.0 : 0.0,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.copy_rounded,
-                          color: AppColors.primary,
-                          size: 18,
-                        ),
-                        onPressed: () => _onDuplicateSerie(serie),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        splashRadius: 20,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-        if (!isLast)
-          Padding(
-            padding: const EdgeInsets.only(left: 16),
-            child: Divider(
-              height: 1,
-              thickness: 0.5,
-              color: Colors.white.withAlpha(10),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildEditableField(
-    TextEditingController ctrl,
-    ValueChanged<String> onChanged, {
-    List<TextInputFormatter>? inputFormatters,
-    int maxLength = 8,
-    String? suffixText,
-    String? hintText,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return _EditableFieldWidget(
-      controller: ctrl,
-      onChanged: onChanged,
-      inputFormatters: inputFormatters,
-      maxLength: maxLength,
-      suffixText: suffixText,
-      hintText: hintText,
-      keyboardType: keyboardType,
-    );
-  }
-
-  // --- WIDGET DA SEÇÃO DE SÉRIES (O CARD AGRUPADO) ---
-  Widget _buildSeriesSection({
-    required String title,
-    required List<MapEntry<int, SerieItem>> entries,
-    Color? titleColor,
-  }) {
-    if (entries.isEmpty) return const SizedBox.shrink();
-
-    final tipo = entries.first.value.tipo;
-    final isEditingSection = controller.isSectionEditing(tipo);
-
-    final accentColor = titleColor ?? AppColors.labelTertiary;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppTheme.space24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
-              children: [
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: BoxDecoration(
-                    color: accentColor,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(title, style: AppTheme.sectionHeader),
-                const Spacer(),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                  onPressed: () {
-                    setState(() {
-                      controller.toggleEditing(tipo);
-                    });
-                  },
-                  child: Icon(
-                    isEditingSection ? Icons.check : Icons.more_vert,
-                    color: AppColors.labelSecondary,
-                    size: 20,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: SpacingTokens.labelToField),
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
-              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-              border: Border.all(color: Colors.white.withAlpha(8), width: 0.5),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-              child: Column(
-                children: [
-                  // Faixa de acento colorida no topo
-                  Container(height: 3, color: accentColor.withAlpha(160)),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      top: 10,
-                      left: 16,
-                      right: 16,
-                      bottom: 4,
-                    ),
-                    child: Row(
-                      children: [
-                        AnimatedContainer(
-                          duration: _DetalhePageConstants.rowAnimationDuration,
-                          curve: Curves.easeInOutCubic,
-                          width: isEditingSection ? 36 : 0,
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: AnimatedPadding(
-                              duration:
-                                  _DetalhePageConstants.rowAnimationDuration,
-                              curve: Curves.easeInOutCubic,
-                              padding: EdgeInsets.only(
-                                left: isEditingSection ? 0 : 4,
-                              ),
-                              child: Text(
-                                'SÉRIE',
-                                style: AppTheme.microLabelTextStyle,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          flex: 3,
-                          child: Center(
-                            child: Text(
-                              'REPS',
-                              style: AppTheme.microLabelTextStyle,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          flex: 3,
-                          child: Center(
-                            child: Text(
-                              'PESO',
-                              style: AppTheme.microLabelTextStyle,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          flex: 3,
-                          child: Center(
-                            child: Text(
-                              'PAUSA',
-                              style: AppTheme.microLabelTextStyle,
-                            ),
-                          ),
-                        ),
-                        AnimatedContainer(
-                          duration: _DetalhePageConstants.rowAnimationDuration,
-                          curve: Curves.easeInOutCubic,
-                          width: isEditingSection ? 34 : 0,
-                        ),
-                      ],
-                    ),
-                  ),
-                  AnimatedList(
-                    key: _animatedListKeys[entries.first.value.tipo],
-                    initialItemCount: entries.length,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index, animation) {
-                      final mapped = entries[index];
-                      return SizeTransition(
-                        sizeFactor: animation,
-                        child: _buildSerieRow(
-                          mapped.value,
-                          mapped.key,
-                          index + 1,
-                          index == 0,
-                          index == entries.length - 1,
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInstructionsField() {
-    final isEmpty = ex.instrucoes?.trim().isEmpty ?? true;
-
-    if (isEmpty) {
-      return GestureDetector(
-        onTap: _showEditInstructionsSheet,
-        behavior: HitTestBehavior.opaque,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(CupertinoIcons.doc_text, size: 15, color: AppColors.primary),
-              const SizedBox(width: 6),
-              Text(
-                'Adicionar instruções',
-                style: AppTheme.bodyText.copyWith(
-                  color: AppColors.primary,
-                  fontSize: 15,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text('Instruções', style: AppTheme.sectionHeader),
-            const Spacer(),
-          ],
-        ),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: _showEditInstructionsSheet,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
-              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(50),
-                  blurRadius: 2,
-                  offset: const Offset(0, 2),
-                  inset: true,
-                ),
-              ],
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 3),
-                  child: Icon(
-                    CupertinoIcons.doc_text,
-                    size: 16,
-                    color: AppColors.labelTertiary,
-                  ),
-                ),
-                const SizedBox(width: SpacingTokens.sm),
-                Expanded(
-                  child: Text(
-                    ex.instrucoes ?? '',
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTheme.bodyText.copyWith(
-                      color: AppColors.labelSecondary,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: SpacingTokens.sm),
-                Padding(
-                  padding: const EdgeInsets.only(top: 3),
-                  child: Icon(
-                    CupertinoIcons.pencil,
-                    size: 16,
-                    color: AppColors.labelTertiary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -1138,7 +397,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Header do Modal
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                   child: Row(
@@ -1187,7 +445,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                   thickness: 0.5,
                   color: Colors.white.withAlpha(20),
                 ),
-                // Campo de Texto
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
@@ -1195,7 +452,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                       TextField(
                         controller: ctrl,
                         maxLines: 8,
-                        maxLength: _DetalhePageConstants.instructionsMaxLength,
+                        maxLength:
+                            ExercicioDetalheConstants.instructionsMaxLength,
                         autofocus: true,
                         cursorColor: AppColors.primary,
                         style: const TextStyle(
@@ -1204,8 +462,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                           height: 1.5,
                         ),
                         decoration: InputDecoration(
-                          hintText:
-                              'Ex: "Focar na cadência do movimento e manter o abdômen contraído em todos os exercícios."',
+                          hintText: 'Ex: "Focar na cadência do movimento..."',
                           hintStyle: TextStyle(
                             color: Colors.white.withAlpha(40),
                             fontSize: 15,
@@ -1219,7 +476,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         valueListenable: ctrl,
                         builder: (context, value, child) {
                           final remaining =
-                              _DetalhePageConstants.instructionsMaxLength -
+                              ExercicioDetalheConstants.instructionsMaxLength -
                               value.text.length;
                           return Row(
                             mainAxisAlignment: MainAxisAlignment.end,
@@ -1229,7 +486,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                                 style: TextStyle(
                                   color:
                                       remaining <
-                                          _DetalhePageConstants
+                                          ExercicioDetalheConstants
                                               .warningRemainingChars
                                       ? Colors.redAccent.withAlpha(200)
                                       : Colors.white.withAlpha(60),
@@ -1249,6 +506,168 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildInstructionsField() {
+    final isEmpty = ex.instrucoes?.trim().isEmpty ?? true;
+
+    if (isEmpty) {
+      return GestureDetector(
+        onTap: _showEditInstructionsSheet,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                CupertinoIcons.doc_text,
+                size: 15,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Adicionar instruções',
+                style: AppTheme.bodyText.copyWith(
+                  color: AppColors.primary,
+                  fontSize: 15,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Instruções', style: AppTheme.sectionHeader),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: _showEditInstructionsSheet,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDark,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(50),
+                  blurRadius: 2,
+                  offset: const Offset(0, 2),
+                  inset: true,
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(top: 3),
+                  child: Icon(
+                    CupertinoIcons.doc_text,
+                    size: 16,
+                    color: AppColors.labelTertiary,
+                  ),
+                ),
+                const SizedBox(width: SpacingTokens.sm),
+                Expanded(
+                  child: Text(
+                    ex.instrucoes ?? '',
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTheme.bodyText.copyWith(
+                      color: AppColors.labelSecondary,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: SpacingTokens.sm),
+                const Padding(
+                  padding: EdgeInsets.only(top: 3),
+                  child: Icon(
+                    CupertinoIcons.pencil,
+                    size: 16,
+                    color: AppColors.labelTertiary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSerieRow(
+    BuildContext context,
+    int visualNumber,
+    Animation<double> animation,
+    MapEntry<int, SerieItem> entry,
+    bool isFirst,
+    bool isLast,
+  ) {
+    final serie = entry.value;
+    final realIndex = entry.key;
+    final stableId = serie.id;
+
+    final repsController = _getController('reps_$stableId', serie.alvo);
+    final cargaController = _getController(
+      'carga_$stableId',
+      _formatCargaInputValue(serie.carga),
+    );
+    final descansoController = _getController(
+      'descanso_$stableId',
+      _formatDescansoInputValue(serie.descanso),
+    );
+
+    final accentColor = serieTypeOptions
+        .firstWhere((o) => o.type == serie.tipo)
+        .color;
+
+    return SizeTransition(
+      sizeFactor: animation,
+      child: SerieRow(
+        serie: serie,
+        visualNumber: visualNumber,
+        isFirst: isFirst,
+        isLast: isLast,
+        isNew: controller.newSeriesIds.contains(serie.id),
+        isEditingSection: controller.isSectionEditing(serie.tipo),
+        repsController: repsController,
+        cargaController: cargaController,
+        descansoController: descansoController,
+        onDelete: () => _onDeleteSerie(serie),
+        onDuplicate: () => _onDuplicateSerie(serie),
+        onFieldChanged: (field, val) {
+          _handleFieldChanged(
+            fieldKey: '${field}_$realIndex',
+            controller: field == 'reps'
+                ? repsController
+                : (field == 'carga' ? cargaController : descansoController),
+            value: val,
+            emptyFallback: field == 'reps'
+                ? '0'
+                : (field == 'carga' ? '-' : ''),
+            onSave: (s) {
+              if (field == 'reps') serie.alvo = s;
+              if (field == 'carga') serie.carga = s;
+              if (field == 'descanso') serie.descanso = s;
+            },
+          );
+        },
+        onHintEnd: () {
+          if (mounted) {
+            setState(() {
+              controller.markHintAsShown(serie.id);
+            });
+          }
+        },
+        accentColor: accentColor,
       ),
     );
   }
@@ -1301,19 +720,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                             spacing: 6,
                             runSpacing: 6,
                             children: muscleGroups
-                                .map(
-                                  (g) => Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: SpacingTokens.md,
-                                      vertical: SpacingTokens.xs,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.surfaceLight,
-                                      borderRadius: BorderRadius.circular(999),
-                                    ),
-                                    child: Text(g, style: AppTheme.caption2),
-                                  ),
-                                )
+                                .map((g) => _buildMuscleGroupBadge(g))
                                 .toList(),
                           ),
                         ],
@@ -1323,66 +730,39 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.only(
-                      left: SpacingTokens.screenHorizontalPadding,
-                      right: SpacingTokens.screenHorizontalPadding,
-                      top: 4,
-                      bottom: SpacingTokens.screenBottomPadding,
+                    padding: const EdgeInsets.fromLTRB(
+                      SpacingTokens.screenHorizontalPadding,
+                      4,
+                      SpacingTokens.screenHorizontalPadding,
+                      SpacingTokens.screenBottomPadding,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Thumbnail do Vídeo
-                        _ExerciseVideoCard(
+                        ExerciseVideoCard(
                           imageUrl: ex.imagemUrl,
                           exerciseTitle: exerciseTitle,
                         ),
                         const SizedBox(height: SpacingTokens.sectionGap),
-                        // Campo de Instruções
                         _buildInstructionsField(),
                         const SizedBox(height: SpacingTokens.sectionGap),
                         if (ex.series.isEmpty)
-                          Column(
-                            children: [
-                              const SizedBox(height: 48),
-                              const Icon(
-                                Icons.fitness_center_rounded,
-                                size: 50,
-                                color: AppColors.primary,
-                              ),
-                              const SizedBox(height: 24),
-                              const Text(
-                                'Prescreva o exercício',
-                                style: TextStyle(
-                                  color: AppColors.labelPrimary,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 32),
-                              OrangeGlassActionButton(
-                                label: 'Adicionar Série',
-                                onTap: _adicionarSerie,
-                                bottomMargin: 0,
-                                showGlow: false,
-                              ),
-                            ],
-                          )
+                          _buildEmptyState()
                         else ...[
-                          _buildSeriesSection(
+                          _buildSection(
                             title: 'Aquecimento',
                             entries: warmup,
-                            titleColor: const Color(0xFF00B4D8),
+                            tipo: TipoSerie.aquecimento,
                           ),
-                          _buildSeriesSection(
+                          _buildSection(
                             title: 'Séries de aproximação',
                             entries: feeder,
-                            titleColor: const Color(0xFFFFB703),
+                            tipo: TipoSerie.feeder,
                           ),
-                          _buildSeriesSection(
+                          _buildSection(
                             title: 'Séries de trabalho',
                             entries: work,
-                            titleColor: const Color(0xFFFF3366),
+                            tipo: TipoSerie.trabalho,
                           ),
                           const SizedBox(height: 12),
                           Center(
@@ -1405,142 +785,71 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       ),
     );
   }
-}
 
-// --- WIDGET DO CARD DE VÍDEO (Thumbnail) ---
-class _ExerciseVideoCard extends StatelessWidget {
-  final String? imageUrl;
-  final String exerciseTitle;
-
-  const _ExerciseVideoCard({
-    required this.imageUrl,
-    required this.exerciseTitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildMuscleGroupBadge(String g) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withAlpha(8),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
+      padding: EdgeInsets.symmetric(
+        horizontal: SpacingTokens.md,
+        vertical: SpacingTokens.xs,
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: AspectRatio(
-          aspectRatio: _DetalhePageConstants.videoAspectRatio,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: imageUrl != null && imageUrl!.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: imageUrl!,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          color: AppColors.surfaceDark,
-                          child: const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: AppColors.surfaceDark,
-                          child: const Icon(
-                            Icons.videocam_off,
-                            color: Colors.white38,
-                          ),
-                        ),
-                      )
-                    : Container(
-                        color: AppColors.surfaceDark,
-                        child: const Icon(
-                          Icons.videocam_off,
-                          color: Colors.white38,
-                        ),
-                      ),
-              ),
-              if (imageUrl != null && imageUrl!.isNotEmpty)
-                Center(
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withAlpha(64),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      CupertinoIcons.play_fill,
-                      color: Colors.white,
-                      size: 26,
-                    ),
-                  ),
-                ),
-            ],
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(g, style: AppTheme.caption2),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Column(
+      children: [
+        const SizedBox(height: 48),
+        const Icon(
+          Icons.fitness_center_rounded,
+          size: 50,
+          color: AppColors.primary,
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          'Prescreva o exercício',
+          style: TextStyle(
+            color: AppColors.labelPrimary,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
           ),
         ),
-      ),
+        const SizedBox(height: 32),
+        OrangeGlassActionButton(
+          label: 'Adicionar Série',
+          onTap: _adicionarSerie,
+          bottomMargin: 0,
+          showGlow: false,
+        ),
+      ],
     );
   }
-}
 
-class _HintingSerieAnimator extends StatefulWidget {
-  final Widget Function(BuildContext context, Color? color) builder;
-  final VoidCallback onEnd;
-
-  const _HintingSerieAnimator({required this.builder, required this.onEnd});
-
-  @override
-  _HintingSerieAnimatorState createState() => _HintingSerieAnimatorState();
-}
-
-class _HintingSerieAnimatorState extends State<_HintingSerieAnimator>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Color?> _colorAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: _DetalhePageConstants.newHintAnimationDuration,
-      vsync: this,
-    );
-
-    final highlightColor = AppColors.primary.withAlpha(30);
-    _colorAnimation = TweenSequence<Color?>([
-      TweenSequenceItem(
-        tween: ColorTween(begin: Colors.transparent, end: highlightColor),
-        weight: 50.0,
+  Widget _buildSection({
+    required String title,
+    required List<MapEntry<int, SerieItem>> entries,
+    required TipoSerie tipo,
+  }) {
+    final color = serieTypeOptions.firstWhere((o) => o.type == tipo).color;
+    return SeriesSection(
+      title: title,
+      entries: entries,
+      titleColor: color,
+      isEditingSection: controller.isSectionEditing(tipo),
+      onToggleEditing: () => setState(() => controller.toggleEditing(tipo)),
+      animatedListKey: _animatedListKeys[tipo]!,
+      itemBuilder: (context, index, animation, entry) => _buildSerieRow(
+        context,
+        index + 1,
+        animation,
+        entry,
+        index == 0,
+        index == entries.length - 1,
       ),
-      TweenSequenceItem(
-        tween: ColorTween(begin: highlightColor, end: Colors.transparent),
-        weight: 50.0,
-      ),
-    ]).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-
-    Future.delayed(_DetalhePageConstants.newHintDelay, () {
-      if (mounted) {
-        _controller.forward().whenComplete(() {
-          if (mounted) {
-            widget.onEnd();
-          }
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) {
-        return widget.builder(context, _colorAnimation.value);
-      },
     );
   }
 }

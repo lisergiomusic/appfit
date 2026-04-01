@@ -13,7 +13,7 @@ class SerieItem {
     String? id,
     this.tipo = TipoSerie.trabalho,
     this.alvo = '10',
-    this.carga = '-',
+    this.carga = '',
     this.descanso = '60s',
   }) : id = id ?? _generateId();
 
