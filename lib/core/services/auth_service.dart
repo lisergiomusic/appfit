@@ -100,7 +100,8 @@ class AuthService {
   }
 
   /// Cria a conta Firebase Auth para um aluno pré-cadastrado pelo personal.
-  /// Migra o documento Firestore do ID auto-gerado para usuarios/{uid}.
+  /// Migra o documento Firestore do ID auto-gerado para usuarios/{uid}
+  /// e atualiza o campo alunoId em todas as rotinas vinculadas.
   Future<void> primeiroAcessoAluno({
     required String email,
     required String password,
@@ -132,11 +133,35 @@ class AuthService {
 
     final uid = credential.user!.uid;
     final oldDoc = query.docs.first;
+    final oldId = oldDoc.id;
 
-    // 3. Migra o documento atomicamente para usuarios/{uid}
+    // 3. Busca rotinas vinculadas ao ID antigo
+    final rotinasQuery = await _db
+        .collection('rotinas')
+        .where('alunoId', isEqualTo: oldId)
+        .get();
+
+    // 4. Batch: migra usuario + atualiza alunoId nas rotinas
     final batch = _db.batch();
     batch.set(_db.collection('usuarios').doc(uid), oldDoc.data());
     batch.delete(oldDoc.reference);
+
+    for (final rotinaDoc in rotinasQuery.docs) {
+      batch.update(rotinaDoc.reference, {'alunoId': uid});
+    }
+
+    // Garante que ao menos a rotina mais recente esteja ativa,
+    // caso nenhuma esteja marcada como ativa após a migração.
+    final temAtivaOuNenhuma = rotinasQuery.docs.isEmpty ||
+        rotinasQuery.docs.any((d) => d.data()['ativa'] == true);
+    if (!temAtivaOuNenhuma) {
+      final maisRecente = rotinasQuery.docs.reduce((a, b) {
+        final tsA = (a.data()['dataCriacao'] as Timestamp?)?.millisecondsSinceEpoch ?? 0;
+        final tsB = (b.data()['dataCriacao'] as Timestamp?)?.millisecondsSinceEpoch ?? 0;
+        return tsA >= tsB ? a : b;
+      });
+      batch.update(maisRecente.reference, {'ativa': true});
+    }
 
     try {
       await batch.commit();
