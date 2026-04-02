@@ -237,15 +237,23 @@ class AlunoService {
   }
 
   Stream<QuerySnapshot> getPlanilhasStream(String alunoId) {
+    final personalId = _currentPersonalId;
+    if (personalId == null) throw Exception('Personal não autenticado');
+
     return _firestore
         .collection('rotinas')
+        .where('personalId', isEqualTo: personalId)
         .where('alunoId', isEqualTo: alunoId)
         .snapshots();
   }
 
   Stream<QuerySnapshot> getRotinaAtivaStream(String alunoId) {
+    final personalId = _currentPersonalId;
+    if (personalId == null) throw Exception('Personal não autenticado');
+
     return _firestore
         .collection('rotinas')
+        .where('personalId', isEqualTo: personalId)
         .where('alunoId', isEqualTo: alunoId)
         .where('ativa', isEqualTo: true)
         .snapshots();
@@ -254,7 +262,9 @@ class AlunoService {
   Future<void> atribuirTreinoAoAluno({
     required String alunoId,
     required String templateId,
-    required int duracaoSemanas,
+    required String tipoVencimento,
+    int? sessoesAlvo,
+    DateTime? dataVencimento,
   }) async {
     final templateDoc = await _firestore
         .collection('rotinas')
@@ -276,9 +286,17 @@ class AlunoService {
     rotinaData['alunoId'] = alunoId;
     rotinaData['ativa'] = true;
     rotinaData['dataCriacao'] = FieldValue.serverTimestamp();
-    rotinaData['dataVencimento'] = Timestamp.fromDate(
-      DateTime.now().add(Duration(days: duracaoSemanas * 7)),
-    );
+    rotinaData['tipoVencimento'] = tipoVencimento;
+
+    if (tipoVencimento == 'sessoes') {
+      rotinaData['vencimentoSessoes'] = sessoesAlvo;
+      rotinaData.remove('dataVencimento');
+    } else {
+      rotinaData['dataVencimento'] = Timestamp.fromDate(
+        dataVencimento ?? DateTime.now().add(const Duration(days: 30)),
+      );
+      rotinaData.remove('vencimentoSessoes');
+    }
 
     await _firestore.collection('rotinas').add(rotinaData);
   }

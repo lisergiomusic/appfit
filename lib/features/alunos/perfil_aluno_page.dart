@@ -8,6 +8,7 @@ import '../../core/services/aluno_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_bar_divider.dart';
 import '../treinos/rotina_detalhe_page.dart';
+import 'ativar_template_page.dart';
 import 'gerenciar_aluno_page.dart';
 import 'models/aluno_perfil_data.dart';
 import 'widgets/aluno_header_section.dart';
@@ -447,11 +448,19 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                             ),
                           ),
                           child: ListTile(
-                            onTap: () => _confirmarAtivacaoTemplate(
-                              context,
-                              doc.id,
-                              rotina['nome'] ?? 'Rotina',
-                            ),
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AtivarTemplatePage(
+                                    templateId: doc.id,
+                                    alunoId: widget.alunoId,
+                                    alunoNome: widget.alunoNome,
+                                  ),
+                                ),
+                              );
+                            },
                             title: Text(
                               rotina['nome'] ?? 'Rotina',
                               style: const TextStyle(
@@ -481,88 +490,6 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _confirmarAtivacaoTemplate(
-    BuildContext context,
-    String templateId,
-    String titulo,
-  ) {
-    int semanasSelecionadas = 4;
-    showDialog(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setStateDialog) {
-          return AlertDialog(
-            backgroundColor: AppColors.surfaceDark,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-            ),
-            title: const Text(
-              'Ativar Rotina',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Duração para ${widget.alunoNome}:',
-                  style: const TextStyle(color: AppColors.labelSecondary),
-                ),
-                const SizedBox(height: 20),
-                DropdownButtonFormField<int>(
-                  initialValue: semanasSelecionadas,
-                  dropdownColor: AppColors.surfaceLight,
-                  style: const TextStyle(color: Colors.white),
-                  items: [4, 5, 6, 8, 10, 12]
-                      .map(
-                        (w) => DropdownMenuItem(
-                          value: w,
-                          child: Text('$w semanas'),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (v) =>
-                      setStateDialog(() => semanasSelecionadas = v!),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: AppColors.surfaceLight,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text(
-                  'Cancelar',
-                  style: TextStyle(color: AppColors.labelSecondary),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(dialogContext);
-                  Navigator.pop(context);
-                  _alunoService.atribuirTreinoAoAluno(
-                    alunoId: widget.alunoId,
-                    templateId: templateId,
-                    duracaoSemanas: semanasSelecionadas,
-                  );
-                },
-                child: const Text('Ativar'),
-              ),
-            ],
-          );
-        },
       ),
     );
   }
