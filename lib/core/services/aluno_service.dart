@@ -39,6 +39,7 @@ class AlunoService {
     String nome,
     String sobrenome,
     String email, {
+    String? whatsapp,
     String? genero,
     DateTime? dataNascimento,
   }) async {
@@ -57,6 +58,9 @@ class AlunoService {
     };
 
     if (genero != null) data['genero'] = genero;
+    if (whatsapp != null && whatsapp.trim().isNotEmpty) {
+      data['telefone'] = whatsapp.trim();
+    }
     if (dataNascimento != null) {
       data['dataNascimento'] = Timestamp.fromDate(dataNascimento);
     }

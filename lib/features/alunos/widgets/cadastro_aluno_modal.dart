@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_primary_button.dart';
 
 class CadastroAlunoModal extends StatefulWidget {
   final Future<void> Function(
@@ -7,6 +8,7 @@ class CadastroAlunoModal extends StatefulWidget {
     String nome,
     String sobrenome,
     String email,
+    String whatsapp,
     String? genero,
     DateTime? dataNascimento,
   )
@@ -19,19 +21,41 @@ class CadastroAlunoModal extends StatefulWidget {
 }
 
 class _CadastroAlunoModalState extends State<CadastroAlunoModal> {
+  final _formKey = GlobalKey<FormState>();
   final _nomeController = TextEditingController();
   final _sobrenomeController = TextEditingController();
   final _emailController = TextEditingController();
+  final _whatsappController = TextEditingController();
   final _dataNascimentoController = TextEditingController();
 
   String? _generoSelecionado;
   DateTime? _dataNascimentoSelecionada;
+  bool _tentouCadastrar = false;
+
+  Future<void> _validarECadastrar() async {
+    setState(() => _tentouCadastrar = true);
+
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    await widget.onSalvar(
+      context,
+      _nomeController.text.trim(),
+      _sobrenomeController.text.trim(),
+      _emailController.text.trim(),
+      _whatsappController.text.trim(),
+      _generoSelecionado,
+      _dataNascimentoSelecionada,
+    );
+  }
 
   @override
   void dispose() {
     _nomeController.dispose();
     _sobrenomeController.dispose();
     _emailController.dispose();
+    _whatsappController.dispose();
     _dataNascimentoController.dispose();
     super.dispose();
   }
@@ -70,128 +94,136 @@ class _CadastroAlunoModalState extends State<CadastroAlunoModal> {
         right: 24,
         top: 32,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Form(
+        key: _formKey,
+        autovalidateMode: _tentouCadastrar
+            ? AutovalidateMode.always
+            : AutovalidateMode.disabled,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Novo Aluno',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      letterSpacing: -0.5,
-                    ),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Novo Aluno',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      Text(
+                        'Preencha os dados do aluno abaixo',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.labelSecondary,
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(
-                    'Preencha os dados do aluno abaixo',
-                    style: TextStyle(
-                      fontSize: 14,
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(
+                      Icons.close,
                       color: AppColors.labelSecondary,
                     ),
                   ),
                 ],
               ),
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close, color: AppColors.labelSecondary),
+              const SizedBox(height: 32),
+              TextFormField(
+                controller: _nomeController,
+                decoration: const InputDecoration(
+                  fillColor: AppColors.surfaceLight,
+                  labelText: 'Nome',
+                  prefixIcon: Icon(Icons.person_outline),
+                ),
+                textCapitalization: TextCapitalization.words,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Nome obrigatorio';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: SpacingTokens.listItemGap),
+              TextField(
+                controller: _sobrenomeController,
+                decoration: const InputDecoration(
+                  fillColor: AppColors.surfaceLight,
+                  labelText: 'Sobrenome',
+                  prefixIcon: Icon(Icons.person_outline),
+                ),
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: SpacingTokens.listItemGap),
+              DropdownButtonFormField<String>(
+                dropdownColor: AppColors.surfaceDark,
+                value: _generoSelecionado,
+                items: ['Masculino', 'Feminino', 'Outro']
+                    .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                    .toList(),
+                onChanged: (val) => setState(() => _generoSelecionado = val),
+                decoration: const InputDecoration(
+                  labelText: 'Gênero',
+                  fillColor: AppColors.surfaceLight,
+                  prefixIcon: Icon(Icons.people_outline),
+                ),
+                style: const TextStyle(color: Colors.white),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Genero obrigatorio';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: SpacingTokens.listItemGap),
+              TextField(
+                controller: _dataNascimentoController,
+                readOnly: true,
+                decoration: const InputDecoration(
+                  fillColor: AppColors.surfaceLight,
+                  labelText: 'Data de Nascimento',
+                  prefixIcon: Icon(Icons.cake_outlined),
+                  suffixIcon: Icon(Icons.calendar_today_outlined),
+                ),
+                onTap: _selecionarData,
+              ),
+              const SizedBox(height: SpacingTokens.listItemGap),
+              TextField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  fillColor: AppColors.surfaceLight,
+                  labelText: 'E-mail de Acesso',
+                  prefixIcon: Icon(Icons.alternate_email),
+                ),
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: SpacingTokens.listItemGap),
+              TextField(
+                controller: _whatsappController,
+                decoration: const InputDecoration(
+                  fillColor: AppColors.surfaceLight,
+                  labelText: 'Whatsapp',
+                  prefixIcon: Icon(Icons.phone_outlined),
+                ),
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 32),
+              AppPrimaryButton(
+                label: 'Cadastrar aluno',
+                onPressed: _validarECadastrar,
               ),
             ],
           ),
-          const SizedBox(height: 32),
-          TextField(
-            controller: _nomeController,
-            decoration: const InputDecoration(
-              fillColor: AppColors.surfaceLight,
-              labelText: 'Nome',
-              prefixIcon: Icon(Icons.person_outline),
-            ),
-            textCapitalization: TextCapitalization.words,
-          ),
-          const SizedBox(height: SpacingTokens.listItemGap),
-          TextField(
-            controller: _sobrenomeController,
-            decoration: const InputDecoration(
-              fillColor: AppColors.surfaceLight,
-              labelText: 'Sobrenome',
-              prefixIcon: Icon(Icons.person_outline),
-            ),
-            textCapitalization: TextCapitalization.words,
-          ),
-          const SizedBox(height: SpacingTokens.listItemGap),
-          DropdownButtonFormField<String>(
-            dropdownColor: AppColors.surfaceDark,
-            items: [
-              'Masculino',
-              'Feminino',
-              'Outro',
-            ].map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
-            onChanged: (val) => setState(() => _generoSelecionado = val),
-            decoration: const InputDecoration(
-              labelText: 'Gênero',
-              fillColor: AppColors.surfaceLight,
-              prefixIcon: Icon(Icons.people_outline),
-            ),
-            style: const TextStyle(color: Colors.white),
-          ),
-          const SizedBox(height: SpacingTokens.listItemGap),
-          TextField(
-            controller: _dataNascimentoController,
-            readOnly: true,
-            decoration: const InputDecoration(
-              fillColor: AppColors.surfaceLight,
-              labelText: 'Data de Nascimento',
-              prefixIcon: Icon(Icons.cake_outlined),
-              suffixIcon: Icon(Icons.calendar_today_outlined),
-            ),
-            onTap: _selecionarData,
-          ),
-          const SizedBox(height: SpacingTokens.listItemGap),
-          TextField(
-            controller: _emailController,
-            decoration: const InputDecoration(
-              fillColor: AppColors.surfaceLight,
-              labelText: 'E-mail de Acesso',
-              prefixIcon: Icon(Icons.alternate_email),
-            ),
-            keyboardType: TextInputType.emailAddress,
-          ),
-          const SizedBox(height: 32),
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: () => widget.onSalvar(
-                context,
-                _nomeController.text,
-                _sobrenomeController.text,
-                _emailController.text,
-                _generoSelecionado,
-                _dataNascimentoSelecionada,
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: const Text(
-                'CADASTRAR ALUNO',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.0,
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

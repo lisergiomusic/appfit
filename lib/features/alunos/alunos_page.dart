@@ -175,16 +175,18 @@ class _AlunosPageState extends State<AlunosPage> {
     String nome,
     String sobrenome,
     String email,
+    String whatsapp,
     String? genero,
     DateTime? dataNascimento,
   ) async {
-    if (nome.isEmpty || sobrenome.isEmpty || email.isEmpty) return;
+    if (nome.isEmpty) return;
 
     try {
       await _alunoService.salvarAluno(
         nome,
         sobrenome,
         email,
+        whatsapp: whatsapp,
         genero: genero,
         dataNascimento: dataNascimento,
       );
