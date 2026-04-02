@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/aluno_service.dart';
 import '../../core/services/rotina_service.dart';
+import '../../core/widgets/app_swipe_to_delete.dart';
 import 'rotina_detalhe_page.dart';
 import '../../core/widgets/app_bar_icon_button.dart';
 
@@ -357,194 +358,196 @@ class _TreinosPageState extends State<TreinosPage> {
     int qtdSessoes,
     bool isSelecting,
   ) {
-    return Dismissible(
-      key: Key(id),
-      direction: isSelecting
-          ? DismissDirection.none
-          : DismissDirection.endToStart,
-      confirmDismiss: (direction) async {
-        return await showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              backgroundColor: AppColors.surfaceDark,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-              ),
-              title: const Text(
-                "Excluir template?",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              content: const Text(
-                "Isso removerá a ficha da sua biblioteca permanentemente.",
-                style: TextStyle(color: AppColors.labelSecondary),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text(
-                    "Cancelar",
-                    style: TextStyle(color: AppColors.labelSecondary),
+    return Container(
+      margin: const EdgeInsets.only(bottom: SpacingTokens.listItemGap),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        child: AppSwipeToDelete(
+          dismissibleKey: Key(id),
+          direction: isSelecting
+              ? DismissDirection.none
+              : DismissDirection.endToStart,
+          label: 'Excluir',
+          confirmDismiss: (direction) async {
+            return await showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  backgroundColor: AppColors.surfaceDark,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                   ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text(
-                    "Excluir",
+                  title: const Text(
+                    'Excluir template?',
                     style: TextStyle(
-                      color: Colors.redAccent,
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
-              ],
+                  content: const Text(
+                    'Isso removerá a ficha da sua biblioteca permanentemente.',
+                    style: TextStyle(color: AppColors.labelSecondary),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text(
+                        'Cancelar',
+                        style: TextStyle(color: AppColors.labelSecondary),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text(
+                        'Excluir',
+                        style: TextStyle(
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             );
           },
-        );
-      },
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 16),
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: Colors.redAccent.withAlpha(30),
-          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-        ),
-        child: const Icon(Icons.delete_outline, color: Colors.redAccent),
-      ),
-      onDismissed: (direction) => _deletarTreino(id),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: SpacingTokens.listItemGap),
-        decoration: AppTheme.cardDecoration,
-        child: Material(
-          color: Colors.transparent,
-          elevation: 0,
-          child: InkWell(
-            borderRadius: CardTokens.cardRadius,
-            onTap: () {
-              if (isSelecting) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => RotinaDetalhePage(
-                      rotinaData: rotina,
-                      alunoId: widget.alunoId,
-                      alunoNome: widget.alunoNome,
-                      rotinaService: _rotinaService,
-                    ),
-                  ),
-                );
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => RotinaDetalhePage(
-                      rotinaData: rotina,
-                      rotinaId: id,
-                      rotinaService: _rotinaService,
-                    ),
-                  ),
-                );
-              }
-            },
-            child: Padding(
-              padding: CardTokens.padding,
-              child: Row(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withAlpha(40),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                      ),
-                      child: Icon(
-                        isSelecting ? Icons.add_task : Icons.fitness_center,
-                        color: isSelecting
-                            ? AppColors.iosBlue
-                            : AppColors.primary,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          rotina['nome'] ?? 'Sem título',
-                          style: AppTheme.cardTitle,
+          onDismissed: (direction) => _deletarTreino(id),
+          child: Container(
+            decoration: AppTheme.cardDecoration,
+            child: Material(
+              color: Colors.transparent,
+              elevation: 0,
+              child: InkWell(
+                borderRadius: CardTokens.cardRadius,
+                onTap: () {
+                  if (isSelecting) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RotinaDetalhePage(
+                          rotinaData: rotina,
+                          alunoId: widget.alunoId,
+                          alunoNome: widget.alunoNome,
+                          rotinaService: _rotinaService,
                         ),
-                        const SizedBox(height: SpacingTokens.xs),
-                        Text(
-                          rotina['objetivo'] ?? '',
-                          style: AppTheme.cardSubtitle,
+                      ),
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RotinaDetalhePage(
+                          rotinaData: rotina,
+                          rotinaId: id,
+                          rotinaService: _rotinaService,
                         ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuButton<String>(
-                    icon: Icon(
-                      Icons.more_vert,
-                      color: AppColors.labelSecondary,
-                      size: 22,
-                    ),
-                    padding: EdgeInsets.zero,
-                    color: AppColors.surfaceDark,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-                    ),
-                    onSelected: (value) {
-                      if (value == 'editar') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => RotinaDetalhePage(
-                              rotinaData: rotina,
-                              rotinaId: isSelecting ? null : id,
-                              alunoId: isSelecting ? widget.alunoId : null,
-                              alunoNome: isSelecting ? widget.alunoNome : null,
-                              rotinaService: _rotinaService,
+                      ),
+                    );
+                  }
+                },
+                child: Padding(
+                  padding: CardTokens.padding,
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withAlpha(40),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusSM,
                             ),
                           ),
-                        );
-                      } else if (value == 'renomear') {
-                        _renomearTreino(id, rotina['nome'] ?? '');
-                      } else if (value == 'excluir') {
-                        _confirmarExcluir(id);
-                      }
-                    },
-                    itemBuilder: (_) => [
-                      const PopupMenuItem(
-                        value: 'editar',
-                        child: Text(
-                          'Editar',
-                          style: TextStyle(color: AppColors.labelPrimary),
+                          child: Icon(
+                            isSelecting ? Icons.add_task : Icons.fitness_center,
+                            color: isSelecting
+                                ? AppColors.iosBlue
+                                : AppColors.primary,
+                            size: 20,
+                          ),
                         ),
                       ),
-                      const PopupMenuItem(
-                        value: 'renomear',
-                        child: Text(
-                          'Renomear',
-                          style: TextStyle(color: AppColors.labelPrimary),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              rotina['nome'] ?? 'Sem título',
+                              style: AppTheme.cardTitle,
+                            ),
+                            const SizedBox(height: SpacingTokens.xs),
+                            Text(
+                              rotina['objetivo'] ?? '',
+                              style: AppTheme.cardSubtitle,
+                            ),
+                          ],
                         ),
                       ),
-                      const PopupMenuItem(
-                        value: 'excluir',
-                        child: Text(
-                          'Excluir',
-                          style: TextStyle(color: Colors.redAccent),
+                      PopupMenuButton<String>(
+                        icon: Icon(
+                          Icons.more_vert,
+                          color: AppColors.labelSecondary,
+                          size: 22,
                         ),
+                        padding: EdgeInsets.zero,
+                        color: AppColors.surfaceDark,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusMD,
+                          ),
+                        ),
+                        onSelected: (value) {
+                          if (value == 'editar') {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => RotinaDetalhePage(
+                                  rotinaData: rotina,
+                                  rotinaId: isSelecting ? null : id,
+                                  alunoId: isSelecting ? widget.alunoId : null,
+                                  alunoNome: isSelecting
+                                      ? widget.alunoNome
+                                      : null,
+                                  rotinaService: _rotinaService,
+                                ),
+                              ),
+                            );
+                          } else if (value == 'renomear') {
+                            _renomearTreino(id, rotina['nome'] ?? '');
+                          } else if (value == 'excluir') {
+                            _confirmarExcluir(id);
+                          }
+                        },
+                        itemBuilder: (_) => [
+                          const PopupMenuItem(
+                            value: 'editar',
+                            child: Text(
+                              'Editar',
+                              style: TextStyle(color: AppColors.labelPrimary),
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'renomear',
+                            child: Text(
+                              'Renomear',
+                              style: TextStyle(color: AppColors.labelPrimary),
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'excluir',
+                            child: Text(
+                              'Excluir',
+                              style: TextStyle(color: Colors.redAccent),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

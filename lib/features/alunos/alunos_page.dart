@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/aluno_service.dart';
+import '../../core/widgets/app_swipe_to_delete.dart';
 import 'perfil_aluno_page.dart';
 import 'widgets/aluno_avatar.dart';
 import '../../core/widgets/app_bar_icon_button.dart';
@@ -240,7 +241,10 @@ class _AlunosPageState extends State<AlunosPage> {
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close, color: AppColors.labelSecondary),
+                    icon: const Icon(
+                      Icons.close,
+                      color: AppColors.labelSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -357,26 +361,23 @@ class _AlunosPageState extends State<AlunosPage> {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
                 sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      if (index == _alunosDocs.length) {
-                        return _hasMore
-                            ? const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 32),
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.primary,
-                                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    if (index == _alunosDocs.length) {
+                      return _hasMore
+                          ? const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 32),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.primary,
                                 ),
-                              )
-                            : const SizedBox.shrink();
-                      }
-                      final doc = _alunosDocs[index];
-                      final aluno = doc.data() as Map<String, dynamic>;
-                      return _buildDismissibleCard(doc.id, aluno);
-                    },
-                    childCount: _alunosDocs.length + 1,
-                  ),
+                              ),
+                            )
+                          : const SizedBox.shrink();
+                    }
+                    final doc = _alunosDocs[index];
+                    final aluno = doc.data() as Map<String, dynamic>;
+                    return _buildDismissibleCard(doc.id, aluno);
+                  }, childCount: _alunosDocs.length + 1),
                 ),
               ),
           ],
@@ -405,17 +406,15 @@ class _AlunosPageState extends State<AlunosPage> {
       ],
       flexibleSpace: LayoutBuilder(
         builder: (context, constraints) {
-          final bool isCollapsed = constraints.biggest.height <=
+          final bool isCollapsed =
+              constraints.biggest.height <=
               (kToolbarHeight + MediaQuery.of(context).padding.top + 10);
 
           return FlexibleSpaceBar(
             title: AnimatedOpacity(
               duration: const Duration(milliseconds: 200),
               opacity: isCollapsed ? 1.0 : 0.0,
-              child: const Text(
-                'Meus Alunos',
-                style: AppTheme.pageTitle,
-              ),
+              child: const Text('Meus Alunos', style: AppTheme.pageTitle),
             ),
             centerTitle: true,
             titlePadding: const EdgeInsets.only(bottom: 14),
@@ -424,13 +423,14 @@ class _AlunosPageState extends State<AlunosPage> {
               opacity: isCollapsed ? 0.0 : 1.0,
               child: Container(
                 color: AppColors.background,
-                padding: const EdgeInsets.only(left: 20, bottom: SpacingTokens.xxl),
+                padding: const EdgeInsets.only(
+                  left: 20,
+                  bottom: SpacingTokens.xxl,
+                ),
                 alignment: Alignment.bottomLeft,
                 child: Text(
                   'Meus Alunos',
-                  style: AppTheme.bigTitle.copyWith(
-                    height: 1,
-                  )
+                  style: AppTheme.bigTitle.copyWith(height: 1),
                 ),
               ),
             ),
@@ -558,46 +558,41 @@ class _AlunosPageState extends State<AlunosPage> {
   }
 
   Widget _buildDismissibleCard(String id, Map<String, dynamic> aluno) {
-    return Dismissible(
-      key: Key(id),
-      direction: DismissDirection.endToStart,
-      confirmDismiss: (direction) async {
-        await _deletarAluno(id);
-        return false;
-      },
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 16),
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: Colors.redAccent.withAlpha(30),
-          borderRadius: BorderRadius.circular(20),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        child: AppSwipeToDelete(
+          dismissibleKey: Key(id),
+          confirmDismiss: (direction) async {
+            await _deletarAluno(id);
+            return false;
+          },
+          onDismissed: (direction) {
+            // Action handled in confirmDismiss
+          },
+          child: _buildAlunoCard(
+            nome: '${aluno['nome'] ?? ''} ${aluno['sobrenome'] ?? ''}'.trim(),
+            email: aluno['email'] ?? 'Sem e-mail',
+            status: aluno['status'] ?? 'ativo',
+            photoUrl: aluno['photoUrl'],
+            ultimoTreino: aluno['ultimoTreino'],
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PerfilAlunoPage(
+                    alunoId: id,
+                    alunoNome:
+                        '${aluno['nome'] ?? ''} ${aluno['sobrenome'] ?? ''}'
+                            .trim(),
+                    photoUrl: aluno['photoUrl'],
+                  ),
+                ),
+              );
+            },
+          ),
         ),
-        child: const Icon(
-          Icons.delete_sweep_rounded,
-          color: Colors.redAccent,
-          size: 28,
-        ),
-      ),
-      child: _buildAlunoCard(
-        nome: '${aluno['nome'] ?? ''} ${aluno['sobrenome'] ?? ''}'.trim(),
-        email: aluno['email'] ?? 'Sem e-mail',
-        status: aluno['status'] ?? 'ativo',
-        photoUrl: aluno['photoUrl'],
-        ultimoTreino: aluno['ultimoTreino'],
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PerfilAlunoPage(
-                alunoId: id,
-                alunoNome: '${aluno['nome'] ?? ''} ${aluno['sobrenome'] ?? ''}'
-                    .trim(),
-                photoUrl: aluno['photoUrl'],
-              ),
-            ),
-          );
-        },
       ),
     );
   }
@@ -621,7 +616,6 @@ class _AlunosPageState extends State<AlunosPage> {
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: SpacingTokens.sm),
       decoration: AppTheme.cardDecoration,
       child: InkWell(
         onTap: onTap,
@@ -633,11 +627,7 @@ class _AlunosPageState extends State<AlunosPage> {
               Stack(
                 alignment: Alignment.bottomRight,
                 children: [
-                  AlunoAvatar(
-                    alunoNome: nome,
-                    photoUrl: photoUrl,
-                    radius: 20,
-                  ),
+                  AlunoAvatar(alunoNome: nome, photoUrl: photoUrl, radius: 20),
                 ],
               ),
               const SizedBox(width: 16),
