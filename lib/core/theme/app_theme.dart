@@ -372,6 +372,10 @@ class AvatarTokens {
 class PillTokens {
   static const TextStyle text = AppTheme.caption2;
   static BorderRadius radius = BorderRadius.circular(999);
+  static Decoration decoration = BoxDecoration(
+    color: AppColors.surfaceDark,
+    borderRadius: BorderRadius.circular(999),
+  );
 }
 
 class ThumbnailTokens {

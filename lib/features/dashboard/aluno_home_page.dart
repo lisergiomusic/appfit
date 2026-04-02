@@ -58,7 +58,7 @@ class AlunoHomePage extends StatelessWidget {
                   const SizedBox(height: SpacingTokens.screenTopPadding),
                   _buildHeader(nome, photoUrl),
                   const SizedBox(height: SpacingTokens.xxl),
-                  Text('Seu treino', style: AppTheme.sectionHeader),
+                  Text('Seu treino atual', style: AppTheme.sectionHeader),
                   const SizedBox(height: SpacingTokens.labelToField),
                   rotina != null
                       ? _buildRotinaCard(rotina, ultimoTreino)
@@ -85,35 +85,27 @@ class AlunoHomePage extends StatelessWidget {
         CircleAvatar(
           radius: AvatarTokens.lg,
           backgroundColor: AppColors.surfaceLight,
-          backgroundImage:
-              photoUrl != null && photoUrl.isNotEmpty
-                  ? NetworkImage(photoUrl)
-                  : null,
-          child:
-              photoUrl == null || photoUrl.isEmpty
-                  ? const Icon(
-                      Icons.person_rounded,
-                      color: AppColors.labelSecondary,
-                      size: 28,
-                    )
-                  : null,
+          backgroundImage: photoUrl != null && photoUrl.isNotEmpty
+              ? NetworkImage(photoUrl)
+              : null,
+          child: photoUrl == null || photoUrl.isEmpty
+              ? const Icon(
+                  Icons.person_rounded,
+                  color: AppColors.labelSecondary,
+                  size: 28,
+                )
+              : null,
         ),
         const SizedBox(width: 14),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('${_getSaudacao()}, $nome', style: AppTheme.title1),
-            const SizedBox(height: SpacingTokens.xs),
+            const SizedBox(height: SpacingTokens.titleToSubtitle),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withAlpha(25),
-                borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-              ),
-              child: Text(
-                'Aluno',
-                style: AppTheme.caption2.copyWith(color: AppColors.primary),
-              ),
+              decoration: PillTokens.decoration,
+              child: Text('Aluno', style: PillTokens.text),
             ),
           ],
         ),
@@ -141,10 +133,9 @@ class AlunoHomePage extends StatelessWidget {
       if (alvo != null) vencimentoText = '$alvo sessões no plano';
     }
 
-    final int diasDesdeUltimoTreino =
-        ultimoTreino != null
-            ? DateTime.now().difference(ultimoTreino.toDate()).inDays
-            : -1;
+    final int diasDesdeUltimoTreino = ultimoTreino != null
+        ? DateTime.now().difference(ultimoTreino.toDate()).inDays
+        : -1;
 
     String ultimoTreinoText;
     Color ultimoTreinoCor;
@@ -159,10 +150,9 @@ class AlunoHomePage extends StatelessWidget {
       ultimoTreinoCor = AppColors.labelSecondary;
     } else {
       ultimoTreinoText = 'Último treino: há $diasDesdeUltimoTreino dias';
-      ultimoTreinoCor =
-          diasDesdeUltimoTreino >= 7
-              ? AppColors.accentMetrics
-              : AppColors.labelSecondary;
+      ultimoTreinoCor = diasDesdeUltimoTreino >= 7
+          ? AppColors.accentMetrics
+          : AppColors.labelSecondary;
     }
 
     return Container(
@@ -193,19 +183,11 @@ class AlunoHomePage extends StatelessWidget {
             ),
           ],
           const SizedBox(height: SpacingTokens.sm),
-          Divider(
-            height: 1,
-            thickness: 0.5,
-            color: AppColors.separator,
-          ),
+          Divider(height: 1, thickness: 0.5, color: AppColors.separator),
           const SizedBox(height: SpacingTokens.sm),
           Row(
             children: [
-              Icon(
-                Icons.access_time_rounded,
-                size: 12,
-                color: ultimoTreinoCor,
-              ),
+              Icon(Icons.access_time_rounded, size: 12, color: ultimoTreinoCor),
               const SizedBox(width: 4),
               Text(
                 ultimoTreinoText,
@@ -261,7 +243,9 @@ class AlunoHomePage extends StatelessWidget {
         final isLast = i == sessoes.length - 1;
 
         return Padding(
-          padding: EdgeInsets.only(bottom: isLast ? 0 : SpacingTokens.listItemGap),
+          padding: EdgeInsets.only(
+            bottom: isLast ? 0 : SpacingTokens.listItemGap,
+          ),
           child: Container(
             decoration: AppTheme.cardDecoration,
             padding: CardTokens.padding,
