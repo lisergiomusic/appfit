@@ -1,3 +1,4 @@
+import 'package:appfit/core/widgets/app_bar_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
@@ -162,7 +163,10 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right_rounded, color: Colors.white.withValues(alpha: 0.2)),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
             ],
           ),
         ),
@@ -182,10 +186,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
         onPressed: () => Navigator.pop(context),
       ),
       centerTitle: true,
-      title: const Text(
-        'Gerenciar Planilhas',
-        style: AppTheme.pageTitle,
-      ),
+      title: const Text('Gerenciar Planilhas', style: AppTheme.pageTitle),
     );
   }
 
@@ -197,15 +198,25 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
         final allDocs = snapshot.data?.docs ?? [];
         final planilhas = allDocs.toList()
           ..sort((a, b) {
-            final da = (a.data() as Map<String, dynamic>)['dataCriacao'] as Timestamp?;
-            final db = (b.data() as Map<String, dynamic>)['dataCriacao'] as Timestamp?;
+            final da =
+                (a.data() as Map<String, dynamic>)['dataCriacao'] as Timestamp?;
+            final db =
+                (b.data() as Map<String, dynamic>)['dataCriacao'] as Timestamp?;
             if (da == null) return 1;
             if (db == null) return -1;
             return db.compareTo(da);
           });
 
-        final ativa = planilhas.where((doc) => (doc.data() as Map<String, dynamic>)['ativa'] == true).toList();
-        final historico = planilhas.where((doc) => (doc.data() as Map<String, dynamic>)['ativa'] != true).toList();
+        final ativa = planilhas
+            .where(
+              (doc) => (doc.data() as Map<String, dynamic>)['ativa'] == true,
+            )
+            .toList();
+        final historico = planilhas
+            .where(
+              (doc) => (doc.data() as Map<String, dynamic>)['ativa'] != true,
+            )
+            .toList();
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -230,7 +241,14 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                     _buildSectionLabel('Planilha atual'),
                     const SizedBox(height: 12),
                     if (ativa.isNotEmpty)
-                      ...ativa.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id, isAtiva: true))
+                      ...ativa.map(
+                        (d) => _buildPlanilhaItem(
+                          context,
+                          d.data() as Map<String, dynamic>,
+                          d.id,
+                          isAtiva: true,
+                        ),
+                      )
                     else
                       _buildAtivaEmptyState(),
 
@@ -239,7 +257,13 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                     _buildSectionLabel('Anteriores'),
                     const SizedBox(height: 12),
                     if (historico.isNotEmpty)
-                      ...historico.map((d) => _buildPlanilhaItem(context, d.data() as Map<String, dynamic>, d.id))
+                      ...historico.map(
+                        (d) => _buildPlanilhaItem(
+                          context,
+                          d.data() as Map<String, dynamic>,
+                          d.id,
+                        ),
+                      )
                     else
                       _buildHistoricoEmptyState(),
 
@@ -253,10 +277,12 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
             padding: const EdgeInsets.only(bottom: 16.0),
             child: FloatingActionButton.extended(
               onPressed: () => _showAddOptions(context),
-              icon: const Icon(Icons.add_rounded, color: Colors.black, size: 24),
-              label: const Text(
-                'Nova planilha',
+              icon: const Icon(
+                Icons.add_rounded,
+                color: Colors.black,
+                size: 24,
               ),
+              label: const Text('Nova planilha'),
             ),
           ),
         );
@@ -340,14 +366,17 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
   Widget _buildSectionLabel(String label) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Text(
-        label,
-        style: AppTheme.sectionHeader,
-      ),
+      child: Text(label, style: AppTheme.sectionHeader),
     );
   }
 
-  Widget _buildPlanilhaItem(BuildContext context, Map<String, dynamic> data, String id, {bool isAtiva = false, bool isProgramada = false}) {
+  Widget _buildPlanilhaItem(
+    BuildContext context,
+    Map<String, dynamic> data,
+    String id, {
+    bool isAtiva = false,
+    bool isProgramada = false,
+  }) {
     String statusLabel = '';
     String infoLabel = '';
     double progress = 0.0;
@@ -361,26 +390,39 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
         infoLabel = '$concluidas / $total treinos';
       } else {
         DateTime hoje = DateTime.now();
-        DateTime criacao = (data['dataCriacao'] as Timestamp?)?.toDate() ?? hoje;
-        DateTime venc = (data['dataVencimento'] as Timestamp?)?.toDate() ?? hoje.add(const Duration(days: 30));
+        DateTime criacao =
+            (data['dataCriacao'] as Timestamp?)?.toDate() ?? hoje;
+        DateTime venc =
+            (data['dataVencimento'] as Timestamp?)?.toDate() ??
+            hoje.add(const Duration(days: 30));
         int totalDays = venc.difference(criacao).inDays;
-        progress = (hoje.difference(criacao).inDays / (totalDays > 0 ? totalDays : 1)).clamp(0.0, 1.0);
+        progress =
+            (hoje.difference(criacao).inDays / (totalDays > 0 ? totalDays : 1))
+                .clamp(0.0, 1.0);
         infoLabel = 'Vence em ${DateFormat('dd/MM').format(venc)}';
       }
     } else if (isProgramada) {
       statusLabel = 'AGENDADA';
-      DateTime dataC = (data['dataCriacao'] as Timestamp?)?.toDate() ?? DateTime.now();
+      DateTime dataC =
+          (data['dataCriacao'] as Timestamp?)?.toDate() ?? DateTime.now();
       infoLabel = 'Inicia ${DateFormat('dd/MM').format(dataC)}';
     } else {
       statusLabel = 'FINALIZADA';
-      DateTime dataC = (data['dataCriacao'] as Timestamp?)?.toDate() ?? DateTime.now();
+      DateTime dataC =
+          (data['dataCriacao'] as Timestamp?)?.toDate() ?? DateTime.now();
       infoLabel = DateFormat('dd MMM yyyy').format(dataC);
     }
 
-    final Color accentColor = isAtiva ? AppColors.primary : (isProgramada ? AppColors.iosBlue : AppColors.labelSecondary);
+    final Color accentColor = isAtiva
+        ? AppColors.primary
+        : (isProgramada ? AppColors.iosBlue : AppColors.labelSecondary);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12, left: AppTheme.paddingScreen, right: AppTheme.paddingScreen),
+      margin: const EdgeInsets.only(
+        bottom: 12,
+        left: AppTheme.paddingScreen,
+        right: AppTheme.paddingScreen,
+      ),
       decoration: AppTheme.cardDecoration,
       child: InkWell(
         borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -407,13 +449,19 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                           child: CircularProgressIndicator(
                             value: progress,
                             strokeWidth: 3,
-                            valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              accentColor,
+                            ),
                             backgroundColor: accentColor.withValues(alpha: 0.1),
                             strokeCap: StrokeCap.round,
                           ),
                         ),
                       Icon(
-                        isAtiva ? Icons.bolt_rounded : (isProgramada ? Icons.calendar_today_rounded : Icons.history_rounded),
+                        isAtiva
+                            ? Icons.bolt_rounded
+                            : (isProgramada
+                                  ? Icons.calendar_today_rounded
+                                  : Icons.history_rounded),
                         color: accentColor,
                         size: 24,
                       ),
@@ -442,13 +490,18 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                           Container(
                             width: 4,
                             height: 4,
-                            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
+                            ),
                           ),
                         const SizedBox(width: 8),
                         Text(
                           infoLabel,
                           style: TextStyle(
-                            color: AppColors.labelSecondary.withValues(alpha: 0.6),
+                            color: AppColors.labelSecondary.withValues(
+                              alpha: 0.6,
+                            ),
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -498,8 +551,18 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                     color: isAtiva ? Colors.orangeAccent : AppColors.primary,
                   ),
                   _buildPopupItem('editar', 'Editar', Icons.edit_note_rounded),
-                  _buildPopupItem('stats', 'Estatísticas', Icons.bar_chart_rounded, enabled: !isProgramada),
-                  _buildPopupItem('excluir', 'Excluir', Icons.delete_outline_rounded, color: Colors.redAccent),
+                  _buildPopupItem(
+                    'stats',
+                    'Estatísticas',
+                    Icons.bar_chart_rounded,
+                    enabled: !isProgramada,
+                  ),
+                  _buildPopupItem(
+                    'excluir',
+                    'Excluir',
+                    Icons.delete_outline_rounded,
+                    color: Colors.redAccent,
+                  ),
                 ],
               ),
             ],
@@ -509,18 +572,30 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
     );
   }
 
-  PopupMenuItem<String> _buildPopupItem(String value, String label, IconData icon, {Color? color, bool enabled = true}) {
+  PopupMenuItem<String> _buildPopupItem(
+    String value,
+    String label,
+    IconData icon, {
+    Color? color,
+    bool enabled = true,
+  }) {
     return PopupMenuItem<String>(
       value: value,
       enabled: enabled,
       child: Row(
         children: [
-          Icon(icon, color: (color ?? Colors.white).withValues(alpha: enabled ? 1 : 0.3), size: 20),
+          Icon(
+            icon,
+            color: (color ?? Colors.white).withValues(alpha: enabled ? 1 : 0.3),
+            size: 20,
+          ),
           const SizedBox(width: 12),
           Text(
             label,
             style: TextStyle(
-              color: (color ?? Colors.white).withValues(alpha: enabled ? 1 : 0.3),
+              color: (color ?? Colors.white).withValues(
+                alpha: enabled ? 1 : 0.3,
+              ),
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -530,7 +605,11 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
     );
   }
 
-  void _navegarParaDetalhes(BuildContext context, Map<String, dynamic> data, String id) {
+  void _navegarParaDetalhes(
+    BuildContext context,
+    Map<String, dynamic> data,
+    String id,
+  ) {
     if (id.startsWith('mock')) return;
     Navigator.push(
       context,

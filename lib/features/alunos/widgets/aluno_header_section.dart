@@ -23,14 +23,17 @@ class AlunoHeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.paddingScreen,
+        vertical: 4,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           AlunoAvatar(
             alunoNome: alunoNome,
             photoUrl: photoUrl,
-            radius: 40,
+            radius: AvatarTokens.lg,
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -38,10 +41,7 @@ class AlunoHeaderSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  alunoNome,
-                  style: AppTheme.title1,
-                ),
+                Text(alunoNome, style: AppTheme.title1),
                 const SizedBox(height: 4),
                 Row(
                   children: [
@@ -50,10 +50,7 @@ class AlunoHeaderSection extends StatelessWidget {
                     _buildBadge(Icons.fitness_center_rounded, '$peso kg'),
                   ],
                 ),
-                if (actions != null) ...[
-                  const SizedBox(height: 12),
-                  actions!,
-                ],
+                if (actions != null) ...[const SizedBox(height: 12), actions!],
               ],
             ),
           ),
@@ -68,23 +65,15 @@ class AlunoHeaderSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.fillSecondary,
-        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+        color: AppColors.surfaceDark,
+        borderRadius: PillTokens.radius,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 12, color: AppColors.labelSecondary),
           const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.labelSecondary,
-              fontSize: 13,
-              letterSpacing: -0.08,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
+          Text(label, style: PillTokens.text),
         ],
       ),
     );

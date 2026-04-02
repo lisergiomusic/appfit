@@ -368,3 +368,8 @@ class AvatarTokens {
   static const double md = 20.0; // diâmetro 40 — listas padrão
   static const double lg = 28.0; // diâmetro 56 — cabeçalhos de perfil, home
 }
+
+class PillTokens {
+  static const TextStyle text = AppTheme.caption2;
+  static BorderRadius radius = BorderRadius.circular(999);
+}
