@@ -151,7 +151,6 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       centerTitle: true,
-      leadingWidth: 100,
       leading: AppNavBackButton(
         onPressed: () async {
           if (_isSaving) return;
@@ -401,6 +400,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
               setState(() => _dataNascimento = picked);
             }
           },
+          splashColor: AppColors.splash,
           borderRadius: BorderRadius.circular(AppTheme.radiusMD),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

@@ -295,6 +295,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: item.onTap,
+                  splashColor: AppColors.splash,
                   borderRadius: BorderRadius.vertical(
                     top: index == 0
                         ? const Radius.circular(AppTheme.radiusLG)
