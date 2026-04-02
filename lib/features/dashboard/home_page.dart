@@ -403,7 +403,7 @@ class HomePage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(name, style: AppTheme.cardTitle),
-                      const SizedBox(height: 1),
+                      const SizedBox(height: SpacingTokens.titleToSubtitle),
                       Text(
                         action,
                         style: AppTheme.cardSubtitle,

@@ -75,7 +75,6 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        leadingWidth: 100,
         leading: const AppNavBackButton(),
         title: const Text('Perfil do Aluno'),
         bottom: const AppBarDivider(),

@@ -212,8 +212,7 @@ class FichaAtivaHeroCard extends StatelessWidget {
           width: double.infinity,
           decoration: BoxDecoration(
             color: AppColors.surfaceDark,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.primary.withAlpha(10)),
+            borderRadius: CardTokens.cardRadius,
           ),
           child: Material(
             color: Colors.transparent,
