@@ -424,14 +424,12 @@ class _AlunosPageState extends State<AlunosPage> {
               child: Container(
                 color: AppColors.background,
                 padding: const EdgeInsets.only(
-                  left: 20,
-                  bottom: SpacingTokens.xxl,
+                  left: SpacingTokens.screenHorizontalPadding,
+                  right: SpacingTokens.screenHorizontalPadding,
+                  bottom: 20,
                 ),
                 alignment: Alignment.bottomLeft,
-                child: Text(
-                  'Meus Alunos',
-                  style: AppTheme.bigTitle.copyWith(height: 1),
-                ),
+                child: Text('Meus Alunos', style: AppTheme.bigTitle),
               ),
             ),
           );

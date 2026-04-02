@@ -279,10 +279,10 @@ class _TreinosPageState extends State<TreinosPage> {
               child: Container(
                 color: AppColors.background,
                 padding: const EdgeInsets.fromLTRB(
-                  20,
+                  SpacingTokens.screenHorizontalPadding,
                   SpacingTokens.pageTopPadding,
-                  0,
-                  10,
+                  SpacingTokens.screenHorizontalPadding,
+                  20,
                 ),
                 alignment: Alignment.bottomLeft,
                 child: Text(titleStr, style: AppTheme.bigTitle),
@@ -296,7 +296,12 @@ class _TreinosPageState extends State<TreinosPage> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, SpacingTokens.sectionGap),
+      padding: const EdgeInsets.fromLTRB(
+        SpacingTokens.screenHorizontalPadding,
+        0,
+        SpacingTokens.screenHorizontalPadding,
+        SpacingTokens.sectionGap,
+      ),
       child: Container(
         height: 36,
         decoration: BoxDecoration(

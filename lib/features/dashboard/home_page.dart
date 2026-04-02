@@ -179,10 +179,7 @@ class HomePage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Text('Ações rápidas', style: AppTheme.sectionHeader),
-                  ),
+                  Text('Ações rápidas', style: AppTheme.sectionHeader),
                   const SizedBox(height: SpacingTokens.labelToField),
                   Row(
                     children: [
@@ -220,13 +217,7 @@ class HomePage extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: Text(
-                      'Atividade recente',
-                      style: AppTheme.sectionHeader,
-                    ),
-                  ),
+                  Text('Atividade recente', style: AppTheme.sectionHeader),
                   AppSectionLinkButton(label: 'Ver tudo', onPressed: () {}),
                 ],
               ),
@@ -360,7 +351,7 @@ class HomePage extends StatelessWidget {
               width: double.infinity,
               height: 64,
               decoration: BoxDecoration(
-                color: AppColors.fillSecondary,
+                color: AppColors.surfaceDark,
                 borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               ),
               child: Icon(icon, color: color, size: 28),
