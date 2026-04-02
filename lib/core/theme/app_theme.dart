@@ -373,3 +373,9 @@ class PillTokens {
   static const TextStyle text = AppTheme.caption2;
   static BorderRadius radius = BorderRadius.circular(999);
 }
+
+class ThumbnailTokens {
+  static const double sm = 40.0;
+  static const double md = 48.0;
+  static const double lg = 60.0;
+}

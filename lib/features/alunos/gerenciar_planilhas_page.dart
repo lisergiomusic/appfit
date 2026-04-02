@@ -420,153 +420,119 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
     return Container(
       margin: const EdgeInsets.only(
         bottom: 12,
-        left: AppTheme.paddingScreen,
-        right: AppTheme.paddingScreen,
+        left: SpacingTokens.screenHorizontalPadding,
+        right: SpacingTokens.screenHorizontalPadding,
       ),
       decoration: AppTheme.cardDecoration,
+      padding: CardTokens.padding,
       child: InkWell(
         borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         splashColor: AppColors.splash.withAlpha(50),
         highlightColor: AppColors.splash.withAlpha(30),
         onTap: () => _navegarParaDetalhes(context, data, id),
-        child: Padding(
-          padding: AppTheme.edgeInsetsSmall,
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  width: 56,
-                  height: 56,
-                  color: Colors.black.withAlpha(40),
-                  child: Stack(
-                    alignment: Alignment.center,
+        child: Row(
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                if (isAtiva)
+                  SizedBox(
+                    width: ThumbnailTokens.md,
+                    height: ThumbnailTokens.md,
+                    child: CircularProgressIndicator(
+                      value: progress,
+                      strokeWidth: 3,
+                      valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+                      backgroundColor: accentColor.withValues(alpha: 0.1),
+                      strokeCap: StrokeCap.round,
+                    ),
+                  ),
+                Icon(
+                  isAtiva
+                      ? Icons.bolt_rounded
+                      : (isProgramada
+                            ? Icons.calendar_today_rounded
+                            : Icons.history_rounded),
+                  color: accentColor,
+                  size: 24,
+                ),
+              ],
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text((data['nome'] ?? 'Planilha'), style: AppTheme.cardTitle),
+                  const SizedBox(height: SpacingTokens.titleToSubtitle),
+                  Row(
                     children: [
-                      if (isAtiva)
-                        SizedBox(
-                          width: 44,
-                          height: 44,
-                          child: CircularProgressIndicator(
-                            value: progress,
-                            strokeWidth: 3,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              accentColor,
-                            ),
-                            backgroundColor: accentColor.withValues(alpha: 0.1),
-                            strokeCap: StrokeCap.round,
+                      if (!isAtiva && !isProgramada)
+                        Container(
+                          width: 4,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
                           ),
                         ),
-                      Icon(
-                        isAtiva
-                            ? Icons.bolt_rounded
-                            : (isProgramada
-                                  ? Icons.calendar_today_rounded
-                                  : Icons.history_rounded),
-                        color: accentColor,
-                        size: 24,
-                      ),
+
+                      Text(infoLabel, style: AppTheme.caption),
                     ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          statusLabel,
-                          style: TextStyle(
-                            color: accentColor,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        if (!isAtiva && !isProgramada)
-                          Container(
-                            width: 4,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        const SizedBox(width: 8),
-                        Text(
-                          infoLabel,
-                          style: TextStyle(
-                            color: AppColors.labelSecondary.withValues(
-                              alpha: 0.6,
-                            ),
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      (data['nome'] ?? 'Planilha'),
-                      style: AppTheme.cardTitle,
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuButton<String>(
-                icon: Icon(
-                  Icons.more_vert_rounded,
-                  color: Colors.white.withValues(alpha: 0.4),
-                ),
-                color: AppColors.background,
-                offset: const Offset(0, 40),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-                ),
-                onSelected: (value) {
-                  switch (value) {
-                    case 'editar':
-                      _navegarParaDetalhes(context, data, id);
-                      break;
-                    case 'stats':
-                      // Implementar stats
-                      break;
-                    case 'alternar_status':
-                      // Implementar ativar/pausar
-                      break;
-                    case 'excluir':
-                      // Implementar excluir
-                      break;
-                  }
-                },
-                itemBuilder: (context) => [
-                  _buildPopupItem(
-                    'alternar_status',
-                    isAtiva ? 'Pausar Planilha' : 'Ativar Planilha',
-                    isAtiva ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                    color: isAtiva ? Colors.orangeAccent : AppColors.primary,
-                  ),
-                  _buildPopupItem('editar', 'Editar', Icons.edit_note_rounded),
-                  _buildPopupItem(
-                    'stats',
-                    'Estatísticas',
-                    Icons.bar_chart_rounded,
-                    enabled: !isProgramada,
-                  ),
-                  _buildPopupItem(
-                    'excluir',
-                    'Excluir',
-                    Icons.delete_outline_rounded,
-                    color: Colors.redAccent,
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+            PopupMenuButton<String>(
+              icon: Icon(
+                Icons.more_vert_rounded,
+                color: Colors.white.withValues(alpha: 0.4),
+              ),
+              color: AppColors.background,
+              offset: const Offset(0, 40),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+              ),
+              onSelected: (value) {
+                switch (value) {
+                  case 'editar':
+                    _navegarParaDetalhes(context, data, id);
+                    break;
+                  case 'stats':
+                    // Implementar stats
+                    break;
+                  case 'alternar_status':
+                    // Implementar ativar/pausar
+                    break;
+                  case 'excluir':
+                    // Implementar excluir
+                    break;
+                }
+              },
+              itemBuilder: (context) => [
+                _buildPopupItem(
+                  'alternar_status',
+                  isAtiva ? 'Pausar Planilha' : 'Ativar Planilha',
+                  isAtiva ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  color: isAtiva ? Colors.orangeAccent : AppColors.primary,
+                ),
+                _buildPopupItem('editar', 'Editar', Icons.edit_note_rounded),
+                _buildPopupItem(
+                  'stats',
+                  'Estatísticas',
+                  Icons.bar_chart_rounded,
+                  enabled: !isProgramada,
+                ),
+                _buildPopupItem(
+                  'excluir',
+                  'Excluir',
+                  Icons.delete_outline_rounded,
+                  color: Colors.redAccent,
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
