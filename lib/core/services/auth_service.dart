@@ -99,6 +99,54 @@ class AuthService {
     }
   }
 
+  /// Cria a conta Firebase Auth para um aluno pré-cadastrado pelo personal.
+  /// Migra o documento Firestore do ID auto-gerado para usuarios/{uid}.
+  Future<void> primeiroAcessoAluno({
+    required String email,
+    required String password,
+  }) async {
+    // 1. Verifica se existe um doc pré-cadastrado pelo personal
+    final query = await _db
+        .collection('usuarios')
+        .where('email', isEqualTo: email)
+        .where('tipoUsuario', isEqualTo: 'aluno')
+        .limit(1)
+        .get();
+
+    if (query.docs.isEmpty) {
+      throw Exception(
+        'Nenhum cadastro encontrado para este e-mail. Peça ao seu personal para te cadastrar.',
+      );
+    }
+
+    // 2. Cria a conta Firebase Auth
+    UserCredential credential;
+    try {
+      credential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    }
+
+    final uid = credential.user!.uid;
+    final oldDoc = query.docs.first;
+
+    // 3. Migra o documento atomicamente para usuarios/{uid}
+    final batch = _db.batch();
+    batch.set(_db.collection('usuarios').doc(uid), oldDoc.data());
+    batch.delete(oldDoc.reference);
+
+    try {
+      await batch.commit();
+    } catch (e) {
+      // Se a migração falhar, desfaz a criação da conta Auth
+      await credential.user?.delete();
+      throw Exception('Erro ao configurar sua conta. Tente novamente.');
+    }
+  }
+
   Future<void> signOut() async {
     await _auth.signOut();
   }

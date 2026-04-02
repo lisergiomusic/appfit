@@ -216,11 +216,16 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 controller: _pesoController,
                 label: 'Peso',
                 icon: Icons.monitor_weight_outlined,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 hint: 'Ex: 75.5',
                 suffix: const Text(
                   'kg',
-                  style: TextStyle(color: AppColors.labelSecondary, fontSize: 14),
+                  style: TextStyle(
+                    color: AppColors.labelSecondary,
+                    fontSize: 14,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -377,10 +382,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 8),
-          child: Text('Nascimento', style: AppTheme.formLabel),
-        ),
+        Text('Nascimento', style: AppTheme.formLabel),
         const SizedBox(height: SpacingTokens.labelToField),
         InkWell(
           onTap: () async {

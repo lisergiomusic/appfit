@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/auth_service.dart';
 import 'cadastro_page.dart';
+import 'primeiro_acesso_page.dart';
 import '../dashboard/dashboard_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -164,23 +165,26 @@ class _LoginPageState extends State<LoginPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Ainda não tem uma conta?',
-                    style: TextStyle(color: AppColors.labelSecondary),
+                  Text(
+                    widget.userType == 'aluno'
+                        ? 'Primeiro acesso?'
+                        : 'Ainda não tem uma conta?',
+                    style: const TextStyle(color: AppColors.labelSecondary),
                   ),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              CadastroPage(userType: widget.userType),
+                          builder: (context) => widget.userType == 'aluno'
+                              ? const PrimeiroAcessoPage()
+                              : CadastroPage(userType: widget.userType),
                         ),
                       );
                     },
-                    child: const Text(
-                      'Cadastre-se',
-                      style: TextStyle(
+                    child: Text(
+                      widget.userType == 'aluno' ? 'Criar senha' : 'Cadastre-se',
+                      style: const TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.bold,
                       ),

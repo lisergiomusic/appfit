@@ -26,12 +26,9 @@ class GestaoSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text('Gestão', style: AppTheme.sectionHeader),
-            ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text('Gestão', style: AppTheme.sectionHeader),
           ),
           const SizedBox(height: 8),
           Container(
