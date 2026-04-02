@@ -1,4 +1,5 @@
 import 'package:appfit/core/widgets/app_nav_back_button.dart';
+import '../../core/widgets/app_primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
@@ -86,10 +87,18 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showNovaFaturaModal(context),
-        icon: const Icon(Icons.add, color: Colors.black),
-        label: const Text('Nova Fatura'),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          SpacingTokens.screenHorizontalPadding,
+          0,
+          SpacingTokens.screenHorizontalPadding,
+          SpacingTokens.screenBottomPadding,
+        ),
+        child: AppPrimaryButton(
+          label: 'Nova Fatura',
+          icon: Icons.add,
+          onPressed: () => _showNovaFaturaModal(context),
+        ),
       ),
     );
   }
@@ -533,45 +542,29 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
                 },
               ),
               const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (valorController.text.isNotEmpty &&
-                        descricaoController.text.isNotEmpty) {
-                      final valor =
-                          double.tryParse(
-                            valorController.text.replaceAll(',', '.'),
-                          ) ??
-                          0.0;
-                      _financeiroService.criarFatura(
-                        FaturaModel(
-                          id: '',
-                          alunoId: widget.alunoId,
-                          valor: valor,
-                          dataVencimento: dataVencimento,
-                          status: 'pendente',
-                          descricao: descricaoController.text,
-                        ),
-                      );
-                      Navigator.pop(context);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: const Text(
-                    'CRIAR COBRANÇA',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
+              AppPrimaryButton(
+                label: 'Criar Cobrança',
+                onPressed: () {
+                  if (valorController.text.isNotEmpty &&
+                      descricaoController.text.isNotEmpty) {
+                    final valor =
+                        double.tryParse(
+                          valorController.text.replaceAll(',', '.'),
+                        ) ??
+                        0.0;
+                    _financeiroService.criarFatura(
+                      FaturaModel(
+                        id: '',
+                        alunoId: widget.alunoId,
+                        valor: valor,
+                        dataVencimento: dataVencimento,
+                        status: 'pendente',
+                        descricao: descricaoController.text,
+                      ),
+                    );
+                    Navigator.pop(context);
+                  }
+                },
               ),
             ],
           ),
