@@ -1,4 +1,5 @@
 import 'package:appfit/core/widgets/app_bar_divider.dart';
+import 'package:appfit/core/widgets/app_nav_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_theme.dart';
@@ -55,7 +56,6 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
               child: Container(
                 width: 40,
                 height: 4,
-
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(2),
@@ -174,22 +174,6 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
     );
   }
 
-  Widget _buildSliverAppBar() {
-    return SliverAppBar(
-      expandedHeight: 0,
-      floating: true,
-      pinned: true,
-      backgroundColor: AppColors.background,
-      elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-        onPressed: () => Navigator.pop(context),
-      ),
-      centerTitle: true,
-      title: const Text('Gerenciar Planilhas', style: AppTheme.pageTitle),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
@@ -220,58 +204,61 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
 
         return Scaffold(
           backgroundColor: AppColors.background,
-          body: CustomScrollView(
+          appBar: AppBar(
+            backgroundColor: AppColors.background,
+            elevation: 0,
+            leading: AppNavBackButton(),
+            centerTitle: true,
+            title: const Text('Gerenciar Planilhas', style: AppTheme.pageTitle),
+            bottom: const AppBarDivider(),
+          ),
+          body: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            slivers: [
-              _buildSliverAppBar(),
-              SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 12),
-                    AlunoHeaderSection(
-                      alunoId: widget.alunoId,
-                      alunoNome: widget.alunoNome,
-                      photoUrl: widget.photoUrl,
-                      idade: widget.idade,
-                      peso: widget.peso,
-                    ),
-                    const SizedBox(height: 32),
-
-                    _buildSectionLabel('Planilha atual'),
-                    const SizedBox(height: 12),
-                    if (ativa.isNotEmpty)
-                      ...ativa.map(
-                        (d) => _buildPlanilhaItem(
-                          context,
-                          d.data() as Map<String, dynamic>,
-                          d.id,
-                          isAtiva: true,
-                        ),
-                      )
-                    else
-                      _buildAtivaEmptyState(),
-
-                    const SizedBox(height: 32),
-
-                    _buildSectionLabel('Anteriores'),
-                    const SizedBox(height: 12),
-                    if (historico.isNotEmpty)
-                      ...historico.map(
-                        (d) => _buildPlanilhaItem(
-                          context,
-                          d.data() as Map<String, dynamic>,
-                          d.id,
-                        ),
-                      )
-                    else
-                      _buildHistoricoEmptyState(),
-
-                    const SizedBox(height: 120),
-                  ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12),
+                AlunoHeaderSection(
+                  alunoId: widget.alunoId,
+                  alunoNome: widget.alunoNome,
+                  photoUrl: widget.photoUrl,
+                  idade: widget.idade,
+                  peso: widget.peso,
                 ),
-              ),
-            ],
+                const SizedBox(height: 32),
+
+                _buildSectionLabel('Planilha atual'),
+                const SizedBox(height: 12),
+                if (ativa.isNotEmpty)
+                  ...ativa.map(
+                    (d) => _buildPlanilhaItem(
+                      context,
+                      d.data() as Map<String, dynamic>,
+                      d.id,
+                      isAtiva: true,
+                    ),
+                  )
+                else
+                  _buildAtivaEmptyState(),
+
+                const SizedBox(height: 32),
+
+                _buildSectionLabel('Anteriores'),
+                const SizedBox(height: 12),
+                if (historico.isNotEmpty)
+                  ...historico.map(
+                    (d) => _buildPlanilhaItem(
+                      context,
+                      d.data() as Map<String, dynamic>,
+                      d.id,
+                    ),
+                  )
+                else
+                  _buildHistoricoEmptyState(),
+
+                const SizedBox(height: 120),
+              ],
+            ),
           ),
           floatingActionButton: Padding(
             padding: const EdgeInsets.only(bottom: 16.0),
@@ -365,7 +352,9 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
 
   Widget _buildSectionLabel(String label) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(
+        horizontal: SpacingTokens.screenHorizontalPadding,
+      ),
       child: Text(label, style: AppTheme.sectionHeader),
     );
   }
@@ -377,12 +366,10 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
     bool isAtiva = false,
     bool isProgramada = false,
   }) {
-    String statusLabel = '';
     String infoLabel = '';
     double progress = 0.0;
 
     if (isAtiva) {
-      statusLabel = 'ATIVA';
       if (data['tipoVencimento'] == 'sessoes') {
         int total = data['vencimentoSessoes'] ?? 1;
         int concluidas = data['sessoesConcluidas'] ?? 0;
@@ -402,12 +389,10 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
         infoLabel = 'Vence em ${DateFormat('dd/MM').format(venc)}';
       }
     } else if (isProgramada) {
-      statusLabel = 'AGENDADA';
       DateTime dataC =
           (data['dataCriacao'] as Timestamp?)?.toDate() ?? DateTime.now();
       infoLabel = 'Inicia ${DateFormat('dd/MM').format(dataC)}';
     } else {
-      statusLabel = 'FINALIZADA';
       DateTime dataC =
           (data['dataCriacao'] as Timestamp?)?.toDate() ?? DateTime.now();
       infoLabel = DateFormat('dd MMM yyyy').format(dataC);
