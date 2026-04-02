@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/auth_service.dart';
 import 'home_page.dart';
+import 'aluno_home_page.dart';
 import '../alunos/alunos_page.dart';
 import '../../main.dart';
 
@@ -24,42 +25,100 @@ class _DashboardPageState extends State<DashboardPage> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const ChecagemPagina()),
-            (route) => false,
+        (route) => false,
       );
     }
   }
 
+  Widget _buildAjustes(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.settings, size: 64, color: AppColors.labelSecondary),
+          const SizedBox(height: AppTheme.space16),
+          const Text(
+            'Ajustes',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: AppTheme.space32),
+          ElevatedButton.icon(
+            onPressed: () => _sair(context),
+            icon: const Icon(Icons.logout),
+            label: const Text('Sair do AppFit'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent.withAlpha(25),
+              foregroundColor: Colors.redAccent,
+              elevation: 0,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final List<Widget> paginas = [
-      const HomePage(),
-      const AlunosPage(),
-      const TreinosPage(),
-      Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.settings, size: 64, color: AppColors.labelSecondary),
-            const SizedBox(height: AppTheme.space16),
-            const Text(
-                'Ajustes',
-                style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)
-            ),
-            const SizedBox(height: AppTheme.space32),
-            ElevatedButton.icon(
-              onPressed: () => _sair(context),
-              icon: const Icon(Icons.logout),
-              label: const Text('Sair do AppFit'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent.withAlpha(25),
-                foregroundColor: Colors.redAccent,
-                elevation: 0,
+    final isAluno = widget.userType == 'aluno';
+    final uid = _authService.currentUser?.uid ?? '';
+
+    final List<Widget> paginas =
+        isAluno
+            ? [
+              AlunoHomePage(uid: uid),
+              const Center(
+                child: Text(
+                  'Meu Treino — em breve',
+                  style: TextStyle(color: AppColors.labelSecondary),
+                ),
               ),
-            )
-          ],
-        ),
-      ),
-    ];
+              _buildAjustes(context),
+            ]
+            : [
+              const HomePage(),
+              const AlunosPage(),
+              const TreinosPage(),
+              _buildAjustes(context),
+            ];
+
+    final List<BottomNavigationBarItem> items =
+        isAluno
+            ? const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.grid_view_rounded),
+                label: 'Início',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.fitness_center),
+                label: 'Meu Treino',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.settings),
+                label: 'Ajustes',
+              ),
+            ]
+            : const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.grid_view_rounded),
+                label: 'Início',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.group),
+                label: 'Alunos',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.fitness_center),
+                label: 'Rotinas',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.settings),
+                label: 'Ajustes',
+              ),
+            ];
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -76,12 +135,7 @@ class _DashboardPageState extends State<DashboardPage> {
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.labelSecondary,
         elevation: 16,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view_rounded), label: 'Início'),
-          BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Alunos'),
-          BottomNavigationBarItem(icon: Icon(Icons.fitness_center), label: 'Rotinas'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ajustes'),
-        ],
+        items: items,
       ),
     );
   }
