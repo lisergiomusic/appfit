@@ -175,11 +175,18 @@ class _AlunosPageState extends State<AlunosPage> {
     String sobrenome,
     String email,
     String? genero,
+    DateTime? dataNascimento,
   ) async {
     if (nome.isEmpty || sobrenome.isEmpty || email.isEmpty) return;
 
     try {
-      await _alunoService.salvarAluno(nome, sobrenome, email, genero: genero);
+      await _alunoService.salvarAluno(
+        nome,
+        sobrenome,
+        email,
+        genero: genero,
+        dataNascimento: dataNascimento,
+      );
       if (context.mounted) {
         Navigator.pop(context);
         _fetchInitialData();
@@ -193,7 +200,9 @@ class _AlunosPageState extends State<AlunosPage> {
     final nomeController = TextEditingController();
     final sobrenomeController = TextEditingController();
     final emailController = TextEditingController();
+    final dataNascimentoController = TextEditingController();
     String? generoSelecionado;
+    DateTime? dataNascimentoSelecionada;
 
     showModalBottomSheet(
       context: context,
@@ -252,21 +261,24 @@ class _AlunosPageState extends State<AlunosPage> {
               TextField(
                 controller: nomeController,
                 decoration: const InputDecoration(
+                  fillColor: AppColors.surfaceLight,
                   labelText: 'Nome',
                   prefixIcon: Icon(Icons.person_outline),
                 ),
                 textCapitalization: TextCapitalization.words,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: SpacingTokens.listItemGap),
               TextField(
                 controller: sobrenomeController,
                 decoration: const InputDecoration(
+                  fillColor: AppColors.surfaceLight,
+
                   labelText: 'Sobrenome',
                   prefixIcon: Icon(Icons.person_outline),
                 ),
                 textCapitalization: TextCapitalization.words,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: SpacingTokens.listItemGap),
               DropdownButtonFormField<String>(
                 dropdownColor: AppColors.surfaceDark,
                 items: ['Masculino', 'Feminino', 'Outro']
@@ -275,14 +287,50 @@ class _AlunosPageState extends State<AlunosPage> {
                 onChanged: (val) => generoSelecionado = val,
                 decoration: const InputDecoration(
                   labelText: 'Gênero',
+                  fillColor: AppColors.surfaceLight,
+
                   prefixIcon: Icon(Icons.people_outline),
                 ),
                 style: const TextStyle(color: Colors.white),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: SpacingTokens.listItemGap),
+              TextField(
+                controller: dataNascimentoController,
+                readOnly: true,
+                decoration: const InputDecoration(
+                  fillColor: AppColors.surfaceLight,
+                  labelText: 'Data de Nascimento',
+                  prefixIcon: Icon(Icons.cake_outlined),
+                  suffixIcon: Icon(Icons.calendar_today_outlined),
+                ),
+                onTap: () async {
+                  final now = DateTime.now();
+                  final dataSelecionada = await showDatePicker(
+                    context: context,
+                    initialDate:
+                        dataNascimentoSelecionada ?? DateTime(now.year - 18),
+                    firstDate: DateTime(1900),
+                    lastDate: now,
+                    locale: const Locale('pt', 'BR'),
+                  );
+
+                  if (dataSelecionada != null) {
+                    setModalState(() {
+                      dataNascimentoSelecionada = dataSelecionada;
+                      dataNascimentoController.text =
+                          '${dataSelecionada.day.toString().padLeft(2, '0')}/'
+                          '${dataSelecionada.month.toString().padLeft(2, '0')}/'
+                          '${dataSelecionada.year}';
+                    });
+                  }
+                },
+              ),
+              const SizedBox(height: SpacingTokens.listItemGap),
               TextField(
                 controller: emailController,
                 decoration: const InputDecoration(
+                  fillColor: AppColors.surfaceLight,
+
                   labelText: 'E-mail de Acesso',
                   prefixIcon: Icon(Icons.alternate_email),
                 ),
@@ -299,6 +347,7 @@ class _AlunosPageState extends State<AlunosPage> {
                     sobrenomeController.text,
                     emailController.text,
                     generoSelecionado,
+                    dataNascimentoSelecionada,
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,

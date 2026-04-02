@@ -8,11 +8,7 @@ class PaginatedAlunos {
   final DocumentSnapshot? lastDoc;
   final bool hasMore;
 
-  PaginatedAlunos({
-    required this.docs,
-    this.lastDoc,
-    required this.hasMore,
-  });
+  PaginatedAlunos({required this.docs, this.lastDoc, required this.hasMore});
 }
 
 class ContagemAlunos {
@@ -33,15 +29,19 @@ class AlunoService {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
 
-  AlunoService({
-    FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+  AlunoService({FirebaseFirestore? firestore, FirebaseAuth? auth})
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _auth = auth ?? FirebaseAuth.instance;
 
   String? get _currentPersonalId => _auth.currentUser?.uid;
 
-  Future<void> salvarAluno(String nome, String sobrenome, String email, {String? genero}) async {
+  Future<void> salvarAluno(
+    String nome,
+    String sobrenome,
+    String email, {
+    String? genero,
+    DateTime? dataNascimento,
+  }) async {
     final personalId = _currentPersonalId;
     if (personalId == null) throw Exception('Personal não autenticado');
 
@@ -57,6 +57,9 @@ class AlunoService {
     };
 
     if (genero != null) data['genero'] = genero;
+    if (dataNascimento != null) {
+      data['dataNascimento'] = Timestamp.fromDate(dataNascimento);
+    }
 
     await _firestore.collection('usuarios').add(data);
   }
@@ -80,7 +83,8 @@ class AlunoService {
 
     if (telefone != null) data['telefone'] = telefone;
     if (peso != null) data['pesoAtual'] = peso;
-    if (dataNascimento != null) data['dataNascimento'] = Timestamp.fromDate(dataNascimento);
+    if (dataNascimento != null)
+      data['dataNascimento'] = Timestamp.fromDate(dataNascimento);
     if (objetivos != null) data['objetivos'] = objetivos;
     if (genero != null) data['genero'] = genero;
 
@@ -105,13 +109,22 @@ class AlunoService {
         .where('personalId', isEqualTo: personalId);
 
     final total = await baseQuery.count().get();
-    final ativos = await baseQuery.where('status', isEqualTo: 'ativo').count().get();
-    final inativos = await baseQuery.where('status', isEqualTo: 'inativo').count().get();
+    final ativos = await baseQuery
+        .where('status', isEqualTo: 'ativo')
+        .count()
+        .get();
+    final inativos = await baseQuery
+        .where('status', isEqualTo: 'inativo')
+        .count()
+        .get();
 
     final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
     final risco = await baseQuery
         .where('status', isEqualTo: 'ativo')
-        .where('ultimoTreino', isLessThanOrEqualTo: Timestamp.fromDate(sevenDaysAgo))
+        .where(
+          'ultimoTreino',
+          isLessThanOrEqualTo: Timestamp.fromDate(sevenDaysAgo),
+        )
         .count()
         .get();
 
@@ -145,7 +158,10 @@ class AlunoService {
       final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
       query = query
           .where('status', isEqualTo: 'ativo')
-          .where('ultimoTreino', isLessThanOrEqualTo: Timestamp.fromDate(sevenDaysAgo));
+          .where(
+            'ultimoTreino',
+            isLessThanOrEqualTo: Timestamp.fromDate(sevenDaysAgo),
+          );
     }
 
     if (searchQuery.isNotEmpty) {
@@ -170,16 +186,13 @@ class AlunoService {
   }
 
   Stream<DocumentSnapshot> getAlunoStream(String alunoId) {
-    return _firestore
-        .collection('usuarios')
-        .doc(alunoId)
-        .snapshots();
+    return _firestore.collection('usuarios').doc(alunoId).snapshots();
   }
 
   /// Combina os dados do aluno e sua rotina ativa em um único Stream
   Stream<AlunoPerfilData> getAlunoPerfilCompletoStream(String alunoId) {
     final alunoStream = getAlunoStream(alunoId);
-    
+
     final rotinaStream = _firestore
         .collection('rotinas')
         .where('alunoId', isEqualTo: alunoId)
@@ -192,10 +205,12 @@ class AlunoService {
       rotinaStream,
       (alunoSnap, rotinaSnap) {
         final alunoMap = alunoSnap.data() as Map<String, dynamic>? ?? {};
-        final rotinaMap = rotinaSnap.docs.isNotEmpty 
-            ? rotinaSnap.docs.first.data() as Map<String, dynamic>? 
+        final rotinaMap = rotinaSnap.docs.isNotEmpty
+            ? rotinaSnap.docs.first.data() as Map<String, dynamic>?
             : null;
-        final rotinaId = rotinaSnap.docs.isNotEmpty ? rotinaSnap.docs.first.id : null;
+        final rotinaId = rotinaSnap.docs.isNotEmpty
+            ? rotinaSnap.docs.first.id
+            : null;
 
         return AlunoPerfilData(
           aluno: alunoMap,
@@ -237,7 +252,10 @@ class AlunoService {
     required String templateId,
     required int duracaoSemanas,
   }) async {
-    final templateDoc = await _firestore.collection('rotinas').doc(templateId).get();
+    final templateDoc = await _firestore
+        .collection('rotinas')
+        .doc(templateId)
+        .get();
     if (!templateDoc.exists) return;
 
     final rotinasAntigas = await _firestore
