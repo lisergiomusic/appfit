@@ -49,7 +49,7 @@ class AppTheme {
   static const title1 = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w700,
-    letterSpacing: 0.36,
+    letterSpacing: -0.36,
     height: 1,
     color: AppColors.labelPrimary,
   );
@@ -290,7 +290,7 @@ class AppTheme {
 }
 
 class CardTokens {
-  static const padding = EdgeInsets.symmetric(horizontal: 16, vertical: 12);
+  static const padding = EdgeInsets.symmetric(horizontal: 16, vertical: 16);
   static BorderRadius cardRadius = BorderRadius.circular(AppTheme.radiusLG);
   static const TextStyle cardTitle = TextStyle(
     fontSize: 17,

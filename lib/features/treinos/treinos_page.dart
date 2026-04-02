@@ -280,7 +280,7 @@ class _TreinosPageState extends State<TreinosPage> {
                 color: AppColors.background,
                 padding: const EdgeInsets.fromLTRB(
                   SpacingTokens.screenHorizontalPadding,
-                  SpacingTokens.pageTopPadding,
+                  SpacingTokens.screenTopPadding,
                   SpacingTokens.screenHorizontalPadding,
                   20,
                 ),

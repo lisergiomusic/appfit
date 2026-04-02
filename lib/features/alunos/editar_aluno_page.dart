@@ -181,7 +181,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(
           SpacingTokens.screenHorizontalPadding,
-          SpacingTokens.pageTopPadding,
+          SpacingTokens.screenTopPadding,
           SpacingTokens.screenHorizontalPadding,
           SpacingTokens.screenBottomPadding,
         ),

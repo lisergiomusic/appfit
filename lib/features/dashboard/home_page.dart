@@ -74,7 +74,7 @@ class HomePage extends StatelessWidget {
                   padding: const EdgeInsets.only(
                     left: AppTheme.paddingScreen,
                     right: AppTheme.paddingScreen,
-                    top: SpacingTokens.pageTopPadding,
+                    top: SpacingTokens.screenTopPadding,
                   ),
                   child: Row(
                     children: [

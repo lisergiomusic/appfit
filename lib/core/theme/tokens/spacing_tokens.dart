@@ -17,13 +17,12 @@ class SpacingTokens {
 
   // semânticos — listas
   static const double listItemGap = sm; // 8  — entre cards
-  static const double listHorizontalPad = lg; // 16 — margem lateral da tela
 
   // semânticos — navegação
   static const double navBarVertical = sm; // 8  — padding vertical nav bar
   static const double sectionHeaderBottom = sm; // 8  — header → conteúdo
   static const double navBarHeight = 44.0;
-  static const double pageTopPadding = lg;
+  static const double screenTopPadding = lg;
   static const double screenBottomPadding = xxl;
   static const double screenHorizontalPadding = lg;
 

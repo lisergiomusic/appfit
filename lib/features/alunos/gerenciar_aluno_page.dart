@@ -170,20 +170,24 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
         elevation: 0,
         centerTitle: true,
         surfaceTintColor: Colors.transparent,
-        leadingWidth: 100,
         leading: const AppNavBackButton(),
         title: const Text('Gerenciar Aluno'),
         bottom: const AppBarDivider(),
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.all(AppTheme.paddingScreen),
+        padding: const EdgeInsets.fromLTRB(
+          SpacingTokens.screenHorizontalPadding,
+          SpacingTokens.screenTopPadding,
+          SpacingTokens.screenHorizontalPadding,
+          SpacingTokens.screenBottomPadding,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildProfileCard(),
-            const SizedBox(height: 16),
-            _buildSectionHeader('CONFIGURAÇÕES DO PERFIL'),
+            const SizedBox(height: SpacingTokens.sectionGap),
+            _buildSectionHeader('Configurações do perfil'),
             _buildActionGroup([
               _ActionItem(
                 icon: Icons.edit_rounded,
@@ -198,8 +202,8 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                 onTap: () => _enviarConviteApp(context),
               ),
             ]),
-            const SizedBox(height: 32),
-            _buildSectionHeader('GESTÃO FINANCEIRA'),
+            const SizedBox(height: SpacingTokens.sectionGap),
+            _buildSectionHeader('Gestão financeira'),
             _buildActionGroup([
               _ActionItem(
                 icon: Icons.payments_rounded,
@@ -209,8 +213,8 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                 onTap: () => _irParaFinanceiro(context),
               ),
             ]),
-            const SizedBox(height: 32),
-            _buildSectionHeader('ZONA DE SEGURANÇA'),
+            const SizedBox(height: SpacingTokens.sectionGap),
+            _buildSectionHeader('Zona de segurança'),
             _buildActionGroup([
               _ActionItem(
                 icon: Icons.block_rounded,
@@ -222,7 +226,7 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
               _ActionItem(
                 icon: Icons.delete_forever_rounded,
                 title: 'Excluir Aluno',
-                subtitle: 'Apagar todos os dados permanentemente',
+                subtitle: 'Apagar todos os dados',
                 iconColor: Colors.redAccent,
                 onTap: () => _excluirAluno(context),
               ),
@@ -234,62 +238,46 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
   }
 
   Widget _buildProfileCard() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        children: [
-          AlunoAvatar(
-            alunoNome: widget.alunoNome,
-            photoUrl: _fotoUrl,
-            radius: 32,
+    return Row(
+      children: [
+        AlunoAvatar(
+          alunoNome: widget.alunoNome,
+          photoUrl: _fotoUrl,
+          radius: AvatarTokens.lg,
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.alunoNome,
+                style: CardTokens.cardTitle.copyWith(fontSize: 20),
+              ),
+              const SizedBox(height: SpacingTokens.titleToSubtitle),
+              Text(
+                _dataCriacao != null
+                    ? () {
+                        String dataFormatada = DateFormat(
+                          "MMMM 'de' y",
+                          "pt_BR",
+                        ).format(_dataCriacao!);
+                        return 'Aluno desde ${dataFormatada[0].toUpperCase()}${dataFormatada.substring(1)}';
+                      }()
+                    : 'Aluno Ativo',
+                style: AppTheme.cardSubtitle,
+              ),
+            ],
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.alunoNome,
-                  style: const TextStyle(
-                    color: AppColors.labelPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-
-                Text(
-                  _dataCriacao != null
-                      ? () {
-                          String dataFormatada = DateFormat(
-                            "MMMM 'de' y",
-                            "pt_BR",
-                          ).format(_dataCriacao!);
-                          return 'Aluno desde ${dataFormatada[0].toUpperCase()}${dataFormatada.substring(1)}';
-                        }()
-                      : 'Aluno Ativo',
-                  style: AppTheme.cardSubtitle,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 12),
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: AppColors.labelSecondary,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 1.2,
-        ),
-      ),
+      padding: const EdgeInsets.only(bottom: SpacingTokens.labelToField),
+      child: Text(title, style: AppTheme.sectionHeader),
     );
   }
 
@@ -309,17 +297,14 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                   onTap: item.onTap,
                   borderRadius: BorderRadius.vertical(
                     top: index == 0
-                        ? const Radius.circular(AppTheme.radiusXL)
+                        ? const Radius.circular(AppTheme.radiusLG)
                         : Radius.zero,
                     bottom: isLast
-                        ? const Radius.circular(AppTheme.radiusXL)
+                        ? const Radius.circular(AppTheme.radiusLG)
                         : Radius.zero,
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
+                    padding: CardTokens.padding,
                     // mais compacto estilo iOS
                     child: Row(
                       children: [
@@ -343,22 +328,11 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                item.title,
-                                style: AppTheme.cardTitle.copyWith(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                ), // menor
-                              ),
+                              Text(item.title, style: CardTokens.cardTitle),
                               const SizedBox(
                                 height: SpacingTokens.titleToSubtitle,
                               ),
-                              Text(
-                                item.subtitle,
-                                style: AppTheme.cardSubtitle.copyWith(
-                                  fontSize: 12,
-                                ), // menor
-                              ),
+                              Text(item.subtitle, style: AppTheme.cardSubtitle),
                             ],
                           ),
                         ),
@@ -375,7 +349,6 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
               if (!isLast)
                 Padding(
                   padding: const EdgeInsets.only(left: 52),
-                  // alinhado ao novo ícone
                   child: Divider(height: 1, color: Colors.white.withAlpha(10)),
                 ),
             ],
