@@ -1,3 +1,4 @@
+import 'package:appfit/core/widgets/app_nav_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
@@ -35,14 +36,7 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new,
-            size: 20,
-            color: AppColors.labelPrimary,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: AppNavBackButton(),
         title: const Text('Financeiro'),
       ),
       body: StreamBuilder<List<FaturaModel>>(
@@ -113,7 +107,11 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
 
     return Row(
       children: [
-        AlunoAvatar(alunoNome: widget.alunoNome, photoUrl: widget.photoUrl, radius: 28,),
+        AlunoAvatar(
+          alunoNome: widget.alunoNome,
+          photoUrl: widget.photoUrl,
+          radius: 28,
+        ),
         const SizedBox(width: 16),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,7 +276,9 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
                       Text(
                         'Vence em ${DateFormat('dd/MM/yyyy').format(fatura.dataVencimento)}',
                         style: TextStyle(
-                          color: AppColors.labelSecondary.withValues(alpha: 0.7),
+                          color: AppColors.labelSecondary.withValues(
+                            alpha: 0.7,
+                          ),
                           fontSize: 13,
                         ),
                       ),
@@ -493,7 +493,10 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
                 contentPadding: EdgeInsets.zero,
                 title: const Text(
                   'Vencimento',
-                  style: TextStyle(color: AppColors.labelSecondary, fontSize: 14),
+                  style: TextStyle(
+                    color: AppColors.labelSecondary,
+                    fontSize: 14,
+                  ),
                 ),
                 subtitle: Text(
                   DateFormat('dd/MM/yyyy').format(dataVencimento),
