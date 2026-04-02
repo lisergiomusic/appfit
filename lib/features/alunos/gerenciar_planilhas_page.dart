@@ -217,7 +217,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 12),
+                const SizedBox(height: SpacingTokens.screenTopPadding),
                 AlunoHeaderSection(
                   alunoId: widget.alunoId,
                   alunoNome: widget.alunoNome,
@@ -225,7 +225,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                   idade: widget.idade,
                   peso: widget.peso,
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: SpacingTokens.sectionGap),
 
                 _buildSectionLabel('Planilha atual'),
                 const SizedBox(height: 12),
@@ -241,7 +241,7 @@ class _GerenciarPlanilhasPageState extends State<GerenciarPlanilhasPage> {
                 else
                   _buildAtivaEmptyState(),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: SpacingTokens.sectionGap),
 
                 _buildSectionLabel('Anteriores'),
                 const SizedBox(height: 12),

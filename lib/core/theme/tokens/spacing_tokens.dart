@@ -23,7 +23,7 @@ class SpacingTokens {
   static const double sectionHeaderBottom = sm; // 8  — header → conteúdo
   static const double navBarHeight = 44.0;
   static const double screenTopPadding = lg;
-  static const double screenBottomPadding = xxl;
+  static const double screenBottomPadding = 40;
   static const double screenHorizontalPadding = lg;
 
   // semânticos — componentes

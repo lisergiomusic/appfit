@@ -213,6 +213,18 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
               _buildGeneroDropdown(),
               const SizedBox(height: 20),
               _buildTextField(
+                controller: _pesoController,
+                label: 'Peso',
+                icon: Icons.monitor_weight_outlined,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                hint: 'Ex: 75.5',
+                suffix: const Text(
+                  'kg',
+                  style: TextStyle(color: AppColors.labelSecondary, fontSize: 14),
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildTextField(
                 controller: _emailController,
                 label: 'E-mail de acesso',
                 icon: Icons.alternate_email_rounded,

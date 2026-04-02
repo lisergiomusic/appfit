@@ -42,7 +42,7 @@ class AlunoHeaderSection extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(alunoNome, style: AppTheme.title1),
-                const SizedBox(height: 4),
+                const SizedBox(height: SpacingTokens.titleToSubtitle),
                 Row(
                   children: [
                     _buildBadge(Icons.calendar_today_rounded, '$idade anos'),
