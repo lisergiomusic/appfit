@@ -35,10 +35,11 @@ flutter build appbundle   # Android App Bundle
 ## Key Conventions
 
 - **Firestore payloads:** Build as `Map<String, dynamic>` in the feature page, pass to services. Mutations must be wrapped in `try/catch` with `ScaffoldMessenger.showSnackBar(...)` for errors.
-- **Firestore collections:** `usuarios`, `rotinas`, `exercicios`. Do not rename without explicit request.
+- **Firestore collections:** `usuarios`, `rotinas`, `exercicios`, `faturas`. Do not rename without explicit request.
 - **Firebase platform support:** `firebase_options.dart` supports web, android, and iOS only — `linux`, `macos`, `windows` throw `UnsupportedError`.
-- **Theme tokens:** Always use `AppTheme` constants (`space8`, `space12`, `space16`, `space24`, etc.). Never hard-code colors, spacing, or font sizes.
+- **Theme tokens:** Prefer semantic `SpacingTokens` constants (`pageTopPadding`, `sectionGap`, `cardPaddingH`, `listItemGap`, etc.) over numeric `AppTheme.spaceN` constants. For text styles use `AppTheme`, `CardTokens`, `ButtonTokens`, or `AppBarTokens` as appropriate. Never hard-code colors, spacing, or font sizes.
 - **Remote images:** Use `cached_network_image` (not `Image.network`) to avoid flicker and reduce bandwidth.
+- **Date locale:** `intl` is initialized for `pt_BR` in `main()` — always use `DateFormat(..., 'pt_BR')` for user-facing date strings.
 
 ## Notable Patterns
 
@@ -47,6 +48,10 @@ flutter build appbundle   # Android App Bundle
 - **`RotinaService.atualizarRotina(...)`:** Pass `dataCriacao` original to preserve creation date when calculating `dataVencimento`.
 - **`grupoMuscular` migration:** `rotina_detalhe_page.dart` migrates legacy comma-separated strings to `List<String>` on read.
 - **`personalId` preservation:** When saving exercises within a routine, each exercise map must retain its `personalId` field.
+- **Controller pattern:** Complex pages delegate business logic to a dedicated controller class (e.g. `rotina_detalhe_controller.dart`, `configurar_treino_controller.dart`, `exercicio_detalhe_controller.dart`). Use this pattern for new pages with significant local state or multi-step logic.
+- **Template rotinas:** A `rotinas` document with `alunoId: null` is a personal trainer's library template. `AlunoService.atribuirTreinoAoAluno()` copies a template into a student-specific rotina (deactivates previous active rotina first).
+- **Combined streams:** Use `rxdart`'s `Rx.combineLatest2` when a page needs a single stream from two Firestore queries (see `AlunoService.getAlunoPerfilCompletoStream()`).
+- **Student status:** The `usuarios` collection tracks `status` (`ativo`/`inativo`) and `ultimoTreino` (timestamp). Students not seen in 7+ days are flagged as "risco" in `AlunoService.fetchContagens()`.
 
 ## Testing
 

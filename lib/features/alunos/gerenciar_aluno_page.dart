@@ -350,7 +350,9 @@ class _GerenciarAlunoPageState extends State<GerenciarAlunoPage> {
                                   fontWeight: FontWeight.w600,
                                 ), // menor
                               ),
-                              const SizedBox(height: 1),
+                              const SizedBox(
+                                height: SpacingTokens.titleToSubtitle,
+                              ),
                               Text(
                                 item.subtitle,
                                 style: AppTheme.cardSubtitle.copyWith(

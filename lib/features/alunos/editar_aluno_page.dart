@@ -219,7 +219,6 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
                 icon: Icons.alternate_email_rounded,
                 keyboardType: TextInputType.emailAddress,
                 hint: 'exemplo@email.com',
-                validator: (v) => v!.isEmpty ? 'O e-mail é obrigatório' : null,
               ),
               const SizedBox(height: 20),
               _buildTextField(
@@ -249,10 +248,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 8),
-          child: Text(label, style: AppTheme.formLabel),
-        ),
+        Text(label, style: AppTheme.formLabel),
         const SizedBox(height: SpacingTokens.labelToField),
         TextFormField(
           controller: controller,
@@ -318,10 +314,7 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 8),
-          child: Text('Gênero', style: AppTheme.formLabel),
-        ),
+        Text('Gênero', style: AppTheme.formLabel),
         const SizedBox(height: SpacingTokens.labelToField),
         DropdownButtonFormField<String>(
           isExpanded: true,
@@ -347,6 +340,11 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.surfaceDark,
+            prefixIcon: Icon(
+              Icons.wc_rounded,
+              color: AppColors.labelSecondary.withAlpha(120),
+              size: 20,
+            ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 10,
