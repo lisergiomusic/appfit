@@ -18,7 +18,22 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   int _indiceAtual = 0;
   final AuthService _authService = AuthService();
+  bool _openCadastroAlunoOnNextBuild = false;
   bool _openCriarRotinaOnNextBuild = false;
+
+  void _abrirCadastroAlunoPeloAtalhoHome() {
+    setState(() {
+      _indiceAtual = 1;
+      _openCadastroAlunoOnNextBuild = true;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_openCadastroAlunoOnNextBuild) return;
+      setState(() {
+        _openCadastroAlunoOnNextBuild = false;
+      });
+    });
+  }
 
   void _abrirCriacaoRotinaPeloAtalhoHome() {
     setState(() {
@@ -93,8 +108,11 @@ class _DashboardPageState extends State<DashboardPage> {
             _buildAjustes(context),
           ]
         : [
-            HomePage(onCriarRotinaTap: _abrirCriacaoRotinaPeloAtalhoHome),
-            const AlunosPage(),
+            HomePage(
+              onNovoAlunoTap: _abrirCadastroAlunoPeloAtalhoHome,
+              onCriarRotinaTap: _abrirCriacaoRotinaPeloAtalhoHome,
+            ),
+            AlunosPage(openCadastroOnLoad: _openCadastroAlunoOnNextBuild),
             TreinosPage(openCriarRotinaOnLoad: _openCriarRotinaOnNextBuild),
             _buildAjustes(context),
           ];

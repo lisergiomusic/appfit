@@ -8,9 +8,10 @@ import '../alunos/alunos_page.dart';
 import '../treinos/treinos_page.dart';
 
 class HomePage extends StatefulWidget {
+  final VoidCallback? onNovoAlunoTap;
   final VoidCallback? onCriarRotinaTap;
 
-  const HomePage({super.key, this.onCriarRotinaTap});
+  const HomePage({super.key, this.onNovoAlunoTap, this.onCriarRotinaTap});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -237,6 +238,11 @@ class _HomePageState extends State<HomePage> {
                         label: 'Novo aluno',
                         color: AppColors.primary,
                         onTap: () {
+                          if (widget.onNovoAlunoTap != null) {
+                            widget.onNovoAlunoTap!();
+                            return;
+                          }
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(
