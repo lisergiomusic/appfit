@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/widgets/app_section_link_button.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/services/rotina_service.dart';
 import '../../treinos/rotina_detalhe_page.dart';
 import '../../../core/services/aluno_service.dart';
 import '../gerenciar_planilhas_page.dart';
@@ -28,6 +29,7 @@ class FichaAtivaHeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AlunoService alunoService = AlunoService();
+    final RotinaService rotinaService = RotinaService();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
@@ -174,10 +176,68 @@ class FichaAtivaHeroCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Icon(
-                          Icons.chevron_right_rounded,
-                          color: AppColors.labelSecondary.withAlpha(80),
-                          size: 24,
+                        PopupMenuButton<String>(
+                          icon: Icon(
+                            Icons.more_vert_rounded,
+                            color: AppColors.labelSecondary.withAlpha(80),
+                            size: 24,
+                          ),
+                          color: AppColors.surfaceDark,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusLarge,
+                            ),
+                          ),
+                          onSelected: (value) {
+                            if (value == 'editar') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => RotinaDetalhePage(
+                                    rotinaData: rotina,
+                                    rotinaId: treinoDoc.id,
+                                    alunoId: alunoId,
+                                    alunoNome: alunoNome,
+                                  ),
+                                ),
+                              );
+                            } else if (value == 'remover') {
+                              _confirmarRemoverRotina(
+                                context,
+                                rotinaService,
+                                treinoDoc.id,
+                              );
+                            }
+                          },
+                          itemBuilder: (context) => const [
+                            PopupMenuItem<String>(
+                              value: 'editar',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit_rounded, size: 18),
+                                  SizedBox(width: 10),
+                                  Text('Editar'),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem<String>(
+                              value: 'remover',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.delete_outline_rounded,
+                                    size: 18,
+                                    color: Colors.redAccent,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'Remover',
+                                    style: TextStyle(color: Colors.redAccent),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -189,6 +249,60 @@ class FichaAtivaHeroCard extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<void> _confirmarRemoverRotina(
+    BuildContext context,
+    RotinaService rotinaService,
+    String rotinaId,
+  ) async {
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        ),
+        title: const Text(
+          'Remover planilha?',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+        ),
+        content: const Text(
+          'Essa ação remove a planilha permanentemente.',
+          style: TextStyle(color: AppColors.labelSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: AppColors.labelSecondary),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text(
+              'Remover',
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmado != true) return;
+
+    try {
+      await rotinaService.excluirRotina(rotinaId);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao remover planilha: $e')));
+    }
   }
 
   Widget _buildEmptyState() {
