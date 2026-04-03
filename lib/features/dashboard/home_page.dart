@@ -164,6 +164,23 @@ class _HomePageState extends State<HomePage> {
                     child: FutureBuilder<ContagemAlunos>(
                       future: _contagensFuture,
                       builder: (context, snapshot) {
+                        String trendText = 'Calculando...';
+                        IconData trendIcon = Icons.pie_chart_rounded;
+                        Color trendColor = AppColors.primary;
+
+                        if (snapshot.hasData) {
+                          final contagens = snapshot.data!;
+                          final percentualAtivos = contagens.total > 0
+                              ? ((contagens.ativos / contagens.total) * 100)
+                                    .round()
+                              : 0;
+                          trendText = '$percentualAtivos% da base ativa';
+                        } else if (snapshot.hasError) {
+                          trendText = 'Indicador indisponivel';
+                          trendIcon = Icons.info_outline_rounded;
+                          trendColor = AppColors.labelSecondary;
+                        }
+
                         final ativosCount = snapshot.hasData
                             ? snapshot.data!.ativos.toString()
                             : snapshot.hasError
@@ -173,9 +190,9 @@ class _HomePageState extends State<HomePage> {
                         return _buildStatCard(
                           label: 'Alunos ativos',
                           value: ativosCount,
-                          trendText: '+12% este mês',
-                          trendIcon: Icons.trending_up_rounded,
-                          trendColor: AppColors.primary,
+                          trendText: trendText,
+                          trendIcon: trendIcon,
+                          trendColor: trendColor,
                           onTap: () {},
                         );
                       },
