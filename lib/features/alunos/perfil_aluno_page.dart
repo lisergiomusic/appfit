@@ -15,6 +15,7 @@ import 'widgets/aluno_header_section.dart';
 import 'widgets/ficha_ativa_hero_card.dart';
 import 'widgets/gestao_section.dart';
 import '../../core/widgets/app_nav_back_button.dart';
+import '../../core/widgets/app_primary_button.dart';
 import '../../core/widgets/app_tappable.dart';
 import 'widgets/ritmo_da_semana_card.dart';
 
@@ -374,8 +375,10 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
               Center(
                 child: const Text('Nova Planilha', style: AppTheme.pageTitle),
               ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
+              const SizedBox(height: SpacingTokens.sectionGap),
+              AppPrimaryButton(
+                label: 'Criar do zero',
+                icon: Icons.add_circle_outline,
                 onPressed: () {
                   Navigator.pop(context);
                   Navigator.push(
@@ -388,14 +391,8 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                     ),
                   );
                 },
-                icon: const Icon(
-                  Icons.add_circle_outline,
-                  color: Colors.black,
-                  size: 20,
-                ),
-                label: const Text('Criar do zero'),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: SpacingTokens.sectionGap),
               Row(
                 children: [
                   const Expanded(child: Divider(color: Colors.white10)),
@@ -406,7 +403,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                   const Expanded(child: Divider(color: Colors.white10)),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: SpacingTokens.sectionGap),
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
                   stream: _alunoService.getRotinasTemplates(),
@@ -440,12 +437,8 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceLight.withAlpha(20),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.white.withAlpha(5),
-                            ),
+                          decoration: AppTheme.cardDecoration.copyWith(
+                            color: AppColors.surfaceLight,
                           ),
                           child: ListTile(
                             onTap: () {
@@ -461,6 +454,24 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                                 ),
                               );
                             },
+                            leading: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withAlpha(40),
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusSM,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.fitness_center,
+                                  color: AppColors.primary,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
                             title: Text(
                               rotina['nome'] ?? 'Rotina',
                               style: const TextStyle(
