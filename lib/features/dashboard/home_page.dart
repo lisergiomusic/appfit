@@ -5,9 +5,12 @@ import '../../core/services/auth_service.dart';
 import '../../core/widgets/app_bar_divider.dart';
 import '../../core/widgets/app_section_link_button.dart';
 import '../alunos/alunos_page.dart';
+import '../treinos/treinos_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final VoidCallback? onCriarRotinaTap;
+
+  const HomePage({super.key, this.onCriarRotinaTap});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -248,7 +251,21 @@ class _HomePageState extends State<HomePage> {
                         icon: Icons.assignment_rounded,
                         label: 'Criar rotina',
                         color: AppColors.iosBlue,
-                        onTap: () {},
+                        onTap: () {
+                          if (widget.onCriarRotinaTap != null) {
+                            widget.onCriarRotinaTap!();
+                            return;
+                          }
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const TreinosPage(
+                                openCriarRotinaOnLoad: true,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(width: 12),
                       _buildQuickActionButton(

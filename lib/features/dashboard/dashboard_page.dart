@@ -18,6 +18,21 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   int _indiceAtual = 0;
   final AuthService _authService = AuthService();
+  bool _openCriarRotinaOnNextBuild = false;
+
+  void _abrirCriacaoRotinaPeloAtalhoHome() {
+    setState(() {
+      _indiceAtual = 2;
+      _openCriarRotinaOnNextBuild = true;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_openCriarRotinaOnNextBuild) return;
+      setState(() {
+        _openCriarRotinaOnNextBuild = false;
+      });
+    });
+  }
 
   Future<void> _sair(BuildContext context) async {
     await _authService.signOut();
@@ -66,59 +81,54 @@ class _DashboardPageState extends State<DashboardPage> {
     final isAluno = widget.userType == 'aluno';
     final uid = _authService.currentUser?.uid ?? '';
 
-    final List<Widget> paginas =
-        isAluno
-            ? [
-              AlunoHomePage(uid: uid),
-              const Center(
-                child: Text(
-                  'Meu Treino — em breve',
-                  style: TextStyle(color: AppColors.labelSecondary),
-                ),
+    final List<Widget> paginas = isAluno
+        ? [
+            AlunoHomePage(uid: uid),
+            const Center(
+              child: Text(
+                'Meu Treino — em breve',
+                style: TextStyle(color: AppColors.labelSecondary),
               ),
-              _buildAjustes(context),
-            ]
-            : [
-              const HomePage(),
-              const AlunosPage(),
-              const TreinosPage(),
-              _buildAjustes(context),
-            ];
+            ),
+            _buildAjustes(context),
+          ]
+        : [
+            HomePage(onCriarRotinaTap: _abrirCriacaoRotinaPeloAtalhoHome),
+            const AlunosPage(),
+            TreinosPage(openCriarRotinaOnLoad: _openCriarRotinaOnNextBuild),
+            _buildAjustes(context),
+          ];
 
-    final List<BottomNavigationBarItem> items =
-        isAluno
-            ? const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.grid_view_rounded),
-                label: 'Início',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.fitness_center),
-                label: 'Meu Treino',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.settings),
-                label: 'Ajustes',
-              ),
-            ]
-            : const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.grid_view_rounded),
-                label: 'Início',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.group),
-                label: 'Alunos',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.fitness_center),
-                label: 'Rotinas',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.settings),
-                label: 'Ajustes',
-              ),
-            ];
+    final List<BottomNavigationBarItem> items = isAluno
+        ? const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.grid_view_rounded),
+              label: 'Início',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.fitness_center),
+              label: 'Meu Treino',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.settings),
+              label: 'Ajustes',
+            ),
+          ]
+        : const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.grid_view_rounded),
+              label: 'Início',
+            ),
+            BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Alunos'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.fitness_center),
+              label: 'Rotinas',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.settings),
+              label: 'Ajustes',
+            ),
+          ];
 
     return Scaffold(
       backgroundColor: AppColors.background,

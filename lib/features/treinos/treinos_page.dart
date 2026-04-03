@@ -13,6 +13,7 @@ class TreinosPage extends StatefulWidget {
   final String? alunoNome;
   final AlunoService? alunoService;
   final RotinaService? rotinaService;
+  final bool openCriarRotinaOnLoad;
 
   const TreinosPage({
     super.key,
@@ -20,6 +21,7 @@ class TreinosPage extends StatefulWidget {
     this.alunoNome,
     this.alunoService,
     this.rotinaService,
+    this.openCriarRotinaOnLoad = false,
   });
 
   @override
@@ -39,6 +41,23 @@ class _TreinosPageState extends State<TreinosPage> {
     super.initState();
     _alunoService = widget.alunoService ?? AlunoService();
     _rotinaService = widget.rotinaService ?? RotinaService();
+
+    if (widget.openCriarRotinaOnLoad && widget.alunoId == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _abrirCriarRotina();
+        }
+      });
+    }
+  }
+
+  void _abrirCriarRotina() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RotinaDetalhePage(rotinaService: _rotinaService),
+      ),
+    );
   }
 
   Future<void> _deletarTreino(String id) async {
@@ -248,15 +267,7 @@ class _TreinosPageState extends State<TreinosPage> {
           AppBarIconButton(
             icon: CupertinoIcons.add,
             size: 26,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      RotinaDetalhePage(rotinaService: _rotinaService),
-                ),
-              );
-            },
+            onPressed: _abrirCriarRotina,
           ),
       ],
       flexibleSpace: LayoutBuilder(
