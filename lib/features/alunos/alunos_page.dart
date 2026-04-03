@@ -70,17 +70,32 @@ class _AlunosPageState extends State<AlunosPage> {
       _hasMore = true;
     });
 
-    await Future.wait([
-      _updateSummaryCounts(),
-      _fetchNextPage(isInitial: true),
-    ]);
-
-    if (mounted) setState(() => _isLoading = false);
+    try {
+      await Future.wait([
+        _updateSummaryCounts(),
+        _fetchNextPage(isInitial: true),
+      ]).timeout(const Duration(seconds: 12));
+    } catch (e) {
+      debugPrint("Timeout/erro no carregamento inicial: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Não foi possível carregar os alunos agora. Tente novamente.',
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _updateSummaryCounts() async {
     try {
-      final contagens = await _alunoService.fetchContagens();
+      final contagens = await _alunoService.fetchContagens().timeout(
+        const Duration(seconds: 8),
+      );
       if (mounted) {
         setState(() {
           _totalCount = contagens.total;
@@ -100,12 +115,14 @@ class _AlunosPageState extends State<AlunosPage> {
     if (!isInitial) setState(() => _isLoadingMore = true);
 
     try {
-      final result = await _alunoService.fetchAlunosPaginado(
-        statusFilter: _statusFilter,
-        searchQuery: _searchQuery,
-        lastDoc: _lastDocument,
-        limit: _limit,
-      );
+      final result = await _alunoService
+          .fetchAlunosPaginado(
+            statusFilter: _statusFilter,
+            searchQuery: _searchQuery,
+            lastDoc: _lastDocument,
+            limit: _limit,
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (mounted) {
         setState(() {
@@ -119,7 +136,9 @@ class _AlunosPageState extends State<AlunosPage> {
       }
     } catch (e) {
       debugPrint("Erro ao buscar alunos: $e");
-      if (mounted) setState(() => _isLoadingMore = false);
+      if (mounted) {
+        setState(() => _isLoadingMore = false);
+      }
     }
   }
 
