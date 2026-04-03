@@ -5,7 +5,6 @@ import '../../core/services/aluno_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_nav_back_button.dart';
 import '../treinos/widgets/rotina_input_decoration.dart';
-import '../treinos/widgets/rotina_modern_input.dart';
 
 class AtivarTemplatePage extends StatefulWidget {
   final String templateId;
@@ -201,10 +200,7 @@ class _SessoesPreview extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(left: AppTheme.space8),
-          child: Text('Sessões', style: AppTheme.formLabel),
-        ),
+        Text('Sessões', style: AppTheme.sectionHeader),
         const SizedBox(height: SpacingTokens.labelToField),
         ...sessoes.asMap().entries.map((entry) {
           final i = entry.key;
@@ -213,12 +209,11 @@ class _SessoesPreview extends StatelessWidget {
           final exercicios = (sessao['exercicios'] as List?)?.length ?? 0;
 
           return Container(
-            margin: const EdgeInsets.only(bottom: 8),
+            margin: const EdgeInsets.only(bottom: SpacingTokens.listItemGap),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.surfaceLight.withAlpha(15),
+              color: AppColors.surfaceDark,
               borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-              border: Border.all(color: Colors.white.withAlpha(5)),
             ),
             child: Row(
               children: [
@@ -241,19 +236,8 @@ class _SessoesPreview extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    nomeSessao,
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
-                  ),
-                ),
-                Text(
-                  '$exercicios exercícios',
-                  style: const TextStyle(
-                    color: AppColors.labelSecondary,
-                    fontSize: 12,
-                  ),
-                ),
+                Expanded(child: Text(nomeSessao, style: CardTokens.cardTitle)),
+                Text('$exercicios exercícios', style: AppTheme.caption),
               ],
             ),
           );
@@ -280,80 +264,79 @@ class _PeriodizacaoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RotinaModernInput(
-      label: 'Vencimento',
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceLight,
-              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    _TabOption(
-                      label: 'Sessões',
-                      isSelected: tipoVencimento == 'sessoes',
-                      onTap: () => onTipoChanged('sessoes'),
-                    ),
-                    _TabOption(
-                      label: 'Data Fixa',
-                      isSelected: tipoVencimento == 'data',
-                      onTap: () => onTipoChanged('data'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: tipoVencimento == 'sessoes'
-                      ? TextFormField(
-                          key: const ValueKey('inputSessoes'),
-                          controller: sessoesCtrl,
-                          keyboardType: TextInputType.number,
-                          decoration: rotinaInputDecoration(
-                            hintText: 'Quantas sessões?',
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(bottom: SpacingTokens.labelToField),
+          child: Text('Vencimento', style: AppTheme.sectionHeader),
+        ),
+        Container(
+          padding: CardTokens.padding,
+          decoration: AppTheme.cardDecoration,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  _TabOption(
+                    label: 'Sessões',
+                    isSelected: tipoVencimento == 'sessoes',
+                    onTap: () => onTipoChanged('sessoes'),
+                  ),
+                  _TabOption(
+                    label: 'Data Fixa',
+                    isSelected: tipoVencimento == 'data',
+                    onTap: () => onTipoChanged('data'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: tipoVencimento == 'sessoes'
+                    ? TextFormField(
+                        key: const ValueKey('inputSessoes'),
+                        controller: sessoesCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: rotinaInputDecoration(
+                          hintText: 'Quantas sessões?',
+                        ).copyWith(fillColor: AppColors.surfaceLight),
+                      )
+                    : ListTile(
+                        key: const ValueKey('inputData'),
+                        tileColor: AppColors.surfaceDark,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusSM,
                           ),
-                        )
-                      : ListTile(
-                          key: const ValueKey('inputData'),
-                          tileColor: AppColors.surfaceDark,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusSM,
-                            ),
-                          ),
-                          leading: const Icon(
-                            Icons.calendar_month,
-                            color: AppColors.primary,
-                          ),
-                          title: Text(
-                            DateFormat(
-                              'dd/MM/yyyy',
-                              'pt_BR',
-                            ).format(dataVencimento),
-                          ),
-                          onTap: () async {
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate: dataVencimento,
-                              firstDate: DateTime.now(),
-                              lastDate: DateTime.now().add(
-                                const Duration(days: 365),
-                              ),
-                            );
-                            if (picked != null) onDataChanged(picked);
-                          },
                         ),
-                ),
-              ],
-            ),
+                        leading: const Icon(
+                          Icons.calendar_month,
+                          color: AppColors.primary,
+                        ),
+                        title: Text(
+                          DateFormat(
+                            'dd/MM/yyyy',
+                            'pt_BR',
+                          ).format(dataVencimento),
+                        ),
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: dataVencimento,
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 365),
+                            ),
+                          );
+                          if (picked != null) onDataChanged(picked);
+                        },
+                      ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

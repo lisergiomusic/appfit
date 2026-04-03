@@ -18,15 +18,7 @@ class RotinaModernInput extends StatelessWidget {
       children: [
         Padding(
           padding: EdgeInsets.only(bottom: SpacingTokens.labelToField),
-          child: Row(
-            children: [
-              SizedBox(width: 8),
-              Text(
-                label,
-                style: AppTheme.formLabel,
-              ),
-            ],
-          ),
+          child: Row(children: [Text(label, style: AppTheme.formLabel)]),
         ),
         child,
       ],
