@@ -283,6 +283,19 @@ class AppTheme {
           borderRadius: BorderRadius.circular(radiusXL),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.0),
         ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radiusXL),
+          borderSide: const BorderSide(color: AppColors.systemRed, width: 1.0),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radiusXL),
+          borderSide: const BorderSide(color: AppColors.systemRed, width: 1.2),
+        ),
+        errorStyle: const TextStyle(
+          color: AppColors.systemRed,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
       ),
       tooltipTheme: tooltipTheme,
     );

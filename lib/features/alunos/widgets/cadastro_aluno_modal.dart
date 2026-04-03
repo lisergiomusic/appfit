@@ -177,12 +177,6 @@ class _CadastroAlunoModalState extends State<CadastroAlunoModal> {
                   prefixIcon: Icon(Icons.people_outline),
                 ),
                 style: const TextStyle(color: Colors.white),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Genero obrigatorio';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: SpacingTokens.listItemGap),
               TextField(
@@ -197,7 +191,7 @@ class _CadastroAlunoModalState extends State<CadastroAlunoModal> {
                 onTap: _selecionarData,
               ),
               const SizedBox(height: SpacingTokens.listItemGap),
-              TextField(
+              TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
                   fillColor: AppColors.surfaceLight,
@@ -205,6 +199,12 @@ class _CadastroAlunoModalState extends State<CadastroAlunoModal> {
                   prefixIcon: Icon(Icons.alternate_email),
                 ),
                 keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'E-mail obrigatorio';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: SpacingTokens.listItemGap),
               TextField(

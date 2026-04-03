@@ -10,7 +10,9 @@ import '../../core/widgets/app_bar_icon_button.dart';
 import 'widgets/cadastro_aluno_modal.dart';
 
 class AlunosPage extends StatefulWidget {
-  const AlunosPage({super.key});
+  final bool openCadastroOnLoad;
+
+  const AlunosPage({super.key, this.openCadastroOnLoad = false});
 
   @override
   State<AlunosPage> createState() => _AlunosPageState();
@@ -43,6 +45,14 @@ class _AlunosPageState extends State<AlunosPage> {
     super.initState();
     _fetchInitialData();
     _scrollController.addListener(_onScroll);
+
+    if (widget.openCadastroOnLoad) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _exibirModalCadastro();
+        }
+      });
+    }
   }
 
   @override

@@ -4,6 +4,7 @@ import '../../core/services/aluno_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/widgets/app_bar_divider.dart';
 import '../../core/widgets/app_section_link_button.dart';
+import '../alunos/alunos_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -232,7 +233,15 @@ class _HomePageState extends State<HomePage> {
                         icon: Icons.person_add_rounded,
                         label: 'Novo aluno',
                         color: AppColors.primary,
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const AlunosPage(openCadastroOnLoad: true),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(width: 12),
                       _buildQuickActionButton(
