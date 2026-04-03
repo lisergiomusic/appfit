@@ -9,15 +9,16 @@ import '../../core/widgets/app_bar_text_button.dart';
 
 class EditarAlunoPage extends StatefulWidget {
   final String alunoId;
+  final AlunoService? alunoService;
 
-  const EditarAlunoPage({super.key, required this.alunoId});
+  const EditarAlunoPage({super.key, required this.alunoId, this.alunoService});
 
   @override
   State<EditarAlunoPage> createState() => _EditarAlunoPageState();
 }
 
 class _EditarAlunoPageState extends State<EditarAlunoPage> {
-  final AlunoService _alunoService = AlunoService();
+  late final AlunoService _alunoService;
   final _formKey = GlobalKey<FormState>();
 
   bool _isLoading = true;
@@ -37,25 +38,29 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
   @override
   void initState() {
     super.initState();
+    _alunoService = widget.alunoService ?? AlunoService();
+    _nomeController = TextEditingController();
+    _sobrenomeController = TextEditingController();
+    _emailController = TextEditingController();
+    _telefoneController = TextEditingController();
+    _pesoController = TextEditingController();
     _carregarDados();
   }
 
   Future<void> _carregarDados() async {
     try {
-      final doc = await _alunoService.getAluno(widget.alunoId);
+      final doc = await _alunoService
+          .getAluno(widget.alunoId)
+          .timeout(const Duration(seconds: 12));
       if (!doc.exists) throw Exception("Aluno não encontrado");
 
       final data = doc.data() as Map<String, dynamic>;
 
-      _nomeController = TextEditingController(text: data['nome'] ?? '');
-      _sobrenomeController = TextEditingController(
-        text: data['sobrenome'] ?? '',
-      );
-      _emailController = TextEditingController(text: data['email'] ?? '');
-      _telefoneController = TextEditingController(text: data['telefone'] ?? '');
-      _pesoController = TextEditingController(
-        text: data['pesoAtual']?.toString() ?? '',
-      );
+      _nomeController.text = data['nome'] ?? '';
+      _sobrenomeController.text = data['sobrenome'] ?? '';
+      _emailController.text = data['email'] ?? '';
+      _telefoneController.text = data['telefone'] ?? '';
+      _pesoController.text = data['pesoAtual']?.toString() ?? '';
 
       if (data['dataNascimento'] != null) {
         _dataNascimento = (data['dataNascimento'] as Timestamp).toDate();
@@ -68,10 +73,10 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
       setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) {
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Erro ao carregar dados: $e')));
-        Navigator.pop(context);
       }
     }
   }
@@ -91,16 +96,18 @@ class _EditarAlunoPageState extends State<EditarAlunoPage> {
 
     setState(() => _isSaving = true);
     try {
-      await _alunoService.atualizarAluno(
-        alunoId: widget.alunoId,
-        nome: _nomeController.text.trim(),
-        sobrenome: _sobrenomeController.text.trim(),
-        email: _emailController.text.trim(),
-        telefone: _telefoneController.text.trim(),
-        peso: double.tryParse(_pesoController.text),
-        dataNascimento: _dataNascimento,
-        genero: _generoSelecionado,
-      );
+      await _alunoService
+          .atualizarAluno(
+            alunoId: widget.alunoId,
+            nome: _nomeController.text.trim(),
+            sobrenome: _sobrenomeController.text.trim(),
+            email: _emailController.text.trim(),
+            telefone: _telefoneController.text.trim(),
+            peso: double.tryParse(_pesoController.text),
+            dataNascimento: _dataNascimento,
+            genero: _generoSelecionado,
+          )
+          .timeout(const Duration(seconds: 12));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
