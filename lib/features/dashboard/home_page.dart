@@ -1,16 +1,30 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/services/aluno_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/widgets/app_bar_divider.dart';
 import '../../core/widgets/app_section_link_button.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final AuthService authService = AuthService();
+  State<HomePage> createState() => _HomePageState();
+}
 
+class _HomePageState extends State<HomePage> {
+  final AuthService _authService = AuthService();
+  final AlunoService _alunoService = AlunoService();
+  late final Future<ContagemAlunos> _contagensFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _contagensFuture = _alunoService.fetchContagens();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -59,7 +73,7 @@ class HomePage extends StatelessWidget {
           children: [
             // Perfil e Boas-vindas
             FutureBuilder<Map<String, dynamic>?>(
-              future: authService.getCurrentUserData(),
+              future: _authService.getCurrentUserData(),
               builder: (context, snapshot) {
                 String nome = "...";
                 String? photoUrl;
@@ -147,13 +161,24 @@ class HomePage extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: _buildStatCard(
-                      label: 'Alunos ativos',
-                      value: '42',
-                      trendText: '+12% este mês',
-                      trendIcon: Icons.trending_up_rounded,
-                      trendColor: AppColors.primary,
-                      onTap: () {},
+                    child: FutureBuilder<ContagemAlunos>(
+                      future: _contagensFuture,
+                      builder: (context, snapshot) {
+                        final ativosCount = snapshot.hasData
+                            ? snapshot.data!.ativos.toString()
+                            : snapshot.hasError
+                            ? '--'
+                            : '...';
+
+                        return _buildStatCard(
+                          label: 'Alunos ativos',
+                          value: ativosCount,
+                          trendText: '+12% este mês',
+                          trendIcon: Icons.trending_up_rounded,
+                          trendColor: AppColors.primary,
+                          onTap: () {},
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 12),
