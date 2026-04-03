@@ -77,11 +77,21 @@ class _HomePageState extends State<HomePage> {
               builder: (context, snapshot) {
                 String nome = "...";
                 String? photoUrl;
+                String tipoUsuarioLabel = 'Usuario';
 
                 if (snapshot.hasData && snapshot.data != null) {
                   final data = snapshot.data!;
                   nome = data['nome']?.toString().split(' ')[0] ?? "Usuário";
                   photoUrl = data['photoUrl'] as String?;
+
+                  final tipoUsuario = data['tipoUsuario']
+                      ?.toString()
+                      .toLowerCase();
+                  if (tipoUsuario == 'personal') {
+                    tipoUsuarioLabel = 'Personal Trainer';
+                  } else if (tipoUsuario == 'aluno') {
+                    tipoUsuarioLabel = 'Aluno';
+                  }
                 }
 
                 return Padding(
@@ -130,17 +140,10 @@ class _HomePageState extends State<HomePage> {
                                   horizontal: 8,
                                   vertical: 3,
                                 ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withAlpha(25),
-                                  borderRadius: BorderRadius.circular(
-                                    AppTheme.radiusFull,
-                                  ),
-                                ),
+                                decoration: PillTokens.decoration,
                                 child: Text(
-                                  'Plano Premium',
-                                  style: AppTheme.caption2.copyWith(
-                                    color: AppColors.primary,
-                                  ),
+                                  tipoUsuarioLabel,
+                                  style: PillTokens.text,
                                 ),
                               ),
                             ],
