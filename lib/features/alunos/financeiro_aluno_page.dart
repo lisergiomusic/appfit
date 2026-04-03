@@ -82,23 +82,15 @@ class _FinanceiroAlunoPageState extends State<FinanceiroAlunoPage> {
                 else
                   ...faturasAbertas.map((f) => _buildFaturaItem(f)),
                 const SizedBox(height: 100),
+                AppPrimaryButton(
+                  label: 'Nova Fatura',
+                  icon: Icons.add,
+                  onPressed: () => _showNovaFaturaModal(context),
+                ),
               ],
             ),
           );
         },
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          SpacingTokens.screenHorizontalPadding,
-          0,
-          SpacingTokens.screenHorizontalPadding,
-          SpacingTokens.screenBottomPadding,
-        ),
-        child: AppPrimaryButton(
-          label: 'Nova Fatura',
-          icon: Icons.add,
-          onPressed: () => _showNovaFaturaModal(context),
-        ),
       ),
     );
   }
