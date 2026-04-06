@@ -3,8 +3,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/appfit_sliver_app_bar.dart';
 import 'models/rotina_model.dart';
-import 'models/exercicio_model.dart';
-import 'executar_treino_page.dart';
+import 'sessao_detalhe_view_page.dart';
 
 class AlunoRotinaViewPage extends StatefulWidget {
   final Map<String, dynamic> rotinaData;
@@ -24,7 +23,6 @@ class AlunoRotinaViewPage extends StatefulWidget {
 
 class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
   late RotinaModel _rotina;
-  int? _expandedSessionIndex;
 
   @override
   void initState() {
@@ -82,14 +80,14 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {
                 final sessao = _rotina.sessoes[index];
-                final isExpanded = _expandedSessionIndex == index;
+                final letra = String.fromCharCode(65 + (index % 26));
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
                   child: _buildSessionCard(
                     sessao: sessao,
+                    letra: letra,
                     index: index,
-                    isExpanded: isExpanded,
                   ),
                 );
               }, childCount: _rotina.sessoes.length),
@@ -158,218 +156,73 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
 
   Widget _buildSessionCard({
     required SessaoTreinoModel sessao,
+    required String letra,
     required int index,
-    required bool isExpanded,
   }) {
-    final letra = String.fromCharCode(65 + (index % 26));
-
-    return Container(
-      decoration: AppTheme.cardDecoration,
-      child: Column(
-        children: [
-          InkWell(
-            onTap: () {
-              setState(() {
-                _expandedSessionIndex = isExpanded ? null : index;
-              });
-            },
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(AppTheme.radiusXL),
-              topRight: Radius.circular(AppTheme.radiusXL),
-              bottomLeft: Radius.circular(isExpanded ? 0 : AppTheme.radiusXL),
-              bottomRight: Radius.circular(isExpanded ? 0 : AppTheme.radiusXL),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      letra,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(sessao.nome, style: AppTheme.cardTitle),
-                        if (sessao.diaSemana != null &&
-                            sessao.diaSemana!.isNotEmpty)
-                          Text(sessao.diaSemana!, style: AppTheme.caption),
-                        Text(
-                          '${sessao.exercicios.length} exercício${sessao.exercicios.length != 1 ? 's' : ''}',
-                          style: AppTheme.caption2.copyWith(
-                            color: AppColors.labelSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    isExpanded
-                        ? Icons.expand_less_rounded
-                        : Icons.expand_more_rounded,
-                    color: AppColors.labelSecondary,
-                  ),
-                ],
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SessaoDetalheViewPage(
+                sessao: sessao,
+                letra: letra,
+                rotinaId: widget.rotinaId,
+                alunoId: widget.alunoId,
               ),
             ),
-          ),
-          if (isExpanded)
-            Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: AppColors.primary.withAlpha(15)),
+          );
+        },
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        child: Container(
+          decoration: AppTheme.cardDecoration,
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  letra,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              child: Column(
-                children: [
-                  if (sessao.orientacoes != null &&
-                      sessao.orientacoes!.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withAlpha(10),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: AppColors.primary.withAlpha(30),
-                          ),
-                        ),
-                        child: Text(
-                          sessao.orientacoes!,
-                          style: AppTheme.bodyText,
-                        ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(sessao.nome, style: AppTheme.cardTitle),
+                    if (sessao.diaSemana != null &&
+                        sessao.diaSemana!.isNotEmpty)
+                      Text(sessao.diaSemana!, style: AppTheme.caption),
+                    Text(
+                      '${sessao.exercicios.length} exercício${sessao.exercicios.length != 1 ? 's' : ''}',
+                      style: AppTheme.caption2.copyWith(
+                        color: AppColors.labelSecondary,
                       ),
                     ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      children: List.generate(
-                        sessao.exercicios.length,
-                        (exIndex) => _buildExerciseItem(
-                          sessao.exercicios[exIndex],
-                          exIndex,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ExecutarTreinoPage(
-                                sessao: sessao,
-                                rotinaId: widget.rotinaId,
-                                alunoId: widget.alunoId,
-                              ),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.play_arrow_rounded),
-                        label: const Text('Iniciar treino'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExerciseItem(ExercicioItem exercise, int exIndex) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(exercise.nome, style: AppTheme.cardTitle),
-          if (exercise.grupoMuscular.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Wrap(
-                spacing: 6,
-                children: exercise.grupoMuscular
-                    .map(
-                      (grupo) => Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withAlpha(15),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(grupo, style: AppTheme.caption2),
-                      ),
-                    )
-                    .toList(),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.labelSecondary,
               ),
-            ),
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Column(
-              children: List.generate(exercise.series.length, (sIndex) {
-                final serie = exercise.series[sIndex];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 24,
-                        child: Text(
-                          'S${sIndex + 1}',
-                          style: AppTheme.caption2.copyWith(
-                            color: AppColors.labelSecondary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          '${serie.alvo} reps | ${serie.carga}kg | ${serie.descanso}s',
-                          style: AppTheme.bodyText,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ),
+            ],
           ),
-          if (exIndex < exercise.series.length - 1)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Divider(color: AppColors.primary.withAlpha(15), height: 1),
-            ),
-        ],
+        ),
       ),
     );
   }
