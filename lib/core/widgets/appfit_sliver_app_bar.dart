@@ -69,11 +69,7 @@ class AppFitSliverAppBar extends StatelessWidget {
                       key: const ValueKey('collapsed_title'),
                       title: title,
                       isVisible: true,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTheme.pageTitle,
                     )
                   : const SizedBox(key: ValueKey('empty_title'), height: 0),
             ),

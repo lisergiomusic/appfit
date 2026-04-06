@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/widgets/app_bar_divider.dart';
+import '../../core/widgets/appfit_sliver_app_bar.dart';
 import 'models/rotina_model.dart';
 import 'models/exercicio_model.dart';
 import 'executar_treino_page.dart';
@@ -38,45 +38,40 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
       backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            expandedHeight: 120,
-            floating: false,
-            pinned: true,
-            backgroundColor: AppColors.background,
-            bottom: const AppBarDivider(),
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                _rotina.nome,
-                style: AppTheme.title1,
+          AppFitSliverAppBar(
+            title: _rotina.nome,
+            expandedHeight: _rotina.objetivo.isNotEmpty ? 148 : 120,
+            background: Align(
+              alignment: Alignment.bottomLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: SpacingTokens.screenHorizontalPadding,
+                  right: SpacingTokens.screenHorizontalPadding,
+                  bottom: SpacingTokens.sectionGap,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(_rotina.nome, style: AppTheme.title1),
+                    if (_rotina.objetivo.isNotEmpty) ...[
+                      const SizedBox(height: SpacingTokens.titleToSubtitle),
+                      Text(_rotina.objetivo, style: AppTheme.cardSubtitle),
+                    ],
+                  ],
+                ),
               ),
-              centerTitle: false,
-              titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
             ),
           ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppTheme.paddingScreen,
-                vertical: SpacingTokens.sectionGap,
+                vertical: 0,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (_rotina.objetivo.isNotEmpty)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Objetivo', style: AppTheme.formLabel),
-                        const SizedBox(height: SpacingTokens.sm),
-                        Text(
-                          _rotina.objetivo,
-                          style: AppTheme.cardSubtitle,
-                        ),
-                        const SizedBox(height: SpacingTokens.sectionGap),
-                      ],
-                    ),
-                  _buildProgressSection(),
-                ],
+                children: [_buildProgressSection()],
               ),
             ),
           ),
@@ -85,28 +80,23 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
               horizontal: AppTheme.paddingScreen,
             ),
             sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final sessao = _rotina.sessoes[index];
-                  final isExpanded = _expandedSessionIndex == index;
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final sessao = _rotina.sessoes[index];
+                final isExpanded = _expandedSessionIndex == index;
 
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
-                    child: _buildSessionCard(
-                      sessao: sessao,
-                      index: index,
-                      isExpanded: isExpanded,
-                    ),
-                  );
-                },
-                childCount: _rotina.sessoes.length,
-              ),
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
+                  child: _buildSessionCard(
+                    sessao: sessao,
+                    index: index,
+                    isExpanded: isExpanded,
+                  ),
+                );
+              }, childCount: _rotina.sessoes.length),
             ),
           ),
           SliverToBoxAdapter(
-            child: SizedBox(
-              height: SpacingTokens.screenBottomPadding,
-            ),
+            child: SizedBox(height: SpacingTokens.screenBottomPadding),
           ),
         ],
       ),
@@ -114,7 +104,8 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
   }
 
   Widget _buildProgressSection() {
-    final tipoVencimento = widget.rotinaData['tipoVencimento'] as String? ?? 'data';
+    final tipoVencimento =
+        widget.rotinaData['tipoVencimento'] as String? ?? 'data';
     String legenda = '';
     double progresso = 0.0;
 
@@ -214,15 +205,10 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          sessao.nome,
-                          style: AppTheme.cardTitle,
-                        ),
-                        if (sessao.diaSemana != null && sessao.diaSemana!.isNotEmpty)
-                          Text(
-                            sessao.diaSemana!,
-                            style: AppTheme.caption,
-                          ),
+                        Text(sessao.nome, style: AppTheme.cardTitle),
+                        if (sessao.diaSemana != null &&
+                            sessao.diaSemana!.isNotEmpty)
+                          Text(sessao.diaSemana!, style: AppTheme.caption),
                         Text(
                           '${sessao.exercicios.length} exercício${sessao.exercicios.length != 1 ? 's' : ''}',
                           style: AppTheme.caption2.copyWith(
@@ -246,14 +232,13 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
             Container(
               decoration: BoxDecoration(
                 border: Border(
-                  top: BorderSide(
-                    color: AppColors.primary.withAlpha(15),
-                  ),
+                  top: BorderSide(color: AppColors.primary.withAlpha(15)),
                 ),
               ),
               child: Column(
                 children: [
-                  if (sessao.orientacoes != null && sessao.orientacoes!.isNotEmpty)
+                  if (sessao.orientacoes != null &&
+                      sessao.orientacoes!.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.all(16),
                       child: Container(
@@ -325,10 +310,7 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            exercise.nome,
-            style: AppTheme.cardTitle,
-          ),
+          Text(exercise.nome, style: AppTheme.cardTitle),
           if (exercise.grupoMuscular.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 4),
@@ -345,10 +327,7 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
                           color: AppColors.primary.withAlpha(15),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Text(
-                          grupo,
-                          style: AppTheme.caption2,
-                        ),
+                        child: Text(grupo, style: AppTheme.caption2),
                       ),
                     )
                     .toList(),
@@ -357,44 +336,38 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Column(
-              children: List.generate(
-                exercise.series.length,
-                (sIndex) {
-                  final serie = exercise.series[sIndex];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 24,
-                          child: Text(
-                            'S${sIndex + 1}',
-                            style: AppTheme.caption2.copyWith(
-                              color: AppColors.labelSecondary,
-                            ),
+              children: List.generate(exercise.series.length, (sIndex) {
+                final serie = exercise.series[sIndex];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 24,
+                        child: Text(
+                          'S${sIndex + 1}',
+                          style: AppTheme.caption2.copyWith(
+                            color: AppColors.labelSecondary,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            '${serie.alvo} reps | ${serie.carga}kg | ${serie.descanso}s',
-                            style: AppTheme.bodyText,
-                          ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${serie.alvo} reps | ${serie.carga}kg | ${serie.descanso}s',
+                          style: AppTheme.bodyText,
                         ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
             ),
           ),
           if (exIndex < exercise.series.length - 1)
             Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: Divider(
-                color: AppColors.primary.withAlpha(15),
-                height: 1,
-              ),
+              child: Divider(color: AppColors.primary.withAlpha(15), height: 1),
             ),
         ],
       ),
