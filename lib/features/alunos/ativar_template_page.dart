@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../core/services/aluno_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_nav_back_button.dart';
+import '../../core/widgets/app_primary_button.dart';
 import '../treinos/widgets/rotina_input_decoration.dart';
 
 class AtivarTemplatePage extends StatefulWidget {
@@ -102,44 +103,47 @@ class _AtivarTemplatePageState extends State<AtivarTemplatePage> {
               (template['sessoes'] as List?)?.cast<Map<String, dynamic>>() ??
               [];
 
-          return Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.all(AppTheme.paddingScreen),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _TemplateInfoCard(
-                        template: template,
-                        qtdSessoes: sessoes.length,
-                      ),
-                      const SizedBox(height: SpacingTokens.sectionGap),
-                      if (sessoes.isNotEmpty) ...[
-                        _SessoesPreview(sessoes: sessoes),
-                        const SizedBox(height: SpacingTokens.sectionGap),
-                      ],
-                      _PeriodizacaoSection(
-                        tipoVencimento: _tipoVencimento,
-                        sessoesCtrl: _sessoesCtrl,
-                        dataVencimento: _dataVencimento,
-                        onTipoChanged: (v) =>
-                            setState(() => _tipoVencimento = v),
-                        onDataChanged: (v) =>
-                            setState(() => _dataVencimento = v),
-                      ),
-                      const SizedBox(height: SpacingTokens.sectionGap),
-                    ],
+          return SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.all(AppTheme.paddingScreen),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _TemplateInfoCard(
+                    template: template,
+                    qtdSessoes: sessoes.length,
                   ),
-                ),
+                  const SizedBox(height: SpacingTokens.sectionGap),
+                  if (sessoes.isNotEmpty) ...[
+                    _SessoesPreview(sessoes: sessoes),
+                    const SizedBox(height: SpacingTokens.sectionGap),
+                  ],
+                  _PeriodizacaoSection(
+                    tipoVencimento: _tipoVencimento,
+                    sessoesCtrl: _sessoesCtrl,
+                    dataVencimento: _dataVencimento,
+                    onTipoChanged: (v) => setState(() => _tipoVencimento = v),
+                    onDataChanged: (v) => setState(() => _dataVencimento = v),
+                  ),
+                  const SizedBox(height: SpacingTokens.sectionGap),
+                  Opacity(
+                    opacity: _salvando ? 0.75 : 1,
+                    child: IgnorePointer(
+                      ignoring: _salvando,
+                      child: AppPrimaryButton(
+                        icon: Icons.play_arrow_rounded,
+                        label: _salvando
+                            ? 'Ativando...'
+                            : 'Ativar para ${widget.alunoNome.split(' ').first}',
+                        onPressed: () => _ativar(template),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              _BottomBar(
-                alunoNome: widget.alunoNome,
-                salvando: _salvando,
-                onAtivar: () => _ativar(template),
-              ),
-            ],
+            ),
           );
         },
       ),
@@ -370,53 +374,6 @@ class _TabOption extends StatelessWidget {
             style: TextStyle(
               color: isSelected ? AppColors.primary : Colors.white38,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _BottomBar extends StatelessWidget {
-  final String alunoNome;
-  final bool salvando;
-  final VoidCallback onAtivar;
-
-  const _BottomBar({
-    required this.alunoNome,
-    required this.salvando,
-    required this.onAtivar,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        border: Border(top: BorderSide(color: Colors.white.withAlpha(10))),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.paddingScreen,
-            vertical: SpacingTokens.sectionGap,
-          ),
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: salvando ? null : onAtivar,
-              child: salvando
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.black,
-                      ),
-                    )
-                  : Text('Ativar para ${alunoNome.split(' ').first}'),
             ),
           ),
         ),

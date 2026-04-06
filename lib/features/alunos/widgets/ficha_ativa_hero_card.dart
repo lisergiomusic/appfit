@@ -309,18 +309,8 @@ class FichaAtivaHeroCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 4, bottom: 8),
-          child: Text(
-            'Planilha atual',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: AppColors.labelPrimary,
-              letterSpacing: -0.5,
-            ),
-          ),
-        ),
+        Text('Planilha atual', style: AppTheme.sectionHeader),
+        const SizedBox(height: SpacingTokens.labelToField),
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
