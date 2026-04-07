@@ -286,6 +286,36 @@ class AlunoService {
         .snapshots();
   }
 
+  Stream<QuerySnapshot> getHistoricoPesoStream(String alunoId) {
+    return _firestore
+        .collection('usuarios')
+        .doc(alunoId)
+        .collection('historico_peso')
+        .orderBy('dataHora', descending: true)
+        .snapshots();
+  }
+
+  Future<void> registrarPeso({
+    required String alunoId,
+    required double peso,
+  }) async {
+    final agora = Timestamp.now();
+
+    await _firestore
+        .collection('usuarios')
+        .doc(alunoId)
+        .collection('historico_peso')
+        .add({
+          'peso': peso,
+          'dataHora': agora,
+        });
+
+    await _firestore
+        .collection('usuarios')
+        .doc(alunoId)
+        .update({'pesoAtual': peso});
+  }
+
   Future<void> atribuirTreinoAoAluno({
     required String alunoId,
     required String templateId,

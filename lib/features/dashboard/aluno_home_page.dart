@@ -10,6 +10,7 @@ import '../treinos/aluno_rotina_view_page.dart';
 import '../treinos/models/rotina_model.dart';
 import '../treinos/executar_treino_page.dart';
 import '../alunos/widgets/ritmo_da_semana_card.dart';
+import 'widgets/peso_historico_card.dart';
 
 class AlunoHomePage extends StatelessWidget {
   final String uid;
@@ -64,7 +65,49 @@ class AlunoHomePage extends StatelessWidget {
                   const SizedBox(height: SpacingTokens.screenTopPadding),
                   _buildHeader(nome, photoUrl),
                   const SizedBox(height: SpacingTokens.xxl),
-                  _buildPesoCard(context, aluno, uid),
+                  StreamBuilder<QuerySnapshot>(
+                    stream: service.getLogsDaSemanaStream(uid),
+                    builder: (context, logsSnap) {
+                      List<DateTime>? diasTreinados;
+
+                      if (logsSnap.connectionState != ConnectionState.waiting &&
+                          logsSnap.hasData) {
+                        diasTreinados = logsSnap.data!.docs
+                            .map((doc) {
+                              final data = doc.data() as Map<String, dynamic>;
+                              final ts = data['dataHora'] as Timestamp?;
+                              return ts?.toDate();
+                            })
+                            .whereType<DateTime>()
+                            .toList();
+                      }
+
+                      return RitmoDaSemanaCard(
+                        alunoNome: nome,
+                        diasTreinados: diasTreinados,
+                        isAlunoView: true,
+                      );
+                    },
+                  ),
+                  const SizedBox(height: SpacingTokens.xxl),
+                  StreamBuilder<QuerySnapshot>(
+                    stream: service.getHistoricoPesoStream(uid),
+                    builder: (context, historicoSnap) {
+                      final pesoAtual = aluno['pesoAtual'] as double?;
+                      final historico = historicoSnap.hasData
+                          ? historicoSnap.data!.docs
+                              .map((doc) => doc.data() as Map<String, dynamic>)
+                              .toList()
+                          : null;
+
+                      return PesoHistoricoCard(
+                        pesoAtual: pesoAtual,
+                        historico: historico,
+                        onAdicionarPeso: () =>
+                            _abrirEdicaoPeso(context, uid, pesoAtual),
+                      );
+                    },
+                  ),
                   const SizedBox(height: SpacingTokens.xxl),
                   if (recado != null && recado.isNotEmpty) ...[
                     _buildRecadoCard(recado),
@@ -117,31 +160,6 @@ class AlunoHomePage extends StatelessWidget {
                   rotina != null
                       ? _buildRotinaCard(context, rotina, rotinaId)
                       : _buildSemTreinoCard(),
-                  const SizedBox(height: SpacingTokens.xxl),
-                  StreamBuilder<QuerySnapshot>(
-                    stream: service.getLogsDaSemanaStream(uid),
-                    builder: (context, logsSnap) {
-                      List<DateTime>? diasTreinados;
-
-                      if (logsSnap.connectionState != ConnectionState.waiting &&
-                          logsSnap.hasData) {
-                        diasTreinados = logsSnap.data!.docs
-                            .map((doc) {
-                              final data = doc.data() as Map<String, dynamic>;
-                              final ts = data['dataHora'] as Timestamp?;
-                              return ts?.toDate();
-                            })
-                            .whereType<DateTime>()
-                            .toList();
-                      }
-
-                      return RitmoDaSemanaCard(
-                        alunoNome: nome,
-                        diasTreinados: diasTreinados,
-                        isAlunoView: true,
-                      );
-                    },
-                  ),
                   const SizedBox(height: SpacingTokens.screenBottomPadding),
                 ],
               ),
@@ -149,38 +167,6 @@ class AlunoHomePage extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-
-  Widget _buildPesoCard(
-    BuildContext context,
-    Map<String, dynamic> aluno,
-    String uid,
-  ) {
-    final pesoAtual = aluno['pesoAtual'] as double?;
-    final pesoCodigo = pesoAtual != null
-        ? '${pesoAtual.toStringAsFixed(1)} kg'
-        : 'Não registrado';
-
-    return Row(
-      children: [
-        Icon(
-          Icons.monitor_weight_outlined,
-          color: AppColors.labelSecondary,
-          size: 20,
-        ),
-        const SizedBox(width: SpacingTokens.md),
-        Text('Peso atual: $pesoCodigo', style: AppTheme.cardSubtitle),
-        const Spacer(),
-        IconButton(
-          onPressed: () => _abrirEdicaoPeso(context, uid, pesoAtual),
-          icon: const Icon(Icons.edit_outlined),
-          iconSize: 20,
-          color: AppColors.primary,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-        ),
-      ],
     );
   }
 
@@ -565,14 +551,8 @@ class _PesoEditSheetState extends State<_PesoEditSheet> {
     setState(() => _isSaving = true);
 
     try {
-      final alunoDoc = await widget.service.getAluno(widget.uid);
-      final alunoData = alunoDoc.data() as Map<String, dynamic>;
-
-      await widget.service.atualizarAluno(
+      await widget.service.registrarPeso(
         alunoId: widget.uid,
-        nome: alunoData['nome'] ?? '',
-        sobrenome: alunoData['sobrenome'] ?? '',
-        email: alunoData['email'] ?? '',
         peso: peso,
       );
 
