@@ -33,30 +33,24 @@ class RitmoDaSemanaCard extends StatelessWidget {
 
       dias.add({
         'dia': diasSemana[i],
-        'status': diasTreinados == null ? 'carregando' : (feito ? 'feito' : 'futuro'),
+        'status': diasTreinados == null
+            ? 'carregando'
+            : (feito ? 'feito' : 'futuro'),
       });
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: SpacingTokens.screenHorizontalPadding,
-          ),
-          child: Row(
-            children: [
-              Text('Frequência semanal', style: AppTheme.sectionHeader),
-              const Spacer(),
-              AppSectionLinkButton(label: 'Ver mais', onPressed: () {}),
-            ],
-          ),
+        Row(
+          children: [
+            Text('Ritmo da semana', style: AppTheme.sectionHeader),
+            const Spacer(),
+            AppSectionLinkButton(label: 'Ver mais', onPressed: () {}),
+          ],
         ),
         const SizedBox(height: SpacingTokens.labelToField),
         Container(
-          margin: const EdgeInsets.symmetric(
-            horizontal: SpacingTokens.screenHorizontalPadding,
-          ),
           padding: CardTokens.padding,
           decoration: AppTheme.cardDecoration,
           child: Column(

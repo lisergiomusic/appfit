@@ -57,7 +57,7 @@ class AlunoHomePage extends StatelessWidget {
             physics: const BouncingScrollPhysics(),
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.paddingScreen,
+                horizontal: SpacingTokens.screenHorizontalPadding,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,24 +90,11 @@ class AlunoHomePage extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: SpacingTokens.xxl),
-                  StreamBuilder<QuerySnapshot>(
-                    stream: service.getHistoricoPesoStream(uid),
-                    builder: (context, historicoSnap) {
-                      final pesoAtual = aluno['pesoAtual'] as double?;
-                      final historico = historicoSnap.hasData
-                          ? historicoSnap.data!.docs
-                              .map((doc) => doc.data() as Map<String, dynamic>)
-                              .toList()
-                          : null;
-
-                      return PesoHistoricoCard(
-                        pesoAtual: pesoAtual,
-                        historico: historico,
-                        onAdicionarPeso: () =>
-                            _abrirEdicaoPeso(context, uid, pesoAtual),
-                      );
-                    },
-                  ),
+                  Text('Sua planilha atual', style: AppTheme.sectionHeader),
+                  const SizedBox(height: SpacingTokens.labelToField),
+                  rotina != null
+                      ? _buildRotinaCard(context, rotina, rotinaId)
+                      : _buildSemTreinoCard(),
                   const SizedBox(height: SpacingTokens.xxl),
                   if (recado != null && recado.isNotEmpty) ...[
                     _buildRecadoCard(recado),
@@ -155,11 +142,26 @@ class AlunoHomePage extends StatelessWidget {
                     ),
                     const SizedBox(height: SpacingTokens.xxl),
                   ],
-                  Text('Sua planilha atual', style: AppTheme.sectionHeader),
-                  const SizedBox(height: SpacingTokens.labelToField),
-                  rotina != null
-                      ? _buildRotinaCard(context, rotina, rotinaId)
-                      : _buildSemTreinoCard(),
+                  StreamBuilder<QuerySnapshot>(
+                    stream: service.getHistoricoPesoStream(uid),
+                    builder: (context, historicoSnap) {
+                      final pesoAtual = aluno['pesoAtual'] as double?;
+                      final historico = historicoSnap.hasData
+                          ? historicoSnap.data!.docs
+                                .map(
+                                  (doc) => doc.data() as Map<String, dynamic>,
+                                )
+                                .toList()
+                          : null;
+
+                      return PesoHistoricoCard(
+                        pesoAtual: pesoAtual,
+                        historico: historico,
+                        onAdicionarPeso: () =>
+                            _abrirEdicaoPeso(context, uid, pesoAtual),
+                      );
+                    },
+                  ),
                   const SizedBox(height: SpacingTokens.screenBottomPadding),
                 ],
               ),
@@ -551,10 +553,7 @@ class _PesoEditSheetState extends State<_PesoEditSheet> {
     setState(() => _isSaving = true);
 
     try {
-      await widget.service.registrarPeso(
-        alunoId: widget.uid,
-        peso: peso,
-      );
+      await widget.service.registrarPeso(alunoId: widget.uid, peso: peso);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
