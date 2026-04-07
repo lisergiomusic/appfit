@@ -73,6 +73,17 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
               ),
             ),
           ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: SpacingTokens.screenHorizontalPadding,
+              ),
+              child: Text('Sessões de Treino', style: AppTheme.sectionHeader),
+            ),
+          ),
+          const SliverToBoxAdapter(
+            child: SizedBox(height: SpacingTokens.labelToField),
+          ),
           SliverPadding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppTheme.paddingScreen,
@@ -132,7 +143,7 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Progresso', style: AppTheme.formLabel),
+            Text('Progresso', style: AppTheme.sectionHeader),
             Text(
               legenda,
               style: AppTheme.caption2.copyWith(color: AppColors.primary),
@@ -175,10 +186,10 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
             ),
           );
         },
-        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
         child: Container(
           decoration: AppTheme.cardDecoration,
-          padding: const EdgeInsets.all(16),
+          padding: CardTokens.padding,
           child: Row(
             children: [
               Container(
@@ -209,9 +220,7 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
                       Text(sessao.diaSemana!, style: AppTheme.caption),
                     Text(
                       '${sessao.exercicios.length} exercício${sessao.exercicios.length != 1 ? 's' : ''}',
-                      style: AppTheme.caption2.copyWith(
-                        color: AppColors.labelSecondary,
-                      ),
+                      style: CardTokens.cardSubtitle,
                     ),
                   ],
                 ),
