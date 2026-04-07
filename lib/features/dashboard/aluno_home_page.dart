@@ -589,65 +589,107 @@ class _PesoEditSheetState extends State<_PesoEditSheet> {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Atualizar peso', style: AppTheme.title1),
-          const SizedBox(height: SpacingTokens.sectionGap),
-          TextField(
-            controller: _pesoController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            enabled: !_isSaving,
-            decoration: InputDecoration(
-              hintText: 'Ex: 75.5',
-              suffixText: 'kg',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-                borderSide: const BorderSide(color: AppColors.fillSecondary),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-                borderSide: const BorderSide(color: AppColors.fillSecondary),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-                borderSide: const BorderSide(
-                  color: AppColors.primary,
-                  width: 2,
-                ),
-              ),
+          // Drag handle
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.labelSecondary.withAlpha(100),
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(height: SpacingTokens.sectionGap),
-          Row(
+          const SizedBox(height: SpacingTokens.lg),
+          // Header
+          Column(
             children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _isSaving ? null : () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.fillSecondary,
-                    disabledBackgroundColor: AppColors.fillSecondary.withAlpha(
-                      100,
-                    ),
-                  ),
-                  child: const Text('Cancelar'),
+              Text('Registrar peso', style: AppTheme.title1),
+              const SizedBox(height: SpacingTokens.xs),
+              Text(
+                'Seu peso atual será atualizado',
+                style: AppTheme.caption.copyWith(
+                  color: AppColors.labelSecondary.withAlpha(180),
                 ),
               ),
-              const SizedBox(width: SpacingTokens.md),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _isSaving ? null : _salvarPeso,
-                  child: _isSaving
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              AppColors.labelSecondary,
-                            ),
+            ],
+          ),
+          const SizedBox(height: SpacingTokens.lg),
+          // Input field
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (widget.pesoAtual != null)
+                Text(
+                  'Peso atual: ${widget.pesoAtual!.toStringAsFixed(1)} kg',
+                  style: AppTheme.caption2.copyWith(
+                    color: AppColors.labelSecondary.withAlpha(150),
+                  ),
+                ),
+              const SizedBox(height: SpacingTokens.sm),
+              TextField(
+                controller: _pesoController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                enabled: !_isSaving,
+                textAlign: TextAlign.center,
+                style: AppTheme.title1,
+                decoration: InputDecoration(
+                  hintText: '0.0',
+                  suffixText: 'kg',
+                  hintStyle: AppTheme.title1.copyWith(
+                    color: AppColors.labelSecondary.withAlpha(100),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                    borderSide: const BorderSide(
+                      color: AppColors.fillSecondary,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                    borderSide:
+                        const BorderSide(color: AppColors.fillSecondary),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                    borderSide: const BorderSide(
+                      color: AppColors.primary,
+                      width: 2,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: SpacingTokens.lg),
+          // Buttons
+          Column(
+            children: [
+              ElevatedButton(
+                onPressed: _isSaving ? null : _salvarPeso,
+                child: _isSaving
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.labelPrimary,
                           ),
-                        )
-                      : const Text('Salvar'),
+                        ),
+                      )
+                    : const Text('Salvar'),
+              ),
+              const SizedBox(height: SpacingTokens.sm),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: _isSaving ? null : () => Navigator.pop(context),
+                  child: const Text('Cancelar'),
                 ),
               ),
             ],
