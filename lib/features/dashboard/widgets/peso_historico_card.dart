@@ -42,109 +42,113 @@ class PesoHistoricoCard extends StatelessWidget {
         .toList();
 
     final pesoAtualVal = pesos.last;
-    final pesoAnterior = pesos.length > 1 ? pesos[pesos.length - 2] : pesos.last;
+    final pesoAnterior = pesos.length > 1
+        ? pesos[pesos.length - 2]
+        : pesos.last;
     final diferenca = pesoAtualVal - pesoAnterior;
     final tendencia = _buildTendencia(diferenca);
 
     final dataPrimeira = DateFormat('dd/MM', 'pt_BR').format(datas.first);
     final dataUltima = DateFormat('dd/MM', 'pt_BR').format(datas.last);
 
-    return Container(
-      decoration: AppTheme.cardDecoration,
-      padding: CardTokens.padding,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Peso corporal', style: AppTheme.sectionHeader),
+        const SizedBox(height: SpacingTokens.labelToField),
+        Container(
+          decoration: AppTheme.cardDecoration,
+          padding: CardTokens.padding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Peso corporal', style: AppTheme.caption2),
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: onAdicionarPeso,
-                  borderRadius: BorderRadius.circular(999),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withAlpha(25),
-                      borderRadius: BorderRadius.circular(999),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(pesoAtualVal.toStringAsFixed(1), style: AppTheme.bigTitle),
+                  const SizedBox(width: 4),
+                  Text(
+                    'kg',
+                    style: AppTheme.caption.copyWith(
+                      color: AppColors.labelSecondary,
+                      fontWeight: FontWeight.w500,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.add_rounded,
-                          color: AppColors.primary,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Registrar',
-                          style: AppTheme.caption2.copyWith(
+                  ),
+                  const SizedBox(width: 12),
+                  tendencia,
+                ],
+              ),
+              const SizedBox(height: SpacingTokens.lg),
+              SizedBox(
+                height: 64,
+                child: CustomPaint(
+                  painter: SparkLinePainter(pesos: pesos, color: AppColors.primary),
+                  size: Size.infinite,
+                ),
+              ),
+              const SizedBox(height: SpacingTokens.md),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '$dataPrimeira → $dataUltima',
+                    style: AppTheme.caption2.copyWith(
+                      color: AppColors.labelSecondary.withAlpha(150),
+                    ),
+                  ),
+                  Text(
+                    '${historico!.length} ${historico!.length == 1 ? "registro" : "registros"}',
+                    style: AppTheme.caption2.copyWith(
+                      color: AppColors.labelSecondary.withAlpha(150),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: SpacingTokens.lg),
+              SizedBox(
+                width: double.infinity,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: onAdicionarPeso,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withAlpha(25),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          const Icon(
+                            Icons.add_rounded,
                             color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
+                            size: 16,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 4),
+                          Text(
+                            'Registrar novo peso',
+                            style: AppTheme.caption2.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: SpacingTokens.md),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                pesoAtualVal.toStringAsFixed(1),
-                style: AppTheme.bigTitle,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                'kg',
-                style: AppTheme.caption.copyWith(
-                  color: AppColors.labelSecondary,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(width: 12),
-              tendencia,
-            ],
-          ),
-          const SizedBox(height: SpacingTokens.lg),
-          SizedBox(
-            height: 64,
-            child: CustomPaint(
-              painter: SparkLinePainter(
-                pesos: pesos,
-                color: AppColors.primary,
-              ),
-              size: Size.infinite,
-            ),
-          ),
-          const SizedBox(height: SpacingTokens.md),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '$dataPrimeira → $dataUltima',
-                style: AppTheme.caption2.copyWith(
-                  color: AppColors.labelSecondary.withAlpha(150),
-                ),
-              ),
-              Text(
-                '${historico!.length} ${historico!.length == 1 ? "registro" : "registros"}',
-                style: AppTheme.caption2.copyWith(
-                  color: AppColors.labelSecondary.withAlpha(150),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

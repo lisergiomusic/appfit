@@ -502,6 +502,7 @@ class AlunoHomePage extends StatelessWidget {
                     ),
                   ),
                   child: Container(
+                    padding: EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(AppTheme.radiusLG),
@@ -663,8 +664,9 @@ class _PesoEditSheetState extends State<_PesoEditSheet> {
               const SizedBox(height: SpacingTokens.sm),
               TextField(
                 controller: _pesoController,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 enabled: !_isSaving,
                 textAlign: TextAlign.center,
                 style: AppTheme.title1,
@@ -682,8 +684,9 @@ class _PesoEditSheetState extends State<_PesoEditSheet> {
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-                    borderSide:
-                        const BorderSide(color: AppColors.fillSecondary),
+                    borderSide: const BorderSide(
+                      color: AppColors.fillSecondary,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppTheme.radiusLG),
