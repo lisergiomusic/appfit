@@ -23,7 +23,42 @@ class AlunoHomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        centerTitle: true,
         title: const Text('Início'),
+        actions: [
+          IconButton(
+            icon: Stack(
+              children: [
+                const Icon(
+                  Icons.notifications_rounded,
+                  color: AppColors.primary,
+                  size: 26,
+                ),
+                Positioned(
+                  right: 2,
+                  top: 2,
+                  child: Container(
+                    width: 9,
+                    height: 9,
+                    decoration: BoxDecoration(
+                      color: AppColors.systemRed,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.background,
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            onPressed: () {},
+          ),
+          const SizedBox(width: 8),
+        ],
         bottom: const AppBarDivider(),
       ),
       body: StreamBuilder<AlunoPerfilData>(
