@@ -127,13 +127,13 @@ class PesoHistoricoCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.max,
                         children: [
                           const Icon(
-                            Icons.add_rounded,
+                            Icons.edit_rounded,
                             color: AppColors.primary,
                             size: 16,
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'Registrar novo peso',
+                            'Atualizar peso',
                             style: AppTheme.caption2.copyWith(
                               color: AppColors.primary,
                               fontWeight: FontWeight.w600,
@@ -195,67 +195,106 @@ class PesoHistoricoCard extends StatelessWidget {
   }
 
   Widget _buildEmptyState() {
-    return Container(
-      decoration: AppTheme.cardDecoration,
-      padding: CardTokens.padding,
-      child: Column(
-        children: [
-          Icon(
-            Icons.monitor_weight_outlined,
-            color: AppColors.labelSecondary.withAlpha(150),
-            size: 32,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Peso corporal', style: AppTheme.sectionHeader),
+        const SizedBox(height: SpacingTokens.labelToField),
+        Container(
+          decoration: AppTheme.cardDecoration,
+          padding: CardTokens.padding,
+          child: Column(
+            children: [
+              Icon(
+                Icons.monitor_weight_outlined,
+                color: AppColors.labelSecondary.withAlpha(150),
+                size: 32,
+              ),
+              const SizedBox(height: SpacingTokens.sm),
+              const Text('Registre seu primeiro peso', style: AppTheme.cardTitle),
+              const SizedBox(height: SpacingTokens.xs),
+              Text(
+                'Acompanhe a evolução de seu peso ao longo do tempo',
+                style: AppTheme.cardSubtitle,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: SpacingTokens.md),
+              ElevatedButton.icon(
+                onPressed: onAdicionarPeso,
+                icon: const Icon(Icons.add_rounded),
+                label: const Text('Registrar agora'),
+              ),
+            ],
           ),
-          const SizedBox(height: SpacingTokens.sm),
-          const Text('Registre seu primeiro peso', style: AppTheme.cardTitle),
-          const SizedBox(height: SpacingTokens.xs),
-          Text(
-            'Acompanhe a evolução de seu peso ao longo do tempo',
-            style: AppTheme.cardSubtitle,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: SpacingTokens.md),
-          ElevatedButton.icon(
-            onPressed: onAdicionarPeso,
-            icon: const Icon(Icons.add_rounded),
-            label: const Text('Registrar agora'),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildLoadingState() {
-    return Container(
-      decoration: AppTheme.cardDecoration,
-      padding: CardTokens.padding,
-      child: Column(
-        children: [
-          Shimmer.fromColors(
-            baseColor: AppColors.surfaceDark,
-            highlightColor: AppColors.surfaceDark.withAlpha(150),
-            child: Container(
-              height: 36,
-              width: 120,
-              decoration: BoxDecoration(
-                color: AppColors.labelSecondary.withAlpha(30),
-                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Peso corporal', style: AppTheme.sectionHeader),
+        const SizedBox(height: SpacingTokens.labelToField),
+        Container(
+          decoration: AppTheme.cardDecoration,
+          padding: CardTokens.padding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Shimmer.fromColors(
+                baseColor: AppColors.surfaceDark,
+                highlightColor: AppColors.surfaceDark.withAlpha(150),
+                child: Container(
+                  height: 44,
+                  width: 140,
+                  decoration: BoxDecoration(
+                    color: AppColors.labelSecondary.withAlpha(30),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                  ),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: SpacingTokens.md),
-          Shimmer.fromColors(
-            baseColor: AppColors.surfaceDark,
-            highlightColor: AppColors.surfaceDark.withAlpha(150),
-            child: Container(
-              height: 64,
-              decoration: BoxDecoration(
-                color: AppColors.labelSecondary.withAlpha(30),
-                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+              const SizedBox(height: SpacingTokens.lg),
+              Shimmer.fromColors(
+                baseColor: AppColors.surfaceDark,
+                highlightColor: AppColors.surfaceDark.withAlpha(150),
+                child: Container(
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: AppColors.labelSecondary.withAlpha(30),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: SpacingTokens.md),
+              Shimmer.fromColors(
+                baseColor: AppColors.surfaceDark,
+                highlightColor: AppColors.surfaceDark.withAlpha(150),
+                child: Container(
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: AppColors.labelSecondary.withAlpha(30),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                  ),
+                ),
+              ),
+              const SizedBox(height: SpacingTokens.lg),
+              Shimmer.fromColors(
+                baseColor: AppColors.surfaceDark,
+                highlightColor: AppColors.surfaceDark.withAlpha(150),
+                child: Container(
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.labelSecondary.withAlpha(30),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
