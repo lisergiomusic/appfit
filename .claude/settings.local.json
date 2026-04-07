@@ -3,7 +3,8 @@
     "allow": [
       "Bash(flutter test:*)",
       "Bash(flutter analyze:*)",
-      "Bash(grep -E \"\\\\.dart$\")"
+      "Bash(grep -E \"\\\\.dart$\")",
+      "Bash(flutter pub:*)"
     ]
   }
 }

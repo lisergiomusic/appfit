@@ -5,6 +5,7 @@ import '../../core/services/auth_service.dart';
 import 'home_page.dart';
 import 'aluno_home_page.dart';
 import '../alunos/alunos_page.dart';
+import '../alunos/aluno_perfil_page.dart';
 import '../../main.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -105,7 +106,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 style: TextStyle(color: AppColors.labelSecondary),
               ),
             ),
-            _buildAjustes(context),
+            AlunoPerfliPage(uid: uid),
           ]
         : [
             HomePage(
@@ -128,8 +129,8 @@ class _DashboardPageState extends State<DashboardPage> {
               label: 'Meu Treino',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              label: 'Ajustes',
+              icon: Icon(Icons.person),
+              label: 'Perfil',
             ),
           ]
         : const [
