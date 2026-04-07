@@ -19,12 +19,21 @@ class _AlunoPerfliPageState extends State<AlunoPerfliPage> {
   bool _carregando = true;
   Map<String, dynamic>? _alunoData;
   String? _erro;
+  late TextEditingController _recadoController;
+  bool _savingRecado = false;
 
   @override
   void initState() {
     super.initState();
     _service = AlunoService();
+    _recadoController = TextEditingController();
     _carregarDados();
+  }
+
+  @override
+  void dispose() {
+    _recadoController.dispose();
+    super.dispose();
   }
 
   Future<void> _carregarDados() async {
@@ -133,6 +142,11 @@ class _AlunoPerfliPageState extends State<AlunoPerfliPage> {
     final nomeCompleto = '$nome $sobrenome'.trim();
     final pesoAtual = _alunoData!['pesoAtual'] as double?;
     final photoUrl = _alunoData!['photoUrl'] as String?;
+    final recadoAtual = _alunoData!['recadoPersonal'] as String? ?? '';
+
+    if (_recadoController.text.isEmpty && recadoAtual.isNotEmpty) {
+      _recadoController.text = recadoAtual;
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -176,6 +190,8 @@ class _AlunoPerfliPageState extends State<AlunoPerfliPage> {
               Text('Dados físicos', style: AppTheme.sectionHeader),
               const SizedBox(height: SpacingTokens.labelToField),
               _buildPesoSection(pesoAtual),
+              const SizedBox(height: SpacingTokens.xxl),
+              _buildRecadoSection(),
               const SizedBox(height: SpacingTokens.screenBottomPadding),
               SizedBox(
                 width: double.infinity,
@@ -231,6 +247,90 @@ class _AlunoPerfliPageState extends State<AlunoPerfliPage> {
         ],
       ),
     );
+  }
+
+  Widget _buildRecadoSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text('Recado para o aluno', style: AppTheme.sectionHeader),
+            const Spacer(),
+            if (_savingRecado)
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: SpacingTokens.labelToField),
+        TextField(
+          controller: _recadoController,
+          maxLines: 3,
+          textCapitalization: TextCapitalization.sentences,
+          enabled: !_savingRecado,
+          decoration: InputDecoration(
+            hintText: 'Ex: Foco no alongamento pós-treino!',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: const BorderSide(color: AppColors.fillSecondary),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: const BorderSide(color: AppColors.fillSecondary),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2),
+            ),
+          ),
+        ),
+        const SizedBox(height: SpacingTokens.sm),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: _savingRecado ? null : _salvarRecado,
+            child: const Text('Salvar recado'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _salvarRecado() async {
+    final texto = _recadoController.text.trim();
+    setState(() => _savingRecado = true);
+    try {
+      final doc = await _service.getAluno(widget.uid);
+      final d = doc.data() as Map<String, dynamic>;
+      await _service.atualizarAluno(
+        alunoId: widget.uid,
+        nome: d['nome'] ?? '',
+        sobrenome: d['sobrenome'] ?? '',
+        email: d['email'] ?? '',
+        recadoPersonal: texto,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Recado salvo!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _savingRecado = false);
+      }
+    }
   }
 }
 

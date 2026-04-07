@@ -1,11 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import '../../core/services/aluno_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_bar_divider.dart';
 import '../alunos/models/aluno_perfil_data.dart';
 import '../treinos/aluno_rotina_view_page.dart';
+import '../treinos/models/rotina_model.dart';
+import '../treinos/executar_treino_page.dart';
+import '../alunos/widgets/ritmo_da_semana_card.dart';
 
 class AlunoHomePage extends StatelessWidget {
   final String uid;
@@ -46,6 +50,7 @@ class AlunoHomePage extends StatelessWidget {
 
           final nome = aluno['nome']?.toString().split(' ')[0] ?? 'Aluno';
           final photoUrl = aluno['photoUrl'] as String?;
+          final recado = aluno['recadoPersonal'] as String?;
 
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -61,11 +66,82 @@ class AlunoHomePage extends StatelessWidget {
                   const SizedBox(height: SpacingTokens.xxl),
                   _buildPesoCard(context, aluno, uid),
                   const SizedBox(height: SpacingTokens.xxl),
+                  if (recado != null && recado.isNotEmpty) ...[
+                    _buildRecadoCard(recado),
+                    const SizedBox(height: SpacingTokens.xxl),
+                  ],
+                  if (rotina != null) ...[
+                    StreamBuilder<QuerySnapshot>(
+                      stream: service.getUltimoLogStream(uid),
+                      builder: (context, ultimoLogSnap) {
+                        final sessoes = (rotina['sessoes'] as List? ?? [])
+                            .map(
+                              (s) => SessaoTreinoModel.fromFirestore(
+                                s as Map<String, dynamic>,
+                              ),
+                            )
+                            .toList();
+
+                        if (sessoes.isEmpty) return const SizedBox.shrink();
+
+                        SessaoTreinoModel proxSessao = sessoes.first;
+
+                        if (ultimoLogSnap.hasData &&
+                            ultimoLogSnap.data!.docs.isNotEmpty) {
+                          final lastLog =
+                              ultimoLogSnap.data!.docs.first.data()
+                                  as Map<String, dynamic>;
+                          final ultimoNome =
+                              lastLog['sessaoNome'] as String? ?? '';
+                          final idx = sessoes.indexWhere(
+                            (s) => s.nome == ultimoNome,
+                          );
+                          if (idx != -1) {
+                            proxSessao = sessoes[(idx + 1) % sessoes.length];
+                          }
+                        }
+
+                        return _buildProximoTreinoCard(
+                          context,
+                          proxSessao,
+                          sessoes.indexOf(proxSessao),
+                          rotinaId!,
+                          uid,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: SpacingTokens.xxl),
+                  ],
                   Text('Sua planilha atual', style: AppTheme.sectionHeader),
                   const SizedBox(height: SpacingTokens.labelToField),
                   rotina != null
                       ? _buildRotinaCard(context, rotina, rotinaId)
                       : _buildSemTreinoCard(),
+                  const SizedBox(height: SpacingTokens.xxl),
+                  StreamBuilder<QuerySnapshot>(
+                    stream: service.getLogsDaSemanaStream(uid),
+                    builder: (context, logsSnap) {
+                      List<DateTime>? diasTreinados;
+
+                      if (logsSnap.connectionState != ConnectionState.waiting &&
+                          logsSnap.hasData) {
+                        diasTreinados = logsSnap.data!.docs
+                            .map((doc) {
+                              final data = doc.data() as Map<String, dynamic>;
+                              final ts = data['dataHora'] as Timestamp?;
+                              return ts?.toDate();
+                            })
+                            .whereType<DateTime>()
+                            .toList();
+                      }
+
+                      return RitmoDaSemanaCard(
+                        alunoNome: nome,
+                        diasTreinados: diasTreinados,
+                        isAlunoView: true,
+                      );
+                    },
+                  ),
                   const SizedBox(height: SpacingTokens.screenBottomPadding),
                 ],
               ),
@@ -76,9 +152,15 @@ class AlunoHomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildPesoCard(BuildContext context, Map<String, dynamic> aluno, String uid) {
+  Widget _buildPesoCard(
+    BuildContext context,
+    Map<String, dynamic> aluno,
+    String uid,
+  ) {
     final pesoAtual = aluno['pesoAtual'] as double?;
-    final pesoCodigo = pesoAtual != null ? '${pesoAtual.toStringAsFixed(1)} kg' : 'Não registrado';
+    final pesoCodigo = pesoAtual != null
+        ? '${pesoAtual.toStringAsFixed(1)} kg'
+        : 'Não registrado';
 
     return Row(
       children: [
@@ -88,10 +170,7 @@ class AlunoHomePage extends StatelessWidget {
           size: 20,
         ),
         const SizedBox(width: SpacingTokens.md),
-        Text(
-          'Peso atual: $pesoCodigo',
-          style: AppTheme.cardSubtitle,
-        ),
+        Text('Peso atual: $pesoCodigo', style: AppTheme.cardSubtitle),
         const Spacer(),
         IconButton(
           onPressed: () => _abrirEdicaoPeso(context, uid, pesoAtual),
@@ -301,6 +380,136 @@ class AlunoHomePage extends StatelessWidget {
     if (hora >= 12 && hora < 18) return 'Boa tarde';
     return 'Boa noite';
   }
+
+  Widget _buildRecadoCard(String recado) {
+    return Container(
+      width: double.infinity,
+      decoration: AppTheme.cardDecoration,
+      padding: const EdgeInsets.symmetric(
+        horizontal: SpacingTokens.cardPaddingH,
+        vertical: SpacingTokens.cardPaddingH,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.chat_bubble_outline_rounded,
+                color: AppColors.primary,
+                size: 16,
+              ),
+              const SizedBox(width: SpacingTokens.sm),
+              Text(
+                'Recado do seu Personal',
+                style: AppTheme.caption2.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          const SizedBox(height: SpacingTokens.sm),
+          Text(recado, style: AppTheme.cardSubtitle),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProximoTreinoCard(
+    BuildContext context,
+    SessaoTreinoModel sessao,
+    int sessaoIndex,
+    String rotinaId,
+    String alunoId,
+  ) {
+    final letra = String.fromCharCode(65 + (sessaoIndex % 26));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Próximo treino', style: AppTheme.sectionHeader),
+        const SizedBox(height: SpacingTokens.labelToField),
+        Container(
+          decoration: AppTheme.cardDecoration,
+          padding: CardTokens.padding,
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  letra,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: SpacingTokens.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(sessao.nome, style: CardTokens.cardTitle),
+                    Text(
+                      '${sessao.exercicios.length} exercício${sessao.exercicios.length != 1 ? 's' : ''}',
+                      style: AppTheme.cardSubtitle,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: SpacingTokens.sm),
+              SizedBox(
+                width: 80,
+                height: 40,
+                child: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ExecutarTreinoPage(
+                        sessao: sessao,
+                        rotinaId: rotinaId,
+                        alunoId: alunoId,
+                      ),
+                    ),
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.play_arrow_rounded,
+                          color: Colors.black,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Iniciar',
+                          style: AppTheme.caption2.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _PesoEditSheet extends StatefulWidget {
@@ -339,9 +548,9 @@ class _PesoEditSheetState extends State<_PesoEditSheet> {
   Future<void> _salvarPeso() async {
     final pesoText = _pesoController.text.trim();
     if (pesoText.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Digite um peso válido')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Digite um peso válido')));
       return;
     }
 
@@ -375,9 +584,9 @@ class _PesoEditSheetState extends State<_PesoEditSheet> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao atualizar peso: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao atualizar peso: $e')));
       }
     } finally {
       if (mounted) {
@@ -422,7 +631,10 @@ class _PesoEditSheetState extends State<_PesoEditSheet> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-                borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 2,
+                ),
               ),
             ),
           ),
@@ -434,7 +646,9 @@ class _PesoEditSheetState extends State<_PesoEditSheet> {
                   onPressed: _isSaving ? null : () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.fillSecondary,
-                    disabledBackgroundColor: AppColors.fillSecondary.withAlpha(100),
+                    disabledBackgroundColor: AppColors.fillSecondary.withAlpha(
+                      100,
+                    ),
                   ),
                   child: const Text('Cancelar'),
                 ),

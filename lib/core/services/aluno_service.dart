@@ -78,6 +78,7 @@ class AlunoService {
     DateTime? dataNascimento,
     String? objetivos,
     String? genero,
+    String? recadoPersonal,
   }) async {
     final Map<String, dynamic> data = {
       'nome': nome,
@@ -87,10 +88,12 @@ class AlunoService {
 
     if (telefone != null) data['telefone'] = telefone;
     if (peso != null) data['pesoAtual'] = peso;
-    if (dataNascimento != null)
+    if (dataNascimento != null) {
       data['dataNascimento'] = Timestamp.fromDate(dataNascimento);
+    }
     if (objetivos != null) data['objetivos'] = objetivos;
     if (genero != null) data['genero'] = genero;
+    if (recadoPersonal != null) data['recadoPersonal'] = recadoPersonal;
 
     await _firestore.collection('usuarios').doc(alunoId).update(data);
   }
@@ -256,6 +259,30 @@ class AlunoService {
         .where('personalId', isEqualTo: personalId)
         .where('alunoId', isEqualTo: alunoId)
         .where('ativa', isEqualTo: true)
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> getLogsDaSemanaStream(String alunoId) {
+    final agora = DateTime.now();
+    final segundaFeira = DateTime(
+      agora.year,
+      agora.month,
+      agora.day - (agora.weekday - 1),
+    );
+
+    return _firestore
+        .collection('logs_treino')
+        .where('alunoId', isEqualTo: alunoId)
+        .where('dataHora', isGreaterThanOrEqualTo: Timestamp.fromDate(segundaFeira))
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> getUltimoLogStream(String alunoId) {
+    return _firestore
+        .collection('logs_treino')
+        .where('alunoId', isEqualTo: alunoId)
+        .orderBy('dataHora', descending: true)
+        .limit(1)
         .snapshots();
   }
 
