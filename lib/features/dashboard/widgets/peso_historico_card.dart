@@ -316,7 +316,6 @@ class _AddButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.primary.withAlpha(22),
           borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-          border: Border.all(color: AppColors.primary.withAlpha(50), width: 1),
         ),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
