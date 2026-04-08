@@ -83,22 +83,12 @@ class SessaoDetalheViewPage extends StatelessWidget {
                                   horizontal: SpacingTokens.sm,
                                   vertical: SpacingTokens.xs,
                                 ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withAlpha(25),
-                                  borderRadius: BorderRadius.circular(
-                                    AppTheme.radiusFull,
-                                  ),
-                                ),
+                                decoration: PillTokens.decoration,
                                 child: Text(grupo, style: PillTokens.text),
                               ),
                             )
                             .toList(),
                       ),
-                    const SizedBox(height: SpacingTokens.sm),
-                    Text(
-                      '${sessao.exercicios.length} exercício${sessao.exercicios.length != 1 ? 's' : ''}',
-                      style: AppTheme.cardSubtitle,
-                    ),
                   ],
                 ),
               ),
@@ -123,7 +113,7 @@ class SessaoDetalheViewPage extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _MetricCard(
-                          label: 'Tempo',
+                          label: 'Estimado',
                           value: tempoEstimado,
                         ),
                       ),
@@ -212,11 +202,30 @@ class _MetricCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: AppTheme.formLabel,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          Row(
+            children: [
+              if (label == 'Estimado')
+                Icon(
+                  Icons.schedule_rounded,
+                  size: 16,
+                  color: AppColors.labelSecondary,
+                )
+              else
+                Icon(
+                  Icons.fitness_center_rounded,
+                  size: 16,
+                  color: AppColors.labelSecondary,
+                ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTheme.formLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: SpacingTokens.labelToField),
           Text(value, style: AppTheme.title1),
@@ -284,9 +293,11 @@ class _ExercicioCardState extends State<_ExercicioCard> {
 
   Widget _buildConteudoExpandido() {
     final seriesPorTipoEValor = _agruparSeriesPorTipoEValor();
-    final tiposComSeries = [TipoSerie.aquecimento, TipoSerie.feeder, TipoSerie.trabalho]
-        .where((tipo) => seriesPorTipoEValor[tipo]!.isNotEmpty)
-        .toList();
+    final tiposComSeries = [
+      TipoSerie.aquecimento,
+      TipoSerie.feeder,
+      TipoSerie.trabalho,
+    ].where((tipo) => seriesPorTipoEValor[tipo]!.isNotEmpty).toList();
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -323,10 +334,7 @@ class _ExercicioCardState extends State<_ExercicioCard> {
                   .toList(),
             ),
             const SizedBox(height: SpacingTokens.md),
-            Divider(
-              height: 1,
-              color: AppColors.labelQuaternary,
-            ),
+            Divider(height: 1, color: AppColors.labelQuaternary),
             const SizedBox(height: SpacingTokens.md),
           ],
 
@@ -340,9 +348,7 @@ class _ExercicioCardState extends State<_ExercicioCard> {
             final isLast = typeIndex == tiposComSeries.length - 1;
 
             return Padding(
-              padding: EdgeInsets.only(
-                bottom: isLast ? 0 : SpacingTokens.md,
-              ),
+              padding: EdgeInsets.only(bottom: isLast ? 0 : SpacingTokens.md),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -425,10 +431,7 @@ class _ExercicioCardState extends State<_ExercicioCard> {
           if (widget.exercicio.instrucoes != null &&
               widget.exercicio.instrucoes!.isNotEmpty) ...[
             const SizedBox(height: SpacingTokens.md),
-            Divider(
-              height: 1,
-              color: AppColors.labelQuaternary,
-            ),
+            Divider(height: 1, color: AppColors.labelQuaternary),
             const SizedBox(height: SpacingTokens.md),
             Text('Instruções', style: AppTheme.sectionHeader),
             const SizedBox(height: 8),
@@ -440,9 +443,7 @@ class _ExercicioCardState extends State<_ExercicioCard> {
               ),
               child: Text(
                 widget.exercicio.instrucoes!,
-                style: AppTheme.bodyText.copyWith(
-                  height: 1.4,
-                ),
+                style: AppTheme.bodyText.copyWith(height: 1.4),
               ),
             ),
           ],
@@ -481,11 +482,15 @@ class _ExercicioCardState extends State<_ExercicioCard> {
                             right: SpacingTokens.cardPaddingH,
                           ),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusSM,
+                            ),
                             color: AppColors.surfaceDark,
                           ),
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusSM,
+                            ),
                             child: Image.network(
                               widget.exercicio.imagemUrl!,
                               fit: BoxFit.cover,
@@ -508,7 +513,9 @@ class _ExercicioCardState extends State<_ExercicioCard> {
                             right: SpacingTokens.cardPaddingH,
                           ),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusSM,
+                            ),
                             color: AppColors.primary.withAlpha(20),
                           ),
                           child: Center(
@@ -523,7 +530,10 @@ class _ExercicioCardState extends State<_ExercicioCard> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(widget.exercicio.nome, style: AppTheme.cardTitle),
+                            Text(
+                              widget.exercicio.nome,
+                              style: AppTheme.cardTitle,
+                            ),
                             const SizedBox(height: SpacingTokens.xs),
                             Text(
                               '${widget.exercicio.series.length} série${widget.exercicio.series.length != 1 ? 's' : ''}',
@@ -542,12 +552,15 @@ class _ExercicioCardState extends State<_ExercicioCard> {
               ),
               AnimatedOpacity(
                 opacity: _expandido ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 300),
+                duration: Duration(milliseconds: _expandido ? 300 : 400),
+                curve: _expandido ? Curves.easeOut : Curves.easeIn,
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
+                  duration: Duration(milliseconds: _expandido ? 350 : 450),
+                  curve: _expandido ? Curves.easeOut : Curves.easeInCubic,
                   height: _expandido ? null : 0,
-                  child: _expandido ? _buildConteudoExpandido() : const SizedBox.shrink(),
+                  child: _expandido
+                      ? _buildConteudoExpandido()
+                      : const SizedBox.shrink(),
                 ),
               ),
             ],
