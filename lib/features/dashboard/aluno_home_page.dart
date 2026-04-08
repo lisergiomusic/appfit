@@ -522,227 +522,220 @@ class AlunoHomePage extends StatelessWidget {
             ),
             borderRadius: BorderRadius.circular(AppTheme.radiusXL),
             child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.surfaceDark,
-            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-          ),
-          clipBehavior: Clip.hardEdge,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Header ────────────────────────────────────────────────
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16, 16, 4, 14),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.primary.withAlpha(28),
-                      AppColors.primary.withAlpha(8),
-                    ],
-                  ),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        letra,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
-                          height: 1,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            sessao.nome,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceDark,
+                borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+              ),
+              clipBehavior: Clip.hardEdge,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Header ────────────────────────────────────────────────
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(16, 16, 4, 14),
+                    decoration: AppTheme.cardDecoration,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withAlpha(60),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusMD,
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            letra,
                             style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.labelPrimary,
+                              color: AppColors.primary,
+                              fontSize: 26,
+                              fontWeight: FontWeight.w800,
                               letterSpacing: -0.5,
                               height: 1,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                          if (sessao.diaSemana != null &&
-                              sessao.diaSemana!.isNotEmpty) ...[
-                            const SizedBox(height: 3),
-                            Text(
-                              sessao.diaSemana!,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.primary.withAlpha(200),
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: -0.1,
-                              ),
-                            ),
-                          ],
-                          if (grupos.isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 5,
-                              runSpacing: 5,
-                              children: grupos
-                                  .map((g) => _MuscleChip(label: g))
-                                  .toList(),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    // ── Kebab menu ──────────────────────────────────────
-                    PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert_rounded, size: 20, color: AppColors.labelTertiary),
-                      iconSize: 20,
-                      padding: EdgeInsets.zero,
-                      color: AppColors.surfaceDark,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-                      ),
-                      onSelected: (value) {
-                        if (value == 'ver') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => SessaoDetalheViewPage(
-                                sessao: sessao,
-                                letra: letra,
-                                rotinaId: rotinaId,
-                                alunoId: alunoId,
-                              ),
-                            ),
-                          );
-                        }
-                        // 'trocar' — a implementar
-                      },
-                      itemBuilder: (_) => [
-                        PopupMenuItem(
-                          value: 'ver',
-                          child: Row(
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                Icons.visibility_outlined,
-                                size: 18,
-                                color: AppColors.labelPrimary,
+                              Text(
+                                sessao.nome,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.labelPrimary,
+                                  letterSpacing: -0.5,
+                                  height: 1,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(width: 10),
-                              const Text('Ver treino'),
+                              if (sessao.diaSemana != null &&
+                                  sessao.diaSemana!.isNotEmpty) ...[
+                                const SizedBox(height: 3),
+                                Text(
+                                  sessao.diaSemana!,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.primary.withAlpha(200),
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: -0.1,
+                                  ),
+                                ),
+                              ],
+                              if (grupos.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Wrap(
+                                  spacing: 5,
+                                  runSpacing: 5,
+                                  children: grupos
+                                      .map((g) => _MuscleChip(label: g))
+                                      .toList(),
+                                ),
+                              ],
                             ],
                           ),
                         ),
-                        PopupMenuItem(
-                          value: 'trocar',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.swap_horiz_rounded,
-                                size: 18,
-                                color: AppColors.labelPrimary,
+                        // ── Kebab menu ──────────────────────────────────────
+                        PopupMenuButton<String>(
+                          icon: const Icon(
+                            Icons.more_vert_rounded,
+                            size: 20,
+                            color: AppColors.labelTertiary,
+                          ),
+                          iconSize: 20,
+                          padding: EdgeInsets.zero,
+                          color: AppColors.surfaceDark,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusLG,
+                            ),
+                          ),
+                          onSelected: (value) {
+                            if (value == 'ver') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => SessaoDetalheViewPage(
+                                    sessao: sessao,
+                                    letra: letra,
+                                    rotinaId: rotinaId,
+                                    alunoId: alunoId,
+                                  ),
+                                ),
+                              );
+                            }
+                            // 'trocar' — a implementar
+                          },
+                          itemBuilder: (_) => [
+                            PopupMenuItem(
+                              value: 'ver',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.visibility_outlined,
+                                    size: 18,
+                                    color: AppColors.labelPrimary,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Text('Ver treino'),
+                                ],
                               ),
-                              const SizedBox(width: 10),
-                              const Text('Treinar outra sessão'),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // ── Stats ─────────────────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                child: Row(
-                  children: [
-                    _InfoRow(
-                      icon: Icons.fitness_center_rounded,
-                      label: sessao.exercicios.length != 1
-                          ? 'Exercícios'
-                          : 'Exercício',
-                      value: '${sessao.exercicios.length}',
-                    ),
-                    _VerticalDivider(),
-                    _InfoRow(
-                      icon: Icons.repeat_rounded,
-                      label: totalSeries != 1 ? 'Séries' : 'Série',
-                      value: '$totalSeries',
-                    ),
-                    _VerticalDivider(),
-                    _InfoRow(
-                      icon: Icons.timer_outlined,
-                      label: 'Estimado',
-                      value: tempoEstimado,
-                    ),
-                  ],
-                ),
-              ),
-
-              // ── Divider ────────────────────────────────────────────────
-              Divider(
-                height: 1,
-                color: AppColors.labelSecondary.withAlpha(25),
-                indent: 0,
-                endIndent: 0,
-              ),
-
-              // ── Iniciar button ─────────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                child: GestureDetector(
-                  onTap: iniciar,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.play_arrow_rounded,
-                          color: Colors.black,
-                          size: 20,
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          'Iniciar treino',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.3,
-                          ),
+                            ),
+                            PopupMenuItem(
+                              value: 'trocar',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.swap_horiz_rounded,
+                                    size: 18,
+                                    color: AppColors.labelPrimary,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Text('Treinar outra sessão'),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                ),
+
+                  // ── Stats ─────────────────────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                    child: Row(
+                      children: [
+                        _InfoRow(
+                          icon: Icons.fitness_center_rounded,
+                          label: sessao.exercicios.length != 1
+                              ? 'Exercícios'
+                              : 'Exercício',
+                          value: '${sessao.exercicios.length}',
+                        ),
+                        _VerticalDivider(),
+                        _InfoRow(
+                          icon: Icons.repeat_rounded,
+                          label: totalSeries != 1 ? 'Séries' : 'Série',
+                          value: '$totalSeries',
+                        ),
+                        _VerticalDivider(),
+                        _InfoRow(
+                          icon: Icons.timer_outlined,
+                          label: 'Estimado',
+                          value: tempoEstimado,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // ── Iniciar button ─────────────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    child: GestureDetector(
+                      onTap: iniciar,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusFull,
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.black,
+                              size: 20,
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              'Iniciar treino',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
           ),
         ),
       ],
@@ -827,19 +820,10 @@ class _MuscleChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.primary.withAlpha(18),
+        color: AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-        border: Border.all(color: AppColors.primary.withAlpha(40), width: 1),
       ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: AppColors.primary,
-          letterSpacing: -0.1,
-        ),
-      ),
+      child: Text(label, style: AppTheme.caption2),
     );
   }
 }
