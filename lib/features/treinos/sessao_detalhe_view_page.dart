@@ -298,42 +298,51 @@ class _ExercicioCardState extends State<_ExercicioCard> {
           // Grupos musculares
           if (widget.exercicio.grupoMuscular.isNotEmpty) ...[
             Wrap(
-              spacing: SpacingTokens.xs,
-              runSpacing: SpacingTokens.xs,
+              spacing: 6,
+              runSpacing: 6,
               children: widget.exercicio.grupoMuscular
                   .map(
                     (grupo) => Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: SpacingTokens.sm,
-                        vertical: SpacingTokens.xs,
+                        horizontal: 10,
+                        vertical: 5,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withAlpha(15),
-                        borderRadius: BorderRadius.circular(
-                          AppTheme.radiusSM,
+                        color: AppColors.primary.withAlpha(25),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        grupo,
+                        style: AppTheme.caption2.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      child: Text(grupo, style: AppTheme.caption2),
                     ),
                   )
                   .toList(),
             ),
-            const SizedBox(height: SpacingTokens.sm),
+            const SizedBox(height: SpacingTokens.md),
             Divider(
               height: 1,
               color: AppColors.labelQuaternary,
             ),
-            const SizedBox(height: SpacingTokens.sm),
+            const SizedBox(height: SpacingTokens.md),
           ],
 
           // Seções de séries agrupadas por tipo
-          ...tiposComSeries.map((tipo) {
+          ...tiposComSeries.asMap().entries.map((typeEntry) {
+            final typeIndex = typeEntry.key;
+            final tipo = typeEntry.value;
             final seriesPorValor = seriesPorTipoEValor[tipo]!;
             final tituloTipo = _getTituloTipoSerie(tipo);
             final corTipo = _getCorTipoSerie(tipo);
+            final isLast = typeIndex == tiposComSeries.length - 1;
 
             return Padding(
-              padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
+              padding: EdgeInsets.only(
+                bottom: isLast ? 0 : SpacingTokens.md,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -341,48 +350,67 @@ class _ExercicioCardState extends State<_ExercicioCard> {
                   Row(
                     children: [
                       Container(
-                        width: 3,
-                        height: 20,
+                        width: 4,
+                        height: 24,
                         decoration: BoxDecoration(
                           color: corTipo,
-                          borderRadius: BorderRadius.circular(1.5),
+                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                       const SizedBox(width: SpacingTokens.sm),
                       Text(
                         '$tituloTipo:',
                         style: AppTheme.sectionHeader.copyWith(
-                          fontSize: 12,
-                          letterSpacing: 0.5,
+                          fontSize: 13,
+                          letterSpacing: 0.3,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: SpacingTokens.xs),
+                  const SizedBox(height: 10),
 
                   // Agrupamentos de séries por valor
-                  ...seriesPorValor.entries.map((entry) {
-                    final alvo = entry.key;
-                    final (quantidade, descanso) = entry.value;
+                  ...seriesPorValor.entries.map((serieEntry) {
+                    final alvo = serieEntry.key;
+                    final (quantidade, descanso) = serieEntry.value;
 
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      padding: const EdgeInsets.only(left: 12, bottom: 8),
                       child: Row(
                         children: [
-                          Text(
-                            '$quantidade× $alvo reps',
-                            style: AppTheme.bodyText,
+                          Expanded(
+                            child: Text(
+                              '$quantidade× $alvo reps',
+                              style: AppTheme.bodyText,
+                            ),
                           ),
-                          const SizedBox(width: 4),
-                          Icon(
-                            Icons.schedule_outlined,
-                            size: 14,
-                            color: AppColors.labelSecondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            descanso,
-                            style: AppTheme.bodyText,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.labelQuaternary,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.schedule_outlined,
+                                  size: 12,
+                                  color: AppColors.labelSecondary,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  descanso,
+                                  style: AppTheme.caption2.copyWith(
+                                    color: AppColors.labelSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -396,15 +424,27 @@ class _ExercicioCardState extends State<_ExercicioCard> {
           // Instruções
           if (widget.exercicio.instrucoes != null &&
               widget.exercicio.instrucoes!.isNotEmpty) ...[
-            const SizedBox(height: SpacingTokens.sm),
+            const SizedBox(height: SpacingTokens.md),
             Divider(
               height: 1,
               color: AppColors.labelQuaternary,
             ),
-            const SizedBox(height: SpacingTokens.sm),
+            const SizedBox(height: SpacingTokens.md),
             Text('Instruções', style: AppTheme.sectionHeader),
-            const SizedBox(height: SpacingTokens.xs),
-            Text(widget.exercicio.instrucoes!, style: AppTheme.bodyText),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.labelQuaternary,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                widget.exercicio.instrucoes!,
+                style: AppTheme.bodyText.copyWith(
+                  height: 1.4,
+                ),
+              ),
+            ),
           ],
 
           const SizedBox(height: SpacingTokens.sm),
