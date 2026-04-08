@@ -24,10 +24,12 @@ class PesoHistoricoCard extends StatelessWidget {
 
     final sorted = historico!
         .take(8)
-        .map((doc) => (
-              peso: (doc['peso'] as num).toDouble(),
-              data: (doc['dataHora'] as Timestamp).toDate(),
-            ))
+        .map(
+          (doc) => (
+            peso: (doc['peso'] as num).toDouble(),
+            data: (doc['dataHora'] as Timestamp).toDate(),
+          ),
+        )
         .toList()
         .reversed
         .toList();
@@ -36,7 +38,9 @@ class PesoHistoricoCard extends StatelessWidget {
     final datas = sorted.map((e) => e.data).toList();
 
     final pesoAtualVal = pesos.last;
-    final pesoAnterior = pesos.length > 1 ? pesos[pesos.length - 2] : pesos.last;
+    final pesoAnterior = pesos.length > 1
+        ? pesos[pesos.length - 2]
+        : pesos.last;
     final diferenca = pesoAtualVal - pesoAnterior;
 
     final pesoMin = pesos.reduce(math.min);
@@ -51,16 +55,13 @@ class PesoHistoricoCard extends StatelessWidget {
         Text('Peso corporal', style: AppTheme.sectionHeader),
         const SizedBox(height: SpacingTokens.labelToField),
         Container(
-          decoration: BoxDecoration(
-            color: AppColors.surfaceDark,
-            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-          ),
+          decoration: AppTheme.cardDecoration,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Top section: weight + trend + action button
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                padding: CardTokens.padding,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -68,7 +69,6 @@ class PesoHistoricoCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Current weight
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.baseline,
                             textBaseline: TextBaseline.alphabetic,
@@ -212,14 +212,19 @@ class PesoHistoricoCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 'Comece agora e acompanhe\nsua evolução ao longo do tempo',
-                style: AppTheme.caption.copyWith(color: AppColors.labelSecondary),
+                style: AppTheme.caption.copyWith(
+                  color: AppColors.labelSecondary,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
               GestureDetector(
                 onTap: onAdicionarPeso,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(AppTheme.radiusFull),
@@ -353,8 +358,8 @@ class _TrendBadge extends StatelessWidget {
     final IconData icon = stable
         ? Icons.remove_rounded
         : up
-            ? Icons.keyboard_arrow_up_rounded
-            : Icons.keyboard_arrow_down_rounded;
+        ? Icons.keyboard_arrow_up_rounded
+        : Icons.keyboard_arrow_down_rounded;
 
     final String label = stable
         ? 'Estável'
@@ -495,7 +500,12 @@ class _AreaChartPainter extends CustomPainter {
     _drawDot(canvas, points.last, color, small: false);
   }
 
-  void _drawDot(Canvas canvas, Offset point, Color color, {required bool small}) {
+  void _drawDot(
+    Canvas canvas,
+    Offset point,
+    Color color, {
+    required bool small,
+  }) {
     final radius = small ? 2.5 : 4.5;
     canvas.drawCircle(point, radius, Paint()..color = color);
     if (!small) {
