@@ -217,6 +217,11 @@ class AlunoHomePage extends StatelessWidget {
         service: AlunoService(),
       ),
       isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppTheme.radiusXL),
+        ),
+      ),
     );
   }
 
@@ -533,10 +538,7 @@ class AlunoHomePage extends StatelessWidget {
             ),
             borderRadius: BorderRadius.circular(AppTheme.radiusXL),
             child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.surfaceDark,
-                borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-              ),
+              decoration: AppTheme.cardDecoration,
               clipBehavior: Clip.hardEdge,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -921,7 +923,12 @@ class _PesoEditSheetState extends State<_PesoEditSheet> {
     final keyboardHeight = mediaQuery.viewInsets.bottom;
 
     return Container(
-      color: AppColors.background,
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppTheme.radiusXL),
+        ),
+      ),
       padding: EdgeInsets.only(
         left: SpacingTokens.screenHorizontalPadding,
         right: SpacingTokens.screenHorizontalPadding,
