@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import '../../core/services/aluno_service.dart';
 import '../../core/theme/app_theme.dart';
@@ -445,82 +444,193 @@ class AlunoHomePage extends StatelessWidget {
   ) {
     final letra = String.fromCharCode(65 + (sessaoIndex % 26));
 
+    final totalSeries = sessao.exercicios
+        .fold<int>(0, (acc, ex) => acc + ex.series.length);
+
+    final grupos = sessao.exercicios
+        .expand((ex) => ex.grupoMuscular)
+        .toSet()
+        .where((g) => g.isNotEmpty && g != 'Geral')
+        .take(4)
+        .toList();
+
+    void iniciar() => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ExecutarTreinoPage(
+              sessao: sessao,
+              rotinaId: rotinaId,
+              alunoId: alunoId,
+            ),
+          ),
+        );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Próximo treino', style: AppTheme.sectionHeader),
         const SizedBox(height: SpacingTokens.labelToField),
         Container(
-          decoration: AppTheme.cardDecoration,
-          padding: CardTokens.padding,
-          child: Row(
+          decoration: BoxDecoration(
+            color: AppColors.surfaceDark,
+            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+          ),
+          clipBehavior: Clip.hardEdge,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ── Header strip ──────────────────────────────────────────
               Container(
-                width: 40,
-                height: 40,
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  letra,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.primary.withAlpha(28),
+                      AppColors.primary.withAlpha(8),
+                    ],
+                  ),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: AppColors.primary.withAlpha(30),
+                      width: 1,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: SpacingTokens.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(sessao.nome, style: CardTokens.cardTitle),
-                    Text(
-                      '${sessao.exercicios.length} exercício${sessao.exercicios.length != 1 ? 's' : ''}',
-                      style: AppTheme.cardSubtitle,
+                    // Session letter badge
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        letra,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
+                          height: 1,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            sessao.nome,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.labelPrimary,
+                              letterSpacing: -0.5,
+                              height: 1,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (sessao.diaSemana != null &&
+                              sessao.diaSemana!.isNotEmpty) ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              sessao.diaSemana!,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.primary.withAlpha(200),
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: -0.1,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: SpacingTokens.sm),
-              SizedBox(
-                width: 80,
-                height: 40,
-                child: CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ExecutarTreinoPage(
-                        sessao: sessao,
-                        rotinaId: rotinaId,
-                        alunoId: alunoId,
-                      ),
+
+              // ── Stats row ─────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                child: Row(
+                  children: [
+                    _StatChip(
+                      icon: Icons.fitness_center_rounded,
+                      label: '${sessao.exercicios.length} exercício${sessao.exercicios.length != 1 ? 's' : ''}',
                     ),
+                    const SizedBox(width: 8),
+                    _StatChip(
+                      icon: Icons.repeat_rounded,
+                      label: '$totalSeries série${totalSeries != 1 ? 's' : ''}',
+                    ),
+                  ],
+                ),
+              ),
+
+              // ── Muscle group chips ─────────────────────────────────────
+              if (grupos.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: grupos.map((g) => _MuscleChip(label: g)).toList(),
                   ),
+                ),
+
+              // ── Orientações preview ────────────────────────────────────
+              if (sessao.orientacoes != null && sessao.orientacoes!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                  child: Text(
+                    sessao.orientacoes!,
+                    style: AppTheme.caption.copyWith(
+                      color: AppColors.labelSecondary.withAlpha(160),
+                      height: 1.4,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+
+              // ── Iniciar button ─────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+                child: GestureDetector(
+                  onTap: iniciar,
                   child: Container(
-                    padding: EdgeInsets.all(8),
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.play_arrow_rounded,
                           color: Colors.black,
-                          size: 16,
+                          size: 20,
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 6),
                         Text(
-                          'Iniciar',
-                          style: AppTheme.caption2.copyWith(
-                            fontWeight: FontWeight.w600,
+                          'Iniciar treino',
+                          style: TextStyle(
                             color: Colors.black,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.3,
                           ),
                         ),
                       ],
@@ -535,6 +645,73 @@ class AlunoHomePage extends StatelessWidget {
     );
   }
 }
+
+// ─── Stat chip ────────────────────────────────────────────────────────────────
+
+class _StatChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _StatChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.fillSecondary,
+        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: AppColors.labelSecondary),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: AppColors.labelSecondary,
+              letterSpacing: -0.1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Muscle chip ──────────────────────────────────────────────────────────────
+
+class _MuscleChip extends StatelessWidget {
+  final String label;
+
+  const _MuscleChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withAlpha(18),
+        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+        border: Border.all(color: AppColors.primary.withAlpha(40), width: 1),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: AppColors.primary,
+          letterSpacing: -0.1,
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _PesoEditSheet extends StatefulWidget {
   final String uid;
