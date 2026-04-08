@@ -28,9 +28,28 @@ class SessaoDetalheViewPage extends StatelessWidget {
     return grupos.toList();
   }
 
+  String _calcularTempoEstimado() {
+    int totalSegundos = 0;
+    for (final exercicio in sessao.exercicios) {
+      for (final serie in exercicio.series) {
+        // Extrai o número de strings como "60s"
+        final match = RegExp(r'(\d+)').firstMatch(serie.descanso);
+        if (match != null) {
+          totalSegundos += int.parse(match.group(1)!);
+        }
+      }
+    }
+    final minutos = totalSegundos ~/ 60;
+    if (minutos > 0) {
+      return '$minutos min';
+    }
+    return '${totalSegundos}s';
+  }
+
   @override
   Widget build(BuildContext context) {
     final gruposUnicos = _obterGruposUnicos();
+    final tempoEstimado = _calcularTempoEstimado();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -66,12 +85,11 @@ class SessaoDetalheViewPage extends StatelessWidget {
                                 ),
                                 decoration: BoxDecoration(
                                   color: AppColors.primary.withAlpha(25),
-                                  borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusFull,
+                                  ),
                                 ),
-                                child: Text(
-                                  grupo,
-                                  style: PillTokens.text,
-                                ),
+                                child: Text(grupo, style: PillTokens.text),
                               ),
                             )
                             .toList(),
@@ -94,9 +112,26 @@ class SessaoDetalheViewPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _MetricCard(
+                          label: 'Exercícios',
+                          value: '${sessao.exercicios.length}',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _MetricCard(
+                          label: 'Tempo',
+                          value: tempoEstimado,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: SpacingTokens.sectionGap),
                   if (sessao.orientacoes != null &&
                       sessao.orientacoes!.isNotEmpty) ...[
-                    const SizedBox(height: SpacingTokens.sectionGap),
                     Text(
                       'Observações do treino',
                       style: AppTheme.sectionHeader,
@@ -117,8 +152,13 @@ class SessaoDetalheViewPage extends StatelessWidget {
                         style: AppTheme.bodyText,
                       ),
                     ),
+                    const SizedBox(height: SpacingTokens.sectionGap),
                   ],
-                  const SizedBox(height: SpacingTokens.sectionGap),
+                  Text(
+                    'Lista de exercícios',
+                    style: AppTheme.sectionHeader,
+                  ),
+                  const SizedBox(height: SpacingTokens.labelToField),
                   ...List.generate(
                     sessao.exercicios.length,
                     (exIndex) => _ExercicioCard(
@@ -159,17 +199,41 @@ class SessaoDetalheViewPage extends StatelessWidget {
       ),
     );
   }
+}
 
+class _MetricCard extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _MetricCard({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      decoration: AppTheme.cardDecoration,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: AppTheme.formLabel,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: SpacingTokens.labelToField),
+          Text(value, style: AppTheme.title1),
+        ],
+      ),
+    );
+  }
 }
 
 class _ExercicioCard extends StatefulWidget {
   final ExercicioItem exercicio;
   final bool isLast;
 
-  const _ExercicioCard({
-    required this.exercicio,
-    required this.isLast,
-  });
+  const _ExercicioCard({required this.exercicio, required this.isLast});
 
   @override
   State<_ExercicioCard> createState() => _ExercicioCardState();
@@ -198,7 +262,9 @@ class _ExercicioCardState extends State<_ExercicioCard> {
                   Container(
                     width: ThumbnailTokens.md,
                     height: ThumbnailTokens.md,
-                    margin: const EdgeInsets.only(right: SpacingTokens.cardPaddingH),
+                    margin: const EdgeInsets.only(
+                      right: SpacingTokens.cardPaddingH,
+                    ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(AppTheme.radiusSM),
                       color: AppColors.surfaceDark,
@@ -223,7 +289,9 @@ class _ExercicioCardState extends State<_ExercicioCard> {
                   Container(
                     width: ThumbnailTokens.md,
                     height: ThumbnailTokens.md,
-                    margin: const EdgeInsets.only(right: SpacingTokens.cardPaddingH),
+                    margin: const EdgeInsets.only(
+                      right: SpacingTokens.cardPaddingH,
+                    ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(AppTheme.radiusSM),
                       color: AppColors.primary.withAlpha(20),
@@ -276,7 +344,9 @@ class _ExercicioCardState extends State<_ExercicioCard> {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.primary.withAlpha(15),
-                            borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusSM,
+                            ),
                           ),
                           child: Text(grupo, style: AppTheme.caption2),
                         ),
@@ -285,7 +355,9 @@ class _ExercicioCardState extends State<_ExercicioCard> {
                 ),
               const SizedBox(height: SpacingTokens.sm),
               Column(
-                children: List.generate(widget.exercicio.series.length, (sIndex) {
+                children: List.generate(widget.exercicio.series.length, (
+                  sIndex,
+                ) {
                   final serie = widget.exercicio.series[sIndex];
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6),
@@ -315,15 +387,9 @@ class _ExercicioCardState extends State<_ExercicioCard> {
               if (widget.exercicio.instrucoes != null &&
                   widget.exercicio.instrucoes!.isNotEmpty) ...[
                 const SizedBox(height: SpacingTokens.sm),
-                Text(
-                  'Instruções',
-                  style: AppTheme.sectionHeader,
-                ),
+                Text('Instruções', style: AppTheme.sectionHeader),
                 const SizedBox(height: SpacingTokens.xs),
-                Text(
-                  widget.exercicio.instrucoes!,
-                  style: AppTheme.bodyText,
-                ),
+                Text(widget.exercicio.instrucoes!, style: AppTheme.bodyText),
               ],
             ],
           ),
@@ -335,10 +401,7 @@ class _ExercicioCardState extends State<_ExercicioCard> {
         if (!widget.isLast)
           Padding(
             padding: const EdgeInsets.only(top: SpacingTokens.sm),
-            child: Divider(
-              color: AppColors.primary.withAlpha(15),
-              height: 1,
-            ),
+            child: Divider(color: AppColors.primary.withAlpha(15), height: 1),
           )
         else
           const SizedBox(height: SpacingTokens.sm),
