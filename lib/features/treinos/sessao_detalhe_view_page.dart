@@ -154,10 +154,7 @@ class SessaoDetalheViewPage extends StatelessWidget {
                     ),
                     const SizedBox(height: SpacingTokens.sectionGap),
                   ],
-                  Text(
-                    'Lista de exercícios',
-                    style: AppTheme.sectionHeader,
-                  ),
+                  Text('Lista de exercícios', style: AppTheme.sectionHeader),
                   const SizedBox(height: SpacingTokens.labelToField),
                   ...List.generate(
                     sessao.exercicios.length,
@@ -246,157 +243,174 @@ class _ExercicioCardState extends State<_ExercicioCard> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              _expandido = !_expandido;
-            });
-          },
-          child: Container(
-            decoration: AppTheme.cardDecoration,
-            padding: const EdgeInsets.all(SpacingTokens.cardPaddingH),
-            child: Row(
-              children: [
-                if (widget.exercicio.imagemUrl != null &&
-                    widget.exercicio.imagemUrl!.isNotEmpty)
-                  Container(
-                    width: ThumbnailTokens.md,
-                    height: ThumbnailTokens.md,
-                    margin: const EdgeInsets.only(
-                      right: SpacingTokens.cardPaddingH,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                      color: AppColors.surfaceDark,
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                      child: Image.network(
-                        widget.exercicio.imagemUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(
-                            child: Icon(
-                              Icons.image_not_supported_outlined,
-                              color: AppColors.labelSecondary,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  )
-                else
-                  Container(
-                    width: ThumbnailTokens.md,
-                    height: ThumbnailTokens.md,
-                    margin: const EdgeInsets.only(
-                      right: SpacingTokens.cardPaddingH,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                      color: AppColors.primary.withAlpha(20),
-                    ),
-                    child: Center(
-                      child: Icon(
-                        Icons.fitness_center,
-                        color: AppColors.primary,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        Container(
+          decoration: AppTheme.cardDecoration,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _expandido = !_expandido;
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(SpacingTokens.cardPaddingH),
+                  child: Row(
                     children: [
-                      Text(widget.exercicio.nome, style: AppTheme.cardTitle),
-                      const SizedBox(height: SpacingTokens.xs),
-                      Text(
-                        '${widget.exercicio.series.length} série${widget.exercicio.series.length != 1 ? 's' : ''}',
-                        style: AppTheme.cardSubtitle,
+                      if (widget.exercicio.imagemUrl != null &&
+                          widget.exercicio.imagemUrl!.isNotEmpty)
+                        Container(
+                          width: ThumbnailTokens.md,
+                          height: ThumbnailTokens.md,
+                          margin: const EdgeInsets.only(
+                            right: SpacingTokens.cardPaddingH,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                            color: AppColors.surfaceDark,
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                            child: Image.network(
+                              widget.exercicio.imagemUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Center(
+                                  child: Icon(
+                                    Icons.image_not_supported_outlined,
+                                    color: AppColors.labelSecondary,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        )
+                      else
+                        Container(
+                          width: ThumbnailTokens.md,
+                          height: ThumbnailTokens.md,
+                          margin: const EdgeInsets.only(
+                            right: SpacingTokens.cardPaddingH,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                            color: AppColors.primary.withAlpha(20),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.fitness_center,
+                              color: AppColors.primary,
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(widget.exercicio.nome, style: AppTheme.cardTitle),
+                            const SizedBox(height: SpacingTokens.xs),
+                            Text(
+                              '${widget.exercicio.series.length} série${widget.exercicio.series.length != 1 ? 's' : ''}',
+                              style: AppTheme.cardSubtitle,
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        _expandido ? Icons.expand_less : Icons.expand_more,
+                        color: AppColors.labelSecondary,
                       ),
                     ],
                   ),
                 ),
-                Icon(
-                  _expandido ? Icons.expand_less : Icons.expand_more,
-                  color: AppColors.labelSecondary,
-                ),
-              ],
-            ),
-          ),
-        ),
-        AnimatedCrossFade(
-          firstChild: const SizedBox.shrink(),
-          secondChild: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: SpacingTokens.sm),
-              if (widget.exercicio.grupoMuscular.isNotEmpty)
-                Wrap(
-                  spacing: SpacingTokens.xs,
-                  runSpacing: SpacingTokens.xs,
-                  children: widget.exercicio.grupoMuscular
-                      .map(
-                        (grupo) => Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: SpacingTokens.sm,
-                            vertical: SpacingTokens.xs,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withAlpha(15),
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusSM,
-                            ),
-                          ),
-                          child: Text(grupo, style: AppTheme.caption2),
-                        ),
-                      )
-                      .toList(),
-                ),
-              const SizedBox(height: SpacingTokens.sm),
-              Column(
-                children: List.generate(widget.exercicio.series.length, (
-                  sIndex,
-                ) {
-                  final serie = widget.exercicio.series[sIndex];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 32,
-                          child: Text(
-                            'S${sIndex + 1}',
-                            style: AppTheme.caption2.copyWith(
-                              color: AppColors.labelSecondary,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: SpacingTokens.sm),
-                        Expanded(
-                          child: Text(
-                            '${serie.alvo} reps | ${serie.carga}kg | ${serie.descanso}s',
-                            style: AppTheme.bodyText,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
               ),
-              if (widget.exercicio.instrucoes != null &&
-                  widget.exercicio.instrucoes!.isNotEmpty) ...[
-                const SizedBox(height: SpacingTokens.sm),
-                Text('Instruções', style: AppTheme.sectionHeader),
-                const SizedBox(height: SpacingTokens.xs),
-                Text(widget.exercicio.instrucoes!, style: AppTheme.bodyText),
-              ],
+              AnimatedOpacity(
+                opacity: _expandido ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 300),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  height: _expandido ? null : 0,
+                  child: _expandido
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: SpacingTokens.cardPaddingH,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (widget.exercicio.grupoMuscular.isNotEmpty)
+                                Wrap(
+                                  spacing: SpacingTokens.xs,
+                                  runSpacing: SpacingTokens.xs,
+                                  children: widget.exercicio.grupoMuscular
+                                      .map(
+                                        (grupo) => Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: SpacingTokens.sm,
+                                            vertical: SpacingTokens.xs,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.primary.withAlpha(15),
+                                            borderRadius: BorderRadius.circular(
+                                              AppTheme.radiusSM,
+                                            ),
+                                          ),
+                                          child: Text(grupo, style: AppTheme.caption2),
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                              if (widget.exercicio.grupoMuscular.isNotEmpty)
+                                const SizedBox(height: SpacingTokens.sm),
+                              Column(
+                                children: List.generate(widget.exercicio.series.length, (
+                                  sIndex,
+                                ) {
+                                  final serie = widget.exercicio.series[sIndex];
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 6),
+                                    child: Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 32,
+                                          child: Text(
+                                            'S${sIndex + 1}',
+                                            style: AppTheme.caption2.copyWith(
+                                              color: AppColors.labelSecondary,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: SpacingTokens.sm),
+                                        Expanded(
+                                          child: Text(
+                                            '${serie.alvo} reps | ${serie.carga}kg | ${serie.descanso}s',
+                                            style: AppTheme.bodyText,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }),
+                              ),
+                              if (widget.exercicio.instrucoes != null &&
+                                  widget.exercicio.instrucoes!.isNotEmpty) ...[
+                                const SizedBox(height: SpacingTokens.sm),
+                                Text('Instruções', style: AppTheme.sectionHeader),
+                                const SizedBox(height: SpacingTokens.xs),
+                                Text(widget.exercicio.instrucoes!, style: AppTheme.bodyText),
+                              ],
+                              const SizedBox(height: SpacingTokens.sm),
+                            ],
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ),
             ],
           ),
-          crossFadeState: _expandido
-              ? CrossFadeState.showSecond
-              : CrossFadeState.showFirst,
-          duration: const Duration(milliseconds: 200),
         ),
         if (!widget.isLast)
           Padding(
