@@ -661,7 +661,7 @@ class AlunoHomePage extends StatelessWidget {
                                     color: AppColors.labelPrimary,
                                   ),
                                   const SizedBox(width: 10),
-                                  const Text('Treinar outra sessão'),
+                                  const Text('Escolher outra sessão'),
                                 ],
                               ),
                             ),
