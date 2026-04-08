@@ -83,6 +83,7 @@ class AlunoHomePage extends StatelessWidget {
           final aluno = data.aluno;
           final rotina = data.rotinaAtiva;
           final rotinaId = data.rotinaId;
+          final nomePersonal = data.nomePersonal;
 
           final nome = aluno['nome']?.toString().split(' ')[0] ?? 'Aluno';
           final photoUrl = aluno['photoUrl'] as String?;
@@ -98,7 +99,7 @@ class AlunoHomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: SpacingTokens.screenTopPadding),
-                  _buildHeader(nome, photoUrl),
+                  _buildHeader(nome, photoUrl, nomePersonal),
                   const SizedBox(height: SpacingTokens.xxl),
                   StreamBuilder<QuerySnapshot>(
                     stream: service.getLogsDaSemanaStream(uid),
@@ -219,7 +220,7 @@ class AlunoHomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(String nome, String? photoUrl) {
+  Widget _buildHeader(String nome, String? photoUrl, String? nomePersonal) {
     return Row(
       children: [
         CircleAvatar(
@@ -242,11 +243,13 @@ class AlunoHomePage extends StatelessWidget {
           children: [
             Text('${_getSaudacao()}, $nome', style: AppTheme.title1),
             const SizedBox(height: SpacingTokens.titleToSubtitle),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: PillTokens.decoration,
-              child: Text('Aluno', style: PillTokens.text),
-            ),
+            if (nomePersonal != null && nomePersonal.isNotEmpty)
+              Text(
+                'Personal: $nomePersonal',
+                style: AppTheme.caption.copyWith(
+                  color: AppColors.labelSecondary.withAlpha(180),
+                ),
+              ),
           ],
         ),
       ],
