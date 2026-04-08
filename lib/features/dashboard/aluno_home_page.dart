@@ -403,6 +403,37 @@ class AlunoHomePage extends StatelessWidget {
     return 'Boa noite';
   }
 
+  static int _parseDuration(String value) {
+    final v = value.trim().toLowerCase();
+    final mMatch = RegExp(r'^(\d+)m$').firstMatch(v);
+    if (mMatch != null) return int.parse(mMatch.group(1)!) * 60;
+    final sMatch = RegExp(r'^(\d+)s$').firstMatch(v);
+    if (sMatch != null) return int.parse(sMatch.group(1)!);
+    final msMatch = RegExp(r'^(\d+)m(\d+)s$').firstMatch(v);
+    if (msMatch != null) {
+      return int.parse(msMatch.group(1)!) * 60 + int.parse(msMatch.group(2)!);
+    }
+    return int.tryParse(v) ?? 0;
+  }
+
+  String _calcularTempoSessao(SessaoTreinoModel sessao) {
+    int totalSeconds = 0;
+    for (final ex in sessao.exercicios) {
+      totalSeconds += 120; // 2min transição entre exercícios
+      for (final serie in ex.series) {
+        final execTime = ex.tipoAlvo == 'Tempo'
+            ? _parseDuration(serie.alvo)
+            : (int.tryParse(serie.alvo) ?? 0) * 4;
+        totalSeconds += execTime + _parseDuration(serie.descanso);
+      }
+    }
+    final d = Duration(seconds: totalSeconds);
+    final hours = d.inHours;
+    final minutes = d.inMinutes.remainder(60);
+    if (hours > 0) return '${hours}h ${minutes}m';
+    return '${minutes}m';
+  }
+
   Widget _buildRecadoCard(String recado) {
     return Container(
       width: double.infinity,
@@ -454,6 +485,8 @@ class AlunoHomePage extends StatelessWidget {
         .take(4)
         .toList();
 
+    final tempoEstimado = _calcularTempoSessao(sessao);
+
     void iniciar() => Navigator.push(
           context,
           MaterialPageRoute(
@@ -479,10 +512,10 @@ class AlunoHomePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Header strip ──────────────────────────────────────────
+              // ── Header ────────────────────────────────────────────────
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -492,17 +525,10 @@ class AlunoHomePage extends StatelessWidget {
                       AppColors.primary.withAlpha(8),
                     ],
                   ),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: AppColors.primary.withAlpha(30),
-                      width: 1,
-                    ),
-                  ),
                 ),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Session letter badge
                     Container(
                       width: 52,
                       height: 52,
@@ -552,6 +578,16 @@ class AlunoHomePage extends StatelessWidget {
                               ),
                             ),
                           ],
+                          if (grupos.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 5,
+                              runSpacing: 5,
+                              children: grupos
+                                  .map((g) => _MuscleChip(label: g))
+                                  .toList(),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -559,53 +595,43 @@ class AlunoHomePage extends StatelessWidget {
                 ),
               ),
 
-              // ── Stats row ─────────────────────────────────────────────
+              // ── Stats ─────────────────────────────────────────────────
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                 child: Row(
                   children: [
-                    _StatChip(
+                    _InfoRow(
                       icon: Icons.fitness_center_rounded,
-                      label: '${sessao.exercicios.length} exercício${sessao.exercicios.length != 1 ? 's' : ''}',
+                      label: sessao.exercicios.length != 1 ? 'Exercícios' : 'Exercício',
+                      value: '${sessao.exercicios.length}',
                     ),
-                    const SizedBox(width: 8),
-                    _StatChip(
+                    _VerticalDivider(),
+                    _InfoRow(
                       icon: Icons.repeat_rounded,
-                      label: '$totalSeries série${totalSeries != 1 ? 's' : ''}',
+                      label: totalSeries != 1 ? 'Séries' : 'Série',
+                      value: '$totalSeries',
+                    ),
+                    _VerticalDivider(),
+                    _InfoRow(
+                      icon: Icons.timer_outlined,
+                      label: 'Estimado',
+                      value: tempoEstimado,
                     ),
                   ],
                 ),
               ),
 
-              // ── Muscle group chips ─────────────────────────────────────
-              if (grupos.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                  child: Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: grupos.map((g) => _MuscleChip(label: g)).toList(),
-                  ),
-                ),
-
-              // ── Orientações preview ────────────────────────────────────
-              if (sessao.orientacoes != null && sessao.orientacoes!.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                  child: Text(
-                    sessao.orientacoes!,
-                    style: AppTheme.caption.copyWith(
-                      color: AppColors.labelSecondary.withAlpha(160),
-                      height: 1.4,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+              // ── Divider ────────────────────────────────────────────────
+              Divider(
+                height: 1,
+                color: AppColors.labelSecondary.withAlpha(25),
+                indent: 0,
+                endIndent: 0,
+              ),
 
               // ── Iniciar button ─────────────────────────────────────────
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                 child: GestureDetector(
                   onTap: iniciar,
                   child: Container(
@@ -646,38 +672,67 @@ class AlunoHomePage extends StatelessWidget {
   }
 }
 
-// ─── Stat chip ────────────────────────────────────────────────────────────────
+// ─── Info row ─────────────────────────────────────────────────────────────────
 
-class _StatChip extends StatelessWidget {
+class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String label;
+  final String value;
 
-  const _StatChip({required this.icon, required this.label});
+  const _InfoRow({required this.icon, required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 11, color: AppColors.labelSecondary.withAlpha(140)),
+              const SizedBox(width: 4),
+              Text(
+                label.toUpperCase(),
+                style: const TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.labelSecondary,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.labelPrimary,
+              letterSpacing: -0.2,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Vertical divider ─────────────────────────────────────────────────────────
+
+class _VerticalDivider extends StatelessWidget {
+  const _VerticalDivider();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.fillSecondary,
-        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: AppColors.labelSecondary),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: AppColors.labelSecondary,
-              letterSpacing: -0.1,
-            ),
-          ),
-        ],
-      ),
+      width: 1,
+      height: 28,
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      color: AppColors.labelSecondary.withAlpha(30),
     );
   }
 }
