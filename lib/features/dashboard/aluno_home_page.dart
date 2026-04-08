@@ -125,16 +125,6 @@ class AlunoHomePage extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: SpacingTokens.xxl),
-                  Text('Sua planilha atual', style: AppTheme.sectionHeader),
-                  const SizedBox(height: SpacingTokens.labelToField),
-                  rotina != null
-                      ? _buildRotinaCard(context, rotina, rotinaId)
-                      : _buildSemTreinoCard(),
-                  const SizedBox(height: SpacingTokens.xxl),
-                  if (recado != null && recado.isNotEmpty) ...[
-                    _buildRecadoCard(recado),
-                    const SizedBox(height: SpacingTokens.xxl),
-                  ],
                   if (rotina != null) ...[
                     StreamBuilder<QuerySnapshot>(
                       stream: service.getUltimoLogStream(uid),
@@ -175,6 +165,16 @@ class AlunoHomePage extends StatelessWidget {
                         );
                       },
                     ),
+                    const SizedBox(height: SpacingTokens.xxl),
+                  ],
+                  Text('Sua planilha atual', style: AppTheme.sectionHeader),
+                  const SizedBox(height: SpacingTokens.labelToField),
+                  rotina != null
+                      ? _buildRotinaCard(context, rotina, rotinaId)
+                      : _buildSemTreinoCard(),
+                  const SizedBox(height: SpacingTokens.xxl),
+                  if (recado != null && recado.isNotEmpty) ...[
+                    _buildRecadoCard(recado),
                     const SizedBox(height: SpacingTokens.xxl),
                   ],
                   StreamBuilder<QuerySnapshot>(
@@ -611,7 +611,7 @@ class AlunoHomePage extends StatelessWidget {
                     ),
                     // ── Kebab menu ──────────────────────────────────────
                     PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert_rounded, size: 20, color: AppColors.labelSecondary),
+                      icon: const Icon(Icons.more_vert_rounded, size: 20, color: AppColors.labelTertiary),
                       iconSize: 20,
                       padding: EdgeInsets.zero,
                       color: AppColors.surfaceDark,
