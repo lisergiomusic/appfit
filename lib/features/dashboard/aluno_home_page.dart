@@ -224,7 +224,7 @@ class AlunoHomePage extends StatelessWidget {
     return Row(
       children: [
         CircleAvatar(
-          radius: AvatarTokens.lg,
+          radius: 34,
           backgroundColor: AppColors.surfaceLight,
           backgroundImage: photoUrl != null && photoUrl.isNotEmpty
               ? NetworkImage(photoUrl)
@@ -233,21 +233,29 @@ class AlunoHomePage extends StatelessWidget {
               ? const Icon(
                   Icons.person_rounded,
                   color: AppColors.labelSecondary,
-                  size: 28,
+                  size: 32,
                 )
               : null,
         ),
-        const SizedBox(width: 14),
+        const SizedBox(width: 16),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${_getSaudacao()}, $nome', style: AppTheme.title1),
+            Text(
+              '${_getSaudacao()},',
+              style: AppTheme.caption.copyWith(
+                color: AppColors.labelSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(nome, style: AppTheme.title1),
             const SizedBox(height: SpacingTokens.titleToSubtitle),
             if (nomePersonal != null && nomePersonal.isNotEmpty)
               Text(
                 'Personal: $nomePersonal',
                 style: AppTheme.caption.copyWith(
-                  color: AppColors.labelSecondary.withAlpha(180),
+                  color: AppColors.labelSecondary,
                 ),
               ),
           ],
