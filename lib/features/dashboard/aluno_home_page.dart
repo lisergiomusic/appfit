@@ -9,6 +9,7 @@ import '../treinos/aluno_rotina_view_page.dart';
 import '../treinos/models/rotina_model.dart';
 import '../treinos/executar_treino_page.dart';
 import '../alunos/widgets/ritmo_da_semana_card.dart';
+import '../treinos/sessao_detalhe_view_page.dart';
 import 'widgets/peso_historico_card.dart';
 
 class AlunoHomePage extends StatelessWidget {
@@ -475,8 +476,10 @@ class AlunoHomePage extends StatelessWidget {
   ) {
     final letra = String.fromCharCode(65 + (sessaoIndex % 26));
 
-    final totalSeries = sessao.exercicios
-        .fold<int>(0, (acc, ex) => acc + ex.series.length);
+    final totalSeries = sessao.exercicios.fold<int>(
+      0,
+      (acc, ex) => acc + ex.series.length,
+    );
 
     final grupos = sessao.exercicios
         .expand((ex) => ex.grupoMuscular)
@@ -488,22 +491,37 @@ class AlunoHomePage extends StatelessWidget {
     final tempoEstimado = _calcularTempoSessao(sessao);
 
     void iniciar() => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ExecutarTreinoPage(
-              sessao: sessao,
-              rotinaId: rotinaId,
-              alunoId: alunoId,
-            ),
-          ),
-        );
+      context,
+      MaterialPageRoute(
+        builder: (_) => ExecutarTreinoPage(
+          sessao: sessao,
+          rotinaId: rotinaId,
+          alunoId: alunoId,
+        ),
+      ),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Próximo treino', style: AppTheme.sectionHeader),
         const SizedBox(height: SpacingTokens.labelToField),
-        Container(
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => SessaoDetalheViewPage(
+                  sessao: sessao,
+                  letra: letra,
+                  rotinaId: rotinaId,
+                  alunoId: alunoId,
+                ),
+              ),
+            ),
+            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+            child: Container(
           decoration: BoxDecoration(
             color: AppColors.surfaceDark,
             borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -515,7 +533,7 @@ class AlunoHomePage extends StatelessWidget {
               // ── Header ────────────────────────────────────────────────
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+                padding: const EdgeInsets.fromLTRB(16, 16, 4, 14),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -591,6 +609,62 @@ class AlunoHomePage extends StatelessWidget {
                         ],
                       ),
                     ),
+                    // ── Kebab menu ──────────────────────────────────────
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert_rounded, size: 20, color: AppColors.labelSecondary),
+                      iconSize: 20,
+                      padding: EdgeInsets.zero,
+                      color: AppColors.surfaceDark,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                      ),
+                      onSelected: (value) {
+                        if (value == 'ver') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => SessaoDetalheViewPage(
+                                sessao: sessao,
+                                letra: letra,
+                                rotinaId: rotinaId,
+                                alunoId: alunoId,
+                              ),
+                            ),
+                          );
+                        }
+                        // 'trocar' — a implementar
+                      },
+                      itemBuilder: (_) => [
+                        PopupMenuItem(
+                          value: 'ver',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.visibility_outlined,
+                                size: 18,
+                                color: AppColors.labelPrimary,
+                              ),
+                              const SizedBox(width: 10),
+                              const Text('Ver treino'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'trocar',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.swap_horiz_rounded,
+                                size: 18,
+                                color: AppColors.labelPrimary,
+                              ),
+                              const SizedBox(width: 10),
+                              const Text('Treinar outra sessão'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -602,7 +676,9 @@ class AlunoHomePage extends StatelessWidget {
                   children: [
                     _InfoRow(
                       icon: Icons.fitness_center_rounded,
-                      label: sessao.exercicios.length != 1 ? 'Exercícios' : 'Exercício',
+                      label: sessao.exercicios.length != 1
+                          ? 'Exercícios'
+                          : 'Exercício',
                       value: '${sessao.exercicios.length}',
                     ),
                     _VerticalDivider(),
@@ -667,6 +743,8 @@ class AlunoHomePage extends StatelessWidget {
             ],
           ),
         ),
+          ),
+        ),
       ],
     );
   }
@@ -679,7 +757,11 @@ class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _InfoRow({required this.icon, required this.label, required this.value});
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -690,17 +772,13 @@ class _InfoRow extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 11, color: AppColors.labelSecondary.withAlpha(140)),
-              const SizedBox(width: 4),
-              Text(
-                label.toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.labelSecondary,
-                  letterSpacing: 0.5,
-                ),
+              Icon(
+                icon,
+                size: 11,
+                color: AppColors.labelSecondary.withAlpha(140),
               ),
+              const SizedBox(width: 4),
+              Text(label, style: AppTheme.caption),
             ],
           ),
           const SizedBox(height: 2),
