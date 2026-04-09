@@ -172,6 +172,57 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
     }
   }
 
+  Future<void> _confirmarCancelamento() async {
+    // Pausa o timer durante o diálogo
+    _timer?.cancel();
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surfaceDark,
+        title: const Text(
+          'Cancelar treino?',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          'Seu progresso será perdido e nada será registrado.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'CONTINUAR TREINO',
+              style: TextStyle(color: AppColors.primary),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'CANCELAR TREINO',
+              style: TextStyle(color: Colors.redAccent),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      if (mounted) Navigator.pop(context);
+    } else {
+      // Retoma o timer de descanso se estava ativo antes do diálogo
+      if (_restTimer != null && _restTimer! > 0) {
+        _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          setState(() => _restTimer = _restTimer! - 1);
+          if (_restTimer! <= 0) {
+            _timer?.cancel();
+            _advanceToNextSerie();
+          }
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final exercise = widget.sessao.exercicios[_currentExerciseIndex];
@@ -181,12 +232,24 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
             (_currentSerieIndex * (100 / exercise.series.length))) /
         widget.sessao.exercicios.length;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(widget.sessao.nome),
-        bottom: const AppBarDivider(),
-      ),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmarCancelamento();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: Text(widget.sessao.nome),
+          bottom: const AppBarDivider(),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.close),
+              tooltip: 'Cancelar treino',
+              onPressed: _confirmarCancelamento,
+            ),
+          ],
+        ),
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(color: AppColors.primary),
@@ -211,6 +274,7 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
                 ),
               ),
             ),
+      ),
     );
   }
 

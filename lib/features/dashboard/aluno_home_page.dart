@@ -365,7 +365,7 @@ class AlunoHomePage extends StatelessWidget {
                       ),
                     Text(
                       legendaVencimento,
-                      style: AppTheme.caption.copyWith(
+                      style: CardTokens.cardSubtitle.copyWith(
                         color: AppColors.primary,
                       ),
                     ),
