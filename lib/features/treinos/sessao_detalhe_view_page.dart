@@ -152,7 +152,7 @@ class SessaoDetalheViewPage extends StatelessWidget {
                       isLast: exIndex == sessao.exercicios.length - 1,
                     ),
                   ),
-                  const SizedBox(height: SpacingTokens.screenBottomPadding),
+                  const SizedBox(height: 96),
                 ],
               ),
             ),
