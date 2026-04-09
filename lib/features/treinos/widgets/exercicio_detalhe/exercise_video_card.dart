@@ -82,22 +82,6 @@ class ExerciseVideoCard extends StatelessWidget {
                         ),
                       ),
               ),
-              if (imageUrl != null && imageUrl!.isNotEmpty)
-                Center(
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withAlpha(64),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      CupertinoIcons.play_fill,
-                      color: Colors.white,
-                      size: 26,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),

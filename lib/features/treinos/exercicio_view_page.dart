@@ -41,7 +41,6 @@ class _ExercicioViewPageState extends State<ExercicioViewPage> {
     final temImagem =
         widget.exercicio.imagemUrl != null &&
         widget.exercicio.imagemUrl!.isNotEmpty;
-    final temInstrucoesPadrao = widget.exercicio.hasInstrucoesPadrao;
     final temInstrucoesPersonalizadas =
         widget.exercicio.hasInstrucoesPersonalizadas;
     final temMusculos = widget.exercicio.grupoMuscular.isNotEmpty;
