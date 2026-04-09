@@ -259,16 +259,7 @@ class _ExercicioCard extends StatelessWidget {
     }
   }
 
-  Color _getCorTipoSerie(TipoSerie tipo) {
-    switch (tipo) {
-      case TipoSerie.aquecimento:
-        return AppColors.accentMetrics;
-      case TipoSerie.feeder:
-        return AppColors.iosBlue;
-      case TipoSerie.trabalho:
-        return AppColors.primary;
-    }
-  }
+  Color _getCorTipoSerie(TipoSerie tipo) => AppColors.labelSecondary;
 
   Map<TipoSerie, Map<String, (int, String)>> _agruparSeriesPorTipoEValor() {
     final grupos = <TipoSerie, Map<String, (int, String)>>{

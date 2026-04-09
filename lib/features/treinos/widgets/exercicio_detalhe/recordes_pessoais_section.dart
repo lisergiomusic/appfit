@@ -100,12 +100,6 @@ class RecordesPessoaisSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(
-              Icons.emoji_events_rounded,
-              size: 16,
-              color: AppColors.accentMetrics,
-            ),
-            const SizedBox(width: SpacingTokens.xs),
             Text('Recordes Pessoais', style: AppTheme.sectionHeader),
             const Spacer(),
             GestureDetector(
