@@ -63,20 +63,10 @@ class ExercicioViewPage extends StatelessWidget {
                                 horizontal: SpacingTokens.sm,
                                 vertical: SpacingTokens.xs,
                               ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withAlpha(20),
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(
-                                  color: AppColors.primary.withAlpha(60),
-                                  width: 0.5,
-                                ),
-                              ),
+                              decoration: PillTokens.decoration,
                               child: Text(
                                 grupo,
-                                style: AppTheme.caption.copyWith(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: PillTokens.text,
                               ),
                             ),
                           )
