@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/appfit_sliver_app_bar.dart';
-import '../../core/widgets/app_primary_button.dart';
 import '../../core/widgets/note_display_field.dart';
 import 'models/rotina_model.dart';
 import 'models/exercicio_model.dart';
@@ -160,15 +159,14 @@ class SessaoDetalheViewPage extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: SpacingTokens.screenHorizontalPadding,
-            vertical: SpacingTokens.sm,
-          ),
-          child: AppPrimaryButton(
-            label: 'Iniciar sessão',
-            icon: Icons.play_arrow_rounded,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: SpacingTokens.screenHorizontalPadding,
+        ),
+        child: SizedBox(
+          width: double.infinity,
+          child: FloatingActionButton.extended(
             onPressed: () {
               Navigator.push(
                 context,
@@ -181,6 +179,10 @@ class SessaoDetalheViewPage extends StatelessWidget {
                 ),
               );
             },
+            icon: const Icon(Icons.play_arrow_rounded),
+            label: const Text('Iniciar sessão'),
+            elevation: 2,
+            highlightElevation: 4,
           ),
         ),
       ),
@@ -232,18 +234,11 @@ class _MetricCard extends StatelessWidget {
   }
 }
 
-class _ExercicioCard extends StatefulWidget {
+class _ExercicioCard extends StatelessWidget {
   final ExercicioItem exercicio;
   final bool isLast;
 
   const _ExercicioCard({required this.exercicio, required this.isLast});
-
-  @override
-  State<_ExercicioCard> createState() => _ExercicioCardState();
-}
-
-class _ExercicioCardState extends State<_ExercicioCard> {
-  bool _expandido = false;
 
   String _getTituloTipoSerie(TipoSerie tipo) {
     switch (tipo) {
@@ -274,7 +269,7 @@ class _ExercicioCardState extends State<_ExercicioCard> {
       TipoSerie.trabalho: {},
     };
 
-    for (final serie in widget.exercicio.series) {
+    for (final serie in exercicio.series) {
       final tipo = serie.tipo;
       final chave = serie.alvo;
       if (grupos[tipo]!.containsKey(chave)) {
@@ -303,32 +298,6 @@ class _ExercicioCardState extends State<_ExercicioCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Grupos musculares
-          if (widget.exercicio.grupoMuscular.isNotEmpty) ...[
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: widget.exercicio.grupoMuscular
-                  .map(
-                    (grupo) => Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(grupo, style: PillTokens.text),
-                    ),
-                  )
-                  .toList(),
-            ),
-            const SizedBox(height: SpacingTokens.md),
-            Divider(height: 1, color: AppColors.labelQuaternary),
-            const SizedBox(height: SpacingTokens.md),
-          ],
-
           // Seções de séries agrupadas por tipo
           ...tiposComSeries.asMap().entries.map((typeEntry) {
             final typeIndex = typeEntry.key;
@@ -347,11 +316,11 @@ class _ExercicioCardState extends State<_ExercicioCard> {
                   Row(
                     children: [
                       Container(
-                        width: 4,
-                        height: 24,
+                        width: 2.5,
+                        height: 18,
                         decoration: BoxDecoration(
                           color: corTipo,
-                          borderRadius: BorderRadius.circular(2),
+                          borderRadius: BorderRadius.circular(1.5),
                         ),
                       ),
                       const SizedBox(width: SpacingTokens.sm),
@@ -419,8 +388,8 @@ class _ExercicioCardState extends State<_ExercicioCard> {
           }),
 
           // Instruções
-          if (widget.exercicio.instrucoes != null &&
-              widget.exercicio.instrucoes!.isNotEmpty) ...[
+          if (exercicio.instrucoes != null &&
+              exercicio.instrucoes!.isNotEmpty) ...[
             const SizedBox(height: SpacingTokens.md),
             Divider(height: 1, color: AppColors.labelQuaternary),
             const SizedBox(height: SpacingTokens.md),
@@ -433,7 +402,7 @@ class _ExercicioCardState extends State<_ExercicioCard> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                widget.exercicio.instrucoes!,
+                exercicio.instrucoes!,
                 style: AppTheme.bodyText.copyWith(height: 1.4),
               ),
             ),
@@ -454,112 +423,89 @@ class _ExercicioCardState extends State<_ExercicioCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _expandido = !_expandido;
-                  });
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(SpacingTokens.cardPaddingH),
-                  child: Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          width: 48,
-                          height: 48,
-                          margin: const EdgeInsets.only(
-                            right: SpacingTokens.cardPaddingH,
-                          ),
-                          color: Colors.black.withAlpha(40),
-                          child:
-                              (widget.exercicio.imagemUrl != null &&
-                                  widget.exercicio.imagemUrl!.isNotEmpty)
-                              ? CachedNetworkImage(
-                                  imageUrl: widget.exercicio.imagemUrl!,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => Center(
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: AppColors.primary.withAlpha(100),
-                                    ),
+              Padding(
+                padding: const EdgeInsets.all(SpacingTokens.cardPaddingH),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        margin: const EdgeInsets.only(
+                          right: SpacingTokens.cardPaddingH,
+                        ),
+                        color: Colors.black.withAlpha(40),
+                        child:
+                            (exercicio.imagemUrl != null &&
+                                exercicio.imagemUrl!.isNotEmpty)
+                            ? CachedNetworkImage(
+                                imageUrl: exercicio.imagemUrl!,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.primary.withAlpha(100),
                                   ),
-                                  errorWidget: (context, url, error) => Center(
-                                    child: Icon(
-                                      Icons.fitness_center,
-                                      color: AppColors.labelSecondary,
-                                      size: 24,
-                                    ),
-                                  ),
-                                )
-                              : Center(
+                                ),
+                                errorWidget: (context, url, error) => Center(
                                   child: Icon(
                                     Icons.fitness_center,
                                     color: AppColors.labelSecondary,
                                     size: 24,
                                   ),
                                 ),
-                        ),
+                              )
+                            : Center(
+                                child: Icon(
+                                  Icons.fitness_center,
+                                  color: AppColors.labelSecondary,
+                                  size: 24,
+                                ),
+                              ),
                       ),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.exercicio.nome,
-                              style: AppTheme.cardTitle,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: SpacingTokens.xs),
-                            RichText(
-                              text: TextSpan(
-                                style: AppTheme.cardSubtitle,
-                                children: [
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            exercicio.nome,
+                            style: AppTheme.cardTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: SpacingTokens.xs),
+                          RichText(
+                            text: TextSpan(
+                              style: AppTheme.cardSubtitle,
+                              children: [
+                                TextSpan(
+                                  text:
+                                      '${exercicio.series.length} ${exercicio.series.length == 1 ? 'Série' : 'Séries'}',
+                                  style: const TextStyle(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                                if (exercicio.grupoMuscular.isNotEmpty)
                                   TextSpan(
                                     text:
-                                        '${widget.exercicio.series.length} ${widget.exercicio.series.length == 1 ? 'Série' : 'Séries'}',
-                                    style: const TextStyle(
-                                      color: AppColors.primary,
-                                    ),
+                                        ' • ${exercicio.grupoMuscular.join(' • ')}',
                                   ),
-                                  if (widget.exercicio.grupoMuscular.isNotEmpty)
-                                    TextSpan(
-                                      text:
-                                          ' • ${widget.exercicio.grupoMuscular.join(' • ')}',
-                                    ),
-                                ],
-                              ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                      Icon(
-                        _expandido ? Icons.expand_less : Icons.expand_more,
-                        color: AppColors.labelSecondary,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-              AnimatedOpacity(
-                opacity: _expandido ? 1.0 : 0.0,
-                duration: Duration(milliseconds: _expandido ? 300 : 400),
-                curve: _expandido ? Curves.easeOut : Curves.easeIn,
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: _expandido ? 350 : 450),
-                  curve: _expandido ? Curves.easeOut : Curves.easeInCubic,
-                  height: _expandido ? null : 0,
-                  child: _expandido
-                      ? _buildConteudoExpandido()
-                      : const SizedBox.shrink(),
-                ),
-              ),
+              _buildConteudoExpandido(),
             ],
           ),
         ),
-        if (!widget.isLast)
+        if (!isLast)
           Padding(
             padding: const EdgeInsets.only(top: SpacingTokens.sm),
             child: Divider(color: AppColors.primary.withAlpha(15), height: 1),
