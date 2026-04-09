@@ -262,8 +262,8 @@ class _ExercicioCard extends StatelessWidget {
     }
   }
 
-  Map<TipoSerie, Map<String, (int, String)>> _agruparSeriesPorTipoEValor() {
-    final grupos = <TipoSerie, Map<String, (int, String)>>{
+  Map<TipoSerie, Map<String, int>> _agruparSeriesPorTipoEValor() {
+    final grupos = <TipoSerie, Map<String, int>>{
       TipoSerie.aquecimento: {},
       TipoSerie.feeder: {},
       TipoSerie.trabalho: {},
@@ -273,10 +273,9 @@ class _ExercicioCard extends StatelessWidget {
       final tipo = serie.tipo;
       final chave = serie.alvo;
       if (grupos[tipo]!.containsKey(chave)) {
-        final (count, descanso) = grupos[tipo]![chave]!;
-        grupos[tipo]![chave] = (count + 1, descanso);
+        grupos[tipo]![chave] = grupos[tipo]![chave]! + 1;
       } else {
-        grupos[tipo]![chave] = (1, serie.descanso);
+        grupos[tipo]![chave] = 1;
       }
     }
 
@@ -316,8 +315,8 @@ class _ExercicioCard extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        width: 2.5,
-                        height: 18,
+                        width: 2,
+                        height: 15,
                         decoration: BoxDecoration(
                           color: corTipo,
                           borderRadius: BorderRadius.circular(1.5),
@@ -339,46 +338,13 @@ class _ExercicioCard extends StatelessWidget {
                   // Agrupamentos de séries por valor
                   ...seriesPorValor.entries.map((serieEntry) {
                     final alvo = serieEntry.key;
-                    final (quantidade, descanso) = serieEntry.value;
+                    final quantidade = serieEntry.value;
 
                     return Padding(
                       padding: const EdgeInsets.only(left: 12, bottom: 8),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              '${quantidade}x  •  $alvo reps',
-                              style: AppTheme.bodyText,
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.surfaceLight,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.schedule_outlined,
-                                  size: 12,
-                                  color: AppColors.labelSecondary,
-                                ),
-                                const SizedBox(width: 3),
-                                Text(
-                                  descanso,
-                                  style: AppTheme.caption2.copyWith(
-                                    color: AppColors.labelSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        '${quantidade}x  •  $alvo reps',
+                        style: AppTheme.bodyText,
                       ),
                     );
                   }),
