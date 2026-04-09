@@ -14,6 +14,17 @@ class ExerciseVideoCard extends StatelessWidget {
     required this.exerciseTitle,
   });
 
+  String? _getYoutubeId(String? url) {
+    if (url == null) return null;
+    final RegExp regExp = RegExp(
+      r"(?<=vi/|v/|vi=|/v/|youtu\.be/|/embed/|v=).+?(?=\?|#|&|$)",
+      caseSensitive: false,
+      multiLine: false,
+    );
+    final match = regExp.firstMatch(url);
+    return match?.group(0);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -31,7 +42,9 @@ class ExerciseVideoCard extends StatelessWidget {
               Positioned.fill(
                 child: imageUrl != null && imageUrl!.isNotEmpty
                     ? CachedNetworkImage(
-                        imageUrl: imageUrl!,
+                        imageUrl: _getYoutubeId(imageUrl) != null
+                            ? 'https://img.youtube.com/vi/${_getYoutubeId(imageUrl)}/0.jpg'
+                            : imageUrl!,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
                           color: AppColors.surfaceDark,
@@ -41,9 +54,23 @@ class ExerciseVideoCard extends StatelessWidget {
                         ),
                         errorWidget: (context, url, error) => Container(
                           color: AppColors.surfaceDark,
-                          child: const Icon(
-                            Icons.videocam_off,
-                            color: Colors.white38,
+                          child: Image.network(
+                            url ?? '',
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, err, stack) => const Center(
+                              child: Icon(
+                                Icons.videocam_off,
+                                color: Colors.white38,
+                              ),
+                            ),
                           ),
                         ),
                       )

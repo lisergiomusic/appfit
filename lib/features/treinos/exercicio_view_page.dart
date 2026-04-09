@@ -71,9 +71,21 @@ class _ExercicioViewPageState extends State<ExercicioViewPage> {
                 children: [
                   const SizedBox(height: SpacingTokens.sm),
 
-                  ExerciseVideoCard(
-                    imageUrl: widget.exercicio.imagemUrl,
-                    exerciseTitle: widget.exercicio.nome,
+                  FutureBuilder<ExercicioItem?>(
+                    future: _exercicioBaseFuture,
+                    builder: (context, snapshot) {
+                      final base = snapshot.data;
+                      final resolvedImage =
+                          (widget.exercicio.imagemUrl != null &&
+                              widget.exercicio.imagemUrl!.isNotEmpty)
+                          ? widget.exercicio.imagemUrl
+                          : base?.imagemUrl;
+
+                      return ExerciseVideoCard(
+                        imageUrl: resolvedImage,
+                        exerciseTitle: widget.exercicio.nome,
+                      );
+                    },
                   ),
 
                   if (temMusculos) ...[
