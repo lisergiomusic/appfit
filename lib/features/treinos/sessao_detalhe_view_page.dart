@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/appfit_sliver_app_bar.dart';
@@ -469,57 +470,42 @@ class _ExercicioCardState extends State<_ExercicioCard> {
                   padding: const EdgeInsets.all(SpacingTokens.cardPaddingH),
                   child: Row(
                     children: [
-                      if (widget.exercicio.imagemUrl != null &&
-                          widget.exercicio.imagemUrl!.isNotEmpty)
-                        Container(
-                          width: ThumbnailTokens.md,
-                          height: ThumbnailTokens.md,
-                          margin: const EdgeInsets.only(
-                            right: SpacingTokens.cardPaddingH,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusSM,
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            margin: const EdgeInsets.only(
+                              right: SpacingTokens.cardPaddingH,
                             ),
-                            color: AppColors.surfaceDark,
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusSM,
-                            ),
-                            child: Image.network(
-                              widget.exercicio.imagemUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Center(
-                                  child: Icon(
-                                    Icons.image_not_supported_outlined,
-                                    color: AppColors.labelSecondary,
+                            color: Colors.black.withAlpha(40),
+                            child: (widget.exercicio.imagemUrl != null &&
+                                    widget.exercicio.imagemUrl!.isNotEmpty)
+                                ? CachedNetworkImage(
+                                    imageUrl: widget.exercicio.imagemUrl!,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) => Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.primary.withAlpha(100),
+                                      ),
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                        Center(
+                                          child: Icon(
+                                            Icons.fitness_center,
+                                            color: AppColors.labelSecondary,
+                                            size: 24,
+                                          ),
+                                        ),
+                                  )
+                                : Center(
+                                    child: Icon(
+                                      Icons.fitness_center,
+                                      color: AppColors.labelSecondary,
+                                      size: 24,
+                                    ),
                                   ),
-                                );
-                              },
-                            ),
-                          ),
-                        )
-                      else
-                        Container(
-                          width: ThumbnailTokens.md,
-                          height: ThumbnailTokens.md,
-                          margin: const EdgeInsets.only(
-                            right: SpacingTokens.cardPaddingH,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusSM,
-                            ),
-                            color: AppColors.primary.withAlpha(20),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              Icons.fitness_center,
-                              color: AppColors.primary,
-                              size: 24,
-                            ),
                           ),
                         ),
                       Expanded(
@@ -529,11 +515,28 @@ class _ExercicioCardState extends State<_ExercicioCard> {
                             Text(
                               widget.exercicio.nome,
                               style: AppTheme.cardTitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: SpacingTokens.xs),
-                            Text(
-                              '${widget.exercicio.series.length} série${widget.exercicio.series.length != 1 ? 's' : ''}',
-                              style: AppTheme.cardSubtitle,
+                            RichText(
+                              text: TextSpan(
+                                style: AppTheme.cardSubtitle,
+                                children: [
+                                  TextSpan(
+                                    text:
+                                        '${widget.exercicio.series.length} ${widget.exercicio.series.length == 1 ? 'Série' : 'Séries'}',
+                                    style: const TextStyle(
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                  if (widget.exercicio.grupoMuscular.isNotEmpty)
+                                    TextSpan(
+                                      text:
+                                          ' • ${widget.exercicio.grupoMuscular.join(' • ')}',
+                                    ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
