@@ -359,13 +359,13 @@ class AlunoHomePage extends StatelessWidget {
                     if (objetivo.isNotEmpty)
                       Text(
                         objetivo,
-                        style: AppTheme.caption,
+                        style: CardTokens.cardSubtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     Text(
                       legendaVencimento,
-                      style: AppTheme.caption2.copyWith(
+                      style: AppTheme.caption.copyWith(
                         color: AppColors.primary,
                       ),
                     ),
@@ -555,9 +555,9 @@ class AlunoHomePage extends StatelessWidget {
                           width: 52,
                           height: 52,
                           decoration: BoxDecoration(
-                            color: Colors.black.withAlpha(60),
+                            color: Colors.black.withAlpha(40),
                             borderRadius: BorderRadius.circular(
-                              AppTheme.radiusMD,
+                              AppTheme.radiusSM,
                             ),
                           ),
                           alignment: Alignment.center,

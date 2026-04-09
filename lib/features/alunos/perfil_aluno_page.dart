@@ -132,7 +132,22 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                 const SizedBox(height: 16),
                 _buildActions(context, telefone),
                 const SizedBox(height: SpacingTokens.sectionGap),
-                RitmoDaSemanaCard(alunoNome: nomeExibicao),
+                StreamBuilder<QuerySnapshot>(
+                  stream: _alunoService.getLogsDaSemanaStream(widget.alunoId),
+                  builder: (context, logsSnapshot) {
+                    List<DateTime>? diasTreinados;
+                    if (logsSnapshot.hasData) {
+                      diasTreinados = logsSnapshot.data!.docs.map((doc) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        return (data['dataHora'] as Timestamp).toDate();
+                      }).toList();
+                    }
+                    return RitmoDaSemanaCard(
+                      alunoNome: nomeExibicao,
+                      diasTreinados: diasTreinados,
+                    );
+                  },
+                ),
                 const SizedBox(height: SpacingTokens.xxl),
                 FichaAtivaHeroCard(
                   alunoId: widget.alunoId,

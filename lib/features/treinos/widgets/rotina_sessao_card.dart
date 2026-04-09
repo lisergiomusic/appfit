@@ -134,8 +134,8 @@ class _SessaoIndexBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 48,
-      height: 48,
+      width: 52,
+      height: 52,
       decoration: BoxDecoration(
         color: Colors.black.withAlpha(40),
         borderRadius: BorderRadius.circular(AppTheme.radiusSM),
@@ -145,8 +145,8 @@ class _SessaoIndexBadge extends StatelessWidget {
           String.fromCharCode(65 + index),
           style: const TextStyle(
             color: AppColors.primary,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+            fontSize: 26,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ),
