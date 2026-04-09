@@ -3,8 +3,10 @@ import 'dart:async';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_bar_divider.dart';
 import 'models/rotina_model.dart';
-import 'models/exercicio_model.dart';
 import 'controllers/executar_treino_controller.dart';
+import 'widgets/executar_treino/treino_overview_body.dart';
+import 'widgets/executar_treino/exercicio_execution_body.dart';
+import 'widgets/executar_treino/rest_timer_sheet.dart';
 
 class ExecutarTreinoPage extends StatefulWidget {
   final SessaoTreinoModel sessao;
@@ -24,11 +26,32 @@ class ExecutarTreinoPage extends StatefulWidget {
 
 class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
   late ExecutarTreinoController _controller;
-  int _currentExerciseIndex = 0;
-  int _currentSerieIndex = 0;
-  int? _restTimer;
-  Timer? _timer;
+
+  // Navigation
+  int? _activeExerciseIndex;
+
+  // Duration tracking
+  late DateTime _startedAt;
+
+  // Recorded data
   final Map<String, dynamic> _recordedData = {};
+
+  // Controllers matrix
+  late List<List<TextEditingController>> _repsControllers;
+  late List<List<TextEditingController>> _pesoControllers;
+
+  // Rest timer
+  final ValueNotifier<int> _restSecondsNotifier = ValueNotifier(0);
+  PersistentBottomSheetController? _restSheetController;
+  Timer? _restTimer;
+  int? _restTotalSeconds;
+  String? _restExercicioNome;
+
+  // Elapsed timer
+  Timer? _elapsedTimer;
+  int _elapsedSeconds = 0;
+
+  // Loading
   bool _isLoading = false;
 
   @override
@@ -39,7 +62,10 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
       rotinaId: widget.rotinaId,
       alunoId: widget.alunoId,
     );
+    _startedAt = DateTime.now();
     _initializeRecordedData();
+    _initializeTextControllers();
+    _startElapsedTimer();
   }
 
   void _initializeRecordedData() {
@@ -53,63 +79,168 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
     }
   }
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _controller.dispose();
-    super.dispose();
+  void _initializeTextControllers() {
+    _repsControllers = [];
+    _pesoControllers = [];
+
+    for (var i = 0; i < widget.sessao.exercicios.length; i++) {
+      final exercise = widget.sessao.exercicios[i];
+      final repsRow = <TextEditingController>[];
+      final pesoRow = <TextEditingController>[];
+
+      for (var j = 0; j < exercise.series.length; j++) {
+        repsRow.add(TextEditingController());
+        pesoRow.add(TextEditingController());
+      }
+
+      _repsControllers.add(repsRow);
+      _pesoControllers.add(pesoRow);
+    }
   }
 
-  void _startRestTimer(String descansoStr) {
-    _timer?.cancel();
-
-    int segundos = _parseDescanso(descansoStr);
-    _restTimer = segundos;
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _restTimer = _restTimer! - 1;
-      });
-
-      if (_restTimer! <= 0) {
-        _timer?.cancel();
-        _advanceToNextSerie();
+  void _startElapsedTimer() {
+    _elapsedTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() => _elapsedSeconds++);
       }
     });
   }
 
-  int _parseDescanso(String descanso) {
-    final cleaned = descanso.replaceAll(RegExp(r'[^0-9]'), '');
-    return int.tryParse(cleaned) ?? 60;
-  }
+  @override
+  void dispose() {
+    _restTimer?.cancel();
+    _elapsedTimer?.cancel();
+    _restSecondsNotifier.dispose();
 
-  void _advanceToNextSerie() {
-    final exercise = widget.sessao.exercicios[_currentExerciseIndex];
-
-    if (_currentSerieIndex < exercise.series.length - 1) {
-      setState(() {
-        _currentSerieIndex++;
-        _restTimer = null;
-      });
-    } else if (_currentExerciseIndex < widget.sessao.exercicios.length - 1) {
-      setState(() {
-        _currentExerciseIndex++;
-        _currentSerieIndex = 0;
-        _restTimer = null;
-      });
+    for (final row in _repsControllers) {
+      for (final c in row) {
+        c.dispose();
+      }
     }
+    for (final row in _pesoControllers) {
+      for (final c in row) {
+        c.dispose();
+      }
+    }
+
+    _controller.dispose();
+    super.dispose();
   }
 
-  void _markSerieComplete() {
-    final key = 'exercicio_$_currentExerciseIndex';
-    _recordedData[key]['series'][_currentSerieIndex]['completa'] = true;
+  String _formatElapsed(int seconds) {
+    final mins = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  void _onExerciseTap(int index) {
+    _dismissRestSheet();
+    setState(() => _activeExerciseIndex = index);
+  }
+
+  void _goToOverview() {
+    setState(() => _activeExerciseIndex = null);
+  }
+
+  int _completedSeriesForExercise(int index) {
+    final series = (_recordedData['exercicio_$index']?['series'] as List?) ?? [];
+    return series.where((s) => (s as Map)['completa'] == true).length;
+  }
+
+  bool _hasAnyProgress() => widget.sessao.exercicios.asMap().keys
+      .any((i) => _completedSeriesForExercise(i) > 0);
+
+  int _parseDescanso(String descanso) {
+    final cleaned = descanso.trim().toLowerCase();
+
+    final mMatch = RegExp(r'(\d+)\s*m').firstMatch(cleaned);
+    final sMatch = RegExp(r'(\d+)\s*s').firstMatch(cleaned);
+
+    if (mMatch != null || sMatch != null) {
+      final minutes = mMatch != null ? int.parse(mMatch.group(1)!) : 0;
+      final seconds = sMatch != null ? int.parse(sMatch.group(1)!) : 0;
+      return (minutes * 60) + seconds;
+    }
+
+    return int.tryParse(RegExp(r'\d+').firstMatch(cleaned)?.group(0) ?? '') ?? 60;
+  }
+
+  void _onSerieCompleted(int exercicioIndex, int serieIndex) {
+    final key = 'exercicio_$exercicioIndex';
+    final currentComplete =
+        _recordedData[key]['series'][serieIndex]['completa'] as bool;
+
+    if (currentComplete) {
+      // Undo completion
+      setState(() {
+        _recordedData[key]['series'][serieIndex]['completa'] = false;
+      });
+      return;
+    }
+
+    // Mark complete - capture current input values
+    setState(() {
+      _recordedData[key]['series'][serieIndex]['completa'] = true;
+      _recordedData[key]['series'][serieIndex]['reps'] =
+          _repsControllers[exercicioIndex][serieIndex].text;
+      _recordedData[key]['series'][serieIndex]['peso'] =
+          _pesoControllers[exercicioIndex][serieIndex].text;
+    });
+
+    final serie =
+        widget.sessao.exercicios[exercicioIndex].series[serieIndex];
     _startRestTimer(
-      widget
-          .sessao
-          .exercicios[_currentExerciseIndex]
-          .series[_currentSerieIndex]
-          .descanso,
+      serie.descanso,
+      widget.sessao.exercicios[exercicioIndex].nome,
     );
+  }
+
+  void _startRestTimer(String descansoStr, String exercicioNome) {
+    _restTimer?.cancel();
+    _restSheetController?.close();
+
+    final totalSeconds = _parseDescanso(descansoStr);
+    _restSecondsNotifier.value = totalSeconds;
+    _restTotalSeconds = totalSeconds;
+    _restExercicioNome = exercicioNome;
+
+    _restSheetController = Scaffold.of(context).showBottomSheet(
+      (ctx) => ValueListenableBuilder<int>(
+        valueListenable: _restSecondsNotifier,
+        builder: (context, seconds, _) => RestTimerSheet(
+          remainingSeconds: seconds,
+          totalSeconds: _restTotalSeconds!,
+          exercicioNome: _restExercicioNome!,
+          onSkip: _skipRest,
+        ),
+      ),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+    );
+
+    _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      final next = _restSecondsNotifier.value - 1;
+      _restSecondsNotifier.value = next;
+      if (next <= 0) {
+        timer.cancel();
+        _dismissRestSheet();
+      }
+    });
+  }
+
+  void _skipRest() {
+    _restTimer?.cancel();
+    _dismissRestSheet();
+  }
+
+  void _dismissRestSheet() {
+    _restSheetController?.close();
+    _restSheetController = null;
+    _restSecondsNotifier.value = 0;
   }
 
   Future<void> _finalizarTreino() async {
@@ -147,7 +278,14 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
     if (confirm == true) {
       setState(() => _isLoading = true);
       try {
-        await _controller.saveTreinoLog(_recordedData);
+        final elapsed = DateTime.now().difference(_startedAt);
+        final duracaoMinutos = elapsed.inMinutes;
+
+        await _controller.saveTreinoLog(
+          _recordedData,
+          duracaoMinutos: duracaoMinutos,
+        );
+
         if (mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -173,8 +311,7 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
   }
 
   Future<void> _confirmarCancelamento() async {
-    // Pausa o timer durante o diálogo
-    _timer?.cancel();
+    _restTimer?.cancel();
 
     final confirm = await showDialog<bool>(
       context: context,
@@ -210,13 +347,18 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
     if (confirm == true) {
       if (mounted) Navigator.pop(context);
     } else {
-      // Retoma o timer de descanso se estava ativo antes do diálogo
-      if (_restTimer != null && _restTimer! > 0) {
-        _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-          setState(() => _restTimer = _restTimer! - 1);
-          if (_restTimer! <= 0) {
-            _timer?.cancel();
-            _advanceToNextSerie();
+      // Restart rest timer if it was active
+      if (_restTotalSeconds != null && _restTotalSeconds! > 0) {
+        _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          if (!mounted) {
+            timer.cancel();
+            return;
+          }
+          final next = _restSecondsNotifier.value - 1;
+          _restSecondsNotifier.value = next;
+          if (next <= 0) {
+            timer.cancel();
+            _dismissRestSheet();
           }
         });
       }
@@ -225,24 +367,45 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
 
   @override
   Widget build(BuildContext context) {
-    final exercise = widget.sessao.exercicios[_currentExerciseIndex];
-    final serie = exercise.series[_currentSerieIndex];
-    final progressTotal =
-        ((_currentExerciseIndex * 100) +
-            (_currentSerieIndex * (100 / exercise.series.length))) /
-        widget.sessao.exercicios.length;
-
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _confirmarCancelamento();
+        if (!didPop) {
+          if (_activeExerciseIndex != null) {
+            _goToOverview();
+          } else {
+            _confirmarCancelamento();
+          }
+        }
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: Text(widget.sessao.nome),
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          title: Column(
+            children: [
+              Text(widget.sessao.nome),
+              Text(
+                _formatElapsed(_elapsedSeconds),
+                style: AppTheme.caption2,
+              ),
+            ],
+          ),
+          centerTitle: true,
           bottom: const AppBarDivider(),
+          leading: _activeExerciseIndex != null
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: _goToOverview,
+                )
+              : null,
           actions: [
+            TextButton(
+              onPressed: _hasAnyProgress() ? _finalizarTreino : null,
+              child: const Text('Finalizar'),
+            ),
             IconButton(
               icon: const Icon(Icons.close),
               tooltip: 'Cancelar treino',
@@ -250,294 +413,42 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
             ),
           ],
         ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            )
-          : _restTimer != null
-          ? _buildRestScreen()
-          : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(AppTheme.paddingScreen),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildProgressBar(progressTotal),
-                    const SizedBox(height: SpacingTokens.sectionGap),
-                    _buildExerciseHeader(exercise),
-                    const SizedBox(height: SpacingTokens.sectionGap),
-                    _buildSerieInput(serie),
-                    const SizedBox(height: SpacingTokens.sectionGap),
-                    _buildActionButtons(),
-                    const SizedBox(height: SpacingTokens.screenBottomPadding),
-                  ],
+        body: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              )
+            : AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: child,
                 ),
+                child: _activeExerciseIndex == null
+                    ? TreinoOverviewBody(
+                        key: const ValueKey('overview'),
+                        sessao: widget.sessao,
+                        recordedData: _recordedData,
+                        onExerciseTap: _onExerciseTap,
+                        activeExerciseIndex: _activeExerciseIndex,
+                      )
+                    : ExercicioExecutionBody(
+                        key: ValueKey('exercise_$_activeExerciseIndex'),
+                        exercicio:
+                            widget.sessao.exercicios[_activeExerciseIndex!],
+                        exercicioIndex: _activeExerciseIndex!,
+                        series: widget
+                            .sessao.exercicios[_activeExerciseIndex!].series,
+                        repsControllers:
+                            _repsControllers[_activeExerciseIndex!],
+                        pesoControllers:
+                            _pesoControllers[_activeExerciseIndex!],
+                        exercicioData: _recordedData[
+                            'exercicio_$_activeExerciseIndex'] ??
+                            {'series': []},
+                        onSerieCompleted: (serieIndex) =>
+                            _onSerieCompleted(_activeExerciseIndex!, serieIndex),
+                      ),
               ),
-            ),
-      ),
-    );
-  }
-
-  Widget _buildProgressBar(double progress) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Exercício ${_currentExerciseIndex + 1} de ${widget.sessao.exercicios.length}',
-              style: AppTheme.formLabel,
-            ),
-            Text(
-              'Série ${_currentSerieIndex + 1} de ${widget.sessao.exercicios[_currentExerciseIndex].series.length}',
-              style: AppTheme.caption2,
-            ),
-          ],
-        ),
-        const SizedBox(height: SpacingTokens.sm),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: progress / 100,
-            minHeight: 8,
-            backgroundColor: AppColors.primary.withAlpha(15),
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildExerciseHeader(ExercicioItem exercise) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(exercise.nome, style: AppTheme.pageTitle),
-        if (exercise.grupoMuscular.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Wrap(
-              spacing: 6,
-              children: exercise.grupoMuscular
-                  .map(
-                    (g) => Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withAlpha(15),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(g, style: AppTheme.caption2),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
-        if (exercise.hasInstrucoesPadrao ||
-            exercise.hasInstrucoesPersonalizadas)
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Column(
-              children: [
-                if (exercise.hasInstrucoesPadrao)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceDark,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.labelQuaternary),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          exercise.instrucoesPadraoTexto!,
-                          style: AppTheme.cardSubtitle,
-                        ),
-                      ],
-                    ),
-                  ),
-                if (exercise.hasInstrucoesPadrao &&
-                    exercise.hasInstrucoesPersonalizadas)
-                  const SizedBox(height: 8),
-                if (exercise.hasInstrucoesPersonalizadas)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withAlpha(10),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: AppColors.primary.withAlpha(30),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Instruções do personal',
-                          style: AppTheme.caption.copyWith(
-                            color: AppColors.labelSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          exercise.instrucoesPersonalizadasTexto!,
-                          style: AppTheme.cardSubtitle,
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildSerieInput(SerieItem serie) {
-    return Container(
-      decoration: AppTheme.cardDecoration,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Série ${_currentSerieIndex + 1}', style: AppTheme.pageTitle),
-          const SizedBox(height: SpacingTokens.sectionGap),
-          _buildInputField(
-            label: 'Repetições (alvo: ${serie.alvo})',
-            hint: 'Quantas reps completou?',
-            onChanged: (value) {
-              final key = 'exercicio_$_currentExerciseIndex';
-              _recordedData[key]['series'][_currentSerieIndex]['reps'] = value;
-            },
-          ),
-          const SizedBox(height: SpacingTokens.sectionGap),
-          _buildInputField(
-            label: 'Peso utilizado (alvo: ${serie.carga}kg)',
-            hint: 'Qual peso em kg?',
-            onChanged: (value) {
-              final key = 'exercicio_$_currentExerciseIndex';
-              _recordedData[key]['series'][_currentSerieIndex]['peso'] = value;
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInputField({
-    required String label,
-    required String hint,
-    required Function(String) onChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTheme.formLabel),
-        const SizedBox(height: 8),
-        TextField(
-          onChanged: onChanged,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            hintText: hint,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 12,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ElevatedButton.icon(
-          onPressed: _markSerieComplete,
-          icon: const Icon(Icons.check_circle_rounded),
-          label: const Text('Série Completa'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-          ),
-        ),
-        const SizedBox(height: 12),
-        if (_currentExerciseIndex == widget.sessao.exercicios.length - 1 &&
-            _currentSerieIndex ==
-                widget.sessao.exercicios[_currentExerciseIndex].series.length -
-                    1)
-          ElevatedButton.icon(
-            onPressed: _finalizarTreino,
-            icon: const Icon(Icons.flag_rounded),
-            label: const Text('Finalizar Treino'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildRestScreen() {
-    final minutos = _restTimer! ~/ 60;
-    final segundos = _restTimer! % 60;
-    final timeStr =
-        '${minutos.toString().padLeft(2, '0')}:${segundos.toString().padLeft(2, '0')}';
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('Descansando...', style: AppTheme.title1),
-          const SizedBox(height: SpacingTokens.xxl),
-          Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.primary.withAlpha(30),
-            ),
-            child: Center(
-              child: Text(
-                timeStr,
-                style: const TextStyle(
-                  fontSize: 56,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: SpacingTokens.xxl),
-          Text(
-            'Próxima série em alguns segundos...',
-            style: AppTheme.cardSubtitle,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: SpacingTokens.sectionGap),
-          ElevatedButton(
-            onPressed: () {
-              _timer?.cancel();
-              setState(() => _restTimer = null);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Próximo Exercício'),
-          ),
-        ],
       ),
     );
   }

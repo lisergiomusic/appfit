@@ -14,12 +14,12 @@ class ExecutarTreinoController {
     FirebaseFirestore? firestore,
   }) : _firestore = firestore ?? FirebaseFirestore.instance;
 
-  Future<void> saveTreinoLog(Map<String, dynamic> recordedData) async {
+  Future<void> saveTreinoLog(
+    Map<String, dynamic> recordedData, {
+    int duracaoMinutos = 0,
+  }) async {
     try {
       final dataHora = DateTime.now();
-
-      // Calcula duração em minutos (assumindo que é calculado depois)
-      final duracao = 0; // Será atualizado se necessário
 
       // Constrói o documento de log
       final logData = {
@@ -27,7 +27,7 @@ class ExecutarTreinoController {
         'rotinaId': rotinaId,
         'sessaoNome': sessao.nome,
         'dataHora': Timestamp.fromDate(dataHora),
-        'duracaoMinutos': duracao,
+        'duracaoMinutos': duracaoMinutos,
         'exercicios': buildExerciciosLog(recordedData),
       };
 
