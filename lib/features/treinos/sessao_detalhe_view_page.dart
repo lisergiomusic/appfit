@@ -28,6 +28,10 @@ class SessaoDetalheViewPage extends StatelessWidget {
     return grupos.toList();
   }
 
+  int _calcularTotalSeries() {
+    return sessao.exercicios.fold(0, (sum, e) => sum + e.series.length);
+  }
+
   String _calcularTempoEstimado() {
     int totalSegundos = 0;
     for (final exercicio in sessao.exercicios) {
@@ -50,6 +54,7 @@ class SessaoDetalheViewPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final gruposUnicos = _obterGruposUnicos();
     final tempoEstimado = _calcularTempoEstimado();
+    final totalSeries = _calcularTotalSeries();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -108,6 +113,13 @@ class SessaoDetalheViewPage extends StatelessWidget {
                         child: _MetricCard(
                           label: 'Exercícios',
                           value: '${sessao.exercicios.length}',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _MetricCard(
+                          label: 'Séries',
+                          value: '$totalSeries',
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -196,6 +208,8 @@ class _MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isEstimado = label == 'Estimado';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: AppTheme.cardDecoration,
@@ -204,19 +218,14 @@ class _MetricCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              if (label == 'Estimado')
+              if (isEstimado) ...[
                 Icon(
-                  Icons.schedule_rounded,
-                  size: 16,
-                  color: AppColors.labelSecondary,
-                )
-              else
-                Icon(
-                  Icons.fitness_center_rounded,
-                  size: 16,
+                  Icons.timer_outlined,
+                  size: 14,
                   color: AppColors.labelSecondary,
                 ),
-              const SizedBox(width: 6),
+                const SizedBox(width: 4),
+              ],
               Expanded(
                 child: Text(
                   label,

@@ -154,7 +154,7 @@ class _SessaoDetalhePersonalViewState extends State<_SessaoDetalhePersonalView> 
             slivers: [
               AppFitSliverAppBar(
                 title: safeTreinoTitle,
-                expandedHeight: controller.isEditingTitle ? 160 : 140,
+                expandedHeight: controller.isEditingTitle ? 160 : 170,
                 onBackPressed: () => Navigator.of(context).maybePop(),
                 leading: controller.isEditingTitle
                     ? const SizedBox.shrink()
@@ -176,7 +176,7 @@ class _SessaoDetalhePersonalViewState extends State<_SessaoDetalhePersonalView> 
                     child: Row(
                       crossAxisAlignment: controller.isEditingTitle
                           ? CrossAxisAlignment.start
-                          : CrossAxisAlignment.center,
+                          : CrossAxisAlignment.end,
                       children: [
                         Expanded(
                           child: controller.isEditingTitle
@@ -242,11 +242,59 @@ class _SessaoDetalhePersonalViewState extends State<_SessaoDetalhePersonalView> 
                                     HapticFeedback.lightImpact();
                                     controller.toggleEditTitle();
                                   },
-                                  child: Text(
-                                    safeTreinoTitle,
-                                    style: AppTheme.bigTitle,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        safeTreinoTitle,
+                                        style: AppTheme.bigTitle,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Builder(
+                                        builder: (context) {
+                                          final grupos = <String>{};
+                                          for (final w
+                                              in controller.exercicios) {
+                                            grupos.addAll(
+                                              w.item.grupoMuscular,
+                                            );
+                                          }
+                                          if (grupos.isEmpty) {
+                                            return const SizedBox.shrink();
+                                          }
+                                          return Padding(
+                                            padding: const EdgeInsets.only(
+                                              top: SpacingTokens.sm,
+                                            ),
+                                            child: Wrap(
+                                              spacing: SpacingTokens.xs,
+                                              runSpacing: SpacingTokens.xs,
+                                              children: grupos
+                                                  .map(
+                                                    (grupo) => Container(
+                                                      padding: const EdgeInsets.symmetric(
+                                                        horizontal:
+                                                            SpacingTokens.sm,
+                                                        vertical:
+                                                            SpacingTokens.xs,
+                                                      ),
+                                                      decoration:
+                                                          PillTokens.decoration,
+                                                      child: Text(
+                                                        grupo,
+                                                        style: PillTokens.text,
+                                                      ),
+                                                    ),
+                                                  )
+                                                  .toList(),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
                                   ),
                                 ),
                         ),
@@ -309,7 +357,7 @@ class _SessaoDetalhePersonalViewState extends State<_SessaoDetalhePersonalView> 
                             const SizedBox(width: 8),
                             Expanded(
                               child: _MetricCard(
-                                label: 'Tempo',
+                                label: 'Estimado',
                                 value: controller.estimatedDurationLabel,
                               ),
                             ),
@@ -690,9 +738,9 @@ class _MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isTempo = label == 'Tempo';
+    final bool isEstimado = label == 'Estimado';
 
-    Widget card = Container(
+    return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: AppTheme.cardDecoration,
       child: Column(
@@ -700,20 +748,22 @@ class _MetricCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(
-                label,
-                style: AppTheme.formLabel,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (isTempo) ...[
-                const SizedBox(width: 4),
+              if (isEstimado) ...[
                 Icon(
-                  Icons.info_outline,
+                  Icons.timer_outlined,
                   size: 14,
-                  color: AppColors.labelSecondary.withAlpha(180),
+                  color: AppColors.labelSecondary,
                 ),
+                const SizedBox(width: 4),
               ],
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTheme.formLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: SpacingTokens.labelToField),
@@ -721,36 +771,5 @@ class _MetricCard extends StatelessWidget {
         ],
       ),
     );
-
-    if (isTempo) {
-      return Tooltip(
-        message: 'Tempo estimado com base nas séries e descanso',
-        triggerMode: TooltipTriggerMode.tap,
-        showDuration: Duration(seconds: 3),
-        preferBelow: false,
-        padding: const EdgeInsets.all(12),
-        margin: const EdgeInsets.symmetric(horizontal: 24),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceDark,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.primary.withAlpha(100)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(100),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        textStyle: const TextStyle(
-          color: Colors.white,
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-        ),
-        child: card,
-      );
-    }
-
-    return card;
   }
 }
