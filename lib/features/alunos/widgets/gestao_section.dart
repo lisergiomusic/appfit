@@ -21,58 +21,55 @@ class GestaoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingScreen),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text('Gestão', style: AppTheme.sectionHeader),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text('Gestão', style: AppTheme.sectionHeader),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.surfaceDark,
+            borderRadius: BorderRadius.circular(AppTheme.radiusLG),
           ),
-          const SizedBox(height: 8),
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
-              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: [
-                _buildManagementItem(
-                  context,
-                  icon: CupertinoIcons.graph_square,
-                  title: 'Progressão de Cargas',
-                  onTap: () {},
-                  showBorder: true,
-                ),
-                _buildManagementItem(
-                  context,
-                  icon: CupertinoIcons.chart_bar_alt_fill,
-                  title: 'Avaliação Física',
-                  onTap: () {},
-                  showBorder: true,
-                ),
-                _buildManagementItem(
-                  context,
-                  icon: CupertinoIcons.doc_text,
-                  title: 'Histórico de Feedbacks',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            FeedbackHistoricoPage(alunoNome: alunoNome),
-                      ),
-                    );
-                  },
-                  showBorder: false,
-                ),
-              ],
-            ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: [
+              _buildManagementItem(
+                context,
+                icon: CupertinoIcons.graph_square,
+                title: 'Progressão de Cargas',
+                onTap: () {},
+                showBorder: true,
+              ),
+              _buildManagementItem(
+                context,
+                icon: CupertinoIcons.chart_bar_alt_fill,
+                title: 'Avaliação Física',
+                onTap: () {},
+                showBorder: true,
+              ),
+              _buildManagementItem(
+                context,
+                icon: CupertinoIcons.doc_text,
+                title: 'Histórico de Feedbacks',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          FeedbackHistoricoPage(alunoNome: alunoNome),
+                    ),
+                  );
+                },
+                showBorder: false,
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

@@ -11,8 +11,9 @@ class RotinaSessaoCard extends StatelessWidget {
   final int index;
   final bool isReordering;
   final VoidCallback onOpen;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
+  final bool readOnly;
 
   const RotinaSessaoCard({
     super.key,
@@ -20,8 +21,9 @@ class RotinaSessaoCard extends StatelessWidget {
     required this.index,
     required this.isReordering,
     required this.onOpen,
-    required this.onEdit,
-    required this.onDelete,
+    this.onEdit,
+    this.onDelete,
+    this.readOnly = false,
   });
 
   @override
@@ -67,7 +69,8 @@ class RotinaSessaoCard extends StatelessWidget {
                         ),
                       ),
                     )
-                  : PopupMenuButton<RotinaSessaoMenuAction>(
+                  : (!readOnly && (onEdit != null || onDelete != null))
+                  ? PopupMenuButton<RotinaSessaoMenuAction>(
                       icon: const Icon(
                         CupertinoIcons.ellipsis_vertical,
                         size: 20,
@@ -75,11 +78,11 @@ class RotinaSessaoCard extends StatelessWidget {
                       ),
                       onSelected: (value) {
                         if (value == RotinaSessaoMenuAction.edit) {
-                          onEdit();
+                          onEdit?.call();
                         }
 
                         if (value == RotinaSessaoMenuAction.delete) {
-                          onDelete();
+                          onDelete?.call();
                         }
                       },
                       itemBuilder: (context) => const [
@@ -92,6 +95,10 @@ class RotinaSessaoCard extends StatelessWidget {
                           child: Text('Excluir'),
                         ),
                       ],
+                    )
+                  : Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.labelSecondary,
                     ),
             ],
           ),
@@ -99,21 +106,23 @@ class RotinaSessaoCard extends StatelessWidget {
       ),
     );
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-        child: isReordering
-            ? card
-            : AppSwipeToDelete(
-                dismissibleKey: ValueKey(
-                  'dismiss-sessao-${identityHashCode(sessao)}',
-                ),
-                onDismissed: (_) => onDelete(),
-                child: card,
-              ),
-      ),
+    final Widget inner = ClipRRect(
+      borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+      child: card,
     );
+
+    Widget result;
+    if (isReordering || readOnly || onDelete == null) {
+      result = inner;
+    } else {
+      result = AppSwipeToDelete(
+        dismissibleKey: ValueKey('dismiss-sessao-${identityHashCode(sessao)}'),
+        onDismissed: (_) => onDelete?.call(),
+        child: inner,
+      );
+    }
+
+    return Padding(padding: EdgeInsets.zero, child: result);
   }
 }
 

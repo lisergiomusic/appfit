@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/appfit_sliver_app_bar.dart';
 import 'models/rotina_model.dart';
 import 'sessao_detalhe_view_page.dart';
+import 'widgets/rotina_sessao_card.dart';
 
 class AlunoRotinaViewPage extends StatefulWidget {
   final Map<String, dynamic> rotinaData;
@@ -91,7 +92,7 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {
                 final sessao = _rotina.sessoes[index];
-                final letra = String.fromCharCode(65 + (index % 26));
+                final letra = String.fromCharCode(65 + index);
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
@@ -170,69 +171,24 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
     required String letra,
     required int index,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => SessaoDetalheViewPage(
-                sessao: sessao,
-                letra: letra,
-                rotinaId: widget.rotinaId,
-                alunoId: widget.alunoId,
-              ),
+    return RotinaSessaoCard(
+      sessao: sessao,
+      index: index,
+      isReordering: false,
+      onOpen: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SessaoDetalheViewPage(
+              sessao: sessao,
+              letra: letra,
+              rotinaId: widget.rotinaId,
+              alunoId: widget.alunoId,
             ),
-          );
-        },
-        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-        child: Container(
-          decoration: AppTheme.cardDecoration,
-          padding: CardTokens.padding,
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  letra,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(sessao.nome, style: AppTheme.cardTitle),
-                    if (sessao.diaSemana != null &&
-                        sessao.diaSemana!.isNotEmpty)
-                      Text(sessao.diaSemana!, style: AppTheme.caption),
-                    Text(
-                      '${sessao.exercicios.length} exercício${sessao.exercicios.length != 1 ? 's' : ''}',
-                      style: CardTokens.cardSubtitle,
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.labelSecondary,
-              ),
-            ],
           ),
-        ),
-      ),
+        );
+      },
+      readOnly: true,
     );
   }
 }

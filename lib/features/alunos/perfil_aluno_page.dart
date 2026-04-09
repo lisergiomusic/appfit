@@ -115,6 +115,10 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
               : '--';
 
           return SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: SpacingTokens.screenHorizontalPadding,
+              vertical: SpacingTokens.screenTopPadding,
+            ),
             physics: const BouncingScrollPhysics(),
             child: Column(
               children: [
@@ -162,96 +166,88 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
       baseColor: Colors.white.withAlpha(5),
       highlightColor: Colors.white.withAlpha(10),
       child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(
+          horizontal: SpacingTokens.screenHorizontalPadding,
+          vertical: SpacingTokens.screenTopPadding,
+        ),
         child: Column(
           children: [
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: const BoxDecoration(
+            const SizedBox(height: SpacingTokens.screenTopPadding),
+            Row(
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 150,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: 100,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 46,
+                    decoration: BoxDecoration(
                       color: Colors.white,
-                      shape: BoxShape.circle,
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 150,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        width: 100,
-                        height: 16,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Container(
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                width: double.infinity,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
                 ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Container(
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            Container(
+              width: double.infinity,
+              height: 120,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
               ),
             ),
             const SizedBox(height: 32),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                width: double.infinity,
-                height: 150,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                ),
+            Container(
+              width: double.infinity,
+              height: 150,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
               ),
             ),
           ],
@@ -261,85 +257,80 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
   }
 
   Widget _buildActions(BuildContext context, String? telefone) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.lg),
-      child: Row(
-        children: [
-          Expanded(
-            child: AppTappable(
-              onPressed: () => _abrirWhatsApp(context, telefone),
-              child: Container(
-                height: ButtonTokens.primaryHeight,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withAlpha(25),
-                  borderRadius: BorderRadius.circular(
-                    ButtonTokens.primaryRadius,
+    return Row(
+      children: [
+        Expanded(
+          child: AppTappable(
+            onPressed: () => _abrirWhatsApp(context, telefone),
+            child: Container(
+              height: ButtonTokens.primaryHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withAlpha(25),
+                borderRadius: BorderRadius.circular(ButtonTokens.primaryRadius),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FaIcon(
+                    FontAwesomeIcons.whatsapp,
+                    color: AppColors.primary,
+                    size: 20,
                   ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    FaIcon(
-                      FontAwesomeIcons.whatsapp,
-                      color: AppColors.primary,
-                      size: 20,
-                    ),
-                    const SizedBox(width: SpacingTokens.xs),
-                    Flexible(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'Conversar',
-                          style: ButtonTokens.primaryTextStyle.copyWith(
-                            color: AppColors.primary,
-                          ),
+                  const SizedBox(width: SpacingTokens.xs),
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'Conversar',
+                        style: ButtonTokens.primaryTextStyle.copyWith(
+                          color: AppColors.primary,
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
-          const SizedBox(width: SpacingTokens.sm),
-          Expanded(
-            child: AppTappable(
-              onPressed: () => _irParaGerenciarAluno(context),
-              child: Container(
-                height: ButtonTokens.secondaryHeight,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.fillSecondary,
-                  borderRadius: BorderRadius.circular(
-                    ButtonTokens.secondaryRadius,
-                  ),
+        ),
+        const SizedBox(width: SpacingTokens.sm),
+        Expanded(
+          child: AppTappable(
+            onPressed: () => _irParaGerenciarAluno(context),
+            child: Container(
+              height: ButtonTokens.secondaryHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                color: AppColors.fillSecondary,
+                borderRadius: BorderRadius.circular(
+                  ButtonTokens.secondaryRadius,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      CupertinoIcons.settings,
-                      color: AppColors.labelPrimary,
-                      size: 20,
-                    ),
-                    const SizedBox(width: SpacingTokens.xs),
-                    Flexible(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'Gerenciar',
-                          style: ButtonTokens.secondaryTextStyle,
-                        ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    CupertinoIcons.settings,
+                    color: AppColors.labelPrimary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: SpacingTokens.xs),
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'Gerenciar',
+                        style: ButtonTokens.secondaryTextStyle,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

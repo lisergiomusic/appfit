@@ -475,10 +475,14 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                           itemBuilder: (context, index) {
                             final sessao = _controller.treinos[index];
 
-                            return RotinaSessaoCard(
+                            return Padding(
                               key: ValueKey(
                                 'sessao-${identityHashCode(sessao)}',
                               ),
+                              padding: const EdgeInsets.only(
+                                bottom: SpacingTokens.listItemGap,
+                              ),
+                              child: RotinaSessaoCard(
                               sessao: sessao,
                               index: index,
                               isReordering: _isReordering,
@@ -503,6 +507,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                                 _renomearSessao(sessao);
                               },
                               onDelete: () => _removerSessaoComUndo(sessao),
+                            ),
                             );
                           },
                         ),
