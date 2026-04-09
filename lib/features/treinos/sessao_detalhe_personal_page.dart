@@ -17,12 +17,12 @@ import 'exercicios_library_page.dart';
 import 'models/exercicio_model.dart';
 import 'widgets/sessao_note_widget.dart';
 
-class ConfigurarExerciciosPage extends StatelessWidget {
+class SessaoDetalhePersonalPage extends StatelessWidget {
   final String nomeTreino;
   final List<ExercicioItem> exercicios;
   final String sessaoNote;
 
-  const ConfigurarExerciciosPage({
+  const SessaoDetalhePersonalPage({
     super.key,
     required this.nomeTreino,
     required this.exercicios,
@@ -37,22 +37,22 @@ class ConfigurarExerciciosPage extends StatelessWidget {
         exercicios: exercicios,
         sessaoNote: sessaoNote,
       ),
-      child: _ConfigurarExerciciosView(originalExercicios: exercicios),
+      child: _SessaoDetalhePersonalView(originalExercicios: exercicios),
     );
   }
 }
 
-class _ConfigurarExerciciosView extends StatefulWidget {
+class _SessaoDetalhePersonalView extends StatefulWidget {
   final List<ExercicioItem> originalExercicios;
 
-  const _ConfigurarExerciciosView({required this.originalExercicios});
+  const _SessaoDetalhePersonalView({required this.originalExercicios});
 
   @override
-  State<_ConfigurarExerciciosView> createState() =>
-      _ConfigurarExerciciosViewState();
+  State<_SessaoDetalhePersonalView> createState() =>
+      _SessaoDetalhePersonalViewState();
 }
 
-class _ConfigurarExerciciosViewState extends State<_ConfigurarExerciciosView> {
+class _SessaoDetalhePersonalViewState extends State<_SessaoDetalhePersonalView> {
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _addButtonKey = GlobalKey();

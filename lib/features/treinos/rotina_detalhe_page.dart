@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/rotina_service.dart';
 import '../../core/widgets/appfit_sliver_app_bar.dart';
-import 'configurar_exercicios_page.dart';
+import 'sessao_detalhe_personal_page.dart';
 import 'models/rotina_model.dart';
 import 'rotina_detalhe_controller.dart';
 import 'widgets/planilha_settings_modal.dart';
@@ -104,7 +104,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     return Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ConfigurarExerciciosPage(
+        builder: (context) => SessaoDetalhePersonalPage(
           nomeTreino: sessao.nome,
           exercicios: sessao.exercicios,
           sessaoNote: sessao.orientacoes ?? '',
