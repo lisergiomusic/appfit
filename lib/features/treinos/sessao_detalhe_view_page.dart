@@ -167,7 +167,7 @@ class SessaoDetalheViewPage extends StatelessWidget {
             vertical: SpacingTokens.sm,
           ),
           child: AppPrimaryButton(
-            label: 'Iniciar treino',
+            label: 'Iniciar sessão',
             icon: Icons.play_arrow_rounded,
             onPressed: () {
               Navigator.push(
@@ -316,16 +316,10 @@ class _ExercicioCardState extends State<_ExercicioCard> {
                         vertical: 5,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withAlpha(25),
-                        borderRadius: BorderRadius.circular(12),
+                        color: AppColors.surfaceLight,
+                        borderRadius: BorderRadius.circular(999),
                       ),
-                      child: Text(
-                        grupo,
-                        style: AppTheme.caption2.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                      child: Text(grupo, style: PillTokens.text),
                     ),
                   )
                   .toList(),
@@ -470,44 +464,44 @@ class _ExercicioCardState extends State<_ExercicioCard> {
                   padding: const EdgeInsets.all(SpacingTokens.cardPaddingH),
                   child: Row(
                     children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            width: 48,
-                            height: 48,
-                            margin: const EdgeInsets.only(
-                              right: SpacingTokens.cardPaddingH,
-                            ),
-                            color: Colors.black.withAlpha(40),
-                            child: (widget.exercicio.imagemUrl != null &&
-                                    widget.exercicio.imagemUrl!.isNotEmpty)
-                                ? CachedNetworkImage(
-                                    imageUrl: widget.exercicio.imagemUrl!,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) => Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: AppColors.primary.withAlpha(100),
-                                      ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          margin: const EdgeInsets.only(
+                            right: SpacingTokens.cardPaddingH,
+                          ),
+                          color: Colors.black.withAlpha(40),
+                          child:
+                              (widget.exercicio.imagemUrl != null &&
+                                  widget.exercicio.imagemUrl!.isNotEmpty)
+                              ? CachedNetworkImage(
+                                  imageUrl: widget.exercicio.imagemUrl!,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppColors.primary.withAlpha(100),
                                     ),
-                                    errorWidget: (context, url, error) =>
-                                        Center(
-                                          child: Icon(
-                                            Icons.fitness_center,
-                                            color: AppColors.labelSecondary,
-                                            size: 24,
-                                          ),
-                                        ),
-                                  )
-                                : Center(
+                                  ),
+                                  errorWidget: (context, url, error) => Center(
                                     child: Icon(
                                       Icons.fitness_center,
                                       color: AppColors.labelSecondary,
                                       size: 24,
                                     ),
                                   ),
-                          ),
+                                )
+                              : Center(
+                                  child: Icon(
+                                    Icons.fitness_center,
+                                    color: AppColors.labelSecondary,
+                                    size: 24,
+                                  ),
+                                ),
                         ),
+                      ),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
