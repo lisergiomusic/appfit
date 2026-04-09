@@ -119,4 +119,67 @@ class TreinoService {
       rethrow;
     }
   }
+
+  /// Calcula os recordes pessoais de um aluno para um exercício específico.
+  Future<Map<String, double?>> calcularRecordesPessoais({
+    required String alunoId,
+    required String exercicioNome,
+  }) async {
+    final logs = await fetchLogsAluno(alunoId);
+
+    double? maiorPeso;
+    double? melhorUmRM;
+    double? melhorVolumeSerie;
+    double? melhorVolumeSessao;
+
+    final nomeAlvo = exercicioNome.trim().toLowerCase();
+
+    for (final log in logs) {
+      final exercicios = log['exercicios'] as List? ?? [];
+      double volumeSessao = 0;
+      bool sessaoTemDados = false;
+
+      for (final ex in exercicios) {
+        final nomeEx = ((ex['nome'] ?? '') as String).trim().toLowerCase();
+        if (nomeEx != nomeAlvo) continue;
+
+        final series = ex['series'] as List? ?? [];
+        for (final s in series) {
+          final concluida = s['concluida'] as bool? ?? false;
+          if (!concluida) continue;
+
+          final peso = double.tryParse((s['pesoRealizado'] ?? '').toString()) ?? 0.0;
+          final reps = double.tryParse((s['repsRealizadas'] ?? '').toString()) ?? 0.0;
+          if (peso <= 0 || reps <= 0) continue;
+
+          sessaoTemDados = true;
+
+          if (maiorPeso == null || peso > maiorPeso) maiorPeso = peso;
+
+          final umRM = peso * (1 + reps / 30);
+          if (melhorUmRM == null || umRM > melhorUmRM) melhorUmRM = umRM;
+
+          final volSerie = peso * reps;
+          if (melhorVolumeSerie == null || volSerie > melhorVolumeSerie) {
+            melhorVolumeSerie = volSerie;
+          }
+
+          volumeSessao += volSerie;
+        }
+      }
+
+      if (sessaoTemDados) {
+        if (melhorVolumeSessao == null || volumeSessao > melhorVolumeSessao) {
+          melhorVolumeSessao = volumeSessao;
+        }
+      }
+    }
+
+    return {
+      'maiorPeso': maiorPeso,
+      'melhorUmRM': melhorUmRM,
+      'melhorVolumeSerie': melhorVolumeSerie,
+      'melhorVolumeSessao': melhorVolumeSessao,
+    };
+  }
 }

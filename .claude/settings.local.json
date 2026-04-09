@@ -4,7 +4,8 @@
       "Bash(flutter test:*)",
       "Bash(flutter analyze:*)",
       "Bash(grep -E \"\\\\.dart$\")",
-      "Bash(flutter pub:*)"
+      "Bash(flutter pub:*)",
+      "Bash(find /c/Dev/Projetos/appfit/lib/core/widgets -type f -name \"*.dart\" -exec grep -l \"empty\\\\|Empty\\\\|no data\\\\|No data\" {} \\\\;)"
     ]
   }
 }

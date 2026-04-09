@@ -1,20 +1,44 @@
 import 'package:flutter/material.dart';
+import '../../core/services/treino_service.dart';
 import '../../core/theme/app_theme.dart';
 import 'models/exercicio_model.dart';
 import 'widgets/exercicio_detalhe/exercise_video_card.dart';
+import 'widgets/exercicio_detalhe/recordes_pessoais_section.dart';
 
-class ExercicioViewPage extends StatelessWidget {
+class ExercicioViewPage extends StatefulWidget {
   final ExercicioItem exercicio;
+  final String? alunoId;
 
-  const ExercicioViewPage({super.key, required this.exercicio});
+  const ExercicioViewPage({super.key, required this.exercicio, this.alunoId});
+
+  @override
+  State<ExercicioViewPage> createState() => _ExercicioViewPageState();
+}
+
+class _ExercicioViewPageState extends State<ExercicioViewPage> {
+  final TreinoService _treinoService = TreinoService();
+  late final Future<Map<String, double?>>? _recordesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _recordesFuture = widget.alunoId != null
+        ? _treinoService.calcularRecordesPessoais(
+            alunoId: widget.alunoId!,
+            exercicioNome: widget.exercicio.nome,
+          )
+        : null;
+  }
 
   @override
   Widget build(BuildContext context) {
     final temImagem =
-        exercicio.imagemUrl != null && exercicio.imagemUrl!.isNotEmpty;
+        widget.exercicio.imagemUrl != null &&
+        widget.exercicio.imagemUrl!.isNotEmpty;
     final temInstrucoes =
-        exercicio.instrucoes != null && exercicio.instrucoes!.trim().isNotEmpty;
-    final temMusculos = exercicio.grupoMuscular.isNotEmpty;
+        widget.exercicio.instrucoes != null &&
+        widget.exercicio.instrucoes!.trim().isNotEmpty;
+    final temMusculos = widget.exercicio.grupoMuscular.isNotEmpty;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -24,7 +48,7 @@ class ExercicioViewPage extends StatelessWidget {
             backgroundColor: AppColors.background,
             surfaceTintColor: Colors.transparent,
             pinned: true,
-            title: Text(exercicio.nome, style: AppTheme.pageTitle),
+            title: Text(widget.exercicio.nome, style: AppTheme.pageTitle),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
               color: AppColors.primary,
@@ -41,22 +65,17 @@ class ExercicioViewPage extends StatelessWidget {
                 children: [
                   const SizedBox(height: SpacingTokens.sm),
 
-                  // Mídia: imagem ou placeholder
                   ExerciseVideoCard(
-                    imageUrl: exercicio.imagemUrl,
-                    exerciseTitle: exercicio.nome,
+                    imageUrl: widget.exercicio.imagemUrl,
+                    exerciseTitle: widget.exercicio.nome,
                   ),
 
-                  const SizedBox(height: SpacingTokens.sectionGap),
-
-                  // Músculos ativados
                   if (temMusculos) ...[
-                    Text('Músculos ativados', style: AppTheme.sectionHeader),
-                    const SizedBox(height: SpacingTokens.labelToField),
+                    const SizedBox(height: SpacingTokens.sm),
                     Wrap(
                       spacing: SpacingTokens.xs,
                       runSpacing: SpacingTokens.xs,
-                      children: exercicio.grupoMuscular
+                      children: widget.exercicio.grupoMuscular
                           .map(
                             (grupo) => Container(
                               padding: const EdgeInsets.symmetric(
@@ -64,21 +83,18 @@ class ExercicioViewPage extends StatelessWidget {
                                 vertical: SpacingTokens.xs,
                               ),
                               decoration: PillTokens.decoration,
-                              child: Text(
-                                grupo,
-                                style: PillTokens.text,
-                              ),
+                              child: Text(grupo, style: PillTokens.text),
                             ),
                           )
                           .toList(),
                     ),
-                    const SizedBox(height: SpacingTokens.sectionGap),
                   ],
 
-                  // Instruções
-                  if (temInstrucoes) ...[
-                    Text('Como executar', style: AppTheme.sectionHeader),
-                    const SizedBox(height: SpacingTokens.labelToField),
+                  const SizedBox(height: SpacingTokens.sectionGap),
+
+                  Text('Instruções', style: AppTheme.sectionHeader),
+                  const SizedBox(height: SpacingTokens.labelToField),
+                  if (temInstrucoes)
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(SpacingTokens.cardPaddingH),
@@ -91,17 +107,67 @@ class ExercicioViewPage extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        exercicio.instrucoes!,
+                        widget.exercicio.instrucoes!,
                         style: AppTheme.bodyText.copyWith(
                           height: 1.55,
                           color: AppColors.labelPrimary,
                         ),
                       ),
+                    )
+                  else
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: SpacingTokens.xl,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceDark,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                        border: Border.all(
+                          color: Colors.white.withAlpha(10),
+                          width: 0.5,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.menu_book_rounded,
+                            size: 32,
+                            color: AppColors.labelTertiary,
+                          ),
+                          const SizedBox(height: SpacingTokens.sm),
+                          Text(
+                            'Nenhuma instrução disponível',
+                            style: AppTheme.cardSubtitle.copyWith(
+                              color: AppColors.labelTertiary,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                  const SizedBox(height: SpacingTokens.sectionGap),
+
+                  if (_recordesFuture != null) ...[
+                    FutureBuilder<Map<String, double?>>(
+                      future: _recordesFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const _RecordesLoadingPlaceholder();
+                        }
+                        if (snapshot.hasError || !snapshot.hasData) {
+                          return const SizedBox.shrink();
+                        }
+                        return RecordesPessoaisSection(
+                          recordes: snapshot.data!,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: SpacingTokens.sectionGap),
                   ],
 
-                  // Placeholder quando não há informações adicionais
-                  if (!temImagem && !temMusculos && !temInstrucoes)
+                  if (!temImagem && !temMusculos && _recordesFuture == null)
                     Center(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 48),
@@ -131,6 +197,19 @@ class ExercicioViewPage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _RecordesLoadingPlaceholder extends StatelessWidget {
+  const _RecordesLoadingPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 180,
+      decoration: AppTheme.cardDecoration,
+      child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
     );
   }
 }

@@ -152,6 +152,7 @@ class SessaoDetalheViewPage extends StatelessWidget {
                     (exIndex) => _ExercicioCard(
                       exercicio: sessao.exercicios[exIndex],
                       isLast: exIndex == sessao.exercicios.length - 1,
+                      alunoId: alunoId,
                     ),
                   ),
                   const SizedBox(height: 96),
@@ -239,8 +240,13 @@ class _MetricCard extends StatelessWidget {
 class _ExercicioCard extends StatelessWidget {
   final ExercicioItem exercicio;
   final bool isLast;
+  final String alunoId;
 
-  const _ExercicioCard({required this.exercicio, required this.isLast});
+  const _ExercicioCard({
+    required this.exercicio,
+    required this.isLast,
+    required this.alunoId,
+  });
 
   String _getTituloTipoSerie(TipoSerie tipo) {
     switch (tipo) {
@@ -424,7 +430,10 @@ class _ExercicioCard extends StatelessWidget {
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ExercicioViewPage(exercicio: exercicio),
+              builder: (context) => ExercicioViewPage(
+                exercicio: exercicio,
+                alunoId: alunoId,
+              ),
             ),
           ),
           borderRadius: BorderRadius.circular(AppTheme.radiusLG),
