@@ -1,0 +1,17 @@
+node_modules/
+
+# Firebase local runtime config and logs
+.runtimeconfig.json
+firebase-debug.log
+
+# Environment files / secrets
+.env
+.env.local
+.secret
+
+# Firebase emulator / local state
+.firebase/
+
+# Optional
+.DS_Store
+*.log
