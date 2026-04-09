@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/appfit_sliver_app_bar.dart';
 import '../../core/widgets/note_display_field.dart';
+import '../../core/widgets/app_primary_button.dart';
 import 'models/rotina_model.dart';
 import 'models/exercicio_model.dart';
 import 'executar_treino_page.dart';
@@ -110,12 +111,14 @@ class SessaoDetalheViewPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SizedBox(height: 8),
                   Row(
                     children: [
                       Expanded(
                         child: _MetricCard(
                           label: 'Exercícios',
                           value: '${sessao.exercicios.length}',
+                          icon: Icons.fitness_center,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -123,6 +126,7 @@ class SessaoDetalheViewPage extends StatelessWidget {
                         child: _MetricCard(
                           label: 'Séries',
                           value: '$totalSeries',
+                          icon: Icons.layers_outlined,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -130,6 +134,7 @@ class SessaoDetalheViewPage extends StatelessWidget {
                         child: _MetricCard(
                           label: 'Estimado',
                           value: tempoEstimado,
+                          icon: Icons.timer_outlined,
                         ),
                       ),
                     ],
@@ -145,13 +150,15 @@ class SessaoDetalheViewPage extends StatelessWidget {
                   if (sessao.orientacoes != null &&
                       sessao.orientacoes!.trim().isNotEmpty)
                     const SizedBox(height: SpacingTokens.sectionGap),
-                  Text('Lista de exercícios', style: AppTheme.sectionHeader),
+                  Text(
+                    'Lista de exercícios'.toUpperCase(),
+                    style: AppTheme.sectionHeader.copyWith(letterSpacing: 0.8),
+                  ),
                   const SizedBox(height: SpacingTokens.labelToField),
                   ...List.generate(
                     sessao.exercicios.length,
                     (exIndex) => _ExercicioCard(
                       exercicio: sessao.exercicios[exIndex],
-                      isLast: exIndex == sessao.exercicios.length - 1,
                       alunoId: alunoId,
                     ),
                   ),
@@ -167,26 +174,21 @@ class SessaoDetalheViewPage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(
           horizontal: SpacingTokens.screenHorizontalPadding,
         ),
-        child: SizedBox(
-          width: double.infinity,
-          child: FloatingActionButton.extended(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ExecutarTreinoPage(
-                    sessao: sessao,
-                    rotinaId: rotinaId,
-                    alunoId: alunoId,
-                  ),
+        child: AppPrimaryButton(
+          label: 'Iniciar sessão',
+          icon: Icons.play_arrow_rounded,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ExecutarTreinoPage(
+                  sessao: sessao,
+                  rotinaId: rotinaId,
+                  alunoId: alunoId,
                 ),
-              );
-            },
-            icon: const Icon(Icons.play_arrow_rounded),
-            label: const Text('Iniciar sessão'),
-            elevation: 2,
-            highlightElevation: 4,
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -196,27 +198,22 @@ class SessaoDetalheViewPage extends StatelessWidget {
 class _MetricCard extends StatelessWidget {
   final String label;
   final String value;
+  final IconData? icon;
 
-  const _MetricCard({required this.label, required this.value});
+  const _MetricCard({required this.label, required this.value, this.icon});
 
   @override
   Widget build(BuildContext context) {
-    final bool isEstimado = label == 'Estimado';
-
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: AppTheme.cardDecoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              if (isEstimado) ...[
-                Icon(
-                  Icons.timer_outlined,
-                  size: 14,
-                  color: AppColors.labelSecondary,
-                ),
+              if (icon != null) ...[
+                Icon(icon, size: 14, color: AppColors.labelSecondary),
                 const SizedBox(width: 4),
               ],
               Expanded(
@@ -230,7 +227,7 @@ class _MetricCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: SpacingTokens.labelToField),
-          Text(value, style: AppTheme.title1),
+          Text(value, style: AppTheme.title1.copyWith(fontSize: 24)),
         ],
       ),
     );
@@ -239,14 +236,9 @@ class _MetricCard extends StatelessWidget {
 
 class _ExercicioCard extends StatelessWidget {
   final ExercicioItem exercicio;
-  final bool isLast;
   final String alunoId;
 
-  const _ExercicioCard({
-    required this.exercicio,
-    required this.isLast,
-    required this.alunoId,
-  });
+  const _ExercicioCard({required this.exercicio, required this.alunoId});
 
   String _getTituloTipoSerie(TipoSerie tipo) {
     switch (tipo) {
@@ -259,7 +251,16 @@ class _ExercicioCard extends StatelessWidget {
     }
   }
 
-  Color _getCorTipoSerie(TipoSerie tipo) => AppColors.labelSecondary;
+  Color _getCorTipoSerie(TipoSerie tipo) {
+    switch (tipo) {
+      case TipoSerie.aquecimento:
+        return AppColors.iosBlue;
+      case TipoSerie.feeder:
+        return AppColors.accentMetrics;
+      case TipoSerie.trabalho:
+        return AppColors.primary;
+    }
+  }
 
   Map<TipoSerie, Map<String, (int, String)>> _agruparSeriesPorTipoEValor() {
     final grupos = <TipoSerie, Map<String, (int, String)>>{
@@ -346,7 +347,7 @@ class _ExercicioCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              '$quantidade× $alvo reps',
+                              '${quantidade}x  •  $alvo reps',
                               style: AppTheme.bodyText,
                             ),
                           ),
@@ -356,7 +357,7 @@ class _ExercicioCard extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.labelQuaternary,
+                              color: AppColors.surfaceLight,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
@@ -397,8 +398,9 @@ class _ExercicioCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.labelQuaternary,
+                color: AppColors.surfaceDark,
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.labelQuaternary),
               ),
               child: Text(
                 exercicio.instrucoes!,
@@ -421,113 +423,108 @@ class _ExercicioCard extends StatelessWidget {
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ExercicioViewPage(
-                exercicio: exercicio,
-                alunoId: alunoId,
-              ),
+              builder: (context) =>
+                  ExercicioViewPage(exercicio: exercicio, alunoId: alunoId),
             ),
           ),
           borderRadius: BorderRadius.circular(AppTheme.radiusLG),
           child: Container(
-          decoration: AppTheme.cardDecoration,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(SpacingTokens.cardPaddingH),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        width: 48,
-                        height: 48,
+            decoration: AppTheme.cardDecoration,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(SpacingTokens.cardPaddingH),
+                  child: Row(
+                    children: [
+                      Container(
                         margin: const EdgeInsets.only(
                           right: SpacingTokens.cardPaddingH,
                         ),
-                        color: Colors.black.withAlpha(40),
-                        child:
-                            (exercicio.imagemUrl != null &&
-                                exercicio.imagemUrl!.isNotEmpty)
-                            ? CachedNetworkImage(
-                                imageUrl: exercicio.imagemUrl!,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => Center(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: AppColors.primary.withAlpha(100),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            width: 56,
+                            height: 56,
+                            color: Colors.black.withAlpha(40),
+                            child:
+                                (exercicio.imagemUrl != null &&
+                                    exercicio.imagemUrl!.isNotEmpty)
+                                ? CachedNetworkImage(
+                                    imageUrl: exercicio.imagemUrl!,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) => Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.primary.withAlpha(100),
+                                      ),
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                        Center(
+                                          child: Icon(
+                                            Icons.fitness_center,
+                                            color: AppColors.labelSecondary,
+                                            size: 26,
+                                          ),
+                                        ),
+                                  )
+                                : Center(
+                                    child: Icon(
+                                      Icons.fitness_center,
+                                      color: AppColors.labelSecondary,
+                                      size: 26,
+                                    ),
                                   ),
-                                ),
-                                errorWidget: (context, url, error) => Center(
-                                  child: Icon(
-                                    Icons.fitness_center,
-                                    color: AppColors.labelSecondary,
-                                    size: 24,
-                                  ),
-                                ),
-                              )
-                            : Center(
-                                child: Icon(
-                                  Icons.fitness_center,
-                                  color: AppColors.labelSecondary,
-                                  size: 24,
-                                ),
-                              ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            exercicio.nome,
-                            style: AppTheme.cardTitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: SpacingTokens.xs),
-                          RichText(
-                            text: TextSpan(
-                              style: AppTheme.cardSubtitle,
-                              children: [
-                                TextSpan(
-                                  text:
-                                      '${exercicio.series.length} ${exercicio.series.length == 1 ? 'Série' : 'Séries'}',
-                                  style: const TextStyle(
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                                if (exercicio.grupoMuscular.isNotEmpty)
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              exercicio.nome,
+                              style: AppTheme.cardTitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: SpacingTokens.xs),
+                            RichText(
+                              text: TextSpan(
+                                style: AppTheme.cardSubtitle,
+                                children: [
                                   TextSpan(
                                     text:
-                                        ' • ${exercicio.grupoMuscular.join(' • ')}',
+                                        '${exercicio.series.length} ${exercicio.series.length == 1 ? 'Série' : 'Séries'}',
+                                    style: const TextStyle(
+                                      color: AppColors.primary,
+                                    ),
                                   ),
-                              ],
+                                  if (exercicio.grupoMuscular.isNotEmpty)
+                                    TextSpan(
+                                      text:
+                                          ' • ${exercicio.grupoMuscular.join(' • ')}',
+                                    ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const Icon(
-                      CupertinoIcons.chevron_right,
-                      size: 16,
-                      color: AppColors.labelTertiary,
-                    ),
-                  ],
+                      const Icon(
+                        CupertinoIcons.chevron_right,
+                        size: 16,
+                        color: AppColors.labelTertiary,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              _buildConteudoExpandido(),
-            ],
+                _buildConteudoExpandido(),
+              ],
+            ),
           ),
         ),
-        ),
-        if (!isLast)
-          Padding(
-            padding: const EdgeInsets.only(top: SpacingTokens.sm),
-            child: Divider(color: AppColors.primary.withAlpha(15), height: 1),
-          )
-        else
-          const SizedBox(height: SpacingTokens.sm),
+        const SizedBox(height: SpacingTokens.sm),
       ],
     );
   }
