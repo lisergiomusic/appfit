@@ -99,7 +99,7 @@ class AppTheme {
 
   static const TextStyle bodyText = TextStyle(
     color: AppColors.labelPrimary,
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
   );

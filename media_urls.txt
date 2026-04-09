@@ -1,0 +1,17 @@
+https://cdn.exercisedb.dev/bodyparts/back.webp
+https://cdn.exercisedb.dev/bodyparts/biceps.webp
+https://cdn.exercisedb.dev/bodyparts/calves.webp
+https://cdn.exercisedb.dev/bodyparts/chest.webp
+https://cdn.exercisedb.dev/bodyparts/face.webp
+https://cdn.exercisedb.dev/bodyparts/feet.webp
+https://cdn.exercisedb.dev/bodyparts/forearms.webp
+https://cdn.exercisedb.dev/bodyparts/fullbody.webp
+https://cdn.exercisedb.dev/bodyparts/hamstrings.webp
+https://cdn.exercisedb.dev/bodyparts/hands.webp
+https://cdn.exercisedb.dev/bodyparts/hips.webp
+https://cdn.exercisedb.dev/bodyparts/neck.webp
+https://cdn.exercisedb.dev/bodyparts/quadriceps.webp
+https://cdn.exercisedb.dev/bodyparts/shoulders.webp
+https://cdn.exercisedb.dev/bodyparts/thighs.webp
+https://cdn.exercisedb.dev/bodyparts/triceps.webp
+https://cdn.exercisedb.dev/bodyparts/waist.webp
