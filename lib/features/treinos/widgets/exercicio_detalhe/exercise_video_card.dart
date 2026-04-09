@@ -139,22 +139,28 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
 
     // GIF animando: usa Image.network para suportar animação
     if (_isGif) {
-      return Image.network(
-        url,
-        fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
             color: AppColors.surfaceDark,
             child: const Center(
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
-          );
-        },
-        errorBuilder: (context, err, stack) => Container(
-          color: AppColors.surfaceDark,
-          child: const Icon(Icons.videocam_off, color: Colors.white38),
-        ),
+          ),
+          Image.network(
+            url,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return const SizedBox.shrink();
+            },
+            errorBuilder: (context, url, stack) => Container(
+              color: AppColors.surfaceDark,
+              child: const Icon(Icons.videocam_off, color: Colors.white38),
+            ),
+          ),
+        ],
       );
     }
 

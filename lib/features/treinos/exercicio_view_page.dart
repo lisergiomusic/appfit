@@ -73,12 +73,20 @@ class _ExercicioViewPageState extends State<ExercicioViewPage> {
                   FutureBuilder<ExercicioItem?>(
                     future: _exercicioBaseFuture,
                     builder: (context, snapshot) {
-                      final base = snapshot.data;
-                      final resolvedImage =
-                          (widget.exercicio.imagemUrl != null &&
-                              widget.exercicio.imagemUrl!.isNotEmpty)
+                      final temImagemPropria =
+                          widget.exercicio.imagemUrl != null &&
+                          widget.exercicio.imagemUrl!.isNotEmpty;
+
+                      // Se ainda está carregando e não tem imagem própria,
+                      // aguarda antes de renderizar o card para evitar flash do estado vazio
+                      if (!temImagemPropria &&
+                          snapshot.connectionState == ConnectionState.waiting) {
+                        return const _VideoCardLoadingPlaceholder();
+                      }
+
+                      final resolvedImage = temImagemPropria
                           ? widget.exercicio.imagemUrl
-                          : base?.imagemUrl;
+                          : snapshot.data?.imagemUrl;
 
                       return ExerciseVideoCard(
                         imageUrl: resolvedImage,
@@ -232,6 +240,25 @@ class _ExercicioViewPageState extends State<ExercicioViewPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _VideoCardLoadingPlaceholder extends StatelessWidget {
+  const _VideoCardLoadingPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
+      ),
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
       ),
     );
   }
