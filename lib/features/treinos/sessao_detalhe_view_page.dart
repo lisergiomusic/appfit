@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/appfit_sliver_app_bar.dart';
@@ -6,6 +7,7 @@ import '../../core/widgets/note_display_field.dart';
 import 'models/rotina_model.dart';
 import 'models/exercicio_model.dart';
 import 'executar_treino_page.dart';
+import 'exercicio_view_page.dart';
 
 class SessaoDetalheViewPage extends StatelessWidget {
   final SessaoTreinoModel sessao;
@@ -418,7 +420,15 @@ class _ExercicioCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
+        InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ExercicioViewPage(exercicio: exercicio),
+            ),
+          ),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+          child: Container(
           decoration: AppTheme.cardDecoration,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -498,12 +508,18 @@ class _ExercicioCard extends StatelessWidget {
                         ],
                       ),
                     ),
+                    const Icon(
+                      CupertinoIcons.chevron_right,
+                      size: 16,
+                      color: AppColors.labelTertiary,
+                    ),
                   ],
                 ),
               ),
               _buildConteudoExpandido(),
             ],
           ),
+        ),
         ),
         if (!isLast)
           Padding(
