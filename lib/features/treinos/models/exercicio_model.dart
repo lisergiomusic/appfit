@@ -54,6 +54,7 @@ class ExercicioItem {
   String? imagemUrl;
   String? personalId;
   String? instrucoes;
+  String? instrucoesPersonalizadas;
   List<SerieItem> series;
 
   ExercicioItem({
@@ -64,8 +65,17 @@ class ExercicioItem {
     this.imagemUrl,
     this.personalId,
     this.instrucoes,
+    this.instrucoesPersonalizadas,
     required this.series,
   });
+
+  String? get instrucoesPadraoTexto => _normalizeOptionalText(instrucoes);
+  String? get instrucoesPersonalizadasTexto =>
+      _normalizeOptionalText(instrucoesPersonalizadas);
+  bool get hasInstrucoesPadrao => instrucoesPadraoTexto != null;
+  bool get hasInstrucoesPersonalizadas => instrucoesPersonalizadasTexto != null;
+  String? get instrucoesParaExibicao =>
+      instrucoesPersonalizadasTexto ?? instrucoesPadraoTexto;
 
   Map<String, dynamic> toFirestore() {
     return {
@@ -75,14 +85,18 @@ class ExercicioItem {
       'tipoAlvo': tipoAlvo,
       'personalId': personalId,
       'instrucoes': instrucoes,
+      'instrucoesPersonalizadas': instrucoesPersonalizadas,
     };
   }
 
-  factory ExercicioItem.fromFirestore(Map<String, dynamic> data, [String? docId]) {
+  factory ExercicioItem.fromFirestore(
+    Map<String, dynamic> data, [
+    String? docId,
+  ]) {
     // Lógica de migração: se grupoMuscular for String, converte para List<String>
     List<String> grupos = ['Geral'];
     final rawGrupo = data['grupoMuscular'];
-    
+
     if (rawGrupo is String) {
       grupos = rawGrupo.split(',').map((e) => e.trim()).toList();
     } else if (rawGrupo is List) {
@@ -97,6 +111,7 @@ class ExercicioItem {
       tipoAlvo: data['tipoAlvo'] ?? 'Reps',
       personalId: data['personalId'],
       instrucoes: data['instrucoes'],
+      instrucoesPersonalizadas: data['instrucoesPersonalizadas'],
       series: [],
     );
   }
@@ -110,6 +125,7 @@ class ExercicioItem {
       imagemUrl: imagemUrl,
       personalId: personalId,
       instrucoes: instrucoes,
+      instrucoesPersonalizadas: instrucoesPersonalizadas,
       series: series.map((s) => s.clone()).toList(),
     );
   }
@@ -137,5 +153,13 @@ class ExercicioItem {
       if (a[i] != b[i]) return false;
     }
     return true;
+  }
+
+  String? _normalizeOptionalText(String? value) {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      return null;
+    }
+    return normalized;
   }
 }

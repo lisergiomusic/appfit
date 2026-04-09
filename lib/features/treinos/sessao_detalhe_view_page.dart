@@ -354,25 +354,59 @@ class _ExercicioCard extends StatelessWidget {
           }),
 
           // Instruções
-          if (exercicio.instrucoes != null &&
-              exercicio.instrucoes!.isNotEmpty) ...[
+          if (exercicio.hasInstrucoesPadrao ||
+              exercicio.hasInstrucoesPersonalizadas) ...[
             const SizedBox(height: SpacingTokens.md),
             Divider(height: 1, color: AppColors.labelQuaternary),
             const SizedBox(height: SpacingTokens.md),
             Text('Instruções', style: AppTheme.sectionHeader),
             const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceDark,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.labelQuaternary),
+            if (exercicio.hasInstrucoesPadrao)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceDark,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.labelQuaternary),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      exercicio.instrucoesPadraoTexto!,
+                      style: AppTheme.bodyText.copyWith(height: 1.4),
+                    ),
+                  ],
+                ),
               ),
-              child: Text(
-                exercicio.instrucoes!,
-                style: AppTheme.bodyText.copyWith(height: 1.4),
+            if (exercicio.hasInstrucoesPadrao &&
+                exercicio.hasInstrucoesPersonalizadas)
+              const SizedBox(height: 8),
+            if (exercicio.hasInstrucoesPersonalizadas)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withAlpha(10),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.primary.withAlpha(30)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Instruções do personal',
+                      style: AppTheme.caption.copyWith(
+                        color: AppColors.labelSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      exercicio.instrucoesPersonalizadasTexto!,
+                      style: AppTheme.bodyText.copyWith(height: 1.4),
+                    ),
+                  ],
+                ),
               ),
-            ),
           ],
 
           const SizedBox(height: SpacingTokens.sm),

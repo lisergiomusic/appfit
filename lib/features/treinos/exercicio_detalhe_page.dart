@@ -370,7 +370,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
   }
 
   void _showEditInstructionsSheet() {
-    final ctrl = TextEditingController(text: ex.instrucoes ?? '');
+    final ctrl = TextEditingController(
+      text: ex.instrucoesPersonalizadasTexto ?? '',
+    );
 
     showModalBottomSheet(
       context: context,
@@ -415,7 +417,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         ),
                       ),
                       const Text(
-                        'Instruções',
+                        'Instruções do personal',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
@@ -425,7 +427,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                       TextButton(
                         onPressed: () {
                           setState(() {
-                            ex.instrucoes = ctrl.text.trim();
+                            ex.instrucoesPersonalizadas =
+                                ctrl.text.trim().isEmpty
+                                ? null
+                                : ctrl.text.trim();
                           });
                           widget.onChanged();
                           Navigator.pop(context);
@@ -511,7 +516,6 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
       ),
     );
   }
-
 
   Widget _buildSerieRow(
     BuildContext context,
@@ -674,9 +678,9 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         ),
                         const SizedBox(height: SpacingTokens.sectionGap),
                         NoteDisplayField(
-                          text: ex.instrucoes,
-                          label: 'Instruções',
-                          addLabel: 'Adicionar instruções',
+                          text: ex.instrucoesPersonalizadasTexto,
+                          label: 'Instruções do personal',
+                          addLabel: 'Adicionar instruções do personal',
                           onTap: _showEditInstructionsSheet,
                         ),
                         const SizedBox(height: SpacingTokens.sectionGap),

@@ -37,14 +37,19 @@ class ExerciseService {
     List<ExercicioItem> biblioteca = [];
 
     try {
-      final snapshot = await _db.collection('exercicios_base')
-          .where(Filter.or(
-            Filter('personalId', isNull: true),
-            Filter('personalId', isEqualTo: personalId),
-          ))
+      final snapshot = await _db
+          .collection('exercicios_base')
+          .where(
+            Filter.or(
+              Filter('personalId', isNull: true),
+              Filter('personalId', isEqualTo: personalId),
+            ),
+          )
           .get();
 
-      biblioteca = snapshot.docs.map((doc) => ExercicioItem.fromFirestore(doc.data(), doc.id)).toList();
+      biblioteca = snapshot.docs
+          .map((doc) => ExercicioItem.fromFirestore(doc.data(), doc.id))
+          .toList();
       biblioteca.sort((a, b) => a.nome.compareTo(b.nome));
       return biblioteca;
     } catch (e) {
@@ -63,12 +68,13 @@ class ExerciseService {
     try {
       // 1. Buscamos os dados. Para evitar problemas com Filter.or e limitações do Firestore,
       // fazemos buscas simples e combinamos.
-      
+
       List<DocumentSnapshot> allDocs = [];
-      
+
       if (categoria == 'Meus Exercícios') {
         if (personalId != null) {
-          final snap = await _db.collection('exercicios_base')
+          final snap = await _db
+              .collection('exercicios_base')
               .where('personalId', isEqualTo: personalId)
               .get()
               .timeout(const Duration(seconds: 10));
@@ -76,16 +82,18 @@ class ExerciseService {
         }
       } else {
         // Busca exercícios públicos (personalId == null)
-        final snapPublic = await _db.collection('exercicios_base')
+        final snapPublic = await _db
+            .collection('exercicios_base')
             .where('personalId', isNull: true)
             .get()
             .timeout(const Duration(seconds: 10));
-        
+
         allDocs.addAll(snapPublic.docs);
 
         // Busca exercícios privados do personal logado
         if (personalId != null) {
-          final snapPrivate = await _db.collection('exercicios_base')
+          final snapPrivate = await _db
+              .collection('exercicios_base')
               .where('personalId', isEqualTo: personalId)
               .get()
               .timeout(const Duration(seconds: 10));
@@ -95,7 +103,10 @@ class ExerciseService {
 
       // Converte para objetos de modelo
       List<ExercicioItem> allItems = allDocs.map((doc) {
-        return ExercicioItem.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+        return ExercicioItem.fromFirestore(
+          doc.data() as Map<String, dynamic>,
+          doc.id,
+        );
       }).toList();
 
       // Remove duplicatas (caso um exercício tenha personalId e também caia em outra regra por erro de dados)
@@ -103,8 +114,12 @@ class ExerciseService {
       allItems = allItems.where((ex) => seenIds.add(ex.id ?? '')).toList();
 
       // 2. Filtro de Categoria em memória
-      if (categoria != null && categoria != 'Tudo' && categoria != 'Meus Exercícios') {
-        allItems = allItems.where((ex) => ex.grupoMuscular.contains(categoria)).toList();
+      if (categoria != null &&
+          categoria != 'Tudo' &&
+          categoria != 'Meus Exercícios') {
+        allItems = allItems
+            .where((ex) => ex.grupoMuscular.contains(categoria))
+            .toList();
       }
 
       // 3. Filtro de Busca em memória (Fuzzy Search)
@@ -112,7 +127,9 @@ class ExerciseService {
         final termo = _normalizar(busca.trim());
         allItems = allItems.where((ex) {
           final nomeNorm = _normalizar(ex.nome);
-          final gruposNorm = ex.grupoMuscular.map((g) => _normalizar(g)).join(' ');
+          final gruposNorm = ex.grupoMuscular
+              .map((g) => _normalizar(g))
+              .join(' ');
           return nomeNorm.contains(termo) || gruposNorm.contains(termo);
         }).toList();
       }
@@ -129,7 +146,7 @@ class ExerciseService {
       }
 
       final paginatedItems = allItems.skip(startIndex).take(limit).toList();
-      
+
       // Encontra o DocumentSnapshot correspondente ao último item paginado
       DocumentSnapshot? lastDocResult;
       if (paginatedItems.isNotEmpty) {
@@ -152,7 +169,52 @@ class ExerciseService {
     }
   }
 
-  Future<void> criarExercicioCustomizado(ExercicioItem exercicio, {bool forPublico = false}) async {
+  Future<ExercicioItem?> buscarExercicioPorNome(String nome) async {
+    final personalId = _auth.currentUser?.uid;
+
+    try {
+      ExercicioItem? exercicioEncontrado;
+
+      if (personalId != null) {
+        final privado = await _db
+            .collection('exercicios_base')
+            .where('nome', isEqualTo: nome)
+            .where('personalId', isEqualTo: personalId)
+            .limit(1)
+            .get();
+
+        if (privado.docs.isNotEmpty) {
+          final doc = privado.docs.first;
+          exercicioEncontrado = ExercicioItem.fromFirestore(doc.data(), doc.id);
+        }
+      }
+
+      if (exercicioEncontrado != null) {
+        return exercicioEncontrado;
+      }
+
+      final publico = await _db
+          .collection('exercicios_base')
+          .where('nome', isEqualTo: nome)
+          .where('personalId', isNull: true)
+          .limit(1)
+          .get();
+
+      if (publico.docs.isEmpty) {
+        return null;
+      }
+
+      final doc = publico.docs.first;
+      return ExercicioItem.fromFirestore(doc.data(), doc.id);
+    } catch (e) {
+      throw Exception('Erro ao buscar exercício por nome: $e');
+    }
+  }
+
+  Future<void> criarExercicioCustomizado(
+    ExercicioItem exercicio, {
+    bool forPublico = false,
+  }) async {
     final personalId = _auth.currentUser?.uid;
     if (personalId == null) throw Exception('Utilizador não autenticado');
     exercicio.personalId = forPublico ? null : personalId;
@@ -165,20 +227,63 @@ class ExerciseService {
 
   Future<void> semearExerciciosBase() async {
     final List<ExercicioItem> exerciciosSemente = [
-      ExercicioItem(nome: 'Supino Reto (Barra)', grupoMuscular: ['Peito'], series: []),
-      ExercicioItem(nome: 'Supino Inclinado (Halteres)', grupoMuscular: ['Peito'], series: []),
-      ExercicioItem(nome: 'Puxada Frontal (Polia)', grupoMuscular: ['Costas'], series: []),
-      ExercicioItem(nome: 'Remada Curvada (Barra)', grupoMuscular: ['Costas'], series: []),
-      ExercicioItem(nome: 'Agachamento Livre (Barra)', grupoMuscular: ['Pernas', 'Glúteos'], series: []),
-      ExercicioItem(nome: 'Leg Press 45°', grupoMuscular: ['Pernas', 'Glúteos'], series: []),
-      ExercicioItem(nome: 'Elevação Pélvica (Máquina)', grupoMuscular: ['Glúteos'], series: []),
-      ExercicioItem(nome: 'Rosca Direta (Barra)', grupoMuscular: ['Bíceps'], series: []),
-      ExercicioItem(nome: 'Tríceps Pulley', grupoMuscular: ['Tríceps'], series: []),
-      ExercicioItem(nome: 'Abdominal Supra', grupoMuscular: ['Abdômen'], series: []),
+      ExercicioItem(
+        nome: 'Supino Reto (Barra)',
+        grupoMuscular: ['Peito'],
+        series: [],
+      ),
+      ExercicioItem(
+        nome: 'Supino Inclinado (Halteres)',
+        grupoMuscular: ['Peito'],
+        series: [],
+      ),
+      ExercicioItem(
+        nome: 'Puxada Frontal (Polia)',
+        grupoMuscular: ['Costas'],
+        series: [],
+      ),
+      ExercicioItem(
+        nome: 'Remada Curvada (Barra)',
+        grupoMuscular: ['Costas'],
+        series: [],
+      ),
+      ExercicioItem(
+        nome: 'Agachamento Livre (Barra)',
+        grupoMuscular: ['Pernas', 'Glúteos'],
+        series: [],
+      ),
+      ExercicioItem(
+        nome: 'Leg Press 45°',
+        grupoMuscular: ['Pernas', 'Glúteos'],
+        series: [],
+      ),
+      ExercicioItem(
+        nome: 'Elevação Pélvica (Máquina)',
+        grupoMuscular: ['Glúteos'],
+        series: [],
+      ),
+      ExercicioItem(
+        nome: 'Rosca Direta (Barra)',
+        grupoMuscular: ['Bíceps'],
+        series: [],
+      ),
+      ExercicioItem(
+        nome: 'Tríceps Pulley',
+        grupoMuscular: ['Tríceps'],
+        series: [],
+      ),
+      ExercicioItem(
+        nome: 'Abdominal Supra',
+        grupoMuscular: ['Abdômen'],
+        series: [],
+      ),
     ];
     for (var ex in exerciciosSemente) {
       ex.personalId = null;
-      String docId = ex.nome.toLowerCase().replaceAll(RegExp(r'[^\w\s]'), '').replaceAll(RegExp(r'\s+'), '_');
+      String docId = ex.nome
+          .toLowerCase()
+          .replaceAll(RegExp(r'[^\w\s]'), '')
+          .replaceAll(RegExp(r'\s+'), '_');
       await _db.collection('exercicios_base').doc(docId).set(ex.toFirestore());
     }
   }

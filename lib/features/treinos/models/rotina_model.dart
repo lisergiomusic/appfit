@@ -23,7 +23,11 @@ class SessaoTreinoModel {
         return {
           'nome': ex.nome,
           'grupoMuscular': ex.grupoMuscular,
+          'imagemUrl': ex.imagemUrl,
           'tipoAlvo': ex.tipoAlvo,
+          'personalId': ex.personalId,
+          'instrucoes': ex.instrucoes,
+          'instrucoesPersonalizadas': ex.instrucoesPersonalizadas,
           'series': ex.series.map((s) {
             return {
               'tipo': s.tipo.name,
@@ -64,7 +68,11 @@ class SessaoTreinoModel {
         ExercicioItem(
           nome: ex['nome'] ?? 'Exercício',
           grupoMuscular: grupos,
+          imagemUrl: ex['imagemUrl'],
           tipoAlvo: ex['tipoAlvo'] ?? 'Reps',
+          personalId: ex['personalId'],
+          instrucoes: ex['instrucoes'],
+          instrucoesPersonalizadas: ex['instrucoesPersonalizadas'],
           series: seriesList,
         ),
       );
@@ -111,16 +119,23 @@ class RotinaModel {
       'objetivo': objetivo,
       'tipoVencimento': tipoVencimento,
       'vencimentoSessoes': vencimentoSessoes,
-      'dataVencimento': dataVencimento != null ? Timestamp.fromDate(dataVencimento!) : null,
+      'dataVencimento': dataVencimento != null
+          ? Timestamp.fromDate(dataVencimento!)
+          : null,
       'sessoes': sessoes.map((s) => s.toFirestore()).toList(),
     };
   }
 
-  factory RotinaModel.fromFirestore(Map<String, dynamic> data, [String? docId]) {
+  factory RotinaModel.fromFirestore(
+    Map<String, dynamic> data, [
+    String? docId,
+  ]) {
     List<SessaoTreinoModel> sessoesList = [];
     if (data['sessoes'] != null) {
       sessoesList = (data['sessoes'] as List)
-          .map((s) => SessaoTreinoModel.fromFirestore(s as Map<String, dynamic>))
+          .map(
+            (s) => SessaoTreinoModel.fromFirestore(s as Map<String, dynamic>),
+          )
           .toList();
     }
 

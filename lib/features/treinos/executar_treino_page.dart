@@ -47,11 +47,7 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
       _recordedData['exercicio_$i'] = {
         'series': List.generate(
           widget.sessao.exercicios[i].series.length,
-          (_) => {
-            'reps': '',
-            'peso': '',
-            'completa': false,
-          },
+          (_) => {'reps': '', 'peso': '', 'completa': false},
         ),
       };
     }
@@ -108,7 +104,11 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
     final key = 'exercicio_$_currentExerciseIndex';
     _recordedData[key]['series'][_currentSerieIndex]['completa'] = true;
     _startRestTimer(
-      widget.sessao.exercicios[_currentExerciseIndex].series[_currentSerieIndex].descanso,
+      widget
+          .sessao
+          .exercicios[_currentExerciseIndex]
+          .series[_currentSerieIndex]
+          .descanso,
     );
   }
 
@@ -128,11 +128,17 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('CONTINUAR', style: TextStyle(color: AppColors.primary)),
+            child: const Text(
+              'CONTINUAR',
+              style: TextStyle(color: AppColors.primary),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('FINALIZAR', style: TextStyle(color: Colors.greenAccent)),
+            child: const Text(
+              'FINALIZAR',
+              style: TextStyle(color: Colors.greenAccent),
+            ),
           ),
         ],
       ),
@@ -170,7 +176,8 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
   Widget build(BuildContext context) {
     final exercise = widget.sessao.exercicios[_currentExerciseIndex];
     final serie = exercise.series[_currentSerieIndex];
-    final progressTotal = ((_currentExerciseIndex * 100) +
+    final progressTotal =
+        ((_currentExerciseIndex * 100) +
             (_currentSerieIndex * (100 / exercise.series.length))) /
         widget.sessao.exercicios.length;
 
@@ -181,27 +188,29 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
         bottom: const AppBarDivider(),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : _restTimer != null
-              ? _buildRestScreen()
-              : SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.paddingScreen),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildProgressBar(progressTotal),
-                        const SizedBox(height: SpacingTokens.sectionGap),
-                        _buildExerciseHeader(exercise),
-                        const SizedBox(height: SpacingTokens.sectionGap),
-                        _buildSerieInput(serie),
-                        const SizedBox(height: SpacingTokens.sectionGap),
-                        _buildActionButtons(),
-                        const SizedBox(height: SpacingTokens.screenBottomPadding),
-                      ],
-                    ),
-                  ),
+          ? _buildRestScreen()
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(AppTheme.paddingScreen),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildProgressBar(progressTotal),
+                    const SizedBox(height: SpacingTokens.sectionGap),
+                    _buildExerciseHeader(exercise),
+                    const SizedBox(height: SpacingTokens.sectionGap),
+                    _buildSerieInput(serie),
+                    const SizedBox(height: SpacingTokens.sectionGap),
+                    _buildActionButtons(),
+                    const SizedBox(height: SpacingTokens.screenBottomPadding),
+                  ],
                 ),
+              ),
+            ),
     );
   }
 
@@ -240,10 +249,7 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          exercise.nome,
-          style: AppTheme.pageTitle,
-        ),
+        Text(exercise.nome, style: AppTheme.pageTitle),
         if (exercise.grupoMuscular.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -266,17 +272,63 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
                   .toList(),
             ),
           ),
-        if (exercise.instrucoes != null && exercise.instrucoes!.isNotEmpty)
+        if (exercise.hasInstrucoesPadrao ||
+            exercise.hasInstrucoesPersonalizadas)
           Padding(
             padding: const EdgeInsets.only(top: 12),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withAlpha(10),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.primary.withAlpha(30)),
-              ),
-              child: Text(exercise.instrucoes!, style: AppTheme.cardSubtitle),
+            child: Column(
+              children: [
+                if (exercise.hasInstrucoesPadrao)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceDark,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.labelQuaternary),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          exercise.instrucoesPadraoTexto!,
+                          style: AppTheme.cardSubtitle,
+                        ),
+                      ],
+                    ),
+                  ),
+                if (exercise.hasInstrucoesPadrao &&
+                    exercise.hasInstrucoesPersonalizadas)
+                  const SizedBox(height: 8),
+                if (exercise.hasInstrucoesPersonalizadas)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withAlpha(10),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppColors.primary.withAlpha(30),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Instruções do personal',
+                          style: AppTheme.caption.copyWith(
+                            color: AppColors.labelSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          exercise.instrucoesPersonalizadasTexto!,
+                          style: AppTheme.cardSubtitle,
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
             ),
           ),
       ],
@@ -290,10 +342,7 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Série ${_currentSerieIndex + 1}',
-            style: AppTheme.pageTitle,
-          ),
+          Text('Série ${_currentSerieIndex + 1}', style: AppTheme.pageTitle),
           const SizedBox(height: SpacingTokens.sectionGap),
           _buildInputField(
             label: 'Repetições (alvo: ${serie.alvo})',
@@ -332,9 +381,7 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
             hintText: hint,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,
               vertical: 12,
@@ -361,7 +408,9 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
         ),
         const SizedBox(height: 12),
         if (_currentExerciseIndex == widget.sessao.exercicios.length - 1 &&
-            _currentSerieIndex == widget.sessao.exercicios[_currentExerciseIndex].series.length - 1)
+            _currentSerieIndex ==
+                widget.sessao.exercicios[_currentExerciseIndex].series.length -
+                    1)
           ElevatedButton.icon(
             onPressed: _finalizarTreino,
             icon: const Icon(Icons.flag_rounded),
@@ -379,16 +428,14 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
   Widget _buildRestScreen() {
     final minutos = _restTimer! ~/ 60;
     final segundos = _restTimer! % 60;
-    final timeStr = '${minutos.toString().padLeft(2, '0')}:${segundos.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${minutos.toString().padLeft(2, '0')}:${segundos.toString().padLeft(2, '0')}';
 
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            'Descansando...',
-            style: AppTheme.title1,
-          ),
+          Text('Descansando...', style: AppTheme.title1),
           const SizedBox(height: SpacingTokens.xxl),
           Container(
             width: 200,

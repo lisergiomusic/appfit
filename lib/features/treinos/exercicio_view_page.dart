@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/services/exercise_service.dart';
 import '../../core/services/treino_service.dart';
 import '../../core/theme/app_theme.dart';
 import 'models/exercicio_model.dart';
@@ -16,8 +17,10 @@ class ExercicioViewPage extends StatefulWidget {
 }
 
 class _ExercicioViewPageState extends State<ExercicioViewPage> {
+  final ExerciseService _exerciseService = ExerciseService();
   final TreinoService _treinoService = TreinoService();
   late final Future<Map<String, double?>>? _recordesFuture;
+  late final Future<ExercicioItem?>? _exercicioBaseFuture;
 
   @override
   void initState() {
@@ -28,6 +31,9 @@ class _ExercicioViewPageState extends State<ExercicioViewPage> {
             exercicioNome: widget.exercicio.nome,
           )
         : null;
+    _exercicioBaseFuture = widget.exercicio.hasInstrucoesPadrao
+        ? null
+        : _exerciseService.buscarExercicioPorNome(widget.exercicio.nome);
   }
 
   @override
@@ -35,9 +41,9 @@ class _ExercicioViewPageState extends State<ExercicioViewPage> {
     final temImagem =
         widget.exercicio.imagemUrl != null &&
         widget.exercicio.imagemUrl!.isNotEmpty;
-    final temInstrucoes =
-        widget.exercicio.instrucoes != null &&
-        widget.exercicio.instrucoes!.trim().isNotEmpty;
+    final temInstrucoesPadrao = widget.exercicio.hasInstrucoesPadrao;
+    final temInstrucoesPersonalizadas =
+        widget.exercicio.hasInstrucoesPersonalizadas;
     final temMusculos = widget.exercicio.grupoMuscular.isNotEmpty;
 
     return Scaffold(
@@ -94,58 +100,77 @@ class _ExercicioViewPageState extends State<ExercicioViewPage> {
 
                   Text('Instruções', style: AppTheme.sectionHeader),
                   const SizedBox(height: SpacingTokens.labelToField),
-                  if (temInstrucoes)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(SpacingTokens.cardPaddingH),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceDark,
-                        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-                        border: Border.all(
-                          color: Colors.white.withAlpha(10),
-                          width: 0.5,
+                  FutureBuilder<ExercicioItem?>(
+                    future: _exercicioBaseFuture,
+                    builder: (context, snapshot) {
+                      final instrucoesPadrao =
+                          widget.exercicio.instrucoesPadraoTexto ??
+                          snapshot.data?.instrucoesPadraoTexto;
+                      final temAlgumaInstrucao =
+                          instrucoesPadrao != null ||
+                          temInstrucoesPersonalizadas;
+
+                      if (!temAlgumaInstrucao &&
+                          snapshot.connectionState == ConnectionState.waiting) {
+                        return const _InstructionLoadingCard();
+                      }
+
+                      if (temAlgumaInstrucao) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (instrucoesPadrao != null)
+                              _InstructionCard(text: instrucoesPadrao),
+                            if (instrucoesPadrao != null &&
+                                temInstrucoesPersonalizadas)
+                              const SizedBox(height: SpacingTokens.md),
+                            if (temInstrucoesPersonalizadas)
+                              _InstructionCard(
+                                title: 'Instruções do personal',
+                                text: widget
+                                    .exercicio
+                                    .instrucoesPersonalizadasTexto!,
+                                highlighted: true,
+                              ),
+                          ],
+                        );
+                      }
+
+                      return Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: SpacingTokens.xl,
                         ),
-                      ),
-                      child: Text(
-                        widget.exercicio.instrucoes!,
-                        style: AppTheme.bodyText.copyWith(
-                          height: 1.55,
-                          color: AppColors.labelPrimary,
-                        ),
-                      ),
-                    )
-                  else
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: SpacingTokens.xl,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceDark,
-                        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-                        border: Border.all(
-                          color: Colors.white.withAlpha(10),
-                          width: 0.5,
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.menu_book_rounded,
-                            size: 32,
-                            color: AppColors.labelTertiary,
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceDark,
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusLG,
                           ),
-                          const SizedBox(height: SpacingTokens.sm),
-                          Text(
-                            'Nenhuma instrução disponível',
-                            style: AppTheme.cardSubtitle.copyWith(
+                          border: Border.all(
+                            color: Colors.white.withAlpha(10),
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.menu_book_rounded,
+                              size: 32,
                               color: AppColors.labelTertiary,
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
+                            const SizedBox(height: SpacingTokens.sm),
+                            Text(
+                              'Nenhuma instrução disponível',
+                              style: AppTheme.cardSubtitle.copyWith(
+                                color: AppColors.labelTertiary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                   const SizedBox(height: SpacingTokens.sectionGap),
 
                   if (_recordesFuture != null) ...[
@@ -210,6 +235,71 @@ class _RecordesLoadingPlaceholder extends StatelessWidget {
       height: 180,
       decoration: AppTheme.cardDecoration,
       child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+    );
+  }
+}
+
+class _InstructionLoadingCard extends StatelessWidget {
+  const _InstructionLoadingCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: SpacingTokens.xl),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
+      ),
+      child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+    );
+  }
+}
+
+class _InstructionCard extends StatelessWidget {
+  final String? title;
+  final String text;
+  final bool highlighted;
+
+  const _InstructionCard({
+    this.title,
+    required this.text,
+    this.highlighted = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(SpacingTokens.cardPaddingH),
+      decoration: BoxDecoration(
+        color: highlighted
+            ? AppColors.primary.withAlpha(10)
+            : AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        border: Border.all(
+          color: highlighted
+              ? AppColors.primary.withAlpha(30)
+              : Colors.white.withAlpha(10),
+          width: 0.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (title != null) ...[
+            Text(
+              title!,
+              style: AppTheme.cardTitle.copyWith(
+                color: AppColors.labelSecondary,
+              ),
+            ),
+            const SizedBox(height: SpacingTokens.xs),
+          ],
+          Text(text, style: AppTheme.bodyText),
+        ],
+      ),
     );
   }
 }
