@@ -122,7 +122,6 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
             physics: const BouncingScrollPhysics(),
             child: Column(
               children: [
-                const SizedBox(height: SpacingTokens.screenTopPadding),
                 AlunoHeaderSection(
                   alunoId: widget.alunoId,
                   alunoNome: nomeExibicao,
@@ -132,7 +131,7 @@ class _PerfilAlunoPageState extends State<PerfilAlunoPage> {
                 ),
                 const SizedBox(height: 16),
                 _buildActions(context, telefone),
-                const SizedBox(height: 16),
+                const SizedBox(height: SpacingTokens.sectionGap),
                 RitmoDaSemanaCard(alunoNome: nomeExibicao),
                 const SizedBox(height: SpacingTokens.xxl),
                 FichaAtivaHeroCard(
