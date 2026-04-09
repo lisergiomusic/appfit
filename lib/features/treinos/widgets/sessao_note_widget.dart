@@ -16,7 +16,7 @@ class SessaoNoteWidget extends StatelessWidget {
 
     return NoteDisplayField(
       text: controller.sessaoNote,
-      label: 'Nota de sessão',
+      label: 'Instruções gerais',
       addLabel: 'Adicionar instruções gerais',
       onTap: () => _showEditNoteSheet(context, controller),
       showInsetShadow: true,

@@ -7,16 +7,18 @@ class NoteDisplayField extends StatelessWidget {
   final String? text;
   final String label;
   final String addLabel;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final bool showInsetShadow;
+  final bool readOnly;
 
   const NoteDisplayField({
     super.key,
     required this.text,
     required this.label,
     required this.addLabel,
-    required this.onTap,
+    this.onTap,
     this.showInsetShadow = false,
+    this.readOnly = false,
   });
 
   @override
@@ -24,6 +26,7 @@ class NoteDisplayField extends StatelessWidget {
     final isEmpty = text?.trim().isEmpty ?? true;
 
     if (isEmpty) {
+      if (readOnly) return const SizedBox.shrink();
       return GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
@@ -51,66 +54,67 @@ class NoteDisplayField extends StatelessWidget {
       );
     }
 
+    final container = Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        boxShadow: showInsetShadow
+            ? [
+                BoxShadow(
+                  color: Colors.black.withAlpha(50),
+                  blurRadius: 2,
+                  offset: const Offset(0, 2),
+                  inset: true,
+                ),
+              ]
+            : [],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 3),
+            child: Icon(
+              CupertinoIcons.doc_text,
+              size: 16,
+              color: AppColors.labelTertiary,
+            ),
+          ),
+          const SizedBox(width: SpacingTokens.sm),
+          Expanded(
+            child: Text(
+              text ?? '',
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: AppTheme.bodyText.copyWith(
+                color: AppColors.labelSecondary,
+                fontSize: 15,
+              ),
+            ),
+          ),
+          if (!readOnly) ...[
+            const SizedBox(width: SpacingTokens.sm),
+            const Padding(
+              padding: EdgeInsets.only(top: 3),
+              child: Icon(
+                CupertinoIcons.pencil,
+                size: 16,
+                color: AppColors.labelTertiary,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: AppTheme.sectionHeader),
         const SizedBox(height: 8),
-        GestureDetector(
-          onTap: onTap,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
-              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-              boxShadow: showInsetShadow
-                  ? [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(50),
-                        blurRadius: 2,
-                        offset: const Offset(0, 2),
-                        inset: true,
-                      ),
-                    ]
-                  : [],
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.only(top: 3),
-                  child: Icon(
-                    CupertinoIcons.doc_text,
-                    size: 16,
-                    color: AppColors.labelTertiary,
-                  ),
-                ),
-                const SizedBox(width: SpacingTokens.sm),
-                Expanded(
-                  child: Text(
-                    text ?? '',
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTheme.bodyText.copyWith(
-                      color: AppColors.labelSecondary,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: SpacingTokens.sm),
-                const Padding(
-                  padding: EdgeInsets.only(top: 3),
-                  child: Icon(
-                    CupertinoIcons.pencil,
-                    size: 16,
-                    color: AppColors.labelTertiary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        if (readOnly) container else GestureDetector(onTap: onTap, child: container),
       ],
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/appfit_sliver_app_bar.dart';
 import '../../core/widgets/app_primary_button.dart';
+import '../../core/widgets/note_display_field.dart';
 import 'models/rotina_model.dart';
 import 'models/exercicio_model.dart';
 import 'executar_treino_page.dart';
@@ -132,30 +133,16 @@ class SessaoDetalheViewPage extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: SpacingTokens.sectionGap),
+                  NoteDisplayField(
+                    text: sessao.orientacoes,
+                    label: 'Instruções do personal',
+                    addLabel: '',
+                    readOnly: true,
+                    showInsetShadow: true,
+                  ),
                   if (sessao.orientacoes != null &&
-                      sessao.orientacoes!.isNotEmpty) ...[
-                    Text(
-                      'Observações do treino',
-                      style: AppTheme.sectionHeader,
-                    ),
-                    const SizedBox(height: SpacingTokens.sm),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(SpacingTokens.cardPaddingH),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withAlpha(10),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                        border: Border.all(
-                          color: AppColors.primary.withAlpha(30),
-                        ),
-                      ),
-                      child: Text(
-                        sessao.orientacoes!,
-                        style: AppTheme.bodyText,
-                      ),
-                    ),
+                      sessao.orientacoes!.trim().isNotEmpty)
                     const SizedBox(height: SpacingTokens.sectionGap),
-                  ],
                   Text('Lista de exercícios', style: AppTheme.sectionHeader),
                   const SizedBox(height: SpacingTokens.labelToField),
                   ...List.generate(
