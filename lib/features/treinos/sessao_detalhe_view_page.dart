@@ -1,6 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
+import '../../core/services/exercise_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/appfit_sliver_app_bar.dart';
 import '../../core/widgets/note_display_field.dart';
@@ -234,11 +235,36 @@ class _MetricCard extends StatelessWidget {
   }
 }
 
-class _ExercicioCard extends StatelessWidget {
+class _ExercicioCard extends StatefulWidget {
   final ExercicioItem exercicio;
   final String alunoId;
 
   const _ExercicioCard({required this.exercicio, required this.alunoId});
+
+  @override
+  State<_ExercicioCard> createState() => _ExercicioCardState();
+}
+
+class _ExercicioCardState extends State<_ExercicioCard> {
+  final ExerciseService _exerciseService = ExerciseService();
+  late final Future<String?> _imagemUrlFuture;
+
+  ExercicioItem get exercicio => widget.exercicio;
+
+  @override
+  void initState() {
+    super.initState();
+    bool isGif(String? url) =>
+        url != null && url.toLowerCase().contains('.gif');
+
+    if (isGif(exercicio.imagemUrl)) {
+      _imagemUrlFuture = Future.value(exercicio.imagemUrl);
+    } else {
+      _imagemUrlFuture = _exerciseService
+          .buscarExercicioPorNome(exercicio.nome)
+          .then((base) => isGif(base?.imagemUrl) ? base!.imagemUrl : null);
+    }
+  }
 
   String _getTituloTipoSerie(TipoSerie tipo) {
     switch (tipo) {
@@ -424,7 +450,7 @@ class _ExercicioCard extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) =>
-                  ExercicioViewPage(exercicio: exercicio, alunoId: alunoId),
+                  ExercicioViewPage(exercicio: exercicio, alunoId: widget.alunoId),
             ),
           ),
           borderRadius: BorderRadius.circular(AppTheme.radiusLG),
@@ -447,34 +473,30 @@ class _ExercicioCard extends StatelessWidget {
                             width: 56,
                             height: 56,
                             color: Colors.black.withAlpha(40),
-                            child:
-                                (exercicio.imagemUrl != null &&
-                                    exercicio.imagemUrl!.isNotEmpty)
-                                ? CachedNetworkImage(
-                                    imageUrl: exercicio.imagemUrl!,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) => Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: AppColors.primary.withAlpha(100),
-                                      ),
+                            child: FutureBuilder<String?>(
+                              future: _imagemUrlFuture,
+                              builder: (context, snapshot) {
+                                final url = snapshot.data;
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppColors.primary.withAlpha(100),
                                     ),
-                                    errorWidget: (context, url, error) =>
-                                        Center(
-                                          child: Icon(
-                                            Icons.fitness_center,
-                                            color: AppColors.labelSecondary,
-                                            size: 26,
-                                          ),
-                                        ),
-                                  )
-                                : Center(
+                                  );
+                                }
+                                if (url == null || url.isEmpty) {
+                                  return Center(
                                     child: Icon(
                                       Icons.fitness_center,
                                       color: AppColors.labelSecondary,
                                       size: 26,
                                     ),
-                                  ),
+                                  );
+                                }
+                                return _GifFirstFrame(url: url);
+                              },
+                            ),
                           ),
                         ),
                       ),
@@ -527,5 +549,66 @@ class _ExercicioCard extends StatelessWidget {
         const SizedBox(height: SpacingTokens.sm),
       ],
     );
+  }
+}
+
+class _GifFirstFrame extends StatefulWidget {
+  final String url;
+  const _GifFirstFrame({required this.url});
+
+  @override
+  State<_GifFirstFrame> createState() => _GifFirstFrameState();
+}
+
+class _GifFirstFrameState extends State<_GifFirstFrame> {
+  ui.Image? _frame;
+  bool _error = false;
+  ImageStream? _stream;
+  ImageStreamListener? _listener;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  void _load() {
+    final provider = NetworkImage(widget.url);
+    _stream = provider.resolve(ImageConfiguration.empty);
+    _listener = ImageStreamListener(
+      (info, _) {
+        if (mounted) setState(() => _frame = info.image);
+        _stream?.removeListener(_listener!);
+      },
+      onError: (_, _) {
+        if (mounted) setState(() => _error = true);
+        _stream?.removeListener(_listener!);
+      },
+    );
+    _stream!.addListener(_listener!);
+  }
+
+  @override
+  void dispose() {
+    _stream?.removeListener(_listener!);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_error) {
+      return Center(
+        child: Icon(Icons.fitness_center, color: AppColors.labelSecondary, size: 26),
+      );
+    }
+    if (_frame == null) {
+      return Center(
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: AppColors.primary.withAlpha(100),
+        ),
+      );
+    }
+    return RawImage(image: _frame, fit: BoxFit.cover);
   }
 }
