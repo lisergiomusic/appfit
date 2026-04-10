@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/appfit_sliver_app_bar.dart';
@@ -6,9 +5,11 @@ import '../../../../core/widgets/note_display_field.dart';
 import '../../../../core/widgets/app_primary_button.dart';
 import '../../shared/models/rotina_model.dart';
 import '../../shared/models/exercicio_model.dart';
-import '../../shared/widgets/exercicio_thumbnail.dart';
+import '../../shared/widgets/executar_treino/exercicio_section_header.dart';
+import '../../shared/widgets/executar_treino/orientacao_personal_banner.dart';
+import '../../shared/widgets/executar_treino/serie_badge_info_dialog.dart';
+import '../../shared/widgets/exercicio_detalhe/exercicio_constants.dart';
 import 'aluno_executar_treino_page.dart';
-import 'aluno_exercicio_view_page.dart';
 
 class AlunoSessaoDetalhePage extends StatelessWidget {
   final SessaoTreinoModel sessao;
@@ -237,274 +238,185 @@ class _MetricCard extends StatelessWidget {
   }
 }
 
-class _ExercicioCard extends StatefulWidget {
+class _ExercicioCard extends StatelessWidget {
   final ExercicioItem exercicio;
   final String alunoId;
 
   const _ExercicioCard({required this.exercicio, required this.alunoId});
 
-  @override
-  State<_ExercicioCard> createState() => _ExercicioCardState();
-}
-
-class _ExercicioCardState extends State<_ExercicioCard> {
-  ExercicioItem get exercicio => widget.exercicio;
-
-  String _getTituloTipoSerie(TipoSerie tipo) {
-    switch (tipo) {
-      case TipoSerie.aquecimento:
-        return 'Séries de aquecimento';
-      case TipoSerie.feeder:
-        return 'Séries de aproximação';
-      case TipoSerie.trabalho:
-        return 'Séries de trabalho';
+  int _calcWorkIndex(int upToIdx) {
+    int count = 0;
+    for (int i = 0; i <= upToIdx; i++) {
+      if (exercicio.series[i].tipo == TipoSerie.trabalho) count++;
     }
-  }
-
-  Color _getCorTipoSerie(TipoSerie tipo) {
-    switch (tipo) {
-      case TipoSerie.aquecimento:
-        return AppColors.iosBlue;
-      case TipoSerie.feeder:
-        return AppColors.accentMetrics;
-      case TipoSerie.trabalho:
-        return AppColors.primary;
-    }
-  }
-
-  Map<TipoSerie, Map<String, int>> _agruparSeriesPorTipoEValor() {
-    final grupos = <TipoSerie, Map<String, int>>{
-      TipoSerie.aquecimento: {},
-      TipoSerie.feeder: {},
-      TipoSerie.trabalho: {},
-    };
-
-    for (final serie in exercicio.series) {
-      final tipo = serie.tipo;
-      final chave = serie.alvo;
-      if (grupos[tipo]!.containsKey(chave)) {
-        grupos[tipo]![chave] = grupos[tipo]![chave]! + 1;
-      } else {
-        grupos[tipo]![chave] = 1;
-      }
-    }
-
-    return grupos;
-  }
-
-  Widget _buildConteudoExpandido() {
-    final seriesPorTipoEValor = _agruparSeriesPorTipoEValor();
-    final tiposComSeries = [
-      TipoSerie.aquecimento,
-      TipoSerie.feeder,
-      TipoSerie.trabalho,
-    ].where((tipo) => seriesPorTipoEValor[tipo]!.isNotEmpty).toList();
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: SpacingTokens.cardPaddingH,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ...tiposComSeries.asMap().entries.map((typeEntry) {
-            final typeIndex = typeEntry.key;
-            final tipo = typeEntry.value;
-            final seriesPorValor = seriesPorTipoEValor[tipo]!;
-            final tituloTipo = _getTituloTipoSerie(tipo);
-            final corTipo = _getCorTipoSerie(tipo);
-            final isLast = typeIndex == tiposComSeries.length - 1;
-
-            return Padding(
-              padding: EdgeInsets.only(bottom: isLast ? 0 : SpacingTokens.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 2,
-                        height: 15,
-                        decoration: BoxDecoration(
-                          color: corTipo,
-                          borderRadius: BorderRadius.circular(1.5),
-                        ),
-                      ),
-                      const SizedBox(width: SpacingTokens.sm),
-                      Text(
-                        '$tituloTipo:',
-                        style: AppTheme.sectionHeader.copyWith(
-                          fontSize: 13,
-                          letterSpacing: 0.3,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  ...seriesPorValor.entries.map((serieEntry) {
-                    final alvo = serieEntry.key;
-                    final quantidade = serieEntry.value;
-
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 12, bottom: 8),
-                      child: Text(
-                        '${quantidade}x  •  $alvo reps',
-                        style: AppTheme.bodyText,
-                      ),
-                    );
-                  }),
-                ],
-              ),
-            );
-          }),
-
-          if (exercicio.hasInstrucoesPadrao ||
-              exercicio.hasInstrucoesPersonalizadas) ...[
-            const SizedBox(height: SpacingTokens.md),
-            Divider(height: 1, color: AppColors.labelQuaternary),
-            const SizedBox(height: SpacingTokens.md),
-            Text('Instruções', style: AppTheme.sectionHeader),
-            const SizedBox(height: 8),
-            if (exercicio.hasInstrucoesPadrao)
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceDark,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.labelQuaternary),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      exercicio.instrucoesPadraoTexto!,
-                      style: AppTheme.bodyText.copyWith(height: 1.4),
-                    ),
-                  ],
-                ),
-              ),
-            if (exercicio.hasInstrucoesPadrao &&
-                exercicio.hasInstrucoesPersonalizadas)
-              const SizedBox(height: 8),
-            if (exercicio.hasInstrucoesPersonalizadas)
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withAlpha(10),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.primary.withAlpha(30)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Instruções do personal',
-                      style: AppTheme.caption.copyWith(
-                        color: AppColors.labelSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      exercicio.instrucoesPersonalizadasTexto!,
-                      style: AppTheme.bodyText.copyWith(height: 1.4),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-
-          const SizedBox(height: SpacingTokens.sm),
-        ],
-      ),
-    );
+    return count;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        InkWell(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AlunoExercicioViewPage(
-                exercicio: exercicio,
-                alunoId: widget.alunoId,
-              ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: SpacingTokens.listItemGap),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surfaceDark,
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ExercicioSectionHeader(
+              exercicio: exercicio,
+              exIdx: 0,
+              completedCount: 0,
+              alunoId: alunoId,
             ),
+            if (exercicio.instrucoesParaExibicao != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: SpacingTokens.lg,
+                ),
+                child: OrientacaoPersonalBanner(
+                  orientacao: exercicio.instrucoesParaExibicao,
+                ),
+              ),
+            const SizedBox(height: SpacingTokens.sm),
+            _ColumnLabelsRow(),
+            const SizedBox(height: SpacingTokens.xs),
+            ...List.generate(exercicio.series.length, (sIdx) {
+              return _ReadOnlySetRow(
+                serie: exercicio.series[sIdx],
+                visualIndex: _calcWorkIndex(sIdx),
+              );
+            }),
+            const SizedBox(height: SpacingTokens.sm),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ColumnLabelsRow extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    const labelStyle = TextStyle(
+      fontSize: 10,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.8,
+      color: AppColors.labelTertiary,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: SpacingTokens.screenHorizontalPadding,
+      ),
+      child: Row(
+        children: const [
+          SizedBox(
+            width: 36,
+            child: Text('SÉRIE', style: labelStyle, textAlign: TextAlign.center),
           ),
-          borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-          child: Container(
-            decoration: AppTheme.cardDecoration,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(SpacingTokens.cardPaddingH),
-                  child: Row(
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.only(
-                          right: SpacingTokens.cardPaddingH,
-                        ),
-                        child: ExercicioThumbnail(
-                          exercicio: exercicio,
-                          width: 56,
-                          height: 56,
-                          borderRadius: 10,
-                          iconSize: 26,
-                        ),
-                      ),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              exercicio.nome,
-                              style: AppTheme.cardTitle,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: SpacingTokens.xs),
-                            RichText(
-                              text: TextSpan(
-                                style: AppTheme.cardSubtitle,
-                                children: [
-                                  TextSpan(
-                                    text:
-                                        '${exercicio.series.length} ${exercicio.series.length == 1 ? 'Série' : 'Séries'}',
-                                    style: const TextStyle(
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                  if (exercicio.grupoMuscular.isNotEmpty)
-                                    TextSpan(
-                                      text:
-                                          ' • ${exercicio.grupoMuscular.join(' • ')}',
-                                    ),
-                                ],
+          SizedBox(width: SpacingTokens.md),
+          Expanded(
+            child: Text('ALVO', style: labelStyle, textAlign: TextAlign.center),
+          ),
+          SizedBox(width: SpacingTokens.md),
+          SizedBox(
+            width: 72,
+            child: Text('DESCANSO', style: labelStyle, textAlign: TextAlign.center),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReadOnlySetRow extends StatelessWidget {
+  final SerieItem serie;
+  final int visualIndex;
+
+  const _ReadOnlySetRow({required this.serie, required this.visualIndex});
+
+  SerieTypeOption get _serieOption => serieTypeOptions.firstWhere(
+        (opt) => opt.type == serie.tipo,
+        orElse: () => serieTypeOptions.last,
+      );
+
+  Color get _serieColor => _serieOption.color;
+
+  IconData? get _badgeIcon =>
+      serie.tipo != TipoSerie.trabalho ? _serieOption.icon : null;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: SpacingTokens.xs),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: SpacingTokens.screenHorizontalPadding,
+          vertical: SpacingTokens.sm,
+        ),
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: () => showSerieBadgeInfo(context, serie.tipo),
+              child: SizedBox.square(
+                dimension: 36,
+                child: Center(
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: _serieColor.withAlpha(22),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                    ),
+                    child: Center(
+                      child: _badgeIcon != null
+                          ? Icon(_badgeIcon, size: 16, color: _serieColor)
+                          : Text(
+                              visualIndex.toString(),
+                              style: TextStyle(
+                                color: _serieColor,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.2,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                      const Icon(
-                        CupertinoIcons.chevron_right,
-                        size: 16,
-                        color: AppColors.labelTertiary,
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-                _buildConteudoExpandido(),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(width: SpacingTokens.md),
+            Expanded(
+              child: Text(
+                serie.alvo,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.labelSecondary,
+                  letterSpacing: -0.1,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(width: SpacingTokens.md),
+            SizedBox(
+              width: 72,
+              child: Text(
+                serie.descanso,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.labelSecondary,
+                  letterSpacing: -0.1,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: SpacingTokens.sm),
-      ],
+      ),
     );
   }
 }

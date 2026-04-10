@@ -3,6 +3,7 @@ import '../../models/exercicio_model.dart';
 import '../../models/historico_treino_model.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../exercicio_detalhe/exercicio_constants.dart';
+import 'serie_badge_info_dialog.dart';
 
 class WorkoutSetRow extends StatelessWidget {
   final SerieItem serie;
@@ -25,14 +26,7 @@ class WorkoutSetRow extends StatelessWidget {
   });
 
   void _showBadgeInfo(BuildContext context) {
-    final option = serieTypeOptions.firstWhere(
-      (opt) => opt.type == serie.tipo,
-      orElse: () => serieTypeOptions.last,
-    );
-    showDialog<void>(
-      context: context,
-      builder: (_) => _BadgeInfoDialog(option: option),
-    );
+    showSerieBadgeInfo(context, serie.tipo);
   }
 
   String get _serieLabel {
@@ -82,9 +76,7 @@ class WorkoutSetRow extends StatelessWidget {
             dimension: 36,
             child: Center(
               child: GestureDetector(
-                onTap: serie.tipo != TipoSerie.trabalho
-                    ? () => _showBadgeInfo(context)
-                    : null,
+                onTap: () => _showBadgeInfo(context),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 280),
                   width: 32,
@@ -321,77 +313,3 @@ class _SetInputFieldState extends State<_SetInputField> {
   }
 }
 
-class _BadgeInfoDialog extends StatelessWidget {
-  final SerieTypeOption option;
-
-  const _BadgeInfoDialog({required this.option});
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: AppColors.surfaceDark,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: option.color.withAlpha(28),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(option.icon, color: option.color, size: 26),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              option.title,
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: AppColors.labelPrimary,
-                letterSpacing: -0.3,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              option.subtitle,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.labelSecondary,
-                height: 1.4,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                height: 46,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-                ),
-                child: const Center(
-                  child: Text(
-                    'Ok',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.labelPrimary,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

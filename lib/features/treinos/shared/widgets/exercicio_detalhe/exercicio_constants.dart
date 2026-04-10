@@ -31,22 +31,30 @@ class SerieTypeOption {
 
 const List<SerieTypeOption> serieTypeOptions = [
   SerieTypeOption(
-    title: 'Aquecimento',
-    subtitle: 'Prepara as articulações e o sistema nervoso.',
+    title: 'Série de aquecimento',
+    subtitle:
+        'Use uma carga bem leve — o objetivo não é se cansar, mas preparar '
+        'os músculos e articulações para o esforço que vem a seguir. '
+        'Execute com atenção ao movimento.',
     type: TipoSerie.aquecimento,
     icon: Icons.whatshot_rounded,
     color: Color(0xFF00B4D8),
   ),
   SerieTypeOption(
-    title: 'Aproximação',
-    subtitle: 'Sobe a carga progressivamente sem fadiga.',
+    title: 'Série de aproximação',
+    subtitle:
+        'Aumente a carga gradualmente até chegar perto do peso que você vai '
+        'usar nas séries principais. Cada repetição deve ser controlada — '
+        'pare antes de sentir fadiga.',
     type: TipoSerie.feeder,
     icon: Icons.trending_up_rounded,
     color: Color(0xFFFFB703),
   ),
   SerieTypeOption(
-    title: 'Série de Trabalho',
-    subtitle: 'Série efetiva para hipertrofia ou força.',
+    title: 'Série de trabalho',
+    subtitle:
+        'Execute com o máximo de qualidade: peso desafiador, foco no movimento '
+        'e sem encurtar o descanso entre elas.',
     type: TipoSerie.trabalho,
     icon: Icons.fitness_center_rounded,
     color: Color(0xFFFF3366),
