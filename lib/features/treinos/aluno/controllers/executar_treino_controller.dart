@@ -19,10 +19,10 @@ class ExecutarTreinoController {
     required this.alunoId,
     FirebaseFirestore? firestore,
     TreinoService? treinoService,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _treinoService = treinoService ?? TreinoService();
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _treinoService = treinoService ?? TreinoService();
 
-   
+  /// Persiste o log da sessão e incrementa o progresso da rotina ativa.
   Future<void> saveTreinoLog(
     Map<String, dynamic> recordedData, {
     int duracaoMinutos = 0,
@@ -54,7 +54,7 @@ class ExecutarTreinoController {
   ) {
     final exercicios = <Map<String, dynamic>>[];
 
-   
+    // Serializa cada exercício com fallback seguro para campos ausentes na UI.
     for (var i = 0; i < sessao.exercicios.length; i++) {
       final exercise = sessao.exercicios[i];
       final key = 'exercicio_$i';
@@ -95,11 +95,10 @@ class ExecutarTreinoController {
         sessaoNome: sessao.nome,
       );
     } catch (e) {
-     
+      // Histórico é opcional; em erro mantemos estado vazio para não bloquear.
       ultimoHistorico = {};
     }
   }
 
-  void dispose() {
-  }
+  void dispose() {}
 }

@@ -83,7 +83,7 @@ class AuthService {
         'dataCadastro': FieldValue.serverTimestamp(),
       };
 
-     
+      // Metadados iniciais usados para habilitar recursos do fluxo personal.
       if (tipoUsuario == 'personal') {
         userData['especialidade'] = especialidade ?? 'Geral';
         userData['plano'] = 'gratuito';
@@ -104,7 +104,7 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-   
+    // Localiza o pré-cadastro criado pelo personal antes da conta Auth existir.
     final query = await _db
         .collection('usuarios')
         .where('email', isEqualTo: email)
@@ -132,7 +132,7 @@ class AuthService {
     final oldDoc = query.docs.first;
     final oldId = oldDoc.id;
 
-   
+    // Rotinas apontam para o id provisório e precisam ser migradas para o uid.
     final rotinasQuery = await _db
         .collection('rotinas')
         .where('alunoId', isEqualTo: oldId)
@@ -146,13 +146,18 @@ class AuthService {
       batch.update(rotinaDoc.reference, {'alunoId': uid});
     }
 
-    final temAtivaOuNenhuma = rotinasQuery.docs.isEmpty ||
+    final temAtivaOuNenhuma =
+        rotinasQuery.docs.isEmpty ||
         rotinasQuery.docs.any((d) => d.data()['ativa'] == true);
     if (!temAtivaOuNenhuma) {
-     
+      // Mantém a regra de negócio: aluno deve ter ao menos uma rotina ativa.
       final maisRecente = rotinasQuery.docs.reduce((a, b) {
-        final tsA = (a.data()['dataCriacao'] as Timestamp?)?.millisecondsSinceEpoch ?? 0;
-        final tsB = (b.data()['dataCriacao'] as Timestamp?)?.millisecondsSinceEpoch ?? 0;
+        final tsA =
+            (a.data()['dataCriacao'] as Timestamp?)?.millisecondsSinceEpoch ??
+            0;
+        final tsB =
+            (b.data()['dataCriacao'] as Timestamp?)?.millisecondsSinceEpoch ??
+            0;
         return tsA >= tsB ? a : b;
       });
       batch.update(maisRecente.reference, {'ativa': true});
@@ -161,7 +166,7 @@ class AuthService {
     try {
       await batch.commit();
     } catch (e) {
-     
+      // Evita usuário órfão no Auth quando a migração Firestore falha.
       await credential.user?.delete();
       throw Exception('Erro ao configurar sua conta. Tente novamente.');
     }
@@ -184,7 +189,9 @@ class AuthService {
       case 'invalid-email':
         return Exception('O endereço de e-mail é inválido.');
       case 'invalid-credential':
-        return Exception('Credenciais inválidas. Verifique seu e-mail e senha.');
+        return Exception(
+          'Credenciais inválidas. Verifique seu e-mail e senha.',
+        );
       default:
         return Exception('Ocorreu um erro de autenticação: ${e.message}');
     }
