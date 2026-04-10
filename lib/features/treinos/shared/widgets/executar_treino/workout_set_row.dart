@@ -80,40 +80,44 @@ class WorkoutSetRow extends StatelessWidget {
       child: Row(
         children: [
           // Serie badge
-          SizedBox(
-            width: 36,
-            child: GestureDetector(
-              onTap: serie.tipo != TipoSerie.trabalho
-                  ? () => _showBadgeInfo(context)
-                  : null,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 280),
-                width: 30,
-                height: 30,
-                decoration: BoxDecoration(
-                  color: isCompleted
-                      ? AppColors.primary.withAlpha(30)
-                      : _serieColor.withAlpha(22),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                ),
-                child: Center(
-                  child: _badgeIcon != null
-                      ? Icon(
-                          _badgeIcon,
-                          size: 16,
-                          color: isCompleted ? AppColors.primary : _serieColor,
-                        )
-                      : Text(
-                          _serieLabel,
-                          style: TextStyle(
+          SizedBox.square(
+            dimension: 36,
+            child: Center(
+              child: GestureDetector(
+                onTap: serie.tipo != TipoSerie.trabalho
+                    ? () => _showBadgeInfo(context)
+                    : null,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 280),
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: isCompleted
+                        ? AppColors.primary.withAlpha(30)
+                        : _serieColor.withAlpha(22),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                  ),
+                  child: Center(
+                    child: _badgeIcon != null
+                        ? Icon(
+                            _badgeIcon,
+                            size: 16,
                             color: isCompleted
                                 ? AppColors.primary
                                 : _serieColor,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.2,
+                          )
+                        : Text(
+                            _serieLabel,
+                            style: TextStyle(
+                              color: isCompleted
+                                  ? AppColors.primary
+                                  : _serieColor,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.2,
+                            ),
                           ),
-                        ),
+                  ),
                 ),
               ),
             ),
