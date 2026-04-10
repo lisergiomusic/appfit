@@ -30,11 +30,11 @@
 ## Regras do Copilot
 - Nunca faça commits sem a permissão explícita do usuário. Sempre pergunte antes de criar commits ou pushes envolvendo o repositório.
 
-Sempre que o usuário disser "faça um commit", você deve:
-1. Executar um `git diff` para analisar todas as mudanças feitas no repositório.
-2. Analisar cuidadosamente as alterações realizadas.
-3. Criar um novo commit com uma mensagem detalhada em português, explicando claramente o que foi alterado, criado, removido ou corrigido.
-4. A mensagem deve ser clara, objetiva e descrever o impacto das mudanças no projeto.
+- Sempre siga o padrão Conventional Commits.
+Ao gerar mensagens de commit.
+O formato deve ser: <tipo>(<escopo>): <descrição curta>
+Exemplo: fix(api): corrigir erro de autenticação (SEMPRE EM INGLES!)
+
 
 ## UI And Theme Conventions
 - Reuse `AppTheme` tokens for color, spacing, radius, and typography.

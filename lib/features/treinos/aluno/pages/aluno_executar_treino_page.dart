@@ -397,7 +397,7 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(80);
+  Size get preferredSize => const Size.fromHeight(72);
 
   @override
   Widget build(BuildContext context) {
@@ -406,75 +406,80 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
       child: SafeArea(
         bottom: false,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              height: 52,
+              height: 60,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Cancel
-                    IconButton(
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        size: 22,
-                        color: AppColors.labelSecondary,
+                    // Botão cancelar — pill sutil
+                    GestureDetector(
+                      onTap: onCancelar,
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceLight,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.close_rounded,
+                          size: 16,
+                          color: AppColors.labelSecondary,
+                        ),
                       ),
-                      onPressed: onCancelar,
-                      splashRadius: 20,
                     ),
-                    // Center info
+                    const SizedBox(width: 12),
+                    // Info central
                     Expanded(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             sessaoNome,
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
-                              letterSpacing: -0.3,
+                              letterSpacing: -0.4,
                               color: AppColors.labelPrimary,
+                              height: 1.1,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 3),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(
-                                Icons.timer_outlined,
-                                size: 11,
-                                color: AppColors.labelTertiary,
-                              ),
-                              const SizedBox(width: 3),
                               Text(
                                 elapsedFormatted,
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                   color: AppColors.labelTertiary,
-                                  letterSpacing: 0.5,
+                                  letterSpacing: 0.4,
                                   fontFeatures: [FontFeature.tabularFigures()],
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Container(
-                                width: 3,
-                                height: 3,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 6),
+                                child: Container(
+                                  width: 1,
+                                  height: 10,
                                   color: AppColors.labelQuaternary,
                                 ),
                               ),
-                              const SizedBox(width: 8),
                               Text(
-                                '$completed/$total séries',
+                                '$completed / $total séries',
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                   color: AppColors.labelTertiary,
+                                  letterSpacing: -0.1,
                                 ),
                               ),
                             ],
@@ -482,33 +487,35 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
                         ],
                       ),
                     ),
-                    // Finalizar
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
+                    const SizedBox(width: 12),
+                    // Botão Finalizar
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 220),
                       child: GestureDetector(
+                        key: ValueKey(hasProgress),
                         onTap: hasProgress ? onFinalizar : null,
-                        child: AnimatedOpacity(
-                          duration: const Duration(milliseconds: 200),
-                          opacity: hasProgress ? 1.0 : 0.3,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 7,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withAlpha(22),
-                              borderRadius: BorderRadius.circular(
-                                AppTheme.radiusFull,
-                              ),
-                            ),
-                            child: const Text(
-                              'Finalizar',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.primary,
-                                letterSpacing: -0.2,
-                              ),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOut,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: hasProgress
+                                ? AppColors.primary
+                                : AppColors.surfaceLight,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                          ),
+                          child: Text(
+                            'Finalizar',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.2,
+                              color: hasProgress
+                                  ? AppColors.background
+                                  : AppColors.labelTertiary,
                             ),
                           ),
                         ),
@@ -518,24 +525,34 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
               ),
             ),
-            // Progress bar
+            // Progress bar com glow
             AnimatedBuilder(
               animation: progressAnim,
               builder: (context, _) {
+                final progress = progressAnim.value.clamp(0.0, 1.0);
                 return Stack(
                   children: [
-                    Container(height: 3, color: AppColors.surfaceLight),
+                    Container(height: 2, color: AppColors.surfaceLight),
                     FractionallySizedBox(
-                      widthFactor: progressAnim.value.clamp(0.0, 1.0),
+                      widthFactor: progress,
                       child: Container(
-                        height: 3,
+                        height: 2,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              AppColors.primary.withAlpha(200),
+                              AppColors.primary.withAlpha(180),
                               AppColors.primary,
                             ],
                           ),
+                          boxShadow: progress > 0
+                              ? [
+                                  BoxShadow(
+                                    color: AppColors.primary.withAlpha(100),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ]
+                              : null,
                         ),
                       ),
                     ),

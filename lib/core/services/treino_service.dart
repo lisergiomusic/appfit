@@ -5,7 +5,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class TreinoService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  /// Salva um log de execução de treino na collection 'logs_treino'
+  /// Operações de log de treino e estatísticas associadas a um aluno.
+  ///
+  /// Todos os métodos aqui acessam o Firestore diretamente e retornam dados
+  /// formatados para uso nas telas de treino.
+
   Future<void> saveTreinoLog({
     required String alunoId,
     required String rotinaId,
@@ -24,7 +28,6 @@ class TreinoService {
 
       await _firestore.collection('logs_treino').add(logData);
 
-      // Incrementa sessoesConcluidas na rotina
       await _firestore.collection('rotinas').doc(rotinaId).update({
         'sessoesConcluidas': FieldValue.increment(1),
       });
@@ -33,7 +36,7 @@ class TreinoService {
     }
   }
 
-  /// Busca todos os logs de treino de um aluno
+  /// Retorna os últimos 50 logs de treino de um aluno ordenados pela data.
   Future<List<Map<String, dynamic>>> fetchLogsAluno(String alunoId) async {
     try {
       final snapshot = await _firestore
@@ -49,7 +52,7 @@ class TreinoService {
     }
   }
 
-  /// Stream de logs de treino para uma rotina específica
+  /// Fornece um stream em tempo real de logs de treino para uma rotina.
   Stream<List<Map<String, dynamic>>> getLogsRotinaStream(String rotinaId) {
     return _firestore
         .collection('logs_treino')
@@ -63,7 +66,7 @@ class TreinoService {
         );
   }
 
-  /// Busca logs por intervalo de datas
+  /// Busca logs de treino de um aluno dentro de um intervalo de datas.
   Future<List<Map<String, dynamic>>> fetchLogsInterval(
     String alunoId,
     DateTime startDate,
@@ -87,7 +90,7 @@ class TreinoService {
     }
   }
 
-  /// Calcula estatísticas de treino para um aluno
+  /// Gera estatísticas básicas de treino para um aluno usando seus logs.
   Future<Map<String, dynamic>> getTrainingStats(String alunoId) async {
     try {
       final logs = await fetchLogsAluno(alunoId);
@@ -115,8 +118,10 @@ class TreinoService {
     }
   }
 
-  /// Busca o último histórico de execução para uma sessão específica
-  /// Retorna um mapa de nome de exercício para o histórico de séries agrupadas por tipo
+  /// Busca o último log de uma sessão e monta o histórico de cada exercício.
+  ///
+  /// O resultado tem chave igual ao nome do exercício e valor com a lista de
+  /// séries em ordem, agrupadas pelo tipo de série.
   Future<Map<String, List<SerieHistorico>>> fetchUltimoHistoricoSessao({
     required String alunoId,
     required String sessaoNome,
@@ -145,7 +150,6 @@ class TreinoService {
         final series = ex['series'] as List? ?? [];
         final historicoExercicio = <SerieHistorico>[];
 
-        // Agrupa séries por tipo e calcula o índice dentro do tipo
         final seriesPorTipo = <TipoSerie, List<Map<String, dynamic>>>{};
         for (final serie in series) {
           final tipoStr = serie['tipo'] as String? ?? 'trabalho';
@@ -153,7 +157,6 @@ class TreinoService {
           seriesPorTipo.putIfAbsent(tipo, () => []).add(serie);
         }
 
-        // Reconstrói a lista com indexDentroDoTipo calculado
         for (final tipo in seriesPorTipo.keys) {
           final seriesDoTipo = seriesPorTipo[tipo]!;
           for (int i = 0; i < seriesDoTipo.length; i++) {
