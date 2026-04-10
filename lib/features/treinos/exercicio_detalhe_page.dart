@@ -674,7 +674,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                       SpacingTokens.screenHorizontalPadding,
                       4,
                       SpacingTokens.screenHorizontalPadding,
-                      SpacingTokens.screenBottomPadding,
+                      0,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

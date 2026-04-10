@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:appfit/core/widgets/app_bar_text_button.dart';
 import 'package:appfit/core/widgets/app_section_link_button.dart';
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +14,7 @@ import 'configurar_treino_controller.dart';
 import 'exercicio_detalhe_page.dart';
 import 'exercicios_library_page.dart';
 import 'models/exercicio_model.dart';
+import 'widgets/exercicio_thumbnail.dart';
 import 'widgets/sessao_note_widget.dart';
 
 class SessaoDetalhePersonalPage extends StatelessWidget {
@@ -52,7 +52,8 @@ class _SessaoDetalhePersonalView extends StatefulWidget {
       _SessaoDetalhePersonalViewState();
 }
 
-class _SessaoDetalhePersonalViewState extends State<_SessaoDetalhePersonalView> {
+class _SessaoDetalhePersonalViewState
+    extends State<_SessaoDetalhePersonalView> {
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _addButtonKey = GlobalKey();
@@ -258,9 +259,7 @@ class _SessaoDetalhePersonalViewState extends State<_SessaoDetalhePersonalView> 
                                           final grupos = <String>{};
                                           for (final w
                                               in controller.exercicios) {
-                                            grupos.addAll(
-                                              w.item.grupoMuscular,
-                                            );
+                                            grupos.addAll(w.item.grupoMuscular);
                                           }
                                           if (grupos.isEmpty) {
                                             return const SizedBox.shrink();
@@ -275,12 +274,15 @@ class _SessaoDetalhePersonalViewState extends State<_SessaoDetalhePersonalView> 
                                               children: grupos
                                                   .map(
                                                     (grupo) => Container(
-                                                      padding: const EdgeInsets.symmetric(
-                                                        horizontal:
-                                                            SpacingTokens.sm,
-                                                        vertical:
-                                                            SpacingTokens.xs,
-                                                      ),
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal:
+                                                                SpacingTokens
+                                                                    .sm,
+                                                            vertical:
+                                                                SpacingTokens
+                                                                    .xs,
+                                                          ),
                                                       decoration:
                                                           PillTokens.decoration,
                                                       child: Text(
@@ -636,39 +638,12 @@ class _SessaoDetalhePersonalViewState extends State<_SessaoDetalhePersonalView> 
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Thumbnail do Exercício
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    color: Colors.black.withAlpha(40),
-                    child: (ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty)
-                        ? CachedNetworkImage(
-                            imageUrl: ex.imagemUrl!,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Center(
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.primary.withAlpha(100),
-                              ),
-                            ),
-                            errorWidget: (context, url, error) => Center(
-                              child: Icon(
-                                Icons.fitness_center,
-                                color: AppColors.labelSecondary,
-                                size: 24,
-                              ),
-                            ),
-                          )
-                        : Center(
-                            child: Icon(
-                              Icons.fitness_center,
-                              color: AppColors.labelSecondary,
-                              size: 24,
-                            ),
-                          ),
-                  ),
+                ExercicioThumbnail(
+                  exercicio: ex,
+                  width: 48,
+                  height: 48,
+                  borderRadius: 8,
+                  iconSize: 24,
                 ),
                 const SizedBox(width: 16),
                 Expanded(
