@@ -138,6 +138,8 @@ class WorkoutSetRow extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ),
+          const SizedBox(width: SpacingTokens.md),
+
           // Reps input
           Expanded(
             child: _SetInputField(
@@ -262,17 +264,17 @@ class _SetInputFieldState extends State<_SetInputField> {
     return GestureDetector(
       onLongPress: widget.tooltipText != null
           ? () => ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    widget.tooltipText!,
-                    style: const TextStyle(fontSize: 13),
-                  ),
-                  duration: const Duration(seconds: 2),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: AppColors.surfaceDark,
-                  elevation: 2,
+              SnackBar(
+                content: Text(
+                  widget.tooltipText!,
+                  style: const TextStyle(fontSize: 13),
                 ),
-              )
+                duration: const Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: AppColors.surfaceDark,
+                elevation: 2,
+              ),
+            )
           : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),

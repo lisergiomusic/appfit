@@ -8,12 +8,27 @@ import 'workout_set_row.dart';
 import 'orientacao_personal_banner.dart';
 
 class TreinoScrollableBody extends StatelessWidget {
+  /// Sessão que contém a lista de exercícios a ser exibida.
   final SessaoTreinoModel sessao;
+
+  /// Dados gravados durante a execução. Estrutura esperada:
+  /// { 'exercicio_<idx>': { 'series': [ { 'completa': bool, ... }, ... ] } }
   final Map<String, dynamic> recordedData;
+
+  /// Controladores de texto para os campos de reps por exercício/serie.
   final List<List<TextEditingController>> repsControllers;
+
+  /// Controladores de texto para os campos de peso por exercício/serie.
   final List<List<TextEditingController>> pesoControllers;
+
+  /// Callback chamado quando uma série é marcada como concluída.
+  /// Recebe os índices do exercício e da série (visual index na sessão).
   final void Function(int exercicioIndex, int serieIndex) onSerieCompleted;
+
+  /// Opcional: id do aluno, usado por alguns componentes para permissões/ações.
   final String? alunoId;
+
+  /// Histórico recente por nome de exercício, usado para preencher dicas (peso/reps).
   final Map<String, List<SerieHistorico>> ultimoHistorico;
 
   const TreinoScrollableBody({
@@ -39,40 +54,33 @@ class TreinoScrollableBody extends StatelessWidget {
           final exData = recordedData['exercicio_$exIdx'] ?? {'series': []};
           final seriesList = (exData['series'] as List?) ?? [];
 
+          // Conta quantas séries dessa execução foram marcadas como completas.
           final completedCount = seriesList
               .where((s) => (s as Map)['completa'] == true)
               .length;
-          final totalCount = exercicio.series.length;
-          final isExercicioCompleto =
-              completedCount == totalCount && totalCount > 0;
 
           return Padding(
             padding: const EdgeInsets.fromLTRB(
               SpacingTokens.lg,
               0,
               SpacingTokens.lg,
-              SpacingTokens.md,
+              SpacingTokens.listItemGap,
             ),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               decoration: BoxDecoration(
                 color: AppColors.surfaceDark,
                 borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                border: Border.all(
-                  color: isExercicioCompleto
-                      ? AppColors.primary.withAlpha(70)
-                      : Colors.white.withAlpha(8),
-                  width: 1,
-                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Cabeçalho que mostra nome do exercício, progresso (X/Y)
+                  // e botões de ação (se aplicável).
                   ExercicioSectionHeader(
                     exercicio: exercicio,
                     exIdx: exIdx,
                     completedCount: completedCount,
-                    totalCount: totalCount,
                     alunoId: alunoId,
                   ),
                   if (exercicio.instrucoesParaExibicao != null)
@@ -92,7 +100,8 @@ class TreinoScrollableBody extends StatelessWidget {
                         ? (seriesList[sIdx] as Map)['completa'] == true
                         : false;
 
-                    // Calcula o índice dentro do tipo de série
+                    // Calcula o índice desta série entre outras do mesmo tipo
+                    // (ex: 2ª série de aquecimento / 1ª série de trabalho).
                     final serieAtual = exercicio.series[sIdx];
                     final indexDentroDoTipo = exercicio.series
                         .take(sIdx)
@@ -103,7 +112,8 @@ class TreinoScrollableBody extends StatelessWidget {
                     final historicoDoExercicio =
                         ultimoHistorico[exercicio.nome] ?? [];
                     final historicoSerie = historicoDoExercicio.firstWhere(
-                      (h) => h.tipo == serieAtual.tipo &&
+                      (h) =>
+                          h.tipo == serieAtual.tipo &&
                           h.indexDentroDoTipo == indexDentroDoTipo,
                       orElse: () => SerieHistorico(
                         tipo: serieAtual.tipo,
@@ -141,6 +151,8 @@ class TreinoScrollableBody extends StatelessWidget {
 }
 
 class _ColumnLabelsRow extends StatelessWidget {
+  // Linha que exibe os rótulos das colunas acima das séries: Série, Alvo,
+  // Reps e KG. Mantém a largura fixa onde necessário para alinhar as colunas.
   @override
   Widget build(BuildContext context) {
     const labelStyle = TextStyle(
@@ -169,6 +181,8 @@ class _ColumnLabelsRow extends StatelessWidget {
             width: 52,
             child: Text('ALVO', style: labelStyle, textAlign: TextAlign.center),
           ),
+          SizedBox(width: SpacingTokens.md),
+
           Expanded(
             child: Text('REPS', style: labelStyle, textAlign: TextAlign.center),
           ),

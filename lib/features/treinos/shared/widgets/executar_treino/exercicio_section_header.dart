@@ -9,7 +9,6 @@ class ExercicioSectionHeader extends StatelessWidget {
   final ExercicioItem exercicio;
   final int exIdx;
   final int completedCount;
-  final int totalCount;
   final String? alunoId;
 
   const ExercicioSectionHeader({
@@ -17,19 +16,21 @@ class ExercicioSectionHeader extends StatelessWidget {
     required this.exercicio,
     required this.exIdx,
     required this.completedCount,
-    required this.totalCount,
     this.alunoId,
   });
 
   @override
   Widget build(BuildContext context) {
     final muscles = exercicio.grupoMuscular.join(' · ');
+    // Calcula o número total de séries localmente para não exigir esse
+    // valor do chamador. Mantemos a mesma regra de conclusão usada antes.
+    final totalCount = exercicio.series.length;
     final isCompleto = completedCount == totalCount && totalCount > 0;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+        borderRadius: CardTokens.cardRadius,
         onTap: () {
           Navigator.push(
             context,

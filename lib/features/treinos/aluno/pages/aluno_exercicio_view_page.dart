@@ -5,6 +5,11 @@ import '../../../../core/widgets/appfit_sliver_app_bar.dart';
 import '../../shared/models/exercicio_model.dart';
 import '../../shared/widgets/exercicio_detalhe/exercise_video_card.dart';
 
+/// Página de visualização do exercício para um aluno.
+///
+/// Exibe nome, grupo muscular, imagem e instruções. Quando o exercício não
+/// traz instruções padrão no objeto passado, a página carrega o registro base
+/// pelo nome para tentar recuperar dados adicionais.
 class AlunoExercicioViewPage extends StatefulWidget {
   final ExercicioItem exercicio;
   final String? alunoId;
@@ -99,8 +104,8 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                           widget.exercicio.imagemUrl != null &&
                           widget.exercicio.imagemUrl!.isNotEmpty;
 
-                      // Se ainda está carregando e não tem imagem própria,
-                      // aguarda antes de renderizar o card para evitar flash do estado vazio
+                      // Carrega o placeholder apenas quando o recurso não tem imagem
+                      // própria e ainda está buscando o exercício base.
                       if (!temImagemPropria &&
                           snapshot.connectionState == ConnectionState.waiting) {
                         return const _VideoCardLoadingPlaceholder();
@@ -129,6 +134,8 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                           widget.exercicio.instrucoesPadraoTexto ??
                           snapshot.data?.instrucoesPadraoTexto;
 
+                      // Enquanto a instrução ainda não foi definida, mostra um
+                      // indicador de carregamento para evitar uma tela vazia.
                       if (instrucoesPadrao == null &&
                           snapshot.connectionState == ConnectionState.waiting) {
                         return const _InstructionLoadingCard();
