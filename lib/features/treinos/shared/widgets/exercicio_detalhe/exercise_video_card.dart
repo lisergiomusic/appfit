@@ -7,11 +7,13 @@ import 'exercicio_constants.dart';
 class ExerciseVideoCard extends StatefulWidget {
   final String? imageUrl;
   final String exerciseTitle;
+  final bool autoplayGif;
 
   const ExerciseVideoCard({
     super.key,
     required this.imageUrl,
     required this.exerciseTitle,
+    this.autoplayGif = false,
   });
 
   @override
@@ -71,9 +73,14 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
     }
 
     setState(() {
-      _paused = true;
+      _paused = !widget.autoplayGif;
       _frozenFrame = null;
     });
+
+    // Se autoplay está ativado, não precisa capturar o frame congelado
+    if (widget.autoplayGif) {
+      return;
+    }
 
     final imageProvider = CachedNetworkImageProvider(widget.imageUrl!);
     final config = ImageConfiguration.empty;

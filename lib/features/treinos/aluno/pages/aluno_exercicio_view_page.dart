@@ -113,6 +113,7 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                       return ExerciseVideoCard(
                         imageUrl: resolvedImage,
                         exerciseTitle: widget.exercicio.nome,
+                        autoplayGif: true,
                       );
                     },
                   ),
