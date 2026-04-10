@@ -25,6 +25,8 @@ class ExecutarTreinoPage extends StatefulWidget {
 
 class _ExecutarTreinoPageState extends State<ExecutarTreinoPage>
     with TickerProviderStateMixin {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
   late ExecutarTreinoController _controller;
 
   late DateTime _startedAt;
@@ -209,7 +211,7 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage>
     _restTotalSeconds = totalSeconds;
     _restExercicioNome = exercicioNome;
 
-    _restSheetController = Scaffold.of(context).showBottomSheet(
+    _restSheetController = _scaffoldKey.currentState!.showBottomSheet(
       (ctx) => ValueListenableBuilder<int>(
         valueListenable: _restSecondsNotifier,
         builder: (context, seconds, _) => RestTimerSheet(
@@ -330,6 +332,7 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage>
         if (!didPop) _confirmarCancelamento();
       },
       child: Scaffold(
+        key: _scaffoldKey,
         backgroundColor: AppColors.background,
         appBar: _WorkoutAppBar(
           sessaoNome: widget.sessao.nome,
