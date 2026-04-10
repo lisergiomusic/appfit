@@ -314,7 +314,11 @@ class _ColumnLabelsRow extends StatelessWidget {
         children: const [
           SizedBox(
             width: 36,
-            child: Text('SÉRIE', style: labelStyle, textAlign: TextAlign.center),
+            child: Text(
+              'SÉRIE',
+              style: labelStyle,
+              textAlign: TextAlign.center,
+            ),
           ),
           SizedBox(width: SpacingTokens.md),
           Expanded(
@@ -323,7 +327,11 @@ class _ColumnLabelsRow extends StatelessWidget {
           SizedBox(width: SpacingTokens.md),
           SizedBox(
             width: 72,
-            child: Text('DESCANSO', style: labelStyle, textAlign: TextAlign.center),
+            child: Text(
+              'DESCANSO',
+              style: labelStyle,
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
       ),
@@ -338,9 +346,9 @@ class _ReadOnlySetRow extends StatelessWidget {
   const _ReadOnlySetRow({required this.serie, required this.visualIndex});
 
   SerieTypeOption get _serieOption => serieTypeOptions.firstWhere(
-        (opt) => opt.type == serie.tipo,
-        orElse: () => serieTypeOptions.last,
-      );
+    (opt) => opt.type == serie.tipo,
+    orElse: () => serieTypeOptions.last,
+  );
 
   Color get _serieColor => _serieOption.color;
 
@@ -350,72 +358,71 @@ class _ReadOnlySetRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: SpacingTokens.xs),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: SpacingTokens.screenHorizontalPadding,
-          vertical: SpacingTokens.sm,
-        ),
-        child: Row(
-          children: [
-            GestureDetector(
-              onTap: () => showSerieBadgeInfo(context, serie.tipo),
-              child: SizedBox.square(
-                dimension: 36,
-                child: Center(
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: _serieColor.withAlpha(22),
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                    ),
-                    child: Center(
-                      child: _badgeIcon != null
-                          ? Icon(_badgeIcon, size: 16, color: _serieColor)
-                          : Text(
-                              visualIndex.toString(),
-                              style: TextStyle(
-                                color: _serieColor,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.2,
-                              ),
+      padding: const EdgeInsets.symmetric(
+        horizontal: SpacingTokens.screenHorizontalPadding,
+        vertical: SpacingTokens.sm,
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => showSerieBadgeInfo(context, serie.tipo),
+            child: SizedBox.square(
+              dimension: 36,
+              child: Center(
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: _serieColor.withAlpha(22),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                  ),
+                  child: Center(
+                    child: _badgeIcon != null
+                        ? Icon(_badgeIcon, size: 16, color: _serieColor)
+                        : Text(
+                            visualIndex.toString(),
+                            style: TextStyle(
+                              color: _serieColor,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.2,
                             ),
-                    ),
+                          ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: SpacingTokens.md),
-            Expanded(
-              child: Text(
-                serie.alvo,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.labelSecondary,
-                  letterSpacing: -0.1,
-                ),
-                textAlign: TextAlign.center,
+          ),
+          const SizedBox(width: SpacingTokens.md),
+          Expanded(
+            child: Text(
+              serie.alvo,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.labelSecondary,
+                letterSpacing: -0.1,
               ),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(width: SpacingTokens.md),
-            SizedBox(
-              width: 72,
-              child: Text(
-                serie.descanso,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.labelSecondary,
-                  letterSpacing: -0.1,
-                ),
-                textAlign: TextAlign.center,
+          ),
+          const SizedBox(width: SpacingTokens.md),
+          SizedBox(
+            width: 72,
+            child: Text(
+              RegExp(r'^\d+$').hasMatch(serie.descanso.trim())
+                  ? '${serie.descanso}s'
+                  : serie.descanso,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.labelSecondary,
+                letterSpacing: -0.1,
               ),
+              textAlign: TextAlign.center,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
