@@ -90,7 +90,7 @@ class _ExercicioThumbnailState extends State<ExercicioThumbnail> {
               return Center(
                 child: Icon(
                   Icons.fitness_center,
-                  color: AppColors.labelSecondary,
+                  color: AppColors.primary,
                   size: widget.iconSize,
                 ),
               );
