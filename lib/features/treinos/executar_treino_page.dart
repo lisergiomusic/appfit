@@ -4,8 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_bar_divider.dart';
 import 'models/rotina_model.dart';
 import 'controllers/executar_treino_controller.dart';
-import 'widgets/executar_treino/treino_overview_body.dart';
-import 'widgets/executar_treino/exercicio_execution_body.dart';
+import 'widgets/executar_treino/treino_scrollable_body.dart';
 import 'widgets/executar_treino/rest_timer_sheet.dart';
 
 class ExecutarTreinoPage extends StatefulWidget {
@@ -26,9 +25,6 @@ class ExecutarTreinoPage extends StatefulWidget {
 
 class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
   late ExecutarTreinoController _controller;
-
-  // Navigation
-  int? _activeExerciseIndex;
 
   // Duration tracking
   late DateTime _startedAt;
@@ -131,15 +127,6 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
     final mins = seconds ~/ 60;
     final secs = seconds % 60;
     return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
-  }
-
-  void _onExerciseTap(int index) {
-    _dismissRestSheet();
-    setState(() => _activeExerciseIndex = index);
-  }
-
-  void _goToOverview() {
-    setState(() => _activeExerciseIndex = null);
   }
 
   int _completedSeriesForExercise(int index) {
@@ -372,13 +359,7 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) {
-          if (_activeExerciseIndex != null) {
-            _goToOverview();
-          } else {
-            _confirmarCancelamento();
-          }
-        }
+        if (!didPop) _confirmarCancelamento();
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
@@ -386,27 +367,35 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
           backgroundColor: AppColors.background,
           elevation: 0,
           surfaceTintColor: Colors.transparent,
+          automaticallyImplyLeading: false,
           title: Column(
             children: [
-              Text(widget.sessao.nome),
-              Text(_formatElapsed(_elapsedSeconds), style: AppTheme.caption2),
+              Text(widget.sessao.nome, style: AppTheme.pageTitle),
+              Text(
+                _formatElapsed(_elapsedSeconds),
+                style: AppTheme.caption2.copyWith(
+                  color: AppColors.labelSecondary,
+                ),
+              ),
             ],
           ),
           centerTitle: true,
           bottom: const AppBarDivider(),
-          leading: _activeExerciseIndex != null
-              ? IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: _goToOverview,
-                )
-              : null,
           actions: [
             TextButton(
               onPressed: _hasAnyProgress() ? _finalizarTreino : null,
-              child: const Text('Finalizar'),
+              child: Text(
+                'Finalizar',
+                style: TextStyle(
+                  color: _hasAnyProgress()
+                      ? AppColors.primary
+                      : AppColors.labelTertiary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
             IconButton(
-              icon: const Icon(Icons.close),
+              icon: const Icon(Icons.close, size: 20),
               tooltip: 'Cancelar treino',
               onPressed: _confirmarCancelamento,
             ),
@@ -416,39 +405,12 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
             ? const Center(
                 child: CircularProgressIndicator(color: AppColors.primary),
               )
-            : AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                transitionBuilder: (child, animation) =>
-                    FadeTransition(opacity: animation, child: child),
-                child: _activeExerciseIndex == null
-                    ? TreinoOverviewBody(
-                        key: const ValueKey('overview'),
-                        sessao: widget.sessao,
-                        recordedData: _recordedData,
-                        onExerciseTap: _onExerciseTap,
-                        activeExerciseIndex: _activeExerciseIndex,
-                      )
-                    : ExercicioExecutionBody(
-                        key: ValueKey('exercise_$_activeExerciseIndex'),
-                        exercicio:
-                            widget.sessao.exercicios[_activeExerciseIndex!],
-                        exercicioIndex: _activeExerciseIndex!,
-                        series: widget
-                            .sessao
-                            .exercicios[_activeExerciseIndex!]
-                            .series,
-                        repsControllers:
-                            _repsControllers[_activeExerciseIndex!],
-                        pesoControllers:
-                            _pesoControllers[_activeExerciseIndex!],
-                        exercicioData:
-                            _recordedData['exercicio_$_activeExerciseIndex'] ??
-                            {'series': []},
-                        onSerieCompleted: (serieIndex) => _onSerieCompleted(
-                          _activeExerciseIndex!,
-                          serieIndex,
-                        ),
-                      ),
+            : TreinoScrollableBody(
+                sessao: widget.sessao,
+                recordedData: _recordedData,
+                repsControllers: _repsControllers,
+                pesoControllers: _pesoControllers,
+                onSerieCompleted: _onSerieCompleted,
               ),
       ),
     );
