@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'dart:ui';
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
+import '../../core/services/exercise_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/orange_glass_action_button.dart';
 import '../../core/widgets/app_bar_text_button.dart';
@@ -32,6 +33,8 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     with TickerProviderStateMixin {
   late final ExercicioItem ex;
   late final ExercicioDetalheController controller;
+  final ExerciseService _exerciseService = ExerciseService();
+  late final Future<ExercicioItem?> _exercicioBaseFuture;
 
   final Map<TipoSerie, GlobalKey<AnimatedListState>> _animatedListKeys = {
     TipoSerie.aquecimento: GlobalKey<AnimatedListState>(),
@@ -48,6 +51,10 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
     super.initState();
     ex = widget.exercicio;
     controller = ExercicioDetalheController(ex);
+    final hasLocalImage = ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty;
+    _exercicioBaseFuture = hasLocalImage
+        ? Future.value(null)
+        : _exerciseService.buscarExercicioPorNome(ex.nome);
   }
 
   @override
@@ -672,9 +679,28 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ExerciseVideoCard(
-                          imageUrl: ex.imagemUrl,
-                          exerciseTitle: exerciseTitle,
+                        FutureBuilder<ExercicioItem?>(
+                          future: _exercicioBaseFuture,
+                          builder: (context, snapshot) {
+                            final hasLocalImage =
+                                ex.imagemUrl != null &&
+                                ex.imagemUrl!.isNotEmpty;
+
+                            if (!hasLocalImage &&
+                                snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                              return _buildVideoCardLoadingPlaceholder();
+                            }
+
+                            final resolvedImage = hasLocalImage
+                                ? ex.imagemUrl
+                                : snapshot.data?.imagemUrl;
+
+                            return ExerciseVideoCard(
+                              imageUrl: resolvedImage,
+                              exerciseTitle: exerciseTitle,
+                            );
+                          },
                         ),
                         const SizedBox(height: SpacingTokens.sectionGap),
                         NoteDisplayField(
@@ -729,6 +755,20 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(g, style: AppTheme.caption2),
+    );
+  }
+
+  Widget _buildVideoCardLoadingPlaceholder() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(8),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
+      ),
+      child: const AspectRatio(
+        aspectRatio: ExercicioDetalheConstants.videoAspectRatio,
+        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      ),
     );
   }
 

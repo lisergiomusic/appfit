@@ -41,6 +41,53 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
     return match?.group(0);
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _syncInitialGifState();
+  }
+
+  @override
+  void didUpdateWidget(covariant ExerciseVideoCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.imageUrl != widget.imageUrl) {
+      _syncInitialGifState();
+    }
+  }
+
+  void _syncInitialGifState() {
+    _imageStreamListener != null
+        ? _imageStream?.removeListener(_imageStreamListener!)
+        : null;
+    _imageStreamListener = null;
+    _imageStream = null;
+
+    if (!_isGif || widget.imageUrl == null || widget.imageUrl!.isEmpty) {
+      setState(() {
+        _paused = false;
+        _frozenFrame = null;
+      });
+      return;
+    }
+
+    setState(() {
+      _paused = true;
+      _frozenFrame = null;
+    });
+
+    final imageProvider = NetworkImage(widget.imageUrl!);
+    final config = ImageConfiguration.empty;
+    _imageStream = imageProvider.resolve(config);
+    _imageStreamListener = ImageStreamListener((info, _) {
+      if (!mounted) return;
+      setState(() {
+        _frozenFrame = info.image;
+      });
+      _imageStream?.removeListener(_imageStreamListener!);
+    });
+    _imageStream!.addListener(_imageStreamListener!);
+  }
+
   void _togglePause() {
     if (!_isGif) return;
 
@@ -54,7 +101,9 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
 
     // Captura o frame atual do GIF e congela
     final imageProvider = NetworkImage(widget.imageUrl!);
-    final config = ImageConfiguration(devicePixelRatio: MediaQuery.of(context).devicePixelRatio);
+    final config = ImageConfiguration(
+      devicePixelRatio: MediaQuery.of(context).devicePixelRatio,
+    );
     _imageStream = imageProvider.resolve(config);
 
     _imageStreamListener = ImageStreamListener((info, _) {
@@ -137,6 +186,13 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
       return RawImage(image: _frozenFrame, fit: BoxFit.cover);
     }
 
+    if (_isGif && _paused) {
+      return Container(
+        color: AppColors.surfaceDark,
+        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      );
+    }
+
     // GIF animando: usa Image.network para suportar animação
     if (_isGif) {
       return Stack(
@@ -175,9 +231,7 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
       fit: BoxFit.cover,
       placeholder: (context, url) => Container(
         color: AppColors.surfaceDark,
-        child: const Center(
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
+        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
       ),
       errorWidget: (context, url, error) => Container(
         color: AppColors.surfaceDark,
