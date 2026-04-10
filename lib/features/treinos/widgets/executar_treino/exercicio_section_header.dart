@@ -1,5 +1,6 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/exercicio_model.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/exercise_service.dart';
@@ -82,19 +83,7 @@ class _ExercicioSectionHeaderState extends State<ExercicioSectionHeader> {
                       child: const _ThumbnailPlaceholder(),
                     );
                   }
-                  return CachedNetworkImage(
-                    imageUrl: url,
-                    fit: BoxFit.cover,
-                    fadeInDuration: const Duration(milliseconds: 200),
-                    placeholder: (_, __) => Container(
-                      color: AppColors.surfaceLight,
-                      child: const _ThumbnailPlaceholder(),
-                    ),
-                    errorWidget: (_, __, ___) => Container(
-                      color: AppColors.surfaceLight,
-                      child: const _ThumbnailPlaceholder(),
-                    ),
-                  );
+                  return _GifFirstFrame(url: url);
                 },
               ),
             ),
@@ -168,5 +157,81 @@ class _ThumbnailPlaceholder extends StatelessWidget {
       color: AppColors.labelTertiary,
       size: 22,
     );
+  }
+}
+
+class _GifFirstFrame extends StatefulWidget {
+  final String url;
+
+  const _GifFirstFrame({required this.url});
+
+  @override
+  State<_GifFirstFrame> createState() => _GifFirstFrameState();
+}
+
+class _GifFirstFrameState extends State<_GifFirstFrame> {
+  ui.Image? _frame;
+  bool _error = false;
+  ImageStream? _stream;
+  ImageStreamListener? _listener;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant _GifFirstFrame oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.url != widget.url) {
+      _cleanupListener();
+      _frame = null;
+      _error = false;
+      _load();
+    }
+  }
+
+  void _load() {
+    final provider = NetworkImage(widget.url);
+    _stream = provider.resolve(ImageConfiguration.empty);
+    _listener = ImageStreamListener(
+      (info, _) {
+        if (!mounted) return;
+        setState(() => _frame = info.image);
+        _cleanupListener();
+      },
+      onError: (_, _) {
+        if (!mounted) return;
+        setState(() => _error = true);
+        _cleanupListener();
+      },
+    );
+    _stream!.addListener(_listener!);
+  }
+
+  void _cleanupListener() {
+    final listener = _listener;
+    if (listener != null) {
+      _stream?.removeListener(listener);
+      _listener = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _cleanupListener();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_error || _frame == null) {
+      return Container(
+        color: AppColors.surfaceLight,
+        child: const _ThumbnailPlaceholder(),
+      );
+    }
+    return RawImage(image: _frame, fit: BoxFit.cover);
   }
 }
