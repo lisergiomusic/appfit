@@ -75,7 +75,7 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
       _frozenFrame = null;
     });
 
-    final imageProvider = NetworkImage(widget.imageUrl!);
+    final imageProvider = CachedNetworkImageProvider(widget.imageUrl!);
     final config = ImageConfiguration.empty;
     _imageStream = imageProvider.resolve(config);
     _imageStreamListener = ImageStreamListener((info, _) {
@@ -100,7 +100,7 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
     }
 
     // Captura o frame atual do GIF e congela
-    final imageProvider = NetworkImage(widget.imageUrl!);
+    final imageProvider = CachedNetworkImageProvider(widget.imageUrl!);
     final config = ImageConfiguration(
       devicePixelRatio: MediaQuery.of(context).devicePixelRatio,
     );
@@ -193,7 +193,7 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
       );
     }
 
-    // GIF animando: usa Image.network para suportar animação
+    // GIF animando com provider cacheado
     if (_isGif) {
       return Stack(
         fit: StackFit.expand,
@@ -204,8 +204,8 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
           ),
-          Image.network(
-            url,
+          Image(
+            image: CachedNetworkImageProvider(url),
             fit: BoxFit.cover,
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) return child;

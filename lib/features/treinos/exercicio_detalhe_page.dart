@@ -706,7 +706,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
                         NoteDisplayField(
                           text: ex.instrucoesPersonalizadasTexto,
                           label: 'Instruções do personal',
-                          addLabel: 'Adicionar instruções do personal',
+                          addLabel: 'Adicionar instruções gerais',
                           onTap: _showEditInstructionsSheet,
                         ),
                         const SizedBox(height: SpacingTokens.sectionGap),
