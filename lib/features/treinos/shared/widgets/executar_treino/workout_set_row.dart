@@ -218,6 +218,13 @@ class _SetInputFieldState extends State<_SetInputField> {
   final FocusNode _focus = FocusNode();
   bool _focused = false;
 
+  OutlineInputBorder _inputBorder(Color color) {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+      borderSide: BorderSide(color: color, width: 1),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -244,18 +251,13 @@ class _SetInputFieldState extends State<_SetInputField> {
             ? AppColors.surfaceLight
             : AppColors.background.withAlpha(200),
         borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-        border: Border.all(
-          color: _focused
-              ? AppColors.primary.withAlpha(160)
-              : Colors.white.withAlpha(10),
-          width: 1,
-        ),
       ),
       child: TextField(
         controller: widget.controller,
         focusNode: _focus,
         keyboardType: widget.keyboardType,
         textAlign: TextAlign.center,
+        textAlignVertical: TextAlignVertical.center,
         enabled: !widget.isCompleted,
         style: TextStyle(
           fontSize: 15,
@@ -266,9 +268,15 @@ class _SetInputFieldState extends State<_SetInputField> {
           letterSpacing: -0.2,
         ),
         decoration: InputDecoration(
-          border: InputBorder.none,
+          border: _inputBorder(Colors.white.withAlpha(10)),
+          enabledBorder: _inputBorder(Colors.white.withAlpha(10)),
+          focusedBorder: _inputBorder(AppColors.primary.withAlpha(160)),
+          disabledBorder: _inputBorder(Colors.white.withAlpha(10)),
           filled: false,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 4,
+            vertical: 10,
+          ),
           hintText: '—',
           hintStyle: const TextStyle(
             fontSize: 15,

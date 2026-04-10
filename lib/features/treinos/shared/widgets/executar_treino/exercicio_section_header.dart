@@ -39,8 +39,8 @@ class ExercicioSectionHeader extends StatelessWidget {
             children: [
               ExercicioThumbnail(
                 exercicio: exercicio,
-                width: 48,
-                height: 48,
+                width: 56,
+                height: 56,
                 borderRadius: AppTheme.radiusSM,
                 iconSize: 22,
                 backgroundColor: AppColors.surfaceLight,
@@ -69,13 +69,8 @@ class ExercicioSectionHeader extends StatelessWidget {
               children: [
                 Text(
                   exercicio.nome,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
-                    color: AppColors.labelPrimary,
-                  ),
-                  maxLines: 2,
+                  style: CardTokens.cardTitle,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (muscles.isNotEmpty)
@@ -83,38 +78,12 @@ class ExercicioSectionHeader extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 3),
                     child: Text(
                       muscles,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.labelSecondary,
-                      ),
+                      style: AppTheme.caption,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
               ],
-            ),
-          ),
-          // Series counter badge
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: isCompleto
-                  ? AppColors.primary.withAlpha(25)
-                  : AppColors.surfaceLight,
-              borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-            ),
-            child: Text(
-              '$completedCount/$totalCount',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: isCompleto
-                    ? AppColors.primary
-                    : AppColors.labelSecondary,
-                letterSpacing: 0.2,
-              ),
             ),
           ),
         ],
