@@ -65,7 +65,7 @@ class _ExercicioViewPageState extends State<ExercicioViewPage> {
                   children: [
                     Text(widget.exercicio.nome, style: AppTheme.bigTitle),
                     if (temMusculos) ...[
-                      const SizedBox(height: SpacingTokens.xs),
+                      const SizedBox(height: SpacingTokens.sm),
                       Wrap(
                         spacing: SpacingTokens.xs,
                         runSpacing: SpacingTokens.xs,

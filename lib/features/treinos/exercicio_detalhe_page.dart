@@ -636,6 +636,7 @@ class _ExercicioDetalhePageState extends State<ExercicioDetalhePage>
               slivers: [
                 AppFitSliverAppBar(
                   title: exerciseTitle,
+                  expandedHeight: 148,
                   actions: [
                     AppBarTextButton(
                       label: 'Salvar',

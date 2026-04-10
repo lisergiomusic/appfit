@@ -391,7 +391,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                 slivers: [
                   AppFitSliverAppBar(
                     title: _controller.nomeRotinaExibicao,
-                    expandedHeight: 140,
+                    expandedHeight: 148,
                     onBackPressed: () => Navigator.of(context).maybePop(),
                     actions: [
                       AppBarTextButton(
