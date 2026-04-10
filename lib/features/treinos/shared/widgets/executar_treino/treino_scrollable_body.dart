@@ -3,7 +3,8 @@ import '../../models/rotina_model.dart';
 import '../../models/exercicio_model.dart';
 import '../../models/historico_treino_model.dart';
 import '../../../../../core/theme/app_theme.dart';
-import 'exercicio_section_header.dart';
+import 'exercicio_section_header.dart'
+    show ExercicioSectionHeader, ExercicioMenuAction;
 import 'workout_set_row.dart';
 import 'orientacao_personal_banner.dart';
 
@@ -18,6 +19,7 @@ class TreinoScrollableBody extends StatelessWidget {
   final List<List<TextEditingController>> pesoControllers;
 
   final void Function(int exercicioIndex, int serieIndex) onSerieCompleted;
+  final void Function(int exercicioIndex, bool marcar) onMarcarTodasSeries;
 
   final String? alunoId;
 
@@ -30,6 +32,7 @@ class TreinoScrollableBody extends StatelessWidget {
     required this.repsControllers,
     required this.pesoControllers,
     required this.onSerieCompleted,
+    required this.onMarcarTodasSeries,
     this.alunoId,
     this.ultimoHistorico = const {},
   });
@@ -41,17 +44,13 @@ class TreinoScrollableBody extends StatelessWidget {
       child: ListView.builder(
         padding: const EdgeInsets.only(
           top: SpacingTokens.screenTopPadding,
-          bottom: SpacingTokens.screenBottomPadding,
+          bottom: 128,
         ),
         itemCount: sessao.exercicios.length,
         itemBuilder: (context, exIdx) {
           final exercicio = sessao.exercicios[exIdx];
           final exData = recordedData['exercicio_$exIdx'] ?? {'series': []};
           final seriesList = (exData['series'] as List?) ?? [];
-
-          final completedCount = seriesList
-              .where((s) => (s as Map)['completa'] == true)
-              .length;
 
           return Padding(
             padding: const EdgeInsets.fromLTRB(
@@ -72,8 +71,13 @@ class TreinoScrollableBody extends StatelessWidget {
                   ExercicioSectionHeader(
                     exercicio: exercicio,
                     exIdx: exIdx,
-                    completedCount: completedCount,
                     alunoId: alunoId,
+                    onMenuAction: (action) {
+                      onMarcarTodasSeries(
+                        exIdx,
+                        action == ExercicioMenuAction.marcarTodas,
+                      );
+                    },
                   ),
                   if (exercicio.instrucoesParaExibicao != null)
                     Padding(

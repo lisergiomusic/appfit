@@ -296,7 +296,6 @@ class _ExercicioCard extends StatelessWidget {
             ExercicioSectionHeader(
               exercicio: exercicio,
               exIdx: 0,
-              completedCount: 0,
               alunoId: alunoId,
             ),
             if (exercicio.instrucoesParaExibicao != null)

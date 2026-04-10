@@ -179,6 +179,22 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
         60;
   }
 
+  void _onMarcarTodasSeries(int exercicioIndex, bool marcar) {
+    final key = 'exercicio_$exercicioIndex';
+    HapticFeedback.mediumImpact();
+    setState(() {
+      final series = _recordedData[key]['series'] as List;
+      for (var i = 0; i < series.length; i++) {
+        series[i]['completa'] = marcar;
+        if (marcar) {
+          series[i]['reps'] = _repsControllers[exercicioIndex][i].text;
+          series[i]['peso'] = _pesoControllers[exercicioIndex][i].text;
+        }
+      }
+    });
+    _animateProgress();
+  }
+
   void _onSerieCompleted(int exercicioIndex, int serieIndex) {
     final key = 'exercicio_$exercicioIndex';
     final currentComplete =
@@ -364,6 +380,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
                 repsControllers: _repsControllers,
                 pesoControllers: _pesoControllers,
                 onSerieCompleted: _onSerieCompleted,
+                onMarcarTodasSeries: _onMarcarTodasSeries,
                 alunoId: widget.alunoId,
                 ultimoHistorico: _controller.ultimoHistorico,
               ),

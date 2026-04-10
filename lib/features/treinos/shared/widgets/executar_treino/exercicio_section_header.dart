@@ -4,110 +4,126 @@ import '../../../../../core/theme/app_theme.dart';
 import '../exercicio_thumbnail.dart';
 import '../../../aluno/pages/aluno_exercicio_view_page.dart';
 
+enum ExercicioMenuAction { marcarTodas, desmarcarTodas }
+
 class ExercicioSectionHeader extends StatelessWidget {
   final ExercicioItem exercicio;
   final int exIdx;
-  final int completedCount;
   final String? alunoId;
+  final void Function(ExercicioMenuAction)? onMenuAction;
 
   const ExercicioSectionHeader({
     super.key,
     required this.exercicio,
     required this.exIdx,
-    required this.completedCount,
+    this.onMenuAction,
     this.alunoId,
   });
 
   @override
   Widget build(BuildContext context) {
     final muscles = exercicio.grupoMuscular.join(' · ');
-    final totalCount = exercicio.series.length;
-    final isCompleto = completedCount == totalCount && totalCount > 0;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: CardTokens.cardRadius,
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => AlunoExercicioViewPage(
-                exercicio: exercicio,
-                alunoId: alunoId,
-              ),
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            SpacingTokens.lg,
-            SpacingTokens.lg,
-            SpacingTokens.lg,
-            SpacingTokens.sm,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  ExercicioThumbnail(
-                    exercicio: exercicio,
-                    width: 56,
-                    height: 56,
-                    borderRadius: AppTheme.radiusSM,
-                    iconSize: 22,
-                    backgroundColor: AppColors.surfaceLight,
-                  ),
-                  if (isCompleto)
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withAlpha(210),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                      ),
-                      child: const Icon(
-                        Icons.check_rounded,
-                        color: Colors.black,
-                        size: 22,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        SpacingTokens.lg,
+        SpacingTokens.lg,
+        SpacingTokens.xs,
+        SpacingTokens.sm,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AlunoExercicioViewPage(
+                        exercicio: exercicio,
+                        alunoId: alunoId,
                       ),
                     ),
-                ],
-              ),
-              const SizedBox(width: SpacingTokens.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  );
+                },
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      exercicio.nome,
-                      style: CardTokens.cardTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    ExercicioThumbnail(
+                      exercicio: exercicio,
+                      width: 56,
+                      height: 56,
+                      borderRadius: AppTheme.radiusSM,
+                      iconSize: 22,
+                      backgroundColor: AppColors.surfaceLight,
                     ),
-                    if (muscles.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 3),
-                        child: Text(
-                          muscles,
-                          style: AppTheme.caption,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                    const SizedBox(width: SpacingTokens.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            exercicio.nome,
+                            style: CardTokens.cardTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (muscles.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 3),
+                              child: Text(
+                                muscles,
+                                style: AppTheme.caption,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                        ],
                       ),
+                    ),
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
-                color: AppColors.labelTertiary,
-                size: 24,
+            ),
+          ),
+          if (onMenuAction != null) PopupMenuButton<ExercicioMenuAction>(
+            icon: Icon(
+              Icons.more_vert,
+              color: AppColors.labelTertiary,
+              size: 22,
+            ),
+            color: AppColors.surfaceLight,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+            ),
+            onSelected: onMenuAction!,
+            itemBuilder: (_) => [
+              PopupMenuItem(
+                value: ExercicioMenuAction.marcarTodas,
+                child: Row(
+                  children: [
+                    Icon(Icons.checklist_rounded, size: 18, color: AppColors.primary),
+                    const SizedBox(width: 10),
+                    const Text('Marcar todas as séries'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: ExercicioMenuAction.desmarcarTodas,
+                child: Row(
+                  children: [
+                    Icon(Icons.remove_done_rounded, size: 18, color: AppColors.labelSecondary),
+                    const SizedBox(width: 10),
+                    const Text('Desmarcar todas as séries'),
+                  ],
+                ),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
