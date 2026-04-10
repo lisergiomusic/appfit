@@ -5,15 +5,19 @@ import '../../models/exercicio_model.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/exercise_service.dart';
 
-/// Hevy-style exercise section header: thumbnail + name + muscles.
+/// Modern card header: large GIF thumbnail + name + muscles + progress ring.
 class ExercicioSectionHeader extends StatefulWidget {
   final ExercicioItem exercicio;
   final int exIdx;
+  final int completedCount;
+  final int totalCount;
 
   const ExercicioSectionHeader({
     super.key,
     required this.exercicio,
     required this.exIdx,
+    required this.completedCount,
+    required this.totalCount,
   });
 
   @override
@@ -50,42 +54,92 @@ class _ExercicioSectionHeaderState extends State<ExercicioSectionHeader> {
   Widget build(BuildContext context) {
     final exercicio = widget.exercicio;
     final muscles = exercicio.grupoMuscular.join(' · ');
+    final isCompleto =
+        widget.completedCount == widget.totalCount && widget.totalCount > 0;
+    final progress = widget.totalCount > 0
+        ? widget.completedCount / widget.totalCount
+        : 0.0;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         SpacingTokens.lg,
-        SpacingTokens.xl,
+        SpacingTokens.lg,
         SpacingTokens.lg,
         SpacingTokens.sm,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Thumbnail
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-            child: SizedBox(
-              width: 48,
-              height: 48,
-              child: FutureBuilder<String?>(
-                future: _imagemUrlFuture,
-                builder: (context, snapshot) {
-                  final url = snapshot.data;
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Container(
-                      color: AppColors.surfaceLight,
-                      child: const _ThumbnailPlaceholder(),
-                    );
-                  }
-                  if (url == null || url.isEmpty) {
-                    return Container(
-                      color: AppColors.surfaceLight,
-                      child: const _ThumbnailPlaceholder(),
-                    );
-                  }
-                  return _GifFirstFrame(url: url);
-                },
-              ),
+          // Thumbnail with progress ring
+          SizedBox(
+            width: 56,
+            height: 56,
+            child: Stack(
+              children: [
+                // Progress ring
+                Positioned.fill(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 400),
+                    child: CircularProgressIndicator(
+                      value: progress,
+                      strokeWidth: 2.5,
+                      backgroundColor: AppColors.surfaceLight,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isCompleto
+                            ? AppColors.primary
+                            : AppColors.primary.withAlpha(160),
+                      ),
+                    ),
+                  ),
+                ),
+                // Thumbnail
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                    child: SizedBox(
+                      width: 46,
+                      height: 46,
+                      child: FutureBuilder<String?>(
+                        future: _imagemUrlFuture,
+                        builder: (context, snapshot) {
+                          final url = snapshot.data;
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Container(
+                              color: AppColors.surfaceLight,
+                              child: const _ThumbnailPlaceholder(),
+                            );
+                          }
+                          if (url == null || url.isEmpty) {
+                            return Container(
+                              color: AppColors.surfaceLight,
+                              child: const _ThumbnailPlaceholder(),
+                            );
+                          }
+                          return _GifFirstFrame(url: url);
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                // Checkmark overlay when complete
+                if (isCompleto)
+                  Center(
+                    child: Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withAlpha(200),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                      ),
+                      child: const Icon(
+                        Icons.check_rounded,
+                        color: Colors.black,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           const SizedBox(width: SpacingTokens.md),
@@ -107,7 +161,7 @@ class _ExercicioSectionHeaderState extends State<ExercicioSectionHeader> {
                 ),
                 if (muscles.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.only(top: 2),
+                    padding: const EdgeInsets.only(top: 3),
                     child: Text(
                       muscles,
                       style: const TextStyle(
@@ -122,22 +176,25 @@ class _ExercicioSectionHeaderState extends State<ExercicioSectionHeader> {
               ],
             ),
           ),
-          // Accent bar as exercise number badge
-          Container(
-            width: 28,
-            height: 28,
+          // Series counter badge
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: AppColors.primary.withAlpha(20),
-              borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+              color: isCompleto
+                  ? AppColors.primary.withAlpha(25)
+                  : AppColors.surfaceLight,
+              borderRadius: BorderRadius.circular(AppTheme.radiusFull),
             ),
-            child: Center(
-              child: Text(
-                '${widget.exIdx + 1}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
-                ),
+            child: Text(
+              '${widget.completedCount}/${widget.totalCount}',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: isCompleto
+                    ? AppColors.primary
+                    : AppColors.labelSecondary,
+                letterSpacing: 0.2,
               ),
             ),
           ),

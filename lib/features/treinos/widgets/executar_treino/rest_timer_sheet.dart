@@ -21,86 +21,132 @@ class RestTimerSheet extends StatelessWidget {
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
+  double get _progress =>
+      totalSeconds > 0 ? remainingSeconds / totalSeconds : 1.0;
+
   @override
   Widget build(BuildContext context) {
+    final isUrgent = remainingSeconds <= 5 && remainingSeconds > 0;
+
     return Container(
+      margin: const EdgeInsets.fromLTRB(
+        SpacingTokens.lg,
+        0,
+        SpacingTokens.lg,
+        SpacingTokens.xl,
+      ),
       decoration: BoxDecoration(
         color: AppColors.surfaceDark,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppTheme.radiusXL),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXXL),
+        border: Border.all(
+          color: isUrgent
+              ? AppColors.accentMetrics.withAlpha(80)
+              : AppColors.primary.withAlpha(40),
+          width: 1,
         ),
-        border: Border(
-          top: BorderSide(
-            color: AppColors.primary.withAlpha(40),
-            width: 1,
-          ),
-        ),
-      ),
-      padding: const EdgeInsets.all(SpacingTokens.lg),
-      child: Row(
-        children: [
-          // Circular progress arc
-          SizedBox(
-            width: 60,
-            height: 60,
-            child: Stack(
-              children: [
-                CircularProgressIndicator(
-                  value: totalSeconds > 0
-                      ? remainingSeconds / totalSeconds
-                      : 1.0,
-                  color: AppColors.primary,
-                  backgroundColor: AppColors.primary.withAlpha(25),
-                  strokeWidth: 4,
-                ),
-                Center(
-                  child: Text(
-                    _timeString,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: SpacingTokens.lg),
-          // Exercise info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Descansando',
-                  style: AppTheme.formLabel,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Próximo: $exercicioNome',
-                  style: AppTheme.caption2.copyWith(
-                    color: AppColors.labelTertiary,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          // Skip button
-          TextButton(
-            onPressed: onSkip,
-            child: const Text(
-              'Pular',
-              style: TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(80),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
           ),
         ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: SpacingTokens.lg,
+          vertical: SpacingTokens.md,
+        ),
+        child: Row(
+          children: [
+            // Circular progress
+            SizedBox(
+              width: 56,
+              height: 56,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: CircularProgressIndicator(
+                      value: _progress,
+                      strokeWidth: 3,
+                      backgroundColor: AppColors.surfaceLight,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isUrgent ? AppColors.accentMetrics : AppColors.primary,
+                      ),
+                    ),
+                  ),
+                  Center(
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 200),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: isUrgent
+                            ? AppColors.accentMetrics
+                            : AppColors.primary,
+                        letterSpacing: 0.5,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                      child: Text(_timeString),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: SpacingTokens.lg),
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Descansando',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.labelPrimary,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    exercicioNome,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.labelTertiary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            // Skip
+            GestureDetector(
+              onTap: onSkip,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceLight,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                ),
+                child: const Text(
+                  'Pular',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.labelSecondary,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

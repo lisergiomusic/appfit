@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/exercicio_model.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../exercicio_detalhe/exercicio_editable_field.dart';
 import '../exercicio_detalhe/exercicio_constants.dart';
 
 class WorkoutSetRow extends StatelessWidget {
@@ -43,86 +42,220 @@ class WorkoutSetRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rowColor = isCompleted
-        ? AppColors.primary.withAlpha(18)
-        : Colors.transparent;
-
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      decoration: BoxDecoration(color: rowColor),
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeOut,
+      margin: const EdgeInsets.symmetric(
+        horizontal: SpacingTokens.sm,
+        vertical: 2,
+      ),
+      decoration: BoxDecoration(
+        color: isCompleted
+            ? AppColors.primary.withAlpha(14)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+      ),
       padding: const EdgeInsets.symmetric(
-        horizontal: SpacingTokens.lg,
+        horizontal: SpacingTokens.md,
         vertical: SpacingTokens.sm,
       ),
       child: Row(
         children: [
-          // Set badge
+          // Serie badge
           SizedBox(
-            width: 40,
-            child: Container(
-              width: 28,
-              height: 28,
+            width: 36,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 280),
+              width: 30,
+              height: 30,
               decoration: BoxDecoration(
-                color: _serieColor.withAlpha(22),
+                color: isCompleted
+                    ? AppColors.primary.withAlpha(30)
+                    : _serieColor.withAlpha(22),
                 borderRadius: BorderRadius.circular(AppTheme.radiusSM),
               ),
               child: Center(
                 child: Text(
                   _serieLabel,
                   style: TextStyle(
-                    color: _serieColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                    color: isCompleted ? AppColors.primary : _serieColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.2,
                   ),
                 ),
               ),
             ),
           ),
+          const SizedBox(width: SpacingTokens.md),
           // Target
           SizedBox(
-            width: 50,
+            width: 52,
             child: Text(
               serie.alvo,
-              style: AppTheme.caption2,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isCompleted
+                    ? AppColors.labelSecondary
+                    : AppColors.labelSecondary,
+                letterSpacing: -0.1,
+              ),
               textAlign: TextAlign.center,
             ),
           ),
           // Reps input
           Expanded(
-            child: ExercicioEditableField(
+            child: _SetInputField(
               controller: repsController,
-              onChanged: (_) {},
+              isCompleted: isCompleted,
               keyboardType: TextInputType.number,
             ),
           ),
           const SizedBox(width: SpacingTokens.sm),
           // Peso input
           Expanded(
-            child: ExercicioEditableField(
+            child: _SetInputField(
               controller: pesoController,
-              onChanged: (_) {},
-              keyboardType: TextInputType.number,
+              isCompleted: isCompleted,
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
               suffixText: 'kg',
             ),
           ),
           const SizedBox(width: SpacingTokens.sm),
           // Check button
           SizedBox(
-            width: 40,
+            width: 44,
             child: GestureDetector(
               onTap: onCheck,
-              child: Icon(
-                isCompleted
-                    ? Icons.check_circle_rounded
-                    : Icons.radio_button_unchecked_rounded,
-                color: isCompleted
-                    ? AppColors.primary
-                    : AppColors.labelTertiary,
-                size: 28,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
+                transitionBuilder: (child, anim) => ScaleTransition(
+                  scale: anim,
+                  child: child,
+                ),
+                child: isCompleted
+                    ? Container(
+                        key: const ValueKey('checked'),
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          color: Colors.black,
+                          size: 18,
+                        ),
+                      )
+                    : Container(
+                        key: const ValueKey('unchecked'),
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.labelTertiary,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Input compacto para série — fundo sutil, borda ao focar.
+class _SetInputField extends StatefulWidget {
+  final TextEditingController controller;
+  final bool isCompleted;
+  final TextInputType keyboardType;
+  final String? suffixText;
+
+  const _SetInputField({
+    required this.controller,
+    required this.isCompleted,
+    required this.keyboardType,
+    this.suffixText,
+  });
+
+  @override
+  State<_SetInputField> createState() => _SetInputFieldState();
+}
+
+class _SetInputFieldState extends State<_SetInputField> {
+  final FocusNode _focus = FocusNode();
+  bool _focused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(() {
+      if (mounted) setState(() => _focused = _focus.hasFocus);
+    });
+  }
+
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      height: 40,
+      decoration: BoxDecoration(
+        color: widget.isCompleted
+            ? AppColors.primary.withAlpha(20)
+            : _focused
+                ? AppColors.surfaceLight
+                : AppColors.background.withAlpha(200),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+        border: Border.all(
+          color: _focused
+              ? AppColors.primary.withAlpha(160)
+              : Colors.white.withAlpha(10),
+          width: 1,
+        ),
+      ),
+      child: TextField(
+        controller: widget.controller,
+        focusNode: _focus,
+        keyboardType: widget.keyboardType,
+        textAlign: TextAlign.center,
+        enabled: !widget.isCompleted,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: widget.isCompleted
+              ? AppColors.primary
+              : AppColors.labelPrimary,
+          letterSpacing: -0.2,
+        ),
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          filled: false,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+          hintText: widget.suffixText == null ? '—' : '—',
+          hintStyle: const TextStyle(
+            fontSize: 15,
+            color: AppColors.labelTertiary,
+            fontWeight: FontWeight.w400,
+          ),
+          suffixText: widget.suffixText,
+          suffixStyle: const TextStyle(
+            fontSize: 11,
+            color: AppColors.labelTertiary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
     );
   }

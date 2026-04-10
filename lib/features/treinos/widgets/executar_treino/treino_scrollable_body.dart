@@ -25,47 +25,80 @@ class TreinoScrollableBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.only(bottom: 140),
+      padding: const EdgeInsets.only(
+        top: SpacingTokens.md,
+        bottom: 160,
+      ),
       itemCount: sessao.exercicios.length,
       itemBuilder: (context, exIdx) {
         final exercicio = sessao.exercicios[exIdx];
         final exData = recordedData['exercicio_$exIdx'] ?? {'series': []};
         final seriesList = (exData['series'] as List?) ?? [];
-        final isLast = exIdx == sessao.exercicios.length - 1;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ExercicioSectionHeader(exercicio: exercicio, exIdx: exIdx),
-            if (exercicio.instrucoesParaExibicao != null)
-              OrientacaoPersonalBanner(
-                orientacao: exercicio.instrucoesParaExibicao,
+        final completedCount = seriesList
+            .where((s) => (s as Map)['completa'] == true)
+            .length;
+        final totalCount = exercicio.series.length;
+        final isExercicioCompleto =
+            completedCount == totalCount && totalCount > 0;
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(
+            SpacingTokens.lg,
+            0,
+            SpacingTokens.lg,
+            SpacingTokens.md,
+          ),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDark,
+              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+              border: Border.all(
+                color: isExercicioCompleto
+                    ? AppColors.primary.withAlpha(70)
+                    : Colors.white.withAlpha(8),
+                width: 1,
               ),
-            _ColumnLabelsRow(),
-            ...List.generate(exercicio.series.length, (sIdx) {
-              final isCompleted = seriesList.length > sIdx
-                  ? (seriesList[sIdx] as Map)['completa'] == true
-                  : false;
-              return WorkoutSetRow(
-                serie: exercicio.series[sIdx],
-                visualIndex: _calcWorkIndex(exercicio, sIdx),
-                repsController: repsControllers[exIdx][sIdx],
-                pesoController: pesoControllers[exIdx][sIdx],
-                isCompleted: isCompleted,
-                onCheck: () => onSerieCompleted(exIdx, sIdx),
-              );
-            }),
-            if (!isLast)
-              Divider(
-                color: AppColors.separator.withAlpha(100),
-                height: 1,
-                thickness: 1,
-                indent: SpacingTokens.lg,
-                endIndent: SpacingTokens.lg,
-              )
-            else
-              const SizedBox(height: SpacingTokens.xxl),
-          ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ExercicioSectionHeader(
+                  exercicio: exercicio,
+                  exIdx: exIdx,
+                  completedCount: completedCount,
+                  totalCount: totalCount,
+                ),
+                if (exercicio.instrucoesParaExibicao != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: SpacingTokens.lg,
+                    ),
+                    child: OrientacaoPersonalBanner(
+                      orientacao: exercicio.instrucoesParaExibicao,
+                    ),
+                  ),
+                const SizedBox(height: SpacingTokens.sm),
+                _ColumnLabelsRow(),
+                const SizedBox(height: SpacingTokens.xs),
+                ...List.generate(exercicio.series.length, (sIdx) {
+                  final isCompleted = seriesList.length > sIdx
+                      ? (seriesList[sIdx] as Map)['completa'] == true
+                      : false;
+                  return WorkoutSetRow(
+                    serie: exercicio.series[sIdx],
+                    visualIndex: _calcWorkIndex(exercicio, sIdx),
+                    repsController: repsControllers[exIdx][sIdx],
+                    pesoController: pesoControllers[exIdx][sIdx],
+                    isCompleted: isCompleted,
+                    onCheck: () => onSerieCompleted(exIdx, sIdx),
+                  );
+                }),
+                const SizedBox(height: SpacingTokens.sm),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -84,33 +117,31 @@ class _ColumnLabelsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const labelStyle = TextStyle(
-      fontSize: 11,
+      fontSize: 10,
       fontWeight: FontWeight.w600,
-      letterSpacing: 0.5,
+      letterSpacing: 0.8,
       color: AppColors.labelTertiary,
     );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: SpacingTokens.lg,
-        vertical: SpacingTokens.xs,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.lg),
       child: Row(
-        children: [
-          const SizedBox(width: 40, child: Text('SÉRIE', style: labelStyle)),
-          const SizedBox(
-            width: 50,
+        children: const [
+          SizedBox(width: 36, child: Text('SÉRIE', style: labelStyle)),
+          SizedBox(width: SpacingTokens.md),
+          SizedBox(
+            width: 52,
             child: Text('ALVO', style: labelStyle, textAlign: TextAlign.center),
           ),
-          const Expanded(
+          Expanded(
             child: Text('REPS', style: labelStyle, textAlign: TextAlign.center),
           ),
-          const SizedBox(width: SpacingTokens.sm),
-          const Expanded(
+          SizedBox(width: SpacingTokens.sm),
+          Expanded(
             child: Text('KG', style: labelStyle, textAlign: TextAlign.center),
           ),
-          const SizedBox(width: SpacingTokens.sm),
-          const SizedBox(width: 40),
+          SizedBox(width: SpacingTokens.sm),
+          SizedBox(width: 44),
         ],
       ),
     );

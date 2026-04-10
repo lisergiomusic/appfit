@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 import '../../core/theme/app_theme.dart';
-import '../../core/widgets/app_bar_divider.dart';
 import 'models/rotina_model.dart';
 import 'controllers/executar_treino_controller.dart';
 import 'widgets/executar_treino/treino_scrollable_body.dart';
@@ -23,16 +23,12 @@ class ExecutarTreinoPage extends StatefulWidget {
   State<ExecutarTreinoPage> createState() => _ExecutarTreinoPageState();
 }
 
-class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
+class _ExecutarTreinoPageState extends State<ExecutarTreinoPage>
+    with TickerProviderStateMixin {
   late ExecutarTreinoController _controller;
 
-  // Duration tracking
   late DateTime _startedAt;
-
-  // Recorded data
   final Map<String, dynamic> _recordedData = {};
-
-  // Controllers matrix
   late List<List<TextEditingController>> _repsControllers;
   late List<List<TextEditingController>> _pesoControllers;
 
@@ -47,8 +43,11 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
   Timer? _elapsedTimer;
   int _elapsedSeconds = 0;
 
-  // Loading
   bool _isLoading = false;
+
+  // Progress animation
+  late AnimationController _progressAnimController;
+  late Animation<double> _progressAnim;
 
   @override
   void initState() {
@@ -62,6 +61,14 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
     _initializeRecordedData();
     _initializeTextControllers();
     _startElapsedTimer();
+
+    _progressAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _progressAnim = Tween<double>(begin: 0, end: 0).animate(
+      CurvedAnimation(parent: _progressAnimController, curve: Curves.easeOut),
+    );
   }
 
   void _initializeRecordedData() {
@@ -78,17 +85,14 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
   void _initializeTextControllers() {
     _repsControllers = [];
     _pesoControllers = [];
-
     for (var i = 0; i < widget.sessao.exercicios.length; i++) {
       final exercise = widget.sessao.exercicios[i];
       final repsRow = <TextEditingController>[];
       final pesoRow = <TextEditingController>[];
-
       for (var j = 0; j < exercise.series.length; j++) {
         repsRow.add(TextEditingController());
         pesoRow.add(TextEditingController());
       }
-
       _repsControllers.add(repsRow);
       _pesoControllers.add(pesoRow);
     }
@@ -96,9 +100,7 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
 
   void _startElapsedTimer() {
     _elapsedTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {
-        setState(() => _elapsedSeconds++);
-      }
+      if (mounted) setState(() => _elapsedSeconds++);
     });
   }
 
@@ -107,18 +109,13 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
     _restTimer?.cancel();
     _elapsedTimer?.cancel();
     _restSecondsNotifier.dispose();
-
+    _progressAnimController.dispose();
     for (final row in _repsControllers) {
-      for (final c in row) {
-        c.dispose();
-      }
+      for (final c in row) { c.dispose(); }
     }
     for (final row in _pesoControllers) {
-      for (final c in row) {
-        c.dispose();
-      }
+      for (final c in row) { c.dispose(); }
     }
-
     _controller.dispose();
     super.dispose();
   }
@@ -135,22 +132,39 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
     return series.where((s) => (s as Map)['completa'] == true).length;
   }
 
-  bool _hasAnyProgress() => widget.sessao.exercicios.asMap().keys.any(
-    (i) => _completedSeriesForExercise(i) > 0,
+  int get _totalSeries => widget.sessao.exercicios.fold(
+    0,
+    (sum, e) => sum + e.series.length,
   );
+
+  int get _completedSeries {
+    int count = 0;
+    for (var i = 0; i < widget.sessao.exercicios.length; i++) {
+      count += _completedSeriesForExercise(i);
+    }
+    return count;
+  }
+
+  bool _hasAnyProgress() => _completedSeries > 0;
+
+  void _animateProgress() {
+    final target = _totalSeries > 0 ? _completedSeries / _totalSeries : 0.0;
+    final oldVal = _progressAnim.value;
+    _progressAnim = Tween<double>(begin: oldVal, end: target).animate(
+      CurvedAnimation(parent: _progressAnimController, curve: Curves.easeOut),
+    );
+    _progressAnimController.forward(from: 0);
+  }
 
   int _parseDescanso(String descanso) {
     final cleaned = descanso.trim().toLowerCase();
-
     final mMatch = RegExp(r'(\d+)\s*m').firstMatch(cleaned);
     final sMatch = RegExp(r'(\d+)\s*s').firstMatch(cleaned);
-
     if (mMatch != null || sMatch != null) {
       final minutes = mMatch != null ? int.parse(mMatch.group(1)!) : 0;
       final seconds = sMatch != null ? int.parse(sMatch.group(1)!) : 0;
       return (minutes * 60) + seconds;
     }
-
     return int.tryParse(RegExp(r'\d+').firstMatch(cleaned)?.group(0) ?? '') ??
         60;
   }
@@ -160,15 +174,16 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
     final currentComplete =
         _recordedData[key]['series'][serieIndex]['completa'] as bool;
 
+    HapticFeedback.mediumImpact();
+
     if (currentComplete) {
-      // Undo completion
       setState(() {
         _recordedData[key]['series'][serieIndex]['completa'] = false;
       });
+      _animateProgress();
       return;
     }
 
-    // Mark complete - capture current input values
     setState(() {
       _recordedData[key]['series'][serieIndex]['completa'] = true;
       _recordedData[key]['series'][serieIndex]['reps'] =
@@ -176,6 +191,7 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
       _recordedData[key]['series'][serieIndex]['peso'] =
           _pesoControllers[exercicioIndex][serieIndex].text;
     });
+    _animateProgress();
 
     final serie = widget.sessao.exercicios[exercicioIndex].series[serieIndex];
     _startRestTimer(
@@ -235,52 +251,27 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
   Future<void> _finalizarTreino() async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surfaceDark,
-        title: const Text(
-          'Finalizar treino?',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: const Text(
-          'Suas realizações serão registradas.',
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text(
-              'CONTINUAR',
-              style: TextStyle(color: AppColors.primary),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'FINALIZAR',
-              style: TextStyle(color: Colors.greenAccent),
-            ),
-          ),
-        ],
-      ),
+      builder: (context) => _FinalizarDialog(),
     );
 
     if (confirm == true) {
       setState(() => _isLoading = true);
       try {
         final elapsed = DateTime.now().difference(_startedAt);
-        final duracaoMinutos = elapsed.inMinutes;
-
         await _controller.saveTreinoLog(
           _recordedData,
-          duracaoMinutos: duracaoMinutos,
+          duracaoMinutos: elapsed.inMinutes,
         );
-
         if (mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Treino registrado com sucesso!'),
-              backgroundColor: Colors.green,
+            SnackBar(
+              content: const Text('Treino registrado com sucesso!'),
+              backgroundColor: AppColors.primary,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              ),
             ),
           );
         }
@@ -289,7 +280,8 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Erro ao salvar: $e'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.systemRed,
+              behavior: SnackBarBehavior.floating,
             ),
           );
         }
@@ -304,39 +296,12 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
 
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surfaceDark,
-        title: const Text(
-          'Cancelar treino?',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: const Text(
-          'Seu progresso será perdido e nada será registrado.',
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text(
-              'CONTINUAR TREINO',
-              style: TextStyle(color: AppColors.primary),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'CANCELAR TREINO',
-              style: TextStyle(color: Colors.redAccent),
-            ),
-          ),
-        ],
-      ),
+      builder: (context) => _CancelarDialog(),
     );
 
     if (confirm == true) {
       if (mounted) Navigator.pop(context);
     } else {
-      // Restart rest timer if it was active
       if (_restTotalSeconds != null && _restTotalSeconds! > 0) {
         _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
           if (!mounted) {
@@ -356,6 +321,9 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
 
   @override
   Widget build(BuildContext context) {
+    final completed = _completedSeries;
+    final total = _totalSeries;
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -363,43 +331,16 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.background,
-          elevation: 0,
-          surfaceTintColor: Colors.transparent,
-          automaticallyImplyLeading: false,
-          title: Column(
-            children: [
-              Text(widget.sessao.nome, style: AppTheme.pageTitle),
-              Text(
-                _formatElapsed(_elapsedSeconds),
-                style: AppTheme.caption2.copyWith(
-                  color: AppColors.labelSecondary,
-                ),
-              ),
-            ],
-          ),
-          centerTitle: true,
-          bottom: const AppBarDivider(),
-          actions: [
-            TextButton(
-              onPressed: _hasAnyProgress() ? _finalizarTreino : null,
-              child: Text(
-                'Finalizar',
-                style: TextStyle(
-                  color: _hasAnyProgress()
-                      ? AppColors.primary
-                      : AppColors.labelTertiary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close, size: 20),
-              tooltip: 'Cancelar treino',
-              onPressed: _confirmarCancelamento,
-            ),
-          ],
+        appBar: _WorkoutAppBar(
+          sessaoNome: widget.sessao.nome,
+          elapsedFormatted: _formatElapsed(_elapsedSeconds),
+          completed: completed,
+          total: total,
+          progressAnim: _progressAnim,
+          progressAnimController: _progressAnimController,
+          hasProgress: _hasAnyProgress(),
+          onFinalizar: _finalizarTreino,
+          onCancelar: _confirmarCancelamento,
         ),
         body: _isLoading
             ? const Center(
@@ -412,6 +353,393 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
                 pesoControllers: _pesoControllers,
                 onSerieCompleted: _onSerieCompleted,
               ),
+      ),
+    );
+  }
+}
+
+// ── App Bar ────────────────────────────────────────────────────────────────────
+
+class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String sessaoNome;
+  final String elapsedFormatted;
+  final int completed;
+  final int total;
+  final Animation<double> progressAnim;
+  final AnimationController progressAnimController;
+  final bool hasProgress;
+  final VoidCallback onFinalizar;
+  final VoidCallback onCancelar;
+
+  const _WorkoutAppBar({
+    required this.sessaoNome,
+    required this.elapsedFormatted,
+    required this.completed,
+    required this.total,
+    required this.progressAnim,
+    required this.progressAnimController,
+    required this.hasProgress,
+    required this.onFinalizar,
+    required this.onCancelar,
+  });
+
+  @override
+  Size get preferredSize => const Size.fromHeight(80);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.background,
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            SizedBox(
+              height: 52,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Row(
+                  children: [
+                    // Cancel
+                    IconButton(
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        size: 22,
+                        color: AppColors.labelSecondary,
+                      ),
+                      onPressed: onCancelar,
+                      splashRadius: 20,
+                    ),
+                    // Center info
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            sessaoNome,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.3,
+                              color: AppColors.labelPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.timer_outlined,
+                                size: 11,
+                                color: AppColors.labelTertiary,
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                elapsedFormatted,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.labelTertiary,
+                                  letterSpacing: 0.5,
+                                  fontFeatures: [
+                                    FontFeature.tabularFigures(),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                width: 3,
+                                height: 3,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.labelQuaternary,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '$completed/$total séries',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.labelTertiary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Finalizar
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: GestureDetector(
+                        onTap: hasProgress ? onFinalizar : null,
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 200),
+                          opacity: hasProgress ? 1.0 : 0.3,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 7,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withAlpha(22),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusFull,
+                              ),
+                            ),
+                            child: const Text(
+                              'Finalizar',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primary,
+                                letterSpacing: -0.2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Progress bar
+            AnimatedBuilder(
+              animation: progressAnim,
+              builder: (context, _) {
+                return Stack(
+                  children: [
+                    Container(height: 3, color: AppColors.surfaceLight),
+                    FractionallySizedBox(
+                      widthFactor: progressAnim.value.clamp(0.0, 1.0),
+                      child: Container(
+                        height: 3,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColors.primary.withAlpha(200),
+                              AppColors.primary,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Dialogs ────────────────────────────────────────────────────────────────────
+
+class _FinalizarDialog extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: AppColors.surfaceDark,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withAlpha(20),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_rounded,
+                color: AppColors.primary,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Finalizar treino?',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: AppColors.labelPrimary,
+                letterSpacing: -0.3,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Suas realizações serão registradas.',
+              style: TextStyle(
+                fontSize: 14,
+                color: AppColors.labelSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context, false),
+                    child: Container(
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceLight,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Continuar',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.labelPrimary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context, true),
+                    child: Container(
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Finalizar',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CancelarDialog extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: AppColors.surfaceDark,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: AppColors.systemRed.withAlpha(20),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.close_rounded,
+                color: AppColors.systemRed,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Cancelar treino?',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: AppColors.labelPrimary,
+                letterSpacing: -0.3,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Nenhum progresso será salvo.',
+              style: TextStyle(
+                fontSize: 14,
+                color: AppColors.labelSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context, false),
+                    child: Container(
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceLight,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Continuar treino',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.labelPrimary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context, true),
+                    child: Container(
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: AppColors.systemRed.withAlpha(220),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Cancelar',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
