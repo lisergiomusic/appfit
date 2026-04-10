@@ -24,35 +24,22 @@ class OrientacaoPersonalBanner extends StatelessWidget {
         children: [
           Row(
             children: const [
-              Icon(
-                Icons.chat_bubble_outline_rounded,
-                size: 14,
-                color: AppColors.primary,
-              ),
-              SizedBox(width: SpacingTokens.sm),
               Expanded(
                 child: Text(
-                  'Orientação do personal',
+                  'Orientação do personal:',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
+                    color: AppColors.labelSecondary,
                     letterSpacing: -0.1,
+                    height: 1,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: SpacingTokens.sm),
-          Text(
-            orientacao!,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-              color: AppColors.labelPrimary,
-              height: 1.5,
-            ),
-          ),
+          const SizedBox(height: SpacingTokens.labelToField),
+          Text(orientacao!, style: AppTheme.bodyText),
         ],
       ),
     );

@@ -70,7 +70,7 @@ class WorkoutSetRow extends StatelessWidget {
             : Colors.transparent,
       ),
       padding: const EdgeInsets.symmetric(
-        horizontal: SpacingTokens.md,
+        horizontal: SpacingTokens.screenHorizontalPadding,
         vertical: SpacingTokens.sm,
       ),
       child: Row(
@@ -85,8 +85,8 @@ class WorkoutSetRow extends StatelessWidget {
                     : null,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 280),
-                  width: 30,
-                  height: 30,
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
                     color: isCompleted
                         ? AppColors.primary.withAlpha(30)
@@ -165,8 +165,8 @@ class WorkoutSetRow extends StatelessWidget {
                 child: isCompleted
                     ? Container(
                         key: const ValueKey('checked'),
-                        width: 34,
-                        height: 34,
+                        width: 32,
+                        height: 32,
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           shape: BoxShape.circle,
@@ -174,19 +174,24 @@ class WorkoutSetRow extends StatelessWidget {
                         child: const Icon(
                           Icons.check_rounded,
                           color: Colors.black,
-                          size: 18,
+                          size: 17,
                         ),
                       )
                     : Container(
                         key: const ValueKey('unchecked'),
-                        width: 34,
-                        height: 34,
+                        width: 32,
+                        height: 32,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: AppColors.labelTertiary,
                             width: 1.5,
                           ),
+                        ),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          size: 17,
+                          color: AppColors.labelTertiary,
                         ),
                       ),
               ),
