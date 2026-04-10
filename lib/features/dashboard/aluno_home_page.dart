@@ -9,7 +9,7 @@ import '../treinos/aluno_rotina_view_page.dart';
 import '../treinos/models/rotina_model.dart';
 import '../treinos/executar_treino_page.dart';
 import '../alunos/widgets/ritmo_da_semana_card.dart';
-import '../treinos/sessao_detalhe_view_page.dart';
+import '../treinos/sessao_detalhe_aluno_page.dart';
 import 'widgets/peso_historico_card.dart';
 
 class AlunoHomePage extends StatelessWidget {

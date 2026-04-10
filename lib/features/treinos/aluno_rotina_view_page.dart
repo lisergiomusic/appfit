@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/appfit_sliver_app_bar.dart';
 import 'models/rotina_model.dart';
-import 'sessao_detalhe_view_page.dart';
+import 'sessao_detalhe_aluno_page.dart';
 import 'widgets/rotina_sessao_card.dart';
 
 class AlunoRotinaViewPage extends StatefulWidget {
