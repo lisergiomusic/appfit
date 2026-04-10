@@ -47,7 +47,7 @@ class SerieItem {
 }
 
 class ExercicioItem {
-  String? id; // Adicionado ID para identificação única
+  String? id;
   String nome;
   List<String> grupoMuscular;
   String tipoAlvo;
@@ -93,7 +93,6 @@ class ExercicioItem {
     Map<String, dynamic> data, [
     String? docId,
   ]) {
-    // Lógica de migração: se grupoMuscular for String, converte para List<String>
     List<String> grupos = ['Geral'];
     final rawGrupo = data['grupoMuscular'];
 

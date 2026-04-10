@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import '../theme/app_theme.dart';
 
-/// Botão de link inline para seções ("Ver mais", "Ver tudo", "Ver todas").
 class AppSectionLinkButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;

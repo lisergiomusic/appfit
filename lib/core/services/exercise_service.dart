@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../../features/treinos/shared/models/exercicio_model.dart';
 
+/// Resultado de paginação em memória usado pela biblioteca de exercícios.
 class PaginatedExercises {
   final List<ExercicioItem> items;
   final DocumentSnapshot? lastDoc;
@@ -15,11 +16,12 @@ class PaginatedExercises {
   });
 }
 
+/// Serviço de leitura e escrita da coleção `exercicios_base`.
 class ExerciseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  /// Remove acentos e caracteres especiais para busca "fuzzy"
+ 
   String _normalizar(String text) {
     var str = text.toLowerCase();
     str = str.replaceAll(RegExp(r'[àáâãäå]'), 'a');
@@ -66,11 +68,10 @@ class ExerciseService {
     final personalId = _auth.currentUser?.uid;
 
     try {
-      // 1. Buscamos os dados. Para evitar problemas com Filter.or e limitações do Firestore,
-      // fazemos buscas simples e combinamos.
-
       List<DocumentSnapshot> allDocs = [];
 
+     
+     
       if (categoria == 'Meus Exercícios') {
         if (personalId != null) {
           final snap = await _db
@@ -81,7 +82,6 @@ class ExerciseService {
           allDocs = snap.docs;
         }
       } else {
-        // Busca exercícios públicos (personalId == null)
         final snapPublic = await _db
             .collection('exercicios_base')
             .where('personalId', isNull: true)
@@ -90,7 +90,6 @@ class ExerciseService {
 
         allDocs.addAll(snapPublic.docs);
 
-        // Busca exercícios privados do personal logado
         if (personalId != null) {
           final snapPrivate = await _db
               .collection('exercicios_base')
@@ -101,7 +100,6 @@ class ExerciseService {
         }
       }
 
-      // Converte para objetos de modelo
       List<ExercicioItem> allItems = allDocs.map((doc) {
         return ExercicioItem.fromFirestore(
           doc.data() as Map<String, dynamic>,
@@ -109,11 +107,9 @@ class ExerciseService {
         );
       }).toList();
 
-      // Remove duplicatas (caso um exercício tenha personalId e também caia em outra regra por erro de dados)
       final seenIds = <String>{};
       allItems = allItems.where((ex) => seenIds.add(ex.id ?? '')).toList();
 
-      // 2. Filtro de Categoria em memória
       if (categoria != null &&
           categoria != 'Tudo' &&
           categoria != 'Meus Exercícios') {
@@ -122,7 +118,6 @@ class ExerciseService {
             .toList();
       }
 
-      // 3. Filtro de Busca em memória (Fuzzy Search)
       if (busca != null && busca.trim().isNotEmpty) {
         final termo = _normalizar(busca.trim());
         allItems = allItems.where((ex) {
@@ -134,10 +129,8 @@ class ExerciseService {
         }).toList();
       }
 
-      // 4. Ordenação por nome
       allItems.sort((a, b) => a.nome.compareTo(b.nome));
 
-      // 5. Paginação manual em memória
       int startIndex = 0;
       if (lastDoc != null) {
         final lastId = lastDoc.id;
@@ -147,11 +140,11 @@ class ExerciseService {
 
       final paginatedItems = allItems.skip(startIndex).take(limit).toList();
 
-      // Encontra o DocumentSnapshot correspondente ao último item paginado
       DocumentSnapshot? lastDocResult;
       if (paginatedItems.isNotEmpty) {
         final lastItem = paginatedItems.last;
         try {
+         
           lastDocResult = allDocs.firstWhere((doc) => doc.id == lastItem.id);
         } catch (_) {
           lastDocResult = null;

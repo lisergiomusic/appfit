@@ -8,7 +8,10 @@ class PersonalFeedbackHistoricoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Mock de feedbacks realizados
+    // Mapa de seções da interface desta página:
+    // 1) Estrutura superior: AppBar, título e ações de navegação.
+    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
+    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     final List<Map<String, dynamic>> historico = [
       {
         'data': 'Hoje, 02 Mar',
@@ -61,7 +64,6 @@ class PersonalFeedbackHistoricoPage extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Lógica da Linha da Timeline
           Column(
             children: [
               Container(
@@ -79,7 +81,6 @@ class PersonalFeedbackHistoricoPage extends StatelessWidget {
             ],
           ),
           const SizedBox(width: 20),
-          // Card de Conteúdo
           Expanded(
             child: Container(
               margin: const EdgeInsets.only(bottom: 24),

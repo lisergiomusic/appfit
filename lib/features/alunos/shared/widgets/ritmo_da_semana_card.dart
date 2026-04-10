@@ -18,13 +18,11 @@ class RitmoDaSemanaCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final String primeiroNome = alunoNome.split(' ').first;
 
-    // Map days of week: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
     const diasSemana = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
 
-    // Derive status from real data or show loading state
     final dias = <Map<String, String>>[];
     for (int i = 0; i < 7; i++) {
-      final weekday = i + 1; // Mon = 1, Sun = 7
+      final weekday = i + 1;
       bool feito = false;
 
       if (diasTreinados != null) {

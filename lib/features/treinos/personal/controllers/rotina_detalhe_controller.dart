@@ -107,7 +107,6 @@ class RotinaDetalheController extends ChangeNotifier {
     List<dynamic> sessoesRaw = data['sessoes'] ?? [];
     if (treinos.length != sessoesRaw.length) return true;
 
-    // Simplified check: if any session data changed or exercises count changed
     for (int i = 0; i < treinos.length; i++) {
       final sessao = treinos[i];
       final sessaoRaw = sessoesRaw[i];

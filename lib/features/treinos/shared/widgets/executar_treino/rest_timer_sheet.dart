@@ -59,7 +59,6 @@ class RestTimerSheet extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Circular progress
             SizedBox(
               width: 56,
               height: 56,
@@ -94,7 +93,6 @@ class RestTimerSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(width: SpacingTokens.lg),
-            // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,7 +121,6 @@ class RestTimerSheet extends StatelessWidget {
                 ],
               ),
             ),
-            // Skip
             GestureDetector(
               onTap: onSkip,
               child: Container(

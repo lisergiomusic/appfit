@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// Encapsula autenticação e sincronização mínima do perfil em `usuarios`.
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -72,7 +73,6 @@ class AuthService {
 
       final uid = userCredential.user!.uid;
 
-      // Persiste os metadados do usuário no Firestore usando Batch para garantir transação
       final batch = _db.batch();
       final userRef = _db.collection('usuarios').doc(uid);
 
@@ -83,9 +83,10 @@ class AuthService {
         'dataCadastro': FieldValue.serverTimestamp(),
       };
 
+     
       if (tipoUsuario == 'personal') {
         userData['especialidade'] = especialidade ?? 'Geral';
-        userData['plano'] = 'gratuito'; // Valor default otimizado
+        userData['plano'] = 'gratuito';
       }
 
       batch.set(userRef, userData);
@@ -99,14 +100,11 @@ class AuthService {
     }
   }
 
-  /// Cria a conta Firebase Auth para um aluno pré-cadastrado pelo personal.
-  /// Migra o documento Firestore do ID auto-gerado para usuarios/{uid}
-  /// e atualiza o campo alunoId em todas as rotinas vinculadas.
   Future<void> primeiroAcessoAluno({
     required String email,
     required String password,
   }) async {
-    // 1. Verifica se existe um doc pré-cadastrado pelo personal
+   
     final query = await _db
         .collection('usuarios')
         .where('email', isEqualTo: email)
@@ -120,7 +118,6 @@ class AuthService {
       );
     }
 
-    // 2. Cria a conta Firebase Auth
     UserCredential credential;
     try {
       credential = await _auth.createUserWithEmailAndPassword(
@@ -135,13 +132,12 @@ class AuthService {
     final oldDoc = query.docs.first;
     final oldId = oldDoc.id;
 
-    // 3. Busca rotinas vinculadas ao ID antigo
+   
     final rotinasQuery = await _db
         .collection('rotinas')
         .where('alunoId', isEqualTo: oldId)
         .get();
 
-    // 4. Batch: migra usuario + atualiza alunoId nas rotinas
     final batch = _db.batch();
     batch.set(_db.collection('usuarios').doc(uid), oldDoc.data());
     batch.delete(oldDoc.reference);
@@ -150,11 +146,10 @@ class AuthService {
       batch.update(rotinaDoc.reference, {'alunoId': uid});
     }
 
-    // Garante que ao menos a rotina mais recente esteja ativa,
-    // caso nenhuma esteja marcada como ativa após a migração.
     final temAtivaOuNenhuma = rotinasQuery.docs.isEmpty ||
         rotinasQuery.docs.any((d) => d.data()['ativa'] == true);
     if (!temAtivaOuNenhuma) {
+     
       final maisRecente = rotinasQuery.docs.reduce((a, b) {
         final tsA = (a.data()['dataCriacao'] as Timestamp?)?.millisecondsSinceEpoch ?? 0;
         final tsB = (b.data()['dataCriacao'] as Timestamp?)?.millisecondsSinceEpoch ?? 0;
@@ -166,7 +161,7 @@ class AuthService {
     try {
       await batch.commit();
     } catch (e) {
-      // Se a migração falhar, desfaz a criação da conta Auth
+     
       await credential.user?.delete();
       throw Exception('Erro ao configurar sua conta. Tente novamente.');
     }

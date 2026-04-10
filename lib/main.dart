@@ -13,7 +13,6 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Inicializa a formatação de datas para português do Brasil
   await initializeDateFormatting('pt_BR', null);
 
   runApp(const AppFit());

@@ -1,8 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import '../theme/app_theme.dart';
 
-/// Botão "← Voltar" para o leading de AppBar.
-/// Encapsula o padrão CupertinoButton + chevron_back + texto.
 class AppNavBackButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;

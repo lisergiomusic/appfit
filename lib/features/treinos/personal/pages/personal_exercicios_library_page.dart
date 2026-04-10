@@ -24,7 +24,6 @@ class _PersonalExerciciosLibraryPageState
   final FocusNode _searchFocusNode = FocusNode();
   Timer? _debounce;
 
-  // Estado da lista
   List<ExercicioItem> _listaExercicios = [];
   bool _isLoading = false;
   bool _hasMore = true;
@@ -46,7 +45,6 @@ class _PersonalExerciciosLibraryPageState
   String _categoriaSelecionada = 'Tudo';
   String _termoBusca = '';
 
-  // Seleção baseada no ID ou Nome (Identidade Única)
   final Set<ExercicioItem> _selecionados = {};
 
   @override
@@ -55,7 +53,6 @@ class _PersonalExerciciosLibraryPageState
     _carregarDados(reset: true);
     _scrollController.addListener(_onScroll);
     _searchFocusNode.addListener(() {
-      // Força rebuild para mostrar/esconder o botão Cancelar
       setState(() {});
     });
   }
@@ -496,6 +493,10 @@ class _PersonalExerciciosLibraryPageState
 
   @override
   Widget build(BuildContext context) {
+    // Mapa de seções da interface desta página:
+    // 1) Estrutura superior: AppBar, título e ações de navegação.
+    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
+    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -869,12 +870,12 @@ class _PersonalExerciciosLibraryPageState
                 color: AppColors.surfaceDark,
                 borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                 border: Border.all(
-                  color: Colors.white.withAlpha(20), // ~8% opacity
+                  color: Colors.white.withAlpha(20),
                   width: 0.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withAlpha(25), // ~10% opacity
+                    color: Colors.black.withAlpha(25),
                     blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),
@@ -892,10 +893,10 @@ class _PersonalExerciciosLibraryPageState
                         borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                         splashColor: AppColors.primary.withAlpha(
                           30,
-                        ), // ~12% opacity
+                        ),
                         highlightColor: AppColors.primary.withAlpha(
                           20,
-                        ), // ~8% opacity
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -1017,7 +1018,7 @@ class _StaticImageState extends State<_StaticImage> {
       (info, _) {
         if (mounted && _imageInfo == null) {
           setState(() => _imageInfo = info);
-          _cleanup(); // Congela o GIF após o primeiro frame
+          _cleanup();
         }
       },
       onError: (dynamic exception, StackTrace? stackTrace) {

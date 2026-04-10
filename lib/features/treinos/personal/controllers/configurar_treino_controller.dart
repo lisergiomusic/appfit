@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../../shared/models/exercicio_model.dart';
 
-/// Wrapper para o [ExercicioItem] que garante uma [id] única e estável.
 class ExercicioWrapper {
   final String id;
   final ExercicioItem item;
@@ -12,9 +11,6 @@ class ExercicioWrapper {
 }
 
 class ConfigurarTreinoController extends ChangeNotifier {
-  // =================================================================================
-  // INÍCIO: ESTADO
-  // =================================================================================
 
   late String initialNomeTreino;
 
@@ -41,9 +37,6 @@ class ConfigurarTreinoController extends ChangeNotifier {
   String _sessaoNote = '';
   String get sessaoNote => _sessaoNote;
 
-  // =================================================================================
-  // FIM: ESTADO
-  // =================================================================================
 
   ConfigurarTreinoController({
     required String nomeTreino,
@@ -91,17 +84,13 @@ class ConfigurarTreinoController extends ChangeNotifier {
     }
   }
 
-  // =================================================================================
-  // INÍCIO: LÓGICA DE NEGÓCIO
-  // =================================================================================
 
   static const int _kSecondsPerRep = 4;
-  static const int _kTransitionSeconds = 120; // 2 min entre exercícios
+  static const int _kTransitionSeconds = 120;
 
   int get totalSeries =>
       _exercicios.fold(0, (sum, wrapper) => sum + wrapper.item.series.length);
 
-  /// Parseia strings como "60s", "2m", "1m30s" para segundos.
   static int _parseDurationString(String value) {
     final v = value.trim().toLowerCase();
     final mMatch = RegExp(r'^(\d+)m$').firstMatch(v);
@@ -159,7 +148,6 @@ class ConfigurarTreinoController extends ChangeNotifier {
 
   void addExercicios(List<ExercicioItem> listaExercicios) {
     for (var ex in listaExercicios) {
-      // O .clone() é vital para que, se você adicionar dois supinos, eles sejam independentes
       final newWrapper = ExercicioWrapper(ex.clone());
       _exercicios.add(newWrapper);
       _newExercicios.add(newWrapper.id);
@@ -175,7 +163,6 @@ class ConfigurarTreinoController extends ChangeNotifier {
 
   void markHintAsShown(String id) {
     _newExercicios.remove(id);
-    // Não precisa notificar, pois a animação cuida da UI.
   }
 
   void deleteExercicio(int index) {
@@ -191,8 +178,6 @@ class ConfigurarTreinoController extends ChangeNotifier {
       _exercicios.insert(_lastRemovedIndex!, _lastRemovedItem!);
       _lastRemovedItem = null;
       _lastRemovedIndex = null;
-      // Idealmente, verificaríamos se a lista voltou ao estado original
-      // para setar _hasChanges = false. Por simplicidade, deixamos true.
       notifyListeners();
     }
   }

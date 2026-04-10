@@ -5,10 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class TreinoService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  /// Operações de log de treino e estatísticas associadas a um aluno.
-  ///
-  /// Todos os métodos aqui acessam o Firestore diretamente e retornam dados
-  /// formatados para uso nas telas de treino.
 
   Future<void> saveTreinoLog({
     required String alunoId,
@@ -36,7 +32,6 @@ class TreinoService {
     }
   }
 
-  /// Retorna os últimos 50 logs de treino de um aluno ordenados pela data.
   Future<List<Map<String, dynamic>>> fetchLogsAluno(String alunoId) async {
     try {
       final snapshot = await _firestore
@@ -52,7 +47,6 @@ class TreinoService {
     }
   }
 
-  /// Fornece um stream em tempo real de logs de treino para uma rotina.
   Stream<List<Map<String, dynamic>>> getLogsRotinaStream(String rotinaId) {
     return _firestore
         .collection('logs_treino')
@@ -66,7 +60,6 @@ class TreinoService {
         );
   }
 
-  /// Busca logs de treino de um aluno dentro de um intervalo de datas.
   Future<List<Map<String, dynamic>>> fetchLogsInterval(
     String alunoId,
     DateTime startDate,
@@ -90,7 +83,6 @@ class TreinoService {
     }
   }
 
-  /// Gera estatísticas básicas de treino para um aluno usando seus logs.
   Future<Map<String, dynamic>> getTrainingStats(String alunoId) async {
     try {
       final logs = await fetchLogsAluno(alunoId);
@@ -118,10 +110,6 @@ class TreinoService {
     }
   }
 
-  /// Busca o último log de uma sessão e monta o histórico de cada exercício.
-  ///
-  /// O resultado tem chave igual ao nome do exercício e valor com a lista de
-  /// séries em ordem, agrupadas pelo tipo de série.
   Future<Map<String, List<SerieHistorico>>> fetchUltimoHistoricoSessao({
     required String alunoId,
     required String sessaoNome,

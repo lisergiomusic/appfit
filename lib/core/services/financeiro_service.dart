@@ -6,7 +6,7 @@ class FaturaModel {
   final double valor;
   final DateTime dataVencimento;
   final DateTime? dataPagamento;
-  final String status; // 'pendente', 'pago', 'atrasado'
+  final String status;
   final String descricao;
 
   FaturaModel({

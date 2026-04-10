@@ -78,6 +78,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Mapa de seções da interface desta página:
+    // 1) Estrutura superior: AppBar, título e ações de navegação.
+    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
+    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     String titulo = widget.userType == 'personal'
         ? 'Área do Personal'
         : 'Área do Aluno';
@@ -108,7 +112,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 48),
 
               _buildTextField(
-                controller: _emailController, // Ligando o controlador
+                controller: _emailController,
                 label: 'E-mail',
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
@@ -116,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
 
               _buildTextField(
-                controller: _senhaController, // Ligando o controlador
+                controller: _senhaController,
                 label: 'Senha',
                 icon: Icons.lock_outline,
                 isPassword: true,
@@ -205,14 +209,14 @@ class _LoginPageState extends State<LoginPage> {
   Widget _buildTextField({
     required String label,
     required IconData icon,
-    TextEditingController? controller, // Recebendo o controlador
+    TextEditingController? controller,
     bool isPassword = false,
     bool obscureText = false,
     VoidCallback? onTogglePassword,
     TextInputType? keyboardType,
   }) {
     return TextField(
-      controller: controller, // Repassando para o TextField real
+      controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
       style: const TextStyle(color: AppColors.labelPrimary),

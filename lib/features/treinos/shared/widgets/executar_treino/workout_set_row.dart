@@ -78,7 +78,6 @@ class WorkoutSetRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Serie badge
           SizedBox.square(
             dimension: 36,
             child: Center(
@@ -122,7 +121,6 @@ class WorkoutSetRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: SpacingTokens.md),
-          // Target
           SizedBox(
             width: 52,
             child: Text(
@@ -140,7 +138,6 @@ class WorkoutSetRow extends StatelessWidget {
           ),
           const SizedBox(width: SpacingTokens.md),
 
-          // Reps input
           Expanded(
             child: _SetInputField(
               controller: repsController,
@@ -149,7 +146,6 @@ class WorkoutSetRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: SpacingTokens.sm),
-          // Peso input
           Expanded(
             child: _SetInputField(
               controller: pesoController,
@@ -164,7 +160,6 @@ class WorkoutSetRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: SpacingTokens.sm),
-          // Check button
           SizedBox(
             width: 44,
             child: GestureDetector(
@@ -214,7 +209,6 @@ class WorkoutSetRow extends StatelessWidget {
   }
 }
 
-/// Input compacto para série — fundo sutil, borda ao focar.
 class _SetInputField extends StatefulWidget {
   final TextEditingController controller;
   final bool isCompleted;

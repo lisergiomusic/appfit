@@ -114,7 +114,6 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
     );
   }
 
-  /// Abre a sessão, aplica o resultado e persiste no Firebase em background.
   Future<void> _editarSessao(SessaoTreinoModel sessao) async {
     final result = await _abrirConfigurarExercicios(sessao);
     if (!mounted) return;
@@ -130,7 +129,6 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
       );
     }
 
-    // Persiste silenciosamente se a rotina já existe e há algo para salvar.
     if (_controller.rotinaId != null && _controller.verificarAlteracoes()) {
       _controller.salvarRotina();
     }
@@ -192,7 +190,6 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
       ),
     );
 
-    // Navega automaticamente para a sessão recém-criada
     if (index == null && mounted && _controller.treinos.length > countBefore) {
       final newIndex = _controller.treinos.length - 1;
       await _editarSessao(_controller.treinos[newIndex]);
@@ -226,9 +223,9 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
               final sucesso = await _controller.excluirRotina();
               if (sucesso && mounted) {
                 setState(() => _canPopNow = true);
-                navigator.pop(); // Fecha dialog
-                navigator.pop(); // Fecha modal
-                navigator.pop(); // Volta para a tela anterior
+                navigator.pop();
+                navigator.pop();
+                navigator.pop();
               }
             },
             child: const Text(
@@ -375,6 +372,10 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Mapa de seções da interface desta página:
+    // 1) Estrutura superior: AppBar, título e ações de navegação.
+    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
+    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, _) {

@@ -20,7 +20,6 @@ void main() {
 
     group('buildExerciciosLog', () {
       test('persiste exercícios com campos corretos', () {
-        // Arrange
         final recordedData = {
           'exercicio_0': {
             'series': [
@@ -35,10 +34,8 @@ void main() {
           },
         };
 
-        // Act
         final exerciciosLog = controller.buildExerciciosLog(recordedData);
 
-        // Assert
         expect(exerciciosLog, isA<List>());
         expect(exerciciosLog.length, 2);
 
@@ -55,7 +52,6 @@ void main() {
       });
 
       test('preserva alvo e cargaAlvo do treino original', () {
-        // Arrange
         final recordedData = {
           'exercicio_0': {
             'series': [
@@ -64,19 +60,16 @@ void main() {
           },
         };
 
-        // Act
         final exerciciosLog = controller.buildExerciciosLog(recordedData);
 
-        // Assert
         final primeiraSerieLog = exerciciosLog[0]['series'][0];
-        expect(primeiraSerieLog['alvo'], '15'); // Valor original
-        expect(primeiraSerieLog['cargaAlvo'], '40'); // Valor original
-        expect(primeiraSerieLog['repsRealizadas'], '8'); // Registrado
-        expect(primeiraSerieLog['pesoRealizado'], '65'); // Registrado
+        expect(primeiraSerieLog['alvo'], '15');
+        expect(primeiraSerieLog['cargaAlvo'], '40');
+        expect(primeiraSerieLog['repsRealizadas'], '8');
+        expect(primeiraSerieLog['pesoRealizado'], '65');
       });
 
       test('constrói séries com tipo correto', () {
-        // Arrange
         final recordedData = {
           'exercicio_0': {
             'series': [
@@ -87,17 +80,14 @@ void main() {
           },
         };
 
-        // Act
         final exerciciosLog = controller.buildExerciciosLog(recordedData);
 
-        // Assert
         final primeiroEx = exerciciosLog[0];
         expect(primeiroEx['series'][0], containsPair('alvo', '15'));
         expect(primeiroEx['series'][0], containsPair('cargaAlvo', '40'));
       });
 
       test('mapeia 0 exercícios corretamente', () {
-        // Arrange
         controller = ExecutarTreinoController(
           sessao: fakeSessao(exercicios: []),
           rotinaId: 'rotina_test_123',
@@ -105,15 +95,12 @@ void main() {
           firestore: fakeFirestore,
         );
 
-        // Act
         final exerciciosLog = controller.buildExerciciosLog({});
 
-        // Assert
         expect(exerciciosLog, isEmpty);
       });
 
       test('mapeia múltiplos exercícios e séries', () {
-        // Arrange
         final recordedData = {
           'exercicio_0': {
             'series': [
@@ -129,56 +116,47 @@ void main() {
           },
         };
 
-        // Act
         final exerciciosLog = controller.buildExerciciosLog(recordedData);
 
-        // Assert
         expect(exerciciosLog[0]['series'].length, 3);
         expect(exerciciosLog[1]['series'].length, 1);
       });
 
       test('preenche reps vazio com string vazia', () {
-        // Arrange
         final recordedData = {
           'exercicio_0': {
             'series': [
-              {'peso': '40', 'completa': true}, // Sem reps
+              {'peso': '40', 'completa': true},
               {'reps': '10', 'peso': '60', 'completa': true},
               {'reps': '8', 'peso': '65', 'completa': true},
             ],
           },
         };
 
-        // Act
         final exerciciosLog = controller.buildExerciciosLog(recordedData);
 
-        // Assert
         expect(exerciciosLog[0]['series'][0]['repsRealizadas'], '');
       });
 
       test('preenche peso vazio com string vazia', () {
-        // Arrange
         final recordedData = {
           'exercicio_0': {
             'series': [
-              {'reps': '10', 'completa': true}, // Sem peso
+              {'reps': '10', 'completa': true},
               {'reps': '10', 'peso': '60', 'completa': true},
               {'reps': '8', 'peso': '65', 'completa': true},
             ],
           },
         };
 
-        // Act
         final exerciciosLog = controller.buildExerciciosLog(recordedData);
 
-        // Assert
         expect(exerciciosLog[0]['series'][0]['pesoRealizado'], '');
       });
     });
 
     group('dispose', () {
       test('não lança exceção', () {
-        // Act & Assert
         expect(() => controller.dispose(), returnsNormally);
       });
     });

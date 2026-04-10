@@ -53,7 +53,6 @@ class AlunoHeaderSection extends StatelessWidget {
     );
   }
 
-  // ...existing code...
 
   Widget _buildBadge(IconData icon, String label) {
     return Container(

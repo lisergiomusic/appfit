@@ -4,7 +4,6 @@ import '../../../../../core/theme/app_theme.dart';
 import '../exercicio_thumbnail.dart';
 import '../../../aluno/pages/aluno_exercicio_view_page.dart';
 
-/// Exercise card header: thumbnail (square) with progress ring + name + muscles.
 class ExercicioSectionHeader extends StatelessWidget {
   final ExercicioItem exercicio;
   final int exIdx;
@@ -22,8 +21,6 @@ class ExercicioSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final muscles = exercicio.grupoMuscular.join(' · ');
-    // Calcula o número total de séries localmente para não exigir esse
-    // valor do chamador. Mantemos a mesma regra de conclusão usada antes.
     final totalCount = exercicio.series.length;
     final isCompleto = completedCount == totalCount && totalCount > 0;
 
@@ -52,7 +49,6 @@ class ExercicioSectionHeader extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Thumbnail with optional checkmark overlay
               Stack(
                 alignment: Alignment.center,
                 children: [
@@ -81,7 +77,6 @@ class ExercicioSectionHeader extends StatelessWidget {
                 ],
               ),
               const SizedBox(width: SpacingTokens.md),
-              // Name + muscles
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

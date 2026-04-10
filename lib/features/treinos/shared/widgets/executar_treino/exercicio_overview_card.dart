@@ -54,7 +54,6 @@ class _ExercicioOverviewCardState extends State<ExercicioOverviewCard> {
 
   @override
   Widget build(BuildContext context) {
-    // A, B, C...
 
     return Container(
       decoration: AppTheme.cardDecoration,
@@ -65,7 +64,6 @@ class _ExercicioOverviewCardState extends State<ExercicioOverviewCard> {
           padding: CardTokens.padding,
           child: Row(
             children: [
-              // Thumbnail
               Container(
                 margin: const EdgeInsets.only(right: SpacingTokens.lg),
                 child: ClipRRect(
@@ -102,7 +100,6 @@ class _ExercicioOverviewCardState extends State<ExercicioOverviewCard> {
                   ),
                 ),
               ),
-              // Exercise info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,7 +125,6 @@ class _ExercicioOverviewCardState extends State<ExercicioOverviewCard> {
                 ),
               ),
               const SizedBox(width: SpacingTokens.md),
-              // Chevron
               Icon(
                 Icons.chevron_right_rounded,
                 color: AppColors.labelSecondary,

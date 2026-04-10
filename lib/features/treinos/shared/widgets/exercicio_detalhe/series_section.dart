@@ -79,7 +79,6 @@ class SeriesSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               child: Column(
                 children: [
-                  // Faixa de acento colorida no topo
                   Container(height: 3, color: accentColor.withAlpha(160)),
                   Padding(
                     padding: const EdgeInsets.only(

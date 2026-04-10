@@ -18,6 +18,10 @@ class AlunoHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Mapa de seções da interface desta página:
+    // 1) Estrutura superior: AppBar, título e ações de navegação.
+    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
+    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     final service = AlunoService();
 
     return Scaffold(
@@ -436,7 +440,7 @@ class AlunoHomePage extends StatelessWidget {
   String _calcularTempoSessao(SessaoTreinoModel sessao) {
     int totalSeconds = 0;
     for (final ex in sessao.exercicios) {
-      totalSeconds += 120; // 2min transição entre exercícios
+      totalSeconds += 120;
       for (final serie in ex.series) {
         final execTime = ex.tipoAlvo == 'Tempo'
             ? _parseDuration(serie.alvo)
@@ -543,7 +547,6 @@ class AlunoHomePage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Header ────────────────────────────────────────────────
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(16, 16, 4, 14),
@@ -615,7 +618,6 @@ class AlunoHomePage extends StatelessWidget {
                             ],
                           ),
                         ),
-                        // ── Kebab menu ──────────────────────────────────────
                         PopupMenuButton<String>(
                           icon: const Icon(
                             Icons.more_vert_rounded,
@@ -644,7 +646,6 @@ class AlunoHomePage extends StatelessWidget {
                                 ),
                               );
                             }
-                            // 'trocar' — a implementar
                           },
                           itemBuilder: (_) => [
                             PopupMenuItem(
@@ -681,7 +682,6 @@ class AlunoHomePage extends StatelessWidget {
                     ),
                   ),
 
-                  // ── Stats ─────────────────────────────────────────────────
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                     child: Row(
@@ -709,7 +709,6 @@ class AlunoHomePage extends StatelessWidget {
                     ),
                   ),
 
-                  // ── Iniciar button ─────────────────────────────────────────
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                     child: GestureDetector(
@@ -756,7 +755,6 @@ class AlunoHomePage extends StatelessWidget {
   }
 }
 
-// ─── Info row ─────────────────────────────────────────────────────────────────
 
 class _InfoRow extends StatelessWidget {
   final IconData icon;
@@ -805,7 +803,6 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-// ─── Vertical divider ─────────────────────────────────────────────────────────
 
 class _VerticalDivider extends StatelessWidget {
   const _VerticalDivider();
@@ -821,7 +818,6 @@ class _VerticalDivider extends StatelessWidget {
   }
 }
 
-// ─── Muscle chip ──────────────────────────────────────────────────────────────
 
 class _MuscleChip extends StatelessWidget {
   final String label;
@@ -841,7 +837,6 @@ class _MuscleChip extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _PesoEditSheet extends StatefulWidget {
   final String uid;
@@ -938,7 +933,6 @@ class _PesoEditSheetState extends State<_PesoEditSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Drag handle
           Container(
             width: 40,
             height: 4,
@@ -948,7 +942,6 @@ class _PesoEditSheetState extends State<_PesoEditSheet> {
             ),
           ),
           const SizedBox(height: SpacingTokens.lg),
-          // Header
           Column(
             children: [
               Text('Registrar peso', style: AppTheme.title1),
@@ -962,7 +955,6 @@ class _PesoEditSheetState extends State<_PesoEditSheet> {
             ],
           ),
           const SizedBox(height: SpacingTokens.lg),
-          // Input field
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1016,7 +1008,6 @@ class _PesoEditSheetState extends State<_PesoEditSheet> {
             ],
           ),
           const SizedBox(height: SpacingTokens.lg),
-          // Buttons
           Column(
             children: [
               ElevatedButton(

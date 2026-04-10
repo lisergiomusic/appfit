@@ -20,9 +20,8 @@ class _PersonalCriarExercicioPageState
 
   final TextEditingController _nomeCtrl = TextEditingController();
   final TextEditingController _midiaCtrl =
-      TextEditingController(); // Link do Youtube/GIF
+      TextEditingController();
 
-  // Lista de grupos musculares engessada (O utilizador não pode criar novos)
   final List<String> _gruposDisponiveis = [
     'Peito',
     'Costas',
@@ -100,7 +99,7 @@ class _PersonalCriarExercicioPageState
         Navigator.pop(
           context,
           novoEx,
-        ); // Retorna 'novoEx' para a biblioteca saber que deve adicioná-lo automaticamente
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -116,7 +115,6 @@ class _PersonalCriarExercicioPageState
     }
   }
 
-  // --- WIDGET AUXILIAR PARA INPUTS ---
   Widget _buildSectionLabel(String label, IconData icon) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -140,6 +138,10 @@ class _PersonalCriarExercicioPageState
 
   @override
   Widget build(BuildContext context) {
+    // Mapa de seções da interface desta página:
+    // 1) Estrutura superior: AppBar, título e ações de navegação.
+    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
+    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -169,7 +171,6 @@ class _PersonalCriarExercicioPageState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 1. NOME
                     _buildSectionLabel(
                       'NOME DO EXERCÍCIO',
                       Icons.fitness_center,
@@ -201,7 +202,6 @@ class _PersonalCriarExercicioPageState
                     ),
                     const SizedBox(height: 32),
 
-                    // 2. GRUPO MUSCULAR (SELEÇÃO)
                     _buildSectionLabel(
                       'MÚSCULOS ALVO (Selecione um ou mais)',
                       Icons.accessibility_new,
@@ -247,7 +247,6 @@ class _PersonalCriarExercicioPageState
                     ),
                     const SizedBox(height: 32),
 
-                    // 4. MÍDIA (VÍDEO/GIF)
                     _buildSectionLabel(
                       'VÍDEO DEMONSTRATIVO (OPCIONAL)',
                       Icons.play_circle_outline,
@@ -337,7 +336,6 @@ class _PersonalCriarExercicioPageState
                     ),
                     const SizedBox(height: 32),
 
-                    // 5. BOTÃO SECRETO (ADMIN ONLY)
                     if (_isAdmin)
                       Container(
                         decoration: BoxDecoration(
@@ -378,7 +376,6 @@ class _PersonalCriarExercicioPageState
               ),
             ),
 
-            // BOTÃO SALVAR FIXO NO RODAPÉ
             Container(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
               decoration: BoxDecoration(

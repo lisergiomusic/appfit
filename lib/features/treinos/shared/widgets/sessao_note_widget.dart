@@ -57,7 +57,6 @@ class SessaoNoteWidget extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Header do Modal
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                   child: Row(
@@ -103,7 +102,6 @@ class SessaoNoteWidget extends StatelessWidget {
                   thickness: 0.5,
                   color: Colors.white.withAlpha(20),
                 ),
-                // Campo de Texto
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(

@@ -3,6 +3,7 @@ import 'package:appfit/features/treinos/shared/models/historico_treino_model.dar
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../shared/models/rotina_model.dart';
 
+/// Orquestra persistência de execução de treino e carregamento de histórico.
 class ExecutarTreinoController {
   final SessaoTreinoModel sessao;
   final String rotinaId;
@@ -21,6 +22,7 @@ class ExecutarTreinoController {
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
         _treinoService = treinoService ?? TreinoService();
 
+   
   Future<void> saveTreinoLog(
     Map<String, dynamic> recordedData, {
     int duracaoMinutos = 0,
@@ -28,7 +30,6 @@ class ExecutarTreinoController {
     try {
       final dataHora = DateTime.now();
 
-      // Constrói o documento de log
       final logData = {
         'alunoId': alunoId,
         'rotinaId': rotinaId,
@@ -38,10 +39,8 @@ class ExecutarTreinoController {
         'exercicios': buildExerciciosLog(recordedData),
       };
 
-      // Salva o log de treino
       await _firestore.collection('logs_treino').add(logData);
 
-      // Incrementa sessoesConcluidas na rotina
       await _firestore.collection('rotinas').doc(rotinaId).update({
         'sessoesConcluidas': FieldValue.increment(1),
       });
@@ -55,6 +54,7 @@ class ExecutarTreinoController {
   ) {
     final exercicios = <Map<String, dynamic>>[];
 
+   
     for (var i = 0; i < sessao.exercicios.length; i++) {
       final exercise = sessao.exercicios[i];
       final key = 'exercicio_$i';
@@ -95,12 +95,11 @@ class ExecutarTreinoController {
         sessaoNome: sessao.nome,
       );
     } catch (e) {
-      // Se falhar, deixa vazio (sem histórico para mostrar)
+     
       ultimoHistorico = {};
     }
   }
 
   void dispose() {
-    // Cleanup if needed
   }
 }

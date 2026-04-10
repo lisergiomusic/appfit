@@ -31,6 +31,10 @@ class PersonalSessaoDetalhePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Mapa de seções da interface desta página:
+    // 1) Estrutura superior: AppBar, título e ações de navegação.
+    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
+    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     return ChangeNotifierProvider(
       create: (_) => ConfigurarTreinoController(
         nomeTreino: nomeTreino,
@@ -80,7 +84,6 @@ class _SessaoDetalhePersonalViewState
 
     final controller = context.read<ConfigurarTreinoController>();
 
-    // Atualiza a lista original (passagem por referência)
     widget.originalExercicios.clear();
     widget.originalExercicios.addAll(controller.getFinalExercicios());
 
@@ -97,7 +100,6 @@ class _SessaoDetalhePersonalViewState
   Future<void> _openLibrary(BuildContext context) async {
     final controller = context.read<ConfigurarTreinoController>();
 
-    // Agora o tipo de retorno bate certinho com o que a biblioteca envia!
     final List<ExercicioItem>? selecionados = await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const PersonalExerciciosLibraryPage()),

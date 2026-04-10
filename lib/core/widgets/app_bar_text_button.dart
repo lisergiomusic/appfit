@@ -2,8 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// Botão de texto para actions de AppBar (ex: "Salvar").
-/// Suporta estado de carregamento opcional.
 class AppBarTextButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;

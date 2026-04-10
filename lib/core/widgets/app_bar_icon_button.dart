@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import '../theme/app_theme.dart';
 
-/// Botão de ícone para actions de AppBar (ex: ícone de adicionar).
 class AppBarIconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;

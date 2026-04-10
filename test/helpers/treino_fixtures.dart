@@ -1,7 +1,6 @@
 import 'package:appfit/features/treinos/shared/models/rotina_model.dart';
 import 'package:appfit/features/treinos/shared/models/exercicio_model.dart';
 
-/// Cria uma sessão de treino fake para testes
 SessaoTreinoModel fakeSessao({
   String nome = 'Peito e Costas',
   String? diaSemana = 'Segunda',
@@ -16,7 +15,6 @@ SessaoTreinoModel fakeSessao({
   );
 }
 
-/// Retorna exercícios padrão para testes
 List<ExercicioItem> _defaultExercicios() => [
   ExercicioItem(
     nome: 'Supino Reto',
@@ -59,7 +57,6 @@ List<ExercicioItem> _defaultExercicios() => [
   ),
 ];
 
-/// Cria uma rotina completa fake para testes
 RotinaModel fakeRotina({
   String id = 'rotina_test_123',
   String nome = 'Hipertrofia A',
@@ -80,7 +77,6 @@ RotinaModel fakeRotina({
   );
 }
 
-/// Cria dados Firestore fake de uma rotina com contadores
 Map<String, dynamic> fakeRotinaData({
   String nome = 'Hipertrofia A',
   String objetivo = 'Ganho de massa',
@@ -108,7 +104,6 @@ Map<String, dynamic> fakeRotinaData({
   };
 }
 
-/// Retorna sessões padrão em formato Firestore
 List<Map<String, dynamic>> _defaultSessoesData() => [
   {
     'nome': 'Peito e Costas',
@@ -133,7 +128,6 @@ List<Map<String, dynamic>> _defaultSessoesData() => [
   },
 ];
 
-/// Cria um documento de log de treino fake
 Map<String, dynamic> fakeTreinoLog({
   String alunoId = 'aluno_test_123',
   String rotinaId = 'rotina_test_123',
@@ -150,7 +144,6 @@ Map<String, dynamic> fakeTreinoLog({
   };
 }
 
-/// Retorna exercícios com performance registrada (para logs)
 List<Map<String, dynamic>> _defaultLogExercicios() => [
   {
     'nome': 'Supino Reto',

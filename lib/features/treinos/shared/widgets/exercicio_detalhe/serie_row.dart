@@ -156,7 +156,6 @@ class _SerieRowState extends State<SerieRow> with TickerProviderStateMixin {
               color: hintColor ?? editFlashColor,
               child: Row(
                 children: [
-                  // Botão de Deletar (Animado)
                   AnimatedContainer(
                     duration: ExercicioDetalheConstants.rowAnimationDuration,
                     curve: Curves.easeInOutCubic,
@@ -182,7 +181,6 @@ class _SerieRowState extends State<SerieRow> with TickerProviderStateMixin {
                     curve: Curves.easeInOutCubic,
                     width: widget.isEditingSection ? 8 : 0,
                   ),
-                  // Badge do número da série
                   Expanded(
                     flex: 2,
                     child: AnimatedPadding(
@@ -257,7 +255,6 @@ class _SerieRowState extends State<SerieRow> with TickerProviderStateMixin {
                     ),
                   ),
 
-                  // Botão de Duplicar (Animado)
                   AnimatedContainer(
                     duration: ExercicioDetalheConstants.rowAnimationDuration,
                     curve: Curves.easeInOutCubic,

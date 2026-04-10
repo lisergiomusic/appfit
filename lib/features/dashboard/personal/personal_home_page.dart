@@ -32,6 +32,10 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Mapa de seções da interface desta página:
+    // 1) Estrutura superior: AppBar, título e ações de navegação.
+    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
+    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -78,7 +82,6 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Perfil e Boas-vindas
             FutureBuilder<Map<String, dynamic>?>(
               future: _authService.getCurrentUserData(),
               builder: (context, snapshot) {
@@ -133,7 +136,6 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 5),
-                          // ALinha titulo e pill ao centro do avatae
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -163,7 +165,6 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
               },
             ),
             const SizedBox(height: SpacingTokens.xxl),
-            // Stats Row
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppTheme.paddingScreen,
@@ -223,7 +224,6 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
               ),
             ),
             const SizedBox(height: SpacingTokens.sectionGap),
-            // Recent Activity
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppTheme.paddingScreen,

@@ -7,28 +7,20 @@ import 'exercicio_section_header.dart';
 import 'workout_set_row.dart';
 import 'orientacao_personal_banner.dart';
 
+/// Renderiza a lista completa de exercícios da sessão em execução.
 class TreinoScrollableBody extends StatelessWidget {
-  /// Sessão que contém a lista de exercícios a ser exibida.
   final SessaoTreinoModel sessao;
 
-  /// Dados gravados durante a execução. Estrutura esperada:
-  /// { 'exercicio_<idx>': { 'series': [ { 'completa': bool, ... }, ... ] } }
   final Map<String, dynamic> recordedData;
 
-  /// Controladores de texto para os campos de reps por exercício/serie.
   final List<List<TextEditingController>> repsControllers;
 
-  /// Controladores de texto para os campos de peso por exercício/serie.
   final List<List<TextEditingController>> pesoControllers;
 
-  /// Callback chamado quando uma série é marcada como concluída.
-  /// Recebe os índices do exercício e da série (visual index na sessão).
   final void Function(int exercicioIndex, int serieIndex) onSerieCompleted;
 
-  /// Opcional: id do aluno, usado por alguns componentes para permissões/ações.
   final String? alunoId;
 
-  /// Histórico recente por nome de exercício, usado para preencher dicas (peso/reps).
   final Map<String, List<SerieHistorico>> ultimoHistorico;
 
   const TreinoScrollableBody({
@@ -54,7 +46,7 @@ class TreinoScrollableBody extends StatelessWidget {
           final exData = recordedData['exercicio_$exIdx'] ?? {'series': []};
           final seriesList = (exData['series'] as List?) ?? [];
 
-          // Conta quantas séries dessa execução foram marcadas como completas.
+         
           final completedCount = seriesList
               .where((s) => (s as Map)['completa'] == true)
               .length;
@@ -75,8 +67,6 @@ class TreinoScrollableBody extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Cabeçalho que mostra nome do exercício, progresso (X/Y)
-                  // e botões de ação (se aplicável).
                   ExercicioSectionHeader(
                     exercicio: exercicio,
                     exIdx: exIdx,
@@ -100,17 +90,16 @@ class TreinoScrollableBody extends StatelessWidget {
                         ? (seriesList[sIdx] as Map)['completa'] == true
                         : false;
 
-                    // Calcula o índice desta série entre outras do mesmo tipo
-                    // (ex: 2ª série de aquecimento / 1ª série de trabalho).
                     final serieAtual = exercicio.series[sIdx];
+                   
                     final indexDentroDoTipo = exercicio.series
                         .take(sIdx)
                         .where((s) => s.tipo == serieAtual.tipo)
                         .length;
 
-                    // Busca o histórico para este tipo e índice
                     final historicoDoExercicio =
                         ultimoHistorico[exercicio.nome] ?? [];
+                   
                     final historicoSerie = historicoDoExercicio.firstWhere(
                       (h) =>
                           h.tipo == serieAtual.tipo &&
@@ -143,6 +132,7 @@ class TreinoScrollableBody extends StatelessWidget {
 
   int _calcWorkIndex(ExercicioItem exercicio, int upToIdx) {
     int count = 0;
+   
     for (int i = 0; i <= upToIdx; i++) {
       if (exercicio.series[i].tipo == TipoSerie.trabalho) count++;
     }
@@ -150,9 +140,8 @@ class TreinoScrollableBody extends StatelessWidget {
   }
 }
 
+/// Cabeçalho fixo das colunas usadas em cada linha de série.
 class _ColumnLabelsRow extends StatelessWidget {
-  // Linha que exibe os rótulos das colunas acima das séries: Série, Alvo,
-  // Reps e KG. Mantém a largura fixa onde necessário para alinhar as colunas.
   @override
   Widget build(BuildContext context) {
     const labelStyle = TextStyle(

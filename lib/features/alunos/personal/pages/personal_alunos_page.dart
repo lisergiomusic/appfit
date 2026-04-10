@@ -24,9 +24,8 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
   final AlunoService _alunoService = AlunoService();
 
   String _searchQuery = "";
-  String _statusFilter = "todos"; // "todos", "ativo", "inativo", "risco"
+  String _statusFilter = "todos";
 
-  // Estados de Paginação
   List<DocumentSnapshot> _alunosDocs = [];
   bool _isLoading = true;
   bool _isLoadingMore = false;
@@ -34,7 +33,6 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
   DocumentSnapshot? _lastDocument;
   static const int _limit = 20;
 
-  // Contagens Globais para os Chips
   int _totalCount = 0;
   int _ativosCount = 0;
   int _inativosCount = 0;
@@ -239,6 +237,10 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Mapa de seções da interface desta página:
+    // 1) Estrutura superior: AppBar, título e ações de navegação.
+    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
+    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     return Scaffold(
       backgroundColor: AppColors.background,
       body: RefreshIndicator(
@@ -481,7 +483,6 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
             return false;
           },
           onDismissed: (direction) {
-            // Action handled in confirmDismiss
           },
           child: _buildAlunoCard(
             nome: '${aluno['nome'] ?? ''} ${aluno['sobrenome'] ?? ''}'.trim(),

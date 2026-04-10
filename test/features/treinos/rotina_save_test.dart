@@ -1,7 +1,3 @@
-// Testa o pipeline completo de salvamento de séries:
-//   1. Serialização  — SessaoTreinoModel.toFirestore / fromFirestore
-//   2. Detecção       — RotinaDetalheController.verificarAlteracoes
-//   3. Integração     — salvarRotina persiste séries no Firestore
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,9 +8,6 @@ import 'package:appfit/features/treinos/shared/models/rotina_model.dart';
 import 'package:appfit/features/treinos/personal/controllers/rotina_detalhe_controller.dart';
 import 'package:appfit/core/services/rotina_service.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HELPERS — dados de teste
-// ─────────────────────────────────────────────────────────────────────────────
 
 Map<String, dynamic> _serie({
   String tipo = 'trabalho',
@@ -51,18 +44,10 @@ Map<String, dynamic> _rotinaData({List<Map<String, dynamic>>? sessoes}) => {
   'sessoes': sessoes ?? [_sessao()],
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
 
 void main() {
   setUpAll(() => TestWidgetsFlutterBinding.ensureInitialized());
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // GRUPO 1 — Serialização
-  //
-  // Garante que SessaoTreinoModel converte corretamente entre objetos Dart
-  // e o Map que vai/vem do Firestore. Se qualquer campo de série desaparecer
-  // aqui, ele nunca chegará ao banco — independente de qualquer outra lógica.
-  // ───────────────────────────────────────────────────────────────────────────
   group('SessaoTreinoModel — serialização', () {
     test(
       'toFirestore inclui campo "series" com tipo, alvo, carga e descanso',
@@ -261,9 +246,6 @@ void main() {
     });
   });
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // GRUPOS 2 e 3 — dependem de RotinaDetalheController + (fake) Firestore
-  // ───────────────────────────────────────────────────────────────────────────
   group('RotinaDetalheController', () {
     late FakeFirebaseFirestore fakeFirestore;
     late RotinaService service;
@@ -278,8 +260,6 @@ void main() {
           mockUser: MockUser(uid: 'personal_123'),
         ),
       );
-      // Controller com rotinaId preenchido para ativar o caminho de comparação
-      // profunda em verificarAlteracoes (sem rotinaId ele usa early-return).
       makeCtrl = (data) => RotinaDetalheController(
         rotinaId: 'rotina_123',
         rotinaService: service,
@@ -287,14 +267,6 @@ void main() {
       );
     });
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // GRUPO 2 — verificarAlteracoes detecta mudanças em séries
-    //
-    // ESTE GRUPO CAPTA O BUG QUE CORRIGIMOS:
-    // Antes da correção, apenas a quantidade de exercícios era verificada.
-    // Alterar carga/alvo/descanso/tipo de uma série existente retornava false
-    // → _handlePop fazia pop sem chamar salvarRotina → dados perdidos.
-    // ─────────────────────────────────────────────────────────────────────────
     group('verificarAlteracoes — séries', () {
       test('retorna false quando nada foi alterado', () {
         final ctrl = makeCtrl(_rotinaData());
@@ -325,7 +297,6 @@ void main() {
 
       test('retorna true quando tipo de uma série muda', () {
         final ctrl = makeCtrl(_rotinaData());
-        // trabalho → aquecimento: valor diferente do raw ('trabalho')
         ctrl.treinos[0].exercicios[0].series[0].tipo = TipoSerie.aquecimento;
         expect(ctrl.verificarAlteracoes(), isTrue);
         ctrl.dispose();
@@ -383,9 +354,6 @@ void main() {
       });
     });
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // GRUPO 3 — integração: salvarRotina persiste séries no Firestore
-    // ─────────────────────────────────────────────────────────────────────────
     group('salvarRotina — integração com Firestore', () {
       test('nova rotina: todas as séries são persistidas', () async {
         final ctrl = RotinaDetalheController(
@@ -534,12 +502,7 @@ void main() {
   });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Utilitários internos do arquivo de teste
-// ─────────────────────────────────────────────────────────────────────────────
 
-/// Extrai a lista de séries de um documento Firestore dado índices de sessão e
-/// exercício. Facilita a leitura nos testes de integração.
 List<dynamic> _extractSeries(
   Map<String, dynamic> doc, {
   required int sessao,
@@ -550,7 +513,6 @@ List<dynamic> _extractSeries(
   return exercicios[exercicio]['series'] as List;
 }
 
-/// Cria uma rotina no Firestore fake com estrutura mínima para testes.
 Future<DocumentReference<Map<String, dynamic>>> _seedRotina(
   FakeFirebaseFirestore db, {
   int numSeries = 1,
@@ -588,7 +550,6 @@ Future<DocumentReference<Map<String, dynamic>>> _seedRotina(
   });
 }
 
-/// Carrega o documento e instancia o controller com os dados do Firestore.
 Future<RotinaDetalheController> _ctrlFromDoc(
   DocumentReference<Map<String, dynamic>> docRef,
   RotinaService service,

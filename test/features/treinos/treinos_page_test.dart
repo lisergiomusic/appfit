@@ -38,7 +38,6 @@ void main() {
     ).thenAnswer((_) async {});
   });
 
-  /// Insere uma rotina no Firestore fake e retorna seu id.
   Future<String> seedRotina(String nome, {String? personalId}) async {
     final ref = await fakeFirestore.collection('rotinas').add({
       'nome': nome,
@@ -65,16 +64,13 @@ void main() {
     );
   }
 
-  // Helper: abre o PopupMenu do card de uma rotina pelo nome
   Future<void> abrirMenu(WidgetTester tester, String nomeRotina) async {
     await tester.pumpAndSettle();
 
-    // Encontra o card pelo texto do nome da rotina
     final cardFinder = find
         .ancestor(of: find.text(nomeRotina), matching: find.byType(Container))
         .first;
 
-    // O ícone more_vert fica dentro de um PopupMenuButton no card
     final menuBtn = find.descendant(
       of: cardFinder,
       matching: find.byType(PopupMenuButton<String>),
@@ -132,12 +128,11 @@ void main() {
       final searchField = find.byType(TextField).first;
       await tester.enterText(searchField, 'Peito');
       await tester
-          .pumpAndSettle(); // Usar pumpAndSettle para garantir que a UI filtrou
+          .pumpAndSettle();
 
       expect(find.text('Peito e Tríceps'), findsOneWidget);
       expect(find.text('Costas e Bíceps'), findsNothing);
 
-      // Limpa busca
       await tester.tap(find.byIcon(Icons.close_rounded));
       await tester.pumpAndSettle();
       expect(find.text('Costas e Bíceps'), findsOneWidget);
@@ -169,7 +164,6 @@ void main() {
       await tester.tap(find.byIcon(CupertinoIcons.add));
       await tester.pumpAndSettle();
 
-      // Quando rotinaData é null, RotinaDetalhePage abre o modal de configurações
       expect(find.text('Configurações'), findsOneWidget);
     });
 

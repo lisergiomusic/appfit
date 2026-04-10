@@ -4,7 +4,6 @@ export 'tokens/spacing_tokens.dart';
 export 'tokens/app_colors.dart';
 
 class AppTheme {
-  // --- 2. ESPAÇAMENTOS GLOBAIS
   static const double paddingScreen = 16;
   static const double paddingCard = 16.0;
   static const double space0 = 0;
@@ -23,10 +22,8 @@ class AppTheme {
   static const double space40 = 40.0;
   static const double space48 = 48.0;
 
-  // --- 2.1 CONVENIENCE PADDINGS ---
   static const EdgeInsets edgeInsetsSmall = EdgeInsets.all(8);
 
-  // --- 3. ARREDONDAMENTOS (Radii) ---
   static const double radiusXS = 4;
   static const double radiusSM = 8;
   static const double radiusMD = 10;
@@ -37,7 +34,6 @@ class AppTheme {
   static const double radiusFull = 9999.0;
   static const Radius pill = Radius.circular(9999);
 
-  // --- 4. ESTILOS DE TEXTO ---
   static const TextStyle bigTitle = TextStyle(
     fontSize: 34,
     fontWeight: FontWeight.w700,
@@ -148,7 +144,6 @@ class AppTheme {
     letterSpacing: 0.8,
   );
 
-  // --- 5. DECORAÇÕES (Bordas e Sombras) ---
   static final Border cardBorder = Border.all(
     color: Colors.white.withAlpha(5),
     width: 1,
@@ -160,13 +155,11 @@ class AppTheme {
     offset: const Offset(0, 2),
   );
 
-  /// Decoração padrão para cards, reutilizável em containers e widgets de cartão.
   static BoxDecoration get cardDecoration => BoxDecoration(
     color: AppColors.surfaceDark,
     borderRadius: BorderRadius.circular(AppTheme.radiusLG),
   );
 
-  // --- 6. COMPONENTES (Tokens) ---
   static TooltipThemeData get tooltipTheme => TooltipThemeData(
     decoration: BoxDecoration(
       color: AppColors.surfaceDark,
@@ -193,7 +186,6 @@ class AppTheme {
     showDuration: const Duration(seconds: 3),
   );
 
-  // --- 7. TEMA GLOBAL DO FLUTTER ---
   static ThemeData get themeData {
     return ThemeData(
       useMaterial3: true,
@@ -377,9 +369,9 @@ class ButtonTokens {
 }
 
 class AvatarTokens {
-  static const double sm = 14.0; // diâmetro 28 — tab bar, listas densas
-  static const double md = 20.0; // diâmetro 40 — listas padrão
-  static const double lg = 28.0; // diâmetro 56 — cabeçalhos de perfil, home
+  static const double sm = 14.0;
+  static const double md = 20.0;
+  static const double lg = 28.0;
 }
 
 class PillTokens {

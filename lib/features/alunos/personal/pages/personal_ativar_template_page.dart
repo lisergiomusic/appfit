@@ -74,6 +74,10 @@ class _PersonalAtivarTemplatePageState
 
   @override
   Widget build(BuildContext context) {
+    // Mapa de seções da interface desta página:
+    // 1) Estrutura superior: AppBar, título e ações de navegação.
+    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
+    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -153,7 +157,6 @@ class _PersonalAtivarTemplatePageState
   }
 }
 
-// ─── Subwidgets ──────────────────────────────────────────────────────────────
 
 class _TemplateInfoCard extends StatelessWidget {
   final Map<String, dynamic> template;

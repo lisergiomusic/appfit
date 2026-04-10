@@ -54,7 +54,6 @@ class _PersonalGerenciarAlunoPageState
     }
   }
 
-  // --- FUNÇÕES DE AÇÃO ---
 
   Future<void> _irParaEditar(BuildContext context) async {
     final result = await Navigator.push(
@@ -161,10 +160,13 @@ class _PersonalGerenciarAlunoPageState
     }
   }
 
-  // --- INTERFACE ---
 
   @override
   Widget build(BuildContext context) {
+    // Mapa de seções da interface desta página:
+    // 1) Estrutura superior: AppBar, título e ações de navegação.
+    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
+    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -308,25 +310,24 @@ class _PersonalGerenciarAlunoPageState
                   ),
                   child: Padding(
                     padding: CardTokens.padding,
-                    // mais compacto estilo iOS
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(8), // menor
+                          padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: (item.iconColor ?? AppColors.labelPrimary)
                                 .withAlpha(15),
                             borderRadius: BorderRadius.circular(
                               10,
-                            ), // mais sutil
+                            ),
                           ),
                           child: Icon(
                             item.icon,
                             color: item.iconColor ?? AppColors.labelPrimary,
                             size: 20,
-                          ), // menor
+                          ),
                         ),
-                        const SizedBox(width: 12), // menor
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -342,7 +343,7 @@ class _PersonalGerenciarAlunoPageState
                         Icon(
                           Icons.chevron_right_rounded,
                           color: AppColors.labelTertiary,
-                          size: 18, // menor
+                          size: 18,
                         ),
                       ],
                     ),

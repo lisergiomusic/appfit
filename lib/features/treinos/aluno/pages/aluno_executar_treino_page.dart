@@ -7,6 +7,7 @@ import '../controllers/executar_treino_controller.dart';
 import '../../shared/widgets/executar_treino/treino_scrollable_body.dart';
 import '../../shared/widgets/executar_treino/rest_timer_sheet.dart';
 
+/// Tela de execução da sessão com marcação de séries e timer de descanso.
 class AlunoExecutarTreinoPage extends StatefulWidget {
   final SessaoTreinoModel sessao;
   final String rotinaId;
@@ -35,20 +36,17 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
   late List<List<TextEditingController>> _repsControllers;
   late List<List<TextEditingController>> _pesoControllers;
 
-  // Rest timer
   final ValueNotifier<int> _restSecondsNotifier = ValueNotifier(0);
   PersistentBottomSheetController? _restSheetController;
   Timer? _restTimer;
   int? _restTotalSeconds;
   String? _restExercicioNome;
 
-  // Elapsed timer
   Timer? _elapsedTimer;
   int _elapsedSeconds = 0;
 
   bool _isLoading = false;
 
-  // Progress animation
   late AnimationController _progressAnimController;
   late Animation<double> _progressAnim;
 
@@ -73,13 +71,14 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
       CurvedAnimation(parent: _progressAnimController, curve: Curves.easeOut),
     );
 
-    // Carrega o histórico da última execução dessa sessão (non-blocking)
+    // Carregamento não bloqueante para a tela ficar responsiva desde o início.
     _controller.carregarUltimoHistorico().then((_) {
       if (mounted) setState(() {});
     });
   }
 
   void _initializeRecordedData() {
+    // Espelha a estrutura dos exercícios para salvar reps/peso/conclusão por série.
     for (var i = 0; i < widget.sessao.exercicios.length; i++) {
       _recordedData['exercicio_$i'] = {
         'series': List.generate(
@@ -167,6 +166,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
   }
 
   int _parseDescanso(String descanso) {
+    // Aceita formatos como "90", "90s" e "1m 30s".
     final cleaned = descanso.trim().toLowerCase();
     final mMatch = RegExp(r'(\d+)\s*m').firstMatch(cleaned);
     final sMatch = RegExp(r'(\d+)\s*s').firstMatch(cleaned);
@@ -194,6 +194,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
       return;
     }
 
+    // Snapshot da edição atual para garantir consistência no log final.
     setState(() {
       _recordedData[key]['series'][serieIndex]['completa'] = true;
       _recordedData[key]['series'][serieIndex]['reps'] =
@@ -371,8 +372,6 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
   }
 }
 
-// ── App Bar ────────────────────────────────────────────────────────────────────
-
 class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String sessaoNome;
   final String elapsedFormatted;
@@ -415,7 +414,6 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Botão cancelar — pill sutil
                     GestureDetector(
                       onTap: onCancelar,
                       behavior: HitTestBehavior.opaque,
@@ -434,7 +432,6 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // Info central
                     Expanded(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -466,7 +463,9 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 6),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                ),
                                 child: Container(
                                   width: 1,
                                   height: 10,
@@ -488,7 +487,6 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // Botão Finalizar
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 220),
                       child: GestureDetector(
@@ -505,7 +503,9 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
                             color: hasProgress
                                 ? AppColors.primary
                                 : AppColors.surfaceLight,
-                            borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusFull,
+                            ),
                           ),
                           child: Text(
                             'Finalizar',
@@ -525,7 +525,6 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
               ),
             ),
-            // Progress bar com glow
             AnimatedBuilder(
               animation: progressAnim,
               builder: (context, _) {
@@ -566,8 +565,6 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 }
-
-// ── Dialogs ────────────────────────────────────────────────────────────────────
 
 class _FinalizarDialog extends StatelessWidget {
   @override

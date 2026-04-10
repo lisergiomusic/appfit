@@ -77,7 +77,6 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
       _frozenFrame = null;
     });
 
-    // Se autoplay está ativado, não precisa capturar o frame congelado
     if (widget.autoplayGif) {
       return;
     }
@@ -106,7 +105,6 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
       return;
     }
 
-    // Captura o frame atual do GIF e congela
     final imageProvider = CachedNetworkImageProvider(widget.imageUrl!);
     final config = ImageConfiguration(
       devicePixelRatio: MediaQuery.of(context).devicePixelRatio,
@@ -188,7 +186,6 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
       );
     }
 
-    // GIF pausado: mostra o frame congelado
     if (_isGif && _paused && _frozenFrame != null) {
       return RawImage(image: _frozenFrame, fit: BoxFit.cover);
     }
@@ -200,7 +197,6 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
       );
     }
 
-    // GIF animando com provider cacheado
     if (_isGif) {
       return Stack(
         fit: StackFit.expand,
@@ -227,7 +223,6 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
       );
     }
 
-    // YouTube thumbnail ou imagem estática
     final youtubeId = _getYoutubeId(url);
     final resolvedUrl = youtubeId != null
         ? 'https://img.youtube.com/vi/$youtubeId/0.jpg'

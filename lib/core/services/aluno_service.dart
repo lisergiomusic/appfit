@@ -196,7 +196,6 @@ class AlunoService {
     return _firestore.collection('usuarios').doc(alunoId).snapshots();
   }
 
-  /// Combina os dados do aluno, sua rotina ativa e dados do personal em um único Stream
   Stream<AlunoPerfilData> getAlunoPerfilCompletoStream(String alunoId) {
     final alunoStream = getAlunoStream(alunoId);
 

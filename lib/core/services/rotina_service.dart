@@ -1,30 +1,29 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+/// Serviço responsável por criação, atualização e ciclo de vida de rotinas.
 class RotinaService {
   final FirebaseFirestore _db;
   final FirebaseAuth _auth;
 
-  RotinaService({
-    FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
-  })  : _db = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+  RotinaService({FirebaseFirestore? firestore, FirebaseAuth? auth})
+    : _db = firestore ?? FirebaseFirestore.instance,
+      _auth = auth ?? FirebaseAuth.instance;
 
-  // --- CRIAÇÃO DE NOVA ROTINA ---
+ 
   Future<void> criarRotina({
     String? alunoId,
     required String nome,
     required String objetivo,
     required List<Map<String, dynamic>> sessoes,
-    required String tipoVencimento, // 'sessoes' ou 'data'
-    int? sessoesAlvo,               // Ex: 20
-    DateTime? dataVencimento,       // Ex: 20/12/2024
+    required String tipoVencimento,
+    int? sessoesAlvo,
+    DateTime? dataVencimento,
   }) async {
     final personalId = _auth.currentUser?.uid;
     if (personalId == null) throw Exception('Personal não autenticado.');
 
-    // 1. Desativar rotinas antigas do aluno
+   
     if (alunoId != null) {
       final rotinasAntigas = await _db
           .collection('rotinas')
@@ -41,7 +40,6 @@ class RotinaService {
       }
     }
 
-    // 2. Montar o Payload baseado na escolha do usuário
     final Map<String, dynamic> payload = {
       'personalId': personalId,
       'alunoId': alunoId,
@@ -55,21 +53,18 @@ class RotinaService {
 
     if (tipoVencimento == 'sessoes') {
       payload['vencimentoSessoes'] = sessoesAlvo ?? 20;
-      payload['sessoesConcluidas'] = 0; // Inicia o contador
+      payload['sessoesConcluidas'] = 0;
     } else {
-      // Se for data, usamos a data passada ou um padrão de 30 dias
       payload['dataVencimento'] = dataVencimento != null
           ? Timestamp.fromDate(dataVencimento)
           : Timestamp.fromDate(DateTime.now().add(const Duration(days: 30)));
     }
 
-    // 3. Gravar no Firestore
     final novaRotinaRef = _db.collection('rotinas').doc();
     await novaRotinaRef.set(payload);
   }
 
-  // --- ATUALIZAÇÃO DE ROTINA EXISTENTE ---
-  // (Ajustado para aceitar as mudanças de vencimento também)
+ 
   Future<void> atualizarRotina({
     required String rotinaId,
     required String nome,

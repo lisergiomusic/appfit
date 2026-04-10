@@ -77,7 +77,6 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
     if (confirma ?? false) {
       await AuthService().signOut();
       if (mounted && context.mounted) {
-        // ignore: use_build_context_synchronously
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const ChecagemPagina()),
@@ -108,6 +107,10 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Mapa de seções da interface desta página:
+    // 1) Estrutura superior: AppBar, título e ações de navegação.
+    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
+    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     if (_carregando) {
       return Scaffold(
         backgroundColor: AppColors.background,

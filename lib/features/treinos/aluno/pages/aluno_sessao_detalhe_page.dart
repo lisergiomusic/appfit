@@ -40,7 +40,6 @@ class AlunoSessaoDetalhePage extends StatelessWidget {
     int totalSegundos = 0;
     for (final exercicio in sessao.exercicios) {
       for (final serie in exercicio.series) {
-        // Extrai o número de strings como "60s"
         final match = RegExp(r'(\d+)').firstMatch(serie.descanso);
         if (match != null) {
           totalSegundos += int.parse(match.group(1)!);
@@ -56,6 +55,10 @@ class AlunoSessaoDetalhePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Mapa de seções da interface desta página:
+    // 1) Estrutura superior: AppBar, título e ações de navegação.
+    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
+    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     final gruposUnicos = _obterGruposUnicos();
     final tempoEstimado = _calcularTempoEstimado();
     final totalSeries = _calcularTotalSeries();
@@ -304,7 +307,6 @@ class _ExercicioCardState extends State<_ExercicioCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Seções de séries agrupadas por tipo
           ...tiposComSeries.asMap().entries.map((typeEntry) {
             final typeIndex = typeEntry.key;
             final tipo = typeEntry.value;
@@ -318,7 +320,6 @@ class _ExercicioCardState extends State<_ExercicioCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header da seção com trilho colorido
                   Row(
                     children: [
                       Container(
@@ -342,7 +343,6 @@ class _ExercicioCardState extends State<_ExercicioCard> {
                   ),
                   const SizedBox(height: 10),
 
-                  // Agrupamentos de séries por valor
                   ...seriesPorValor.entries.map((serieEntry) {
                     final alvo = serieEntry.key;
                     final quantidade = serieEntry.value;
@@ -360,7 +360,6 @@ class _ExercicioCardState extends State<_ExercicioCard> {
             );
           }),
 
-          // Instruções
           if (exercicio.hasInstrucoesPadrao ||
               exercicio.hasInstrucoesPersonalizadas) ...[
             const SizedBox(height: SpacingTokens.md),

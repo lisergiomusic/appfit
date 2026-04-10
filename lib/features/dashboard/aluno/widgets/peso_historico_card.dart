@@ -59,7 +59,6 @@ class PesoHistoricoCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top section: weight + trend + action button
               Padding(
                 padding: CardTokens.padding,
                 child: Row(
@@ -103,7 +102,6 @@ class PesoHistoricoCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    // Right column: mini stats + add button
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
@@ -132,7 +130,6 @@ class PesoHistoricoCard extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // Chart area
               SizedBox(
                 height: 80,
                 child: CustomPaint(
@@ -144,7 +141,6 @@ class PesoHistoricoCard extends StatelessWidget {
                 ),
               ),
 
-              // Bottom: bar chart + date range + button
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                 child: Column(
@@ -299,7 +295,6 @@ class PesoHistoricoCard extends StatelessWidget {
   }
 }
 
-// ─── Add button ──────────────────────────────────────────────────────────────
 
 class _AddButton extends StatelessWidget {
   final VoidCallback onTap;
@@ -338,7 +333,6 @@ class _AddButton extends StatelessWidget {
   }
 }
 
-// ─── Trend badge ─────────────────────────────────────────────────────────────
 
 class _TrendBadge extends StatelessWidget {
   final double diferenca;
@@ -391,7 +385,6 @@ class _TrendBadge extends StatelessWidget {
   }
 }
 
-// ─── Mini stat label/value ────────────────────────────────────────────────────
 
 class _MiniStat extends StatelessWidget {
   final String label;
@@ -433,7 +426,6 @@ class _MiniStat extends StatelessWidget {
   }
 }
 
-// ─── Smooth area chart ────────────────────────────────────────────────────────
 
 class _AreaChartPainter extends CustomPainter {
   final List<double> pesos;
@@ -449,7 +441,6 @@ class _AreaChartPainter extends CustomPainter {
     final max = pesos.reduce(math.max);
     final range = (max - min) > 0 ? (max - min) : 1.0;
 
-    // Extra vertical padding so the line is never clipped
     const vPad = 10.0;
     final usableH = size.height - vPad * 2;
 
@@ -463,7 +454,6 @@ class _AreaChartPainter extends CustomPainter {
       points.add(Offset(x, y));
     }
 
-    // Gradient fill
     final fillPath = Path()..moveTo(points.first.dx, size.height);
     _addCatmullRom(fillPath, points);
     fillPath
@@ -480,7 +470,6 @@ class _AreaChartPainter extends CustomPainter {
         ).createShader(Rect.fromLTWH(0, 0, size.width, size.height)),
     );
 
-    // Line
     final linePath = Path()..moveTo(points.first.dx, points.first.dy);
     _addCatmullRom(linePath, points);
 
@@ -494,7 +483,6 @@ class _AreaChartPainter extends CustomPainter {
         ..style = PaintingStyle.stroke,
     );
 
-    // Dots — only first and last
     _drawDot(canvas, points.first, color, small: true);
     _drawDot(canvas, points.last, color, small: false);
   }
@@ -544,7 +532,6 @@ class _AreaChartPainter extends CustomPainter {
       old.pesos != pesos || old.color != color;
 }
 
-// ─── Vertical bar mini-chart ──────────────────────────────────────────────────
 
 class _BarMiniChart extends StatelessWidget {
   final List<double> pesos;

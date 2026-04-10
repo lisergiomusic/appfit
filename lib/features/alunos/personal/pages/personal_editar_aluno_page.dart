@@ -136,13 +136,16 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Mapa de seções da interface desta página:
+    // 1) Estrutura superior: AppBar, título e ações de navegação.
+    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
+    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     return PopScope(
       canPop: !_isSaving,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
         if (_isSaving) return;
         await _salvar();
-        // O _salvar já faz o pop
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
@@ -167,7 +170,6 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
         onPressed: () async {
           if (_isSaving) return;
           await _salvar();
-          // O _salvar já faz o pop
         },
       ),
       title: const Text('Editar Aluno'),
