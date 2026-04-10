@@ -6,10 +6,10 @@ void main() {
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
-      const MaterialApp(
+      MaterialApp(
         home: Scaffold(
-          appBar: AppBar(title: Text('AppFit')),
-          body: Center(child: Text('Bem-vindo')),
+          appBar: AppBar(title: const Text('AppFit')),
+          body: const Center(child: Text('Bem-vindo')),
         ),
       ),
     );

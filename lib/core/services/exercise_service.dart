@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import '../../features/treinos/models/exercicio_model.dart';
+import '../../features/treinos/shared/models/exercicio_model.dart';
 
 class PaginatedExercises {
   final List<ExercicioItem> items;

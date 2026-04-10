@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:appfit/core/services/aluno_service.dart';
-import 'package:appfit/features/alunos/editar_aluno_page.dart';
+import 'package:appfit/features/alunos/personal/pages/personal_editar_aluno_page.dart';
 
 void main() {
   setUpAll(() => TestWidgetsFlutterBinding.ensureInitialized());
@@ -35,7 +35,10 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
-        home: EditarAlunoPage(alunoId: 'aluno_teste', alunoService: service),
+        home: PersonalEditarAlunoPage(
+          alunoId: 'aluno_teste',
+          alunoService: service,
+        ),
       ),
     );
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/auth_service.dart';
-import '../dashboard/dashboard_page.dart';
+import '../dashboard/shared/dashboard_page.dart';
 
 class PrimeiroAcessoPage extends StatefulWidget {
   const PrimeiroAcessoPage({super.key});
@@ -65,10 +65,7 @@ class _PrimeiroAcessoPageState extends State<PrimeiroAcessoPage> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.redAccent,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.redAccent),
     );
   }
 

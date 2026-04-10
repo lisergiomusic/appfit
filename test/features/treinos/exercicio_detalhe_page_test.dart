@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:appfit/features/treinos/exercicio_detalhe_page.dart';
-import 'package:appfit/features/treinos/models/exercicio_model.dart';
-import 'package:appfit/features/treinos/widgets/exercicio_detalhe/serie_row.dart';
+import 'package:appfit/features/treinos/personal/pages/personal_exercicio_detalhe_page.dart';
+import 'package:appfit/features/treinos/shared/models/exercicio_model.dart';
+import 'package:appfit/features/treinos/shared/widgets/exercicio_detalhe/serie_row.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POR QUE USAMOS dragFrom E NÃO tester.drag?
@@ -42,7 +42,7 @@ ExercicioItem _makeExercicio({
 
 Widget _buildPage(ExercicioItem ex, {VoidCallback? onChanged}) {
   return MaterialApp(
-    home: ExercicioDetalhePage(
+    home: PersonalExercicioDetalhePage(
       exercicio: ex,
       onChanged: onChanged ?? () {},
     ),
@@ -128,111 +128,109 @@ void main() {
   //   6. tester.takeException() retorna o erro, expect(null) detecta
   // ───────────────────────────────────────────────────────────────────────────
   group('Swipe para remover série', () {
-    testWidgets(
-      'swipe não lança exception — regressão do bug do Dismissible',
-      (tester) async {
-        await tester.binding.setSurfaceSize(const Size(390, 844));
-        final ex = _makeExercicio(numSeries: 2);
-        await tester.pumpWidget(_buildPage(ex));
-        await tester.pumpAndSettle();
+    testWidgets('swipe não lança exception — regressão do bug do Dismissible', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      final ex = _makeExercicio(numSeries: 2);
+      await tester.pumpWidget(_buildPage(ex));
+      await tester.pumpAndSettle();
 
-        final dismissible = find.byType(Dismissible).first;
-        final topLeft = tester.getTopLeft(dismissible);
-        final size = tester.getSize(dismissible);
-        final startPoint = Offset(topLeft.dx + 30, topLeft.dy + size.height / 2);
+      final dismissible = find.byType(Dismissible).first;
+      final topLeft = tester.getTopLeft(dismissible);
+      final size = tester.getSize(dismissible);
+      final startPoint = Offset(topLeft.dx + 30, topLeft.dy + size.height / 2);
 
-        await tester.dragFrom(startPoint, const Offset(-400, 0));
+      await tester.dragFrom(startPoint, const Offset(-400, 0));
 
-        // pump() avança EXATAMENTE UM FRAME.
-        // Era nesse frame que o crash acontecia antes da correção:
-        // o Dismissible era reconstruído em estado "dismissed" enquanto
-        // ainda estava na árvore.
-        await tester.pump();
-        expect(tester.takeException(), isNull, reason: 'Não deve haver crash no primeiro frame após dismiss');
+      // pump() avança EXATAMENTE UM FRAME.
+      // Era nesse frame que o crash acontecia antes da correção:
+      // o Dismissible era reconstruído em estado "dismissed" enquanto
+      // ainda estava na árvore.
+      await tester.pump();
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: 'Não deve haver crash no primeiro frame após dismiss',
+      );
 
-        // Aguarda todas as animações terminarem
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull, reason: 'Não deve haver crash após animações');
-      },
-    );
+      // Aguarda todas as animações terminarem
+      await tester.pumpAndSettle();
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: 'Não deve haver crash após animações',
+      );
+    });
 
-    testWidgets(
-      'swipe remove a série do modelo de dados',
-      (tester) async {
-        await tester.binding.setSurfaceSize(const Size(390, 844));
-        final ex = _makeExercicio(numSeries: 2);
-        await tester.pumpWidget(_buildPage(ex));
-        await tester.pumpAndSettle();
+    testWidgets('swipe remove a série do modelo de dados', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      final ex = _makeExercicio(numSeries: 2);
+      await tester.pumpWidget(_buildPage(ex));
+      await tester.pumpAndSettle();
 
+      await _swipePrimeiraSerie(tester);
+
+      expect(ex.series.length, 1);
+    });
+
+    testWidgets('swipe remove a SerieRow da tela', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      final ex = _makeExercicio(numSeries: 2);
+      await tester.pumpWidget(_buildPage(ex));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SerieRow), findsNWidgets(2));
+
+      await _swipePrimeiraSerie(tester);
+
+      expect(find.byType(SerieRow), findsNWidgets(1));
+    });
+
+    testWidgets('remover a última série exibe estado vazio', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      final ex = _makeExercicio(numSeries: 1);
+      await tester.pumpWidget(_buildPage(ex));
+      await tester.pumpAndSettle();
+
+      await _swipePrimeiraSerie(tester);
+
+      expect(find.text('Prescreva o exercício'), findsOneWidget);
+      expect(find.byType(SerieRow), findsNothing);
+    });
+
+    testWidgets('swipe chama onChanged', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      final ex = _makeExercicio(numSeries: 2);
+      var chamadas = 0;
+      await tester.pumpWidget(_buildPage(ex, onChanged: () => chamadas++));
+      await tester.pumpAndSettle();
+
+      await _swipePrimeiraSerie(tester);
+
+      expect(chamadas, greaterThan(0));
+    });
+
+    testWidgets('remover todas as séries uma por uma não causa crash', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      final ex = _makeExercicio(numSeries: 3);
+      await tester.pumpWidget(_buildPage(ex));
+      await tester.pumpAndSettle();
+
+      for (var i = 3; i > 0; i--) {
+        expect(find.byType(SerieRow), findsNWidgets(i));
         await _swipePrimeiraSerie(tester);
+        expect(
+          tester.takeException(),
+          isNull,
+          reason: 'crash na remoção da série $i',
+        );
+      }
 
-        expect(ex.series.length, 1);
-      },
-    );
-
-    testWidgets(
-      'swipe remove a SerieRow da tela',
-      (tester) async {
-        await tester.binding.setSurfaceSize(const Size(390, 844));
-        final ex = _makeExercicio(numSeries: 2);
-        await tester.pumpWidget(_buildPage(ex));
-        await tester.pumpAndSettle();
-
-        expect(find.byType(SerieRow), findsNWidgets(2));
-
-        await _swipePrimeiraSerie(tester);
-
-        expect(find.byType(SerieRow), findsNWidgets(1));
-      },
-    );
-
-    testWidgets(
-      'remover a última série exibe estado vazio',
-      (tester) async {
-        await tester.binding.setSurfaceSize(const Size(390, 844));
-        final ex = _makeExercicio(numSeries: 1);
-        await tester.pumpWidget(_buildPage(ex));
-        await tester.pumpAndSettle();
-
-        await _swipePrimeiraSerie(tester);
-
-        expect(find.text('Prescreva o exercício'), findsOneWidget);
-        expect(find.byType(SerieRow), findsNothing);
-      },
-    );
-
-    testWidgets(
-      'swipe chama onChanged',
-      (tester) async {
-        await tester.binding.setSurfaceSize(const Size(390, 844));
-        final ex = _makeExercicio(numSeries: 2);
-        var chamadas = 0;
-        await tester.pumpWidget(_buildPage(ex, onChanged: () => chamadas++));
-        await tester.pumpAndSettle();
-
-        await _swipePrimeiraSerie(tester);
-
-        expect(chamadas, greaterThan(0));
-      },
-    );
-
-    testWidgets(
-      'remover todas as séries uma por uma não causa crash',
-      (tester) async {
-        await tester.binding.setSurfaceSize(const Size(390, 844));
-        final ex = _makeExercicio(numSeries: 3);
-        await tester.pumpWidget(_buildPage(ex));
-        await tester.pumpAndSettle();
-
-        for (var i = 3; i > 0; i--) {
-          expect(find.byType(SerieRow), findsNWidgets(i));
-          await _swipePrimeiraSerie(tester);
-          expect(tester.takeException(), isNull, reason: 'crash na remoção da série $i');
-        }
-
-        expect(find.text('Prescreva o exercício'), findsOneWidget);
-      },
-    );
+      expect(find.text('Prescreva o exercício'), findsOneWidget);
+    });
   });
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -243,54 +241,47 @@ void main() {
   // na árvore inteira, incluindo esse ScaffoldMessenger interno.
   // ───────────────────────────────────────────────────────────────────────────
   group('SnackBar DESFAZER após remoção', () {
-    testWidgets(
-      'snackbar "Série removida" aparece após swipe',
-      (tester) async {
-        await tester.binding.setSurfaceSize(const Size(390, 844));
-        final ex = _makeExercicio(numSeries: 2);
-        await tester.pumpWidget(_buildPage(ex));
-        await tester.pumpAndSettle();
+    testWidgets('snackbar "Série removida" aparece após swipe', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      final ex = _makeExercicio(numSeries: 2);
+      await tester.pumpWidget(_buildPage(ex));
+      await tester.pumpAndSettle();
 
-        await _swipePrimeiraSerie(tester);
+      await _swipePrimeiraSerie(tester);
 
-        expect(find.text('Série removida'), findsOneWidget);
-        expect(find.text('DESFAZER'), findsOneWidget);
-      },
-    );
+      expect(find.text('Série removida'), findsOneWidget);
+      expect(find.text('DESFAZER'), findsOneWidget);
+    });
 
-    testWidgets(
-      'tocar DESFAZER restaura a série removida na lista',
-      (tester) async {
-        await tester.binding.setSurfaceSize(const Size(390, 844));
-        final ex = _makeExercicio(numSeries: 2);
-        await tester.pumpWidget(_buildPage(ex));
-        await tester.pumpAndSettle();
+    testWidgets('tocar DESFAZER restaura a série removida na lista', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      final ex = _makeExercicio(numSeries: 2);
+      await tester.pumpWidget(_buildPage(ex));
+      await tester.pumpAndSettle();
 
-        await _swipePrimeiraSerie(tester);
-        expect(ex.series.length, 1);
+      await _swipePrimeiraSerie(tester);
+      expect(ex.series.length, 1);
 
-        await tester.tap(find.text('DESFAZER'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('DESFAZER'));
+      await tester.pumpAndSettle();
 
-        expect(ex.series.length, 2);
-        expect(find.byType(SerieRow), findsNWidgets(2));
-      },
-    );
+      expect(ex.series.length, 2);
+      expect(find.byType(SerieRow), findsNWidgets(2));
+    });
 
-    testWidgets(
-      'tocar DESFAZER não causa exception',
-      (tester) async {
-        await tester.binding.setSurfaceSize(const Size(390, 844));
-        final ex = _makeExercicio(numSeries: 2);
-        await tester.pumpWidget(_buildPage(ex));
-        await tester.pumpAndSettle();
+    testWidgets('tocar DESFAZER não causa exception', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      final ex = _makeExercicio(numSeries: 2);
+      await tester.pumpWidget(_buildPage(ex));
+      await tester.pumpAndSettle();
 
-        await _swipePrimeiraSerie(tester);
-        await tester.tap(find.text('DESFAZER'));
-        await tester.pumpAndSettle();
+      await _swipePrimeiraSerie(tester);
+      await tester.tap(find.text('DESFAZER'));
+      await tester.pumpAndSettle();
 
-        expect(tester.takeException(), isNull);
-      },
-    );
+      expect(tester.takeException(), isNull);
+    });
   });
 }

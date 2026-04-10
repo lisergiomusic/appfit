@@ -1,6 +1,6 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:appfit/features/treinos/controllers/executar_treino_controller.dart';
+import 'package:appfit/features/treinos/aluno/controllers/executar_treino_controller.dart';
 import '../../helpers/treino_fixtures.dart';
 
 void main() {

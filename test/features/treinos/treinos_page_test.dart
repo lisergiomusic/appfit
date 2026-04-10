@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
-import 'package:appfit/features/treinos/treinos_page.dart';
-import 'package:appfit/features/treinos/rotina_detalhe_page.dart';
+import 'package:appfit/features/treinos/personal/pages/personal_treinos_page.dart';
+import 'package:appfit/features/treinos/personal/pages/personal_rotina_detalhe_page.dart';
 import 'package:appfit/core/services/aluno_service.dart';
 import 'package:appfit/core/services/rotina_service.dart';
 
@@ -56,7 +56,7 @@ void main() {
   Widget buildPage({String? alunoId, String? alunoNome}) {
     return MaterialApp(
       theme: ThemeData.dark(),
-      home: TreinosPage(
+      home: PersonalTreinosPage(
         alunoId: alunoId,
         alunoNome: alunoNome,
         alunoService: alunoService,
@@ -184,7 +184,7 @@ void main() {
         await tester.tap(find.text('Treino Clique'));
         await tester.pumpAndSettle();
 
-        expect(find.byType(RotinaDetalhePage), findsOneWidget);
+        expect(find.byType(PersonalRotinaDetalhePage), findsOneWidget);
       },
     );
 
@@ -201,9 +201,9 @@ void main() {
         await tester.tap(find.text('Treino Seleção'));
         await tester.pumpAndSettle();
 
-        expect(find.byType(RotinaDetalhePage), findsOneWidget);
-        final page = tester.widget<RotinaDetalhePage>(
-          find.byType(RotinaDetalhePage),
+        expect(find.byType(PersonalRotinaDetalhePage), findsOneWidget);
+        final page = tester.widget<PersonalRotinaDetalhePage>(
+          find.byType(PersonalRotinaDetalhePage),
         );
         expect(page.alunoId, equals('aluno_1'));
       },
@@ -227,7 +227,7 @@ void main() {
       await tester.tap(find.text('Editar'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(RotinaDetalhePage), findsOneWidget);
+      expect(find.byType(PersonalRotinaDetalhePage), findsOneWidget);
     });
 
     testWidgets('Renomear abre dialog e salva novo nome', (tester) async {

@@ -1,5 +1,5 @@
-import 'package:appfit/features/treinos/models/rotina_model.dart';
-import 'package:appfit/features/treinos/models/exercicio_model.dart';
+import 'package:appfit/features/treinos/shared/models/rotina_model.dart';
+import 'package:appfit/features/treinos/shared/models/exercicio_model.dart';
 
 /// Cria uma sessão de treino fake para testes
 SessaoTreinoModel fakeSessao({
@@ -120,7 +120,12 @@ List<Map<String, dynamic>> _defaultSessoesData() => [
         'grupoMuscular': ['Peito'],
         'tipoAlvo': 'Reps',
         'series': [
-          {'tipo': 'aquecimento', 'alvo': '15', 'carga': '40', 'descanso': '60s'},
+          {
+            'tipo': 'aquecimento',
+            'alvo': '15',
+            'carga': '40',
+            'descanso': '60s',
+          },
           {'tipo': 'trabalho', 'alvo': '10', 'carga': '60', 'descanso': '90s'},
         ],
       },

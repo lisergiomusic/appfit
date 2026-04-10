@@ -3,7 +3,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/services/auth_service.dart';
 import 'cadastro_page.dart';
 import 'primeiro_acesso_page.dart';
-import '../dashboard/dashboard_page.dart';
+import '../dashboard/shared/dashboard_page.dart';
 
 class LoginPage extends StatefulWidget {
   final String userType;
@@ -183,7 +183,9 @@ class _LoginPageState extends State<LoginPage> {
                       );
                     },
                     child: Text(
-                      widget.userType == 'aluno' ? 'Criar senha' : 'Cadastre-se',
+                      widget.userType == 'aluno'
+                          ? 'Criar senha'
+                          : 'Cadastre-se',
                       style: const TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.bold,

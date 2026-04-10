@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/auth_service.dart';
-import '../dashboard/dashboard_page.dart';
+import '../dashboard/shared/dashboard_page.dart';
 
 class CadastroPage extends StatefulWidget {
   final String userType;

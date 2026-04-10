@@ -1,5 +1,5 @@
 import 'package:appfit/core/services/rotina_service.dart';
-import 'package:appfit/features/treinos/rotina_detalhe_page.dart';
+import 'package:appfit/features/treinos/personal/pages/personal_rotina_detalhe_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -42,7 +42,7 @@ void main() {
   Future<void> pumpPage(WidgetTester tester, RotinaService service) async {
     await tester.pumpWidget(
       MaterialApp(
-        home: RotinaDetalhePage(
+        home: PersonalRotinaDetalhePage(
           rotinaId: 'rotina_1',
           rotinaData: rotinaDataBase(),
           rotinaService: service,

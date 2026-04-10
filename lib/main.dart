@@ -6,7 +6,7 @@ import 'core/config/firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/services/auth_service.dart';
 import 'features/auth/login_page.dart';
-import 'features/dashboard/dashboard_page.dart';
+import 'features/dashboard/shared/dashboard_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

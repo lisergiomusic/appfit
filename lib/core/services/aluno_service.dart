@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart';
-import '../../features/alunos/models/aluno_perfil_data.dart';
+import '../../features/alunos/shared/models/aluno_perfil_data.dart';
 
 class PaginatedAlunos {
   final List<DocumentSnapshot> docs;
@@ -232,21 +232,19 @@ class AlunoService {
         return Stream.value(data);
       }
 
-      return _firestore
-          .collection('usuarios')
-          .doc(personalId)
-          .snapshots()
-          .map((personalSnap) {
-            final personalMap = personalSnap.data() as Map<String, dynamic>? ?? {};
-            final nomePersonal = personalMap['nome'] as String?;
+      return _firestore.collection('usuarios').doc(personalId).snapshots().map((
+        personalSnap,
+      ) {
+        final personalMap = personalSnap.data() ?? {};
+        final nomePersonal = personalMap['nome']?.toString();
 
-            return AlunoPerfilData(
-              aluno: data.aluno,
-              rotinaAtiva: data.rotinaAtiva,
-              rotinaId: data.rotinaId,
-              nomePersonal: nomePersonal,
-            );
-          });
+        return AlunoPerfilData(
+          aluno: data.aluno,
+          rotinaAtiva: data.rotinaAtiva,
+          rotinaId: data.rotinaId,
+          nomePersonal: nomePersonal,
+        );
+      });
     });
   }
 
@@ -295,7 +293,10 @@ class AlunoService {
     return _firestore
         .collection('logs_treino')
         .where('alunoId', isEqualTo: alunoId)
-        .where('dataHora', isGreaterThanOrEqualTo: Timestamp.fromDate(segundaFeira))
+        .where(
+          'dataHora',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(segundaFeira),
+        )
         .snapshots();
   }
 
@@ -327,15 +328,11 @@ class AlunoService {
         .collection('usuarios')
         .doc(alunoId)
         .collection('historico_peso')
-        .add({
-          'peso': peso,
-          'dataHora': agora,
-        });
+        .add({'peso': peso, 'dataHora': agora});
 
-    await _firestore
-        .collection('usuarios')
-        .doc(alunoId)
-        .update({'pesoAtual': peso});
+    await _firestore.collection('usuarios').doc(alunoId).update({
+      'pesoAtual': peso,
+    });
   }
 
   Future<void> atribuirTreinoAoAluno({
