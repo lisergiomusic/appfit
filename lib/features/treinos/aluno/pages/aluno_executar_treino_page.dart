@@ -358,6 +358,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
                 repsControllers: _repsControllers,
                 pesoControllers: _pesoControllers,
                 onSerieCompleted: _onSerieCompleted,
+                alunoId: widget.alunoId,
               ),
       ),
     );

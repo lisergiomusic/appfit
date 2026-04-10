@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/exercicio_model.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../exercicio_thumbnail.dart';
+import '../../../aluno/pages/aluno_exercicio_view_page.dart';
 
 /// Exercise card header: thumbnail (square) with progress ring + name + muscles.
 class ExercicioSectionHeader extends StatelessWidget {
@@ -9,6 +10,7 @@ class ExercicioSectionHeader extends StatelessWidget {
   final int exIdx;
   final int completedCount;
   final int totalCount;
+  final String? alunoId;
 
   const ExercicioSectionHeader({
     super.key,
@@ -16,6 +18,7 @@ class ExercicioSectionHeader extends StatelessWidget {
     required this.exIdx,
     required this.completedCount,
     required this.totalCount,
+    this.alunoId,
   });
 
   @override
@@ -23,70 +26,87 @@ class ExercicioSectionHeader extends StatelessWidget {
     final muscles = exercicio.grupoMuscular.join(' · ');
     final isCompleto = completedCount == totalCount && totalCount > 0;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        SpacingTokens.lg,
-        SpacingTokens.lg,
-        SpacingTokens.lg,
-        SpacingTokens.sm,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Thumbnail with optional checkmark overlay
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              ExercicioThumbnail(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AlunoExercicioViewPage(
                 exercicio: exercicio,
-                width: 56,
-                height: 56,
-                borderRadius: AppTheme.radiusSM,
-                iconSize: 22,
-                backgroundColor: AppColors.surfaceLight,
+                alunoId: alunoId,
               ),
-              if (isCompleto)
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withAlpha(210),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                  ),
-                  child: const Icon(
-                    Icons.check_rounded,
-                    color: Colors.black,
-                    size: 22,
-                  ),
-                ),
-            ],
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            SpacingTokens.lg,
+            SpacingTokens.lg,
+            SpacingTokens.lg,
+            SpacingTokens.sm,
           ),
-          const SizedBox(width: SpacingTokens.md),
-          // Name + muscles
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  exercicio.nome,
-                  style: CardTokens.cardTitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (muscles.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 3),
-                    child: Text(
-                      muscles,
-                      style: AppTheme.caption,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Thumbnail with optional checkmark overlay
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  ExercicioThumbnail(
+                    exercicio: exercicio,
+                    width: 56,
+                    height: 56,
+                    borderRadius: AppTheme.radiusSM,
+                    iconSize: 22,
+                    backgroundColor: AppColors.surfaceLight,
+                  ),
+                  if (isCompleto)
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withAlpha(210),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                      ),
+                      child: const Icon(
+                        Icons.check_rounded,
+                        color: Colors.black,
+                        size: 22,
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(width: SpacingTokens.md),
+              // Name + muscles
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      exercicio.nome,
+                      style: CardTokens.cardTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-              ],
-            ),
+                    if (muscles.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 3),
+                        child: Text(
+                          muscles,
+                          style: AppTheme.caption,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

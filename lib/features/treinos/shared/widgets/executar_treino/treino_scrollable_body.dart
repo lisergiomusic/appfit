@@ -12,6 +12,7 @@ class TreinoScrollableBody extends StatelessWidget {
   final List<List<TextEditingController>> repsControllers;
   final List<List<TextEditingController>> pesoControllers;
   final void Function(int exercicioIndex, int serieIndex) onSerieCompleted;
+  final String? alunoId;
 
   const TreinoScrollableBody({
     super.key,
@@ -20,6 +21,7 @@ class TreinoScrollableBody extends StatelessWidget {
     required this.repsControllers,
     required this.pesoControllers,
     required this.onSerieCompleted,
+    this.alunoId,
   });
 
   @override
@@ -68,6 +70,7 @@ class TreinoScrollableBody extends StatelessWidget {
                     exIdx: exIdx,
                     completedCount: completedCount,
                     totalCount: totalCount,
+                    alunoId: alunoId,
                   ),
                   if (exercicio.instrucoesParaExibicao != null)
                     Padding(
