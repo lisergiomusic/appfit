@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import '../../../../core/theme/app_theme.dart';
 import '../../shared/models/rotina_model.dart';
+import '../../shared/models/historico_treino_model.dart';
+import '../../shared/models/exercicio_model.dart';
 import '../controllers/executar_treino_controller.dart';
 import '../../shared/widgets/executar_treino/treino_scrollable_body.dart';
 import '../../shared/widgets/executar_treino/rest_timer_sheet.dart';
@@ -177,6 +179,17 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
     }
     return int.tryParse(RegExp(r'\d+').firstMatch(cleaned)?.group(0) ?? '') ??
         60;
+  }
+
+  void _onVerHistorico(String exercicioNome, List<SerieHistorico> historico) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _UltimoTreinoSheet(
+        exercicioNome: exercicioNome,
+        historico: historico,
+      ),
+    );
   }
 
   void _onMarcarTodasSeries(int exercicioIndex, bool marcar) {
@@ -381,6 +394,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
                 pesoControllers: _pesoControllers,
                 onSerieCompleted: _onSerieCompleted,
                 onMarcarTodasSeries: _onMarcarTodasSeries,
+                onVerHistorico: _onVerHistorico,
                 alunoId: widget.alunoId,
                 ultimoHistorico: _controller.ultimoHistorico,
               ),
@@ -776,6 +790,101 @@ class _CancelarDialog extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _UltimoTreinoSheet extends StatelessWidget {
+  final String exercicioNome;
+  final List<SerieHistorico> historico;
+
+  const _UltimoTreinoSheet({
+    required this.exercicioNome,
+    required this.historico,
+  });
+
+  String _labelTipo(TipoSerie tipo) {
+    switch (tipo) {
+      case TipoSerie.aquecimento:
+        return 'Aquecimento';
+      case TipoSerie.feeder:
+        return 'Feeder';
+      case TipoSerie.trabalho:
+        return 'Série';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppTheme.radiusXL),
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(
+        SpacingTokens.lg,
+        SpacingTokens.md,
+        SpacingTokens.lg,
+        SpacingTokens.screenBottomPadding,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.labelQuaternary,
+                borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+              ),
+            ),
+          ),
+          const SizedBox(height: SpacingTokens.lg),
+          Text('Último treino', style: AppTheme.title1),
+          const SizedBox(height: 4),
+          Text(exercicioNome, style: AppTheme.caption),
+          const SizedBox(height: SpacingTokens.sectionGap),
+          if (historico.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: SpacingTokens.lg),
+              child: Center(
+                child: Text(
+                  'Nenhum registro encontrado.',
+                  style: AppTheme.caption,
+                ),
+              ),
+            )
+          else
+            ...historico.map((h) {
+              final label = '${_labelTipo(h.tipo)} ${h.indexDentroDoTipo + 1}';
+              final peso = h.pesoRealizado ?? '—';
+              final reps = h.repsRealizadas ?? '—';
+              return Padding(
+                padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(label, style: AppTheme.bodyText),
+                    ),
+                    Text(
+                      '$peso kg  ×  $reps reps',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.labelPrimary,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+        ],
       ),
     );
   }
