@@ -35,8 +35,6 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
 
   // Recorded data
   final Map<String, dynamic> _recordedData = {};
-  final Set<int> _startedExercises = {};
-  final Map<int, int?> _activeSerieByExercise = {};
 
   // Controllers matrix
   late List<List<TextEditingController>> _repsControllers;
@@ -137,7 +135,6 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
 
   void _onExerciseTap(int index) {
     _dismissRestSheet();
-    _activeSerieByExercise[index] ??= _nextIncompleteSerieIndex(index);
     setState(() => _activeExerciseIndex = index);
   }
 
@@ -149,47 +146,6 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
     final series =
         (_recordedData['exercicio_$index']?['series'] as List?) ?? [];
     return series.where((s) => (s as Map)['completa'] == true).length;
-  }
-
-  int? _nextIncompleteSerieIndex(int exercicioIndex) {
-    final series =
-        (_recordedData['exercicio_$exercicioIndex']?['series'] as List?) ?? [];
-
-    for (var i = 0; i < series.length; i++) {
-      if ((series[i] as Map)['completa'] != true) {
-        return i;
-      }
-    }
-
-    return null;
-  }
-
-  void _onStartExercise(int exercicioIndex) {
-    final nextSerie = _nextIncompleteSerieIndex(exercicioIndex);
-    setState(() {
-      _startedExercises.add(exercicioIndex);
-      _activeSerieByExercise[exercicioIndex] = nextSerie;
-    });
-
-    if (nextSerie == null || !mounted) {
-      return;
-    }
-
-    final descanso =
-        widget.sessao.exercicios[exercicioIndex].series[nextSerie].descanso;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Exercício iniciado. Descanso recomendado: $descanso'),
-        backgroundColor: AppColors.surfaceDark,
-      ),
-    );
-  }
-
-  void _onStartSerie(int exercicioIndex, int serieIndex) {
-    setState(() {
-      _startedExercises.add(exercicioIndex);
-      _activeSerieByExercise[exercicioIndex] = serieIndex;
-    });
   }
 
   bool _hasAnyProgress() => widget.sessao.exercicios.asMap().keys.any(
@@ -221,22 +177,17 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
       // Undo completion
       setState(() {
         _recordedData[key]['series'][serieIndex]['completa'] = false;
-        _activeSerieByExercise[exercicioIndex] = serieIndex;
       });
       return;
     }
 
     // Mark complete - capture current input values
     setState(() {
-      _startedExercises.add(exercicioIndex);
       _recordedData[key]['series'][serieIndex]['completa'] = true;
       _recordedData[key]['series'][serieIndex]['reps'] =
           _repsControllers[exercicioIndex][serieIndex].text;
       _recordedData[key]['series'][serieIndex]['peso'] =
           _pesoControllers[exercicioIndex][serieIndex].text;
-      _activeSerieByExercise[exercicioIndex] = _nextIncompleteSerieIndex(
-        exercicioIndex,
-      );
     });
 
     final serie = widget.sessao.exercicios[exercicioIndex].series[serieIndex];
@@ -493,15 +444,6 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
                         exercicioData:
                             _recordedData['exercicio_$_activeExerciseIndex'] ??
                             {'series': []},
-                        isExerciseStarted: _startedExercises.contains(
-                          _activeExerciseIndex,
-                        ),
-                        activeSerieIndex:
-                            _activeSerieByExercise[_activeExerciseIndex!],
-                        onStartExercise: () =>
-                            _onStartExercise(_activeExerciseIndex!),
-                        onStartSerie: (serieIndex) =>
-                            _onStartSerie(_activeExerciseIndex!, serieIndex),
                         onSerieCompleted: (serieIndex) => _onSerieCompleted(
                           _activeExerciseIndex!,
                           serieIndex,
