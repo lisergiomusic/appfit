@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/services/exercise_service.dart';
 import '../../core/services/treino_service.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/appfit_sliver_app_bar.dart';
 import 'models/exercicio_model.dart';
 import 'widgets/exercicio_detalhe/exercise_video_card.dart';
 import 'widgets/exercicio_detalhe/recordes_pessoais_section.dart';
@@ -47,15 +48,44 @@ class _ExercicioViewPageState extends State<ExercicioViewPage> {
       backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            backgroundColor: AppColors.background,
-            surfaceTintColor: Colors.transparent,
-            pinned: true,
-            title: Text(widget.exercicio.nome, style: AppTheme.pageTitle),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-              color: AppColors.primary,
-              onPressed: () => Navigator.pop(context),
+          AppFitSliverAppBar(
+            title: widget.exercicio.nome,
+            expandedHeight: temMusculos ? 148 : 120,
+            background: Align(
+              alignment: Alignment.bottomLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: SpacingTokens.screenHorizontalPadding,
+                  right: SpacingTokens.screenHorizontalPadding,
+                  bottom: SpacingTokens.sm,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.exercicio.nome, style: AppTheme.bigTitle),
+                    if (temMusculos) ...[
+                      const SizedBox(height: SpacingTokens.xs),
+                      Wrap(
+                        spacing: SpacingTokens.xs,
+                        runSpacing: SpacingTokens.xs,
+                        children: widget.exercicio.grupoMuscular
+                            .map(
+                              (grupo) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: SpacingTokens.sm,
+                                  vertical: SpacingTokens.xs,
+                                ),
+                                decoration: PillTokens.decoration,
+                                child: Text(grupo, style: PillTokens.text),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           ),
           SliverToBoxAdapter(
@@ -92,26 +122,6 @@ class _ExercicioViewPageState extends State<ExercicioViewPage> {
                       );
                     },
                   ),
-
-                  if (temMusculos) ...[
-                    const SizedBox(height: SpacingTokens.sm),
-                    Wrap(
-                      spacing: SpacingTokens.xs,
-                      runSpacing: SpacingTokens.xs,
-                      children: widget.exercicio.grupoMuscular
-                          .map(
-                            (grupo) => Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: SpacingTokens.sm,
-                                vertical: SpacingTokens.xs,
-                              ),
-                              decoration: PillTokens.decoration,
-                              child: Text(grupo, style: PillTokens.text),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                  ],
 
                   const SizedBox(height: SpacingTokens.sectionGap),
 
