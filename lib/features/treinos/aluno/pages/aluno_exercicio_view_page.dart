@@ -31,6 +31,65 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
         : _exerciseService.buscarExercicioPorNome(widget.exercicio.nome);
   }
 
+  void _mostrarAvisoInstrucoes(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.info_outline_rounded,
+              size: 20,
+              color: AppColors.labelSecondary,
+            ),
+            const SizedBox(width: SpacingTokens.sm),
+            Text('Sobre estas instruções', style: AppTheme.cardTitle),
+          ],
+        ),
+        content: Text(
+          'As instruções exibidas aqui são orientações gerais e educativas sobre o exercício, '
+          'fornecidas como referência básica. Elas não substituem as orientações individualizadas '
+          'do seu personal trainer.\n\n'
+          'Antes de executar qualquer exercício, considere:\n\n'
+          '• Suas condições físicas e limitações pessoais\n'
+          '• Lesões ou restrições médicas preexistentes\n'
+          '• As instruções específicas passadas pelo seu personal\n\n'
+          'Em caso de dúvida, consulte sempre um profissional de educação física habilitado '
+          'antes de iniciar ou modificar sua prática.',
+          style: AppTheme.bodyText.copyWith(
+            color: AppColors.labelSecondary,
+            height: 1.5,
+          ),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              style: TextButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: SpacingTokens.sm),
+              ),
+              child: const Text(
+                'Entendi',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Mapa de seções da interface desta página:
@@ -122,7 +181,23 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
 
                   const SizedBox(height: SpacingTokens.sectionGap),
 
-                  Text('Instruções', style: AppTheme.sectionHeader),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text('Instruções', style: AppTheme.sectionHeader),
+                      GestureDetector(
+                        onTap: () => _mostrarAvisoInstrucoes(context),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: Icon(
+                            Icons.info_outline_rounded,
+                            size: 14,
+                            color: AppColors.labelTertiary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: SpacingTokens.labelToField),
                   FutureBuilder<ExercicioItem?>(
                     future: _exercicioBaseFuture,

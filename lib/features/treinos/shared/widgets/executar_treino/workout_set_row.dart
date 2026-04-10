@@ -66,7 +66,7 @@ class WorkoutSetRow extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 280),
       curve: Curves.easeOut,
-      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 2),
+      margin: const EdgeInsets.only(bottom: SpacingTokens.xs),
       decoration: BoxDecoration(
         color: isCompleted
             ? AppColors.primary.withAlpha(14)
