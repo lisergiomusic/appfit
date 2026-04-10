@@ -26,7 +26,7 @@ class OrientacaoPersonalBanner extends StatelessWidget {
             children: const [
               Expanded(
                 child: Text(
-                  'Orientação do personal:',
+                  'Orientações do personal:',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,

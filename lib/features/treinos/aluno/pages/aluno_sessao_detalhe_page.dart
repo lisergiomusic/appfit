@@ -194,10 +194,7 @@ class AlunoSessaoDetalhePage extends StatelessWidget {
                   if (sessao.orientacoes != null &&
                       sessao.orientacoes!.trim().isNotEmpty)
                     const SizedBox(height: SpacingTokens.sectionGap),
-                  Text(
-                    'Lista de exercícios'.toUpperCase(),
-                    style: AppTheme.sectionHeader.copyWith(letterSpacing: 0.8),
-                  ),
+                  Text('Exercícios', style: AppTheme.sectionHeader),
                   const SizedBox(height: SpacingTokens.labelToField),
                   ...List.generate(
                     sessao.exercicios.length,
