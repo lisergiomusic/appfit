@@ -1,3 +1,5 @@
+import 'package:appfit/core/services/treino_service.dart';
+import 'package:appfit/features/treinos/shared/models/historico_treino_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../shared/models/rotina_model.dart';
 
@@ -6,13 +8,18 @@ class ExecutarTreinoController {
   final String rotinaId;
   final String alunoId;
   final FirebaseFirestore _firestore;
+  final TreinoService _treinoService;
+
+  Map<String, List<SerieHistorico>> ultimoHistorico = {};
 
   ExecutarTreinoController({
     required this.sessao,
     required this.rotinaId,
     required this.alunoId,
     FirebaseFirestore? firestore,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance;
+    TreinoService? treinoService,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _treinoService = treinoService ?? TreinoService();
 
   Future<void> saveTreinoLog(
     Map<String, dynamic> recordedData, {
@@ -67,6 +74,7 @@ class ExecutarTreinoController {
               (serieData is Map ? serieData['completa'] : null) ?? false;
 
           return {
+            'tipo': exercise.series[sIndex].tipo.toString().split('.').last,
             'alvo': exercise.series[sIndex].alvo,
             'cargaAlvo': exercise.series[sIndex].carga,
             'repsRealizadas': reps,
@@ -78,6 +86,18 @@ class ExecutarTreinoController {
     }
 
     return exercicios;
+  }
+
+  Future<void> carregarUltimoHistorico() async {
+    try {
+      ultimoHistorico = await _treinoService.fetchUltimoHistoricoSessao(
+        alunoId: alunoId,
+        sessaoNome: sessao.nome,
+      );
+    } catch (e) {
+      // Se falhar, deixa vazio (sem histórico para mostrar)
+      ultimoHistorico = {};
+    }
   }
 
   void dispose() {

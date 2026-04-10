@@ -1,3 +1,5 @@
+import 'package:appfit/features/treinos/shared/models/historico_treino_model.dart';
+import 'package:appfit/features/treinos/shared/models/exercicio_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TreinoService {
@@ -180,6 +182,81 @@ class TreinoService {
       'melhorUmRM': melhorUmRM,
       'melhorVolumeSerie': melhorVolumeSerie,
       'melhorVolumeSessao': melhorVolumeSessao,
+    };
+  }
+
+  /// Busca o último histórico de execução para uma sessão específica
+  /// Retorna um Map<nomeExercicio, List<SerieHistorico>> indexado por tipo de série e índice dentro do tipo
+  Future<Map<String, List<SerieHistorico>>> fetchUltimoHistoricoSessao({
+    required String alunoId,
+    required String sessaoNome,
+  }) async {
+    try {
+      final snapshot = await _firestore
+          .collection('logs_treino')
+          .where('alunoId', isEqualTo: alunoId)
+          .where('sessaoNome', isEqualTo: sessaoNome)
+          .orderBy('dataHora', descending: true)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        return {};
+      }
+
+      final logData = snapshot.docs.first.data();
+      final exercicios = logData['exercicios'] as List? ?? [];
+      final Map<String, List<SerieHistorico>> resultado = {};
+
+      for (final ex in exercicios) {
+        final nomeExercicio = ex['nome'] as String? ?? '';
+        if (nomeExercicio.isEmpty) continue;
+
+        final series = ex['series'] as List? ?? [];
+        final historicoExercicio = <SerieHistorico>[];
+
+        // Agrupa séries por tipo e calcula o índice dentro do tipo
+        final seriesPorTipo = <TipoSerie, List<Map<String, dynamic>>>{};
+        for (final serie in series) {
+          final tipoStr = serie['tipo'] as String? ?? 'trabalho';
+          final tipo = _parsetipoSerie(tipoStr);
+          seriesPorTipo.putIfAbsent(tipo, () => []).add(serie);
+        }
+
+        // Reconstrói a lista com indexDentroDoTipo calculado
+        for (final tipo in seriesPorTipo.keys) {
+          final seriesDoTipo = seriesPorTipo[tipo]!;
+          for (int i = 0; i < seriesDoTipo.length; i++) {
+            final serie = seriesDoTipo[i];
+            final concluida = serie['concluida'] as bool? ?? false;
+
+            historicoExercicio.add(
+              SerieHistorico(
+                tipo: tipo,
+                indexDentroDoTipo: i,
+                pesoRealizado:
+                    concluida ? (serie['pesoRealizado'] as String?) : null,
+                repsRealizadas:
+                    concluida ? (serie['repsRealizadas'] as String?) : null,
+              ),
+            );
+          }
+        }
+
+        resultado[nomeExercicio] = historicoExercicio;
+      }
+
+      return resultado;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  TipoSerie _parsetipoSerie(String tipoStr) {
+    return switch (tipoStr.toLowerCase().trim()) {
+      'aquecimento' => TipoSerie.aquecimento,
+      'feeder' => TipoSerie.feeder,
+      _ => TipoSerie.trabalho,
     };
   }
 }

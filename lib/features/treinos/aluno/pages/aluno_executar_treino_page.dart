@@ -72,6 +72,11 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
     _progressAnim = Tween<double>(begin: 0, end: 0).animate(
       CurvedAnimation(parent: _progressAnimController, curve: Curves.easeOut),
     );
+
+    // Carrega o histórico da última execução dessa sessão (non-blocking)
+    _controller.carregarUltimoHistorico().then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   void _initializeRecordedData() {
@@ -359,6 +364,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
                 pesoControllers: _pesoControllers,
                 onSerieCompleted: _onSerieCompleted,
                 alunoId: widget.alunoId,
+                ultimoHistorico: _controller.ultimoHistorico,
               ),
       ),
     );

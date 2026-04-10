@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/exercicio_model.dart';
+import '../../models/historico_treino_model.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../exercicio_detalhe/exercicio_constants.dart';
 
@@ -10,6 +11,7 @@ class WorkoutSetRow extends StatelessWidget {
   final TextEditingController pesoController;
   final bool isCompleted;
   final VoidCallback onCheck;
+  final SerieHistorico? historico;
 
   const WorkoutSetRow({
     super.key,
@@ -19,6 +21,7 @@ class WorkoutSetRow extends StatelessWidget {
     required this.pesoController,
     required this.isCompleted,
     required this.onCheck,
+    this.historico,
   });
 
   void _showBadgeInfo(BuildContext context) {
@@ -150,6 +153,12 @@ class WorkoutSetRow extends StatelessWidget {
               controller: pesoController,
               isCompleted: isCompleted,
               keyboardType: TextInputType.numberWithOptions(decimal: true),
+              hintText: historico?.pesoRealizado != null
+                  ? '↑ ${historico!.pesoRealizado}'
+                  : null,
+              tooltipText: historico?.pesoRealizado != null
+                  ? 'Última vez: ${historico!.pesoRealizado} kg × ${historico!.repsRealizadas} reps'
+                  : null,
             ),
           ),
           const SizedBox(width: SpacingTokens.sm),
@@ -208,11 +217,15 @@ class _SetInputField extends StatefulWidget {
   final TextEditingController controller;
   final bool isCompleted;
   final TextInputType keyboardType;
+  final String? hintText;
+  final String? tooltipText;
 
   const _SetInputField({
     required this.controller,
     required this.isCompleted,
     required this.keyboardType,
+    this.hintText,
+    this.tooltipText,
   });
 
   @override
@@ -246,47 +259,65 @@ class _SetInputFieldState extends State<_SetInputField> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      height: 40,
-      decoration: BoxDecoration(
-        color: widget.isCompleted
-            ? AppColors.primary.withAlpha(20)
-            : _focused
-            ? AppColors.surfaceLight
-            : AppColors.background.withAlpha(200),
-        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-      ),
-      child: TextField(
-        controller: widget.controller,
-        focusNode: _focus,
-        keyboardType: widget.keyboardType,
-        textAlign: TextAlign.center,
-        textAlignVertical: TextAlignVertical.center,
-        enabled: !widget.isCompleted,
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
+    return GestureDetector(
+      onLongPress: widget.tooltipText != null
+          ? () => ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    widget.tooltipText!,
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  duration: const Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor: AppColors.surfaceDark,
+                  elevation: 2,
+                ),
+              )
+          : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        height: 40,
+        decoration: BoxDecoration(
           color: widget.isCompleted
-              ? AppColors.primary
-              : AppColors.labelPrimary,
-          letterSpacing: -0.2,
+              ? AppColors.primary.withAlpha(20)
+              : _focused
+              ? AppColors.surfaceLight
+              : AppColors.background.withAlpha(200),
+          borderRadius: BorderRadius.circular(AppTheme.radiusSM),
         ),
-        decoration: InputDecoration(
-          border: _inputBorder(Colors.white.withAlpha(10)),
-          enabledBorder: _inputBorder(Colors.white.withAlpha(10)),
-          focusedBorder: _inputBorder(AppColors.primary.withAlpha(160)),
-          disabledBorder: _inputBorder(Colors.white.withAlpha(10)),
-          filled: false,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 4,
-            vertical: 10,
-          ),
-          hintText: '—',
-          hintStyle: const TextStyle(
+        child: TextField(
+          controller: widget.controller,
+          focusNode: _focus,
+          keyboardType: widget.keyboardType,
+          textAlign: TextAlign.center,
+          textAlignVertical: TextAlignVertical.center,
+          enabled: !widget.isCompleted,
+          style: TextStyle(
             fontSize: 15,
-            color: AppColors.labelTertiary,
-            fontWeight: FontWeight.w400,
+            fontWeight: FontWeight.w600,
+            color: widget.isCompleted
+                ? AppColors.primary
+                : AppColors.labelPrimary,
+            letterSpacing: -0.2,
+          ),
+          decoration: InputDecoration(
+            border: _inputBorder(Colors.white.withAlpha(10)),
+            enabledBorder: _inputBorder(Colors.white.withAlpha(10)),
+            focusedBorder: _inputBorder(AppColors.primary.withAlpha(160)),
+            disabledBorder: _inputBorder(Colors.white.withAlpha(10)),
+            filled: false,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 4,
+              vertical: 10,
+            ),
+            hintText: widget.hintText ?? '—',
+            hintStyle: TextStyle(
+              fontSize: 15,
+              color: widget.hintText != null
+                  ? AppColors.labelSecondary
+                  : AppColors.labelTertiary,
+              fontWeight: FontWeight.w400,
+            ),
           ),
         ),
       ),

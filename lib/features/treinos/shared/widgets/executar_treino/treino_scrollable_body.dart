@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/rotina_model.dart';
 import '../../models/exercicio_model.dart';
+import '../../models/historico_treino_model.dart';
 import '../../../../../core/theme/app_theme.dart';
 import 'exercicio_section_header.dart';
 import 'workout_set_row.dart';
@@ -13,6 +14,7 @@ class TreinoScrollableBody extends StatelessWidget {
   final List<List<TextEditingController>> pesoControllers;
   final void Function(int exercicioIndex, int serieIndex) onSerieCompleted;
   final String? alunoId;
+  final Map<String, List<SerieHistorico>> ultimoHistorico;
 
   const TreinoScrollableBody({
     super.key,
@@ -22,6 +24,7 @@ class TreinoScrollableBody extends StatelessWidget {
     required this.pesoControllers,
     required this.onSerieCompleted,
     this.alunoId,
+    this.ultimoHistorico = const {},
   });
 
   @override
@@ -88,6 +91,26 @@ class TreinoScrollableBody extends StatelessWidget {
                     final isCompleted = seriesList.length > sIdx
                         ? (seriesList[sIdx] as Map)['completa'] == true
                         : false;
+
+                    // Calcula o índice dentro do tipo de série
+                    final serieAtual = exercicio.series[sIdx];
+                    final indexDentroDoTipo = exercicio.series
+                        .take(sIdx)
+                        .where((s) => s.tipo == serieAtual.tipo)
+                        .length;
+
+                    // Busca o histórico para este tipo e índice
+                    final historicoDoExercicio =
+                        ultimoHistorico[exercicio.nome] ?? [];
+                    final historicoSerie = historicoDoExercicio.firstWhere(
+                      (h) => h.tipo == serieAtual.tipo &&
+                          h.indexDentroDoTipo == indexDentroDoTipo,
+                      orElse: () => SerieHistorico(
+                        tipo: serieAtual.tipo,
+                        indexDentroDoTipo: indexDentroDoTipo,
+                      ),
+                    );
+
                     return WorkoutSetRow(
                       serie: exercicio.series[sIdx],
                       visualIndex: _calcWorkIndex(exercicio, sIdx),
@@ -95,6 +118,7 @@ class TreinoScrollableBody extends StatelessWidget {
                       pesoController: pesoControllers[exIdx][sIdx],
                       isCompleted: isCompleted,
                       onCheck: () => onSerieCompleted(exIdx, sIdx),
+                      historico: historicoSerie,
                     );
                   }),
                   const SizedBox(height: SpacingTokens.sm),
