@@ -41,8 +41,6 @@ class _ExercicioViewPageState extends State<ExercicioViewPage> {
     final temImagem =
         widget.exercicio.imagemUrl != null &&
         widget.exercicio.imagemUrl!.isNotEmpty;
-    final temInstrucoesPersonalizadas =
-        widget.exercicio.hasInstrucoesPersonalizadas;
     final temMusculos = widget.exercicio.grupoMuscular.isNotEmpty;
 
     return Scaffold(
@@ -125,34 +123,14 @@ class _ExercicioViewPageState extends State<ExercicioViewPage> {
                       final instrucoesPadrao =
                           widget.exercicio.instrucoesPadraoTexto ??
                           snapshot.data?.instrucoesPadraoTexto;
-                      final temAlgumaInstrucao =
-                          instrucoesPadrao != null ||
-                          temInstrucoesPersonalizadas;
 
-                      if (!temAlgumaInstrucao &&
+                      if (instrucoesPadrao == null &&
                           snapshot.connectionState == ConnectionState.waiting) {
                         return const _InstructionLoadingCard();
                       }
 
-                      if (temAlgumaInstrucao) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (instrucoesPadrao != null)
-                              _InstructionCard(text: instrucoesPadrao),
-                            if (instrucoesPadrao != null &&
-                                temInstrucoesPersonalizadas)
-                              const SizedBox(height: SpacingTokens.md),
-                            if (temInstrucoesPersonalizadas)
-                              _InstructionCard(
-                                title: 'Instruções do personal',
-                                text: widget
-                                    .exercicio
-                                    .instrucoesPersonalizadasTexto!,
-                                highlighted: true,
-                              ),
-                          ],
-                        );
+                      if (instrucoesPadrao != null) {
+                        return _InstructionCard(text: instrucoesPadrao);
                       }
 
                       return Container(
@@ -296,15 +274,9 @@ class _InstructionLoadingCard extends StatelessWidget {
 }
 
 class _InstructionCard extends StatelessWidget {
-  final String? title;
   final String text;
-  final bool highlighted;
 
-  const _InstructionCard({
-    this.title,
-    required this.text,
-    this.highlighted = false,
-  });
+  const _InstructionCard({required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -312,32 +284,11 @@ class _InstructionCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(SpacingTokens.cardPaddingH),
       decoration: BoxDecoration(
-        color: highlighted
-            ? AppColors.primary.withAlpha(10)
-            : AppColors.surfaceDark,
+        color: AppColors.surfaceDark,
         borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-        border: Border.all(
-          color: highlighted
-              ? AppColors.primary.withAlpha(30)
-              : Colors.white.withAlpha(10),
-          width: 0.5,
-        ),
+        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (title != null) ...[
-            Text(
-              title!,
-              style: AppTheme.cardTitle.copyWith(
-                color: AppColors.labelSecondary,
-              ),
-            ),
-            const SizedBox(height: SpacingTokens.xs),
-          ],
-          Text(text, style: AppTheme.bodyText),
-        ],
-      ),
+      child: Text(text, style: AppTheme.bodyText),
     );
   }
 }
