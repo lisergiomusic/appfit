@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../../core/services/exercise_service.dart';
-import '../../../../core/services/treino_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/appfit_sliver_app_bar.dart';
 import '../../shared/models/exercicio_model.dart';
 import '../../shared/widgets/exercicio_detalhe/exercise_video_card.dart';
-import '../../shared/widgets/exercicio_detalhe/recordes_pessoais_section.dart';
 
 class AlunoExercicioViewPage extends StatefulWidget {
   final ExercicioItem exercicio;
@@ -23,19 +21,11 @@ class AlunoExercicioViewPage extends StatefulWidget {
 
 class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
   final ExerciseService _exerciseService = ExerciseService();
-  final TreinoService _treinoService = TreinoService();
-  late final Future<Map<String, double?>>? _recordesFuture;
   late final Future<ExercicioItem?>? _exercicioBaseFuture;
 
   @override
   void initState() {
     super.initState();
-    _recordesFuture = widget.alunoId != null
-        ? _treinoService.calcularRecordesPessoais(
-            alunoId: widget.alunoId!,
-            exercicioNome: widget.exercicio.nome,
-          )
-        : null;
     _exercicioBaseFuture = widget.exercicio.hasInstrucoesPadrao
         ? null
         : _exerciseService.buscarExercicioPorNome(widget.exercicio.nome);
@@ -184,26 +174,7 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                   ),
                   const SizedBox(height: SpacingTokens.sectionGap),
 
-                  if (_recordesFuture != null) ...[
-                    FutureBuilder<Map<String, double?>>(
-                      future: _recordesFuture,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const _RecordesLoadingPlaceholder();
-                        }
-                        if (snapshot.hasError || !snapshot.hasData) {
-                          return const SizedBox.shrink();
-                        }
-                        return RecordesPessoaisSection(
-                          recordes: snapshot.data!,
-                        );
-                      },
-                    ),
-                    const SizedBox(height: SpacingTokens.sectionGap),
-                  ],
-
-                  if (!temImagem && !temMusculos && _recordesFuture == null)
+                  if (!temImagem && !temMusculos)
                     Center(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 48),
@@ -252,19 +223,6 @@ class _VideoCardLoadingPlaceholder extends StatelessWidget {
         aspectRatio: 16 / 9,
         child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
       ),
-    );
-  }
-}
-
-class _RecordesLoadingPlaceholder extends StatelessWidget {
-  const _RecordesLoadingPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 180,
-      decoration: AppTheme.cardDecoration,
-      child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
     );
   }
 }

@@ -43,12 +43,7 @@ class TreinoService {
           .limit(50)
           .get();
 
-      return snapshot.docs
-          .map((doc) => {
-                'id': doc.id,
-                ...doc.data(),
-              })
-          .toList();
+      return snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
     } catch (e) {
       rethrow;
     }
@@ -61,12 +56,11 @@ class TreinoService {
         .where('rotinaId', isEqualTo: rotinaId)
         .orderBy('dataHora', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => {
-                  'id': doc.id,
-                  ...doc.data(),
-                })
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => {'id': doc.id, ...doc.data()})
+              .toList(),
+        );
   }
 
   /// Busca logs por intervalo de datas
@@ -79,18 +73,15 @@ class TreinoService {
       final snapshot = await _firestore
           .collection('logs_treino')
           .where('alunoId', isEqualTo: alunoId)
-          .where('dataHora',
-              isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where(
+            'dataHora',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
+          )
           .where('dataHora', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
           .orderBy('dataHora', descending: true)
           .get();
 
-      return snapshot.docs
-          .map((doc) => {
-                'id': doc.id,
-                ...doc.data(),
-              })
-          .toList();
+      return snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
     } catch (e) {
       rethrow;
     }
@@ -112,81 +103,20 @@ class TreinoService {
       return {
         'totalSessions': totalSessions,
         'totalExercises': totalExercises,
-        'averageExercisesPerSession':
-            totalSessions > 0 ? totalExercises / totalSessions : 0,
-        'lastTrainingDate':
-            logs.isNotEmpty ? (logs.first['dataHora'] as Timestamp?)?.toDate() : null,
+        'averageExercisesPerSession': totalSessions > 0
+            ? totalExercises / totalSessions
+            : 0,
+        'lastTrainingDate': logs.isNotEmpty
+            ? (logs.first['dataHora'] as Timestamp?)?.toDate()
+            : null,
       };
     } catch (e) {
       rethrow;
     }
   }
 
-  /// Calcula os recordes pessoais de um aluno para um exercício específico.
-  Future<Map<String, double?>> calcularRecordesPessoais({
-    required String alunoId,
-    required String exercicioNome,
-  }) async {
-    final logs = await fetchLogsAluno(alunoId);
-
-    double? maiorPeso;
-    double? melhorUmRM;
-    double? melhorVolumeSerie;
-    double? melhorVolumeSessao;
-
-    final nomeAlvo = exercicioNome.trim().toLowerCase();
-
-    for (final log in logs) {
-      final exercicios = log['exercicios'] as List? ?? [];
-      double volumeSessao = 0;
-      bool sessaoTemDados = false;
-
-      for (final ex in exercicios) {
-        final nomeEx = ((ex['nome'] ?? '') as String).trim().toLowerCase();
-        if (nomeEx != nomeAlvo) continue;
-
-        final series = ex['series'] as List? ?? [];
-        for (final s in series) {
-          final concluida = s['concluida'] as bool? ?? false;
-          if (!concluida) continue;
-
-          final peso = double.tryParse((s['pesoRealizado'] ?? '').toString()) ?? 0.0;
-          final reps = double.tryParse((s['repsRealizadas'] ?? '').toString()) ?? 0.0;
-          if (peso <= 0 || reps <= 0) continue;
-
-          sessaoTemDados = true;
-
-          if (maiorPeso == null || peso > maiorPeso) maiorPeso = peso;
-
-          final umRM = peso * (1 + reps / 30);
-          if (melhorUmRM == null || umRM > melhorUmRM) melhorUmRM = umRM;
-
-          final volSerie = peso * reps;
-          if (melhorVolumeSerie == null || volSerie > melhorVolumeSerie) {
-            melhorVolumeSerie = volSerie;
-          }
-
-          volumeSessao += volSerie;
-        }
-      }
-
-      if (sessaoTemDados) {
-        if (melhorVolumeSessao == null || volumeSessao > melhorVolumeSessao) {
-          melhorVolumeSessao = volumeSessao;
-        }
-      }
-    }
-
-    return {
-      'maiorPeso': maiorPeso,
-      'melhorUmRM': melhorUmRM,
-      'melhorVolumeSerie': melhorVolumeSerie,
-      'melhorVolumeSessao': melhorVolumeSessao,
-    };
-  }
-
   /// Busca o último histórico de execução para uma sessão específica
-  /// Retorna um Map<nomeExercicio, List<SerieHistorico>> indexado por tipo de série e índice dentro do tipo
+  /// Retorna um mapa de nome de exercício para o histórico de séries agrupadas por tipo
   Future<Map<String, List<SerieHistorico>>> fetchUltimoHistoricoSessao({
     required String alunoId,
     required String sessaoNome,
@@ -234,10 +164,12 @@ class TreinoService {
               SerieHistorico(
                 tipo: tipo,
                 indexDentroDoTipo: i,
-                pesoRealizado:
-                    concluida ? (serie['pesoRealizado'] as String?) : null,
-                repsRealizadas:
-                    concluida ? (serie['repsRealizadas'] as String?) : null,
+                pesoRealizado: concluida
+                    ? (serie['pesoRealizado'] as String?)
+                    : null,
+                repsRealizadas: concluida
+                    ? (serie['repsRealizadas'] as String?)
+                    : null,
               ),
             );
           }
