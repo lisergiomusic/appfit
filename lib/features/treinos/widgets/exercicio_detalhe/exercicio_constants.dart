@@ -41,7 +41,7 @@ const List<SerieTypeOption> serieTypeOptions = [
     title: 'Aproximação',
     subtitle: 'Sobe a carga progressivamente sem fadiga.',
     type: TipoSerie.feeder,
-    icon: Icons.speed_rounded,
+    icon: Icons.trending_up_rounded,
     color: Color(0xFFFFB703),
   ),
   SerieTypeOption(

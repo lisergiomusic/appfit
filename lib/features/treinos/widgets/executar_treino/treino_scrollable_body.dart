@@ -24,7 +24,9 @@ class TreinoScrollableBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: ListView.builder(
       padding: const EdgeInsets.only(
         top: SpacingTokens.md,
         bottom: 160,
@@ -101,6 +103,7 @@ class TreinoScrollableBody extends StatelessWidget {
           ),
         );
       },
+      ),
     );
   }
 
@@ -124,10 +127,13 @@ class _ColumnLabelsRow extends StatelessWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.lg),
+      padding: const EdgeInsets.only(
+        left: SpacingTokens.sm + SpacingTokens.md,
+        right: SpacingTokens.lg,
+      ),
       child: Row(
         children: const [
-          SizedBox(width: 36, child: Text('SÉRIE', style: labelStyle)),
+          SizedBox(width: 36, child: Text('SÉRIE', style: labelStyle, textAlign: TextAlign.center)),
           SizedBox(width: SpacingTokens.md),
           SizedBox(
             width: 52,

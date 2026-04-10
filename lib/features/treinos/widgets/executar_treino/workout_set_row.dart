@@ -35,12 +35,19 @@ class WorkoutSetRow extends StatelessWidget {
   String get _serieLabel {
     switch (serie.tipo) {
       case TipoSerie.aquecimento:
-        return 'W';
       case TipoSerie.feeder:
-        return 'F';
+        return '';
       case TipoSerie.trabalho:
         return visualIndex.toString();
     }
+  }
+
+  IconData? get _badgeIcon {
+    final option = serieTypeOptions.firstWhere(
+      (opt) => opt.type == serie.tipo,
+      orElse: () => serieTypeOptions.last,
+    );
+    return serie.tipo != TipoSerie.trabalho ? option.icon : null;
   }
 
   Color get _serieColor {
@@ -90,15 +97,25 @@ class WorkoutSetRow extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppTheme.radiusSM),
                 ),
                 child: Center(
-                  child: Text(
-                    _serieLabel,
-                    style: TextStyle(
-                      color: isCompleted ? AppColors.primary : _serieColor,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
+                  child: _badgeIcon != null
+                      ? Icon(
+                          _badgeIcon,
+                          size: 16,
+                          color: isCompleted
+                              ? AppColors.primary
+                              : _serieColor,
+                        )
+                      : Text(
+                          _serieLabel,
+                          style: TextStyle(
+                            color: isCompleted
+                                ? AppColors.primary
+                                : _serieColor,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -135,7 +152,6 @@ class WorkoutSetRow extends StatelessWidget {
               controller: pesoController,
               isCompleted: isCompleted,
               keyboardType: TextInputType.numberWithOptions(decimal: true),
-              suffixText: 'kg',
             ),
           ),
           const SizedBox(width: SpacingTokens.sm),
@@ -191,13 +207,11 @@ class _SetInputField extends StatefulWidget {
   final TextEditingController controller;
   final bool isCompleted;
   final TextInputType keyboardType;
-  final String? suffixText;
 
   const _SetInputField({
     required this.controller,
     required this.isCompleted,
     required this.keyboardType,
-    this.suffixText,
   });
 
   @override
@@ -259,17 +273,11 @@ class _SetInputFieldState extends State<_SetInputField> {
           border: InputBorder.none,
           filled: false,
           contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-          hintText: widget.suffixText == null ? '—' : '—',
+          hintText: '—',
           hintStyle: const TextStyle(
             fontSize: 15,
             color: AppColors.labelTertiary,
             fontWeight: FontWeight.w400,
-          ),
-          suffixText: widget.suffixText,
-          suffixStyle: const TextStyle(
-            fontSize: 11,
-            color: AppColors.labelTertiary,
-            fontWeight: FontWeight.w500,
           ),
         ),
       ),
