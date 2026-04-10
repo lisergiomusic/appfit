@@ -35,6 +35,8 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
 
   // Recorded data
   final Map<String, dynamic> _recordedData = {};
+  final Set<int> _startedExercises = {};
+  final Map<int, int?> _activeSerieByExercise = {};
 
   // Controllers matrix
   late List<List<TextEditingController>> _repsControllers;
@@ -135,6 +137,7 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
 
   void _onExerciseTap(int index) {
     _dismissRestSheet();
+    _activeSerieByExercise[index] ??= _nextIncompleteSerieIndex(index);
     setState(() => _activeExerciseIndex = index);
   }
 
@@ -143,12 +146,55 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
   }
 
   int _completedSeriesForExercise(int index) {
-    final series = (_recordedData['exercicio_$index']?['series'] as List?) ?? [];
+    final series =
+        (_recordedData['exercicio_$index']?['series'] as List?) ?? [];
     return series.where((s) => (s as Map)['completa'] == true).length;
   }
 
-  bool _hasAnyProgress() => widget.sessao.exercicios.asMap().keys
-      .any((i) => _completedSeriesForExercise(i) > 0);
+  int? _nextIncompleteSerieIndex(int exercicioIndex) {
+    final series =
+        (_recordedData['exercicio_$exercicioIndex']?['series'] as List?) ?? [];
+
+    for (var i = 0; i < series.length; i++) {
+      if ((series[i] as Map)['completa'] != true) {
+        return i;
+      }
+    }
+
+    return null;
+  }
+
+  void _onStartExercise(int exercicioIndex) {
+    final nextSerie = _nextIncompleteSerieIndex(exercicioIndex);
+    setState(() {
+      _startedExercises.add(exercicioIndex);
+      _activeSerieByExercise[exercicioIndex] = nextSerie;
+    });
+
+    if (nextSerie == null || !mounted) {
+      return;
+    }
+
+    final descanso =
+        widget.sessao.exercicios[exercicioIndex].series[nextSerie].descanso;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Exercício iniciado. Descanso recomendado: $descanso'),
+        backgroundColor: AppColors.surfaceDark,
+      ),
+    );
+  }
+
+  void _onStartSerie(int exercicioIndex, int serieIndex) {
+    setState(() {
+      _startedExercises.add(exercicioIndex);
+      _activeSerieByExercise[exercicioIndex] = serieIndex;
+    });
+  }
+
+  bool _hasAnyProgress() => widget.sessao.exercicios.asMap().keys.any(
+    (i) => _completedSeriesForExercise(i) > 0,
+  );
 
   int _parseDescanso(String descanso) {
     final cleaned = descanso.trim().toLowerCase();
@@ -162,7 +208,8 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
       return (minutes * 60) + seconds;
     }
 
-    return int.tryParse(RegExp(r'\d+').firstMatch(cleaned)?.group(0) ?? '') ?? 60;
+    return int.tryParse(RegExp(r'\d+').firstMatch(cleaned)?.group(0) ?? '') ??
+        60;
   }
 
   void _onSerieCompleted(int exercicioIndex, int serieIndex) {
@@ -174,21 +221,25 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
       // Undo completion
       setState(() {
         _recordedData[key]['series'][serieIndex]['completa'] = false;
+        _activeSerieByExercise[exercicioIndex] = serieIndex;
       });
       return;
     }
 
     // Mark complete - capture current input values
     setState(() {
+      _startedExercises.add(exercicioIndex);
       _recordedData[key]['series'][serieIndex]['completa'] = true;
       _recordedData[key]['series'][serieIndex]['reps'] =
           _repsControllers[exercicioIndex][serieIndex].text;
       _recordedData[key]['series'][serieIndex]['peso'] =
           _pesoControllers[exercicioIndex][serieIndex].text;
+      _activeSerieByExercise[exercicioIndex] = _nextIncompleteSerieIndex(
+        exercicioIndex,
+      );
     });
 
-    final serie =
-        widget.sessao.exercicios[exercicioIndex].series[serieIndex];
+    final serie = widget.sessao.exercicios[exercicioIndex].series[serieIndex];
     _startRestTimer(
       serie.descanso,
       widget.sessao.exercicios[exercicioIndex].nome,
@@ -387,10 +438,7 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
           title: Column(
             children: [
               Text(widget.sessao.nome),
-              Text(
-                _formatElapsed(_elapsedSeconds),
-                style: AppTheme.caption2,
-              ),
+              Text(_formatElapsed(_elapsedSeconds), style: AppTheme.caption2),
             ],
           ),
           centerTitle: true,
@@ -419,10 +467,8 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
               )
             : AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                transitionBuilder: (child, animation) => FadeTransition(
-                  opacity: animation,
-                  child: child,
-                ),
+                transitionBuilder: (child, animation) =>
+                    FadeTransition(opacity: animation, child: child),
                 child: _activeExerciseIndex == null
                     ? TreinoOverviewBody(
                         key: const ValueKey('overview'),
@@ -437,16 +483,29 @@ class _ExecutarTreinoPageState extends State<ExecutarTreinoPage> {
                             widget.sessao.exercicios[_activeExerciseIndex!],
                         exercicioIndex: _activeExerciseIndex!,
                         series: widget
-                            .sessao.exercicios[_activeExerciseIndex!].series,
+                            .sessao
+                            .exercicios[_activeExerciseIndex!]
+                            .series,
                         repsControllers:
                             _repsControllers[_activeExerciseIndex!],
                         pesoControllers:
                             _pesoControllers[_activeExerciseIndex!],
-                        exercicioData: _recordedData[
-                            'exercicio_$_activeExerciseIndex'] ??
+                        exercicioData:
+                            _recordedData['exercicio_$_activeExerciseIndex'] ??
                             {'series': []},
-                        onSerieCompleted: (serieIndex) =>
-                            _onSerieCompleted(_activeExerciseIndex!, serieIndex),
+                        isExerciseStarted: _startedExercises.contains(
+                          _activeExerciseIndex,
+                        ),
+                        activeSerieIndex:
+                            _activeSerieByExercise[_activeExerciseIndex!],
+                        onStartExercise: () =>
+                            _onStartExercise(_activeExerciseIndex!),
+                        onStartSerie: (serieIndex) =>
+                            _onStartSerie(_activeExerciseIndex!, serieIndex),
+                        onSerieCompleted: (serieIndex) => _onSerieCompleted(
+                          _activeExerciseIndex!,
+                          serieIndex,
+                        ),
                       ),
               ),
       ),

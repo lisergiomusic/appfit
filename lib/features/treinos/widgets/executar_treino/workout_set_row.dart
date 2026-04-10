@@ -10,6 +10,7 @@ class WorkoutSetRow extends StatelessWidget {
   final TextEditingController repsController;
   final TextEditingController pesoController;
   final bool isCompleted;
+  final bool isCurrent;
   final VoidCallback onCheck;
 
   const WorkoutSetRow({
@@ -19,6 +20,7 @@ class WorkoutSetRow extends StatelessWidget {
     required this.repsController,
     required this.pesoController,
     required this.isCompleted,
+    this.isCurrent = false,
     required this.onCheck,
   });
 
@@ -43,9 +45,25 @@ class WorkoutSetRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final rowColor = isCompleted
+        ? AppColors.primary.withAlpha(15)
+        : isCurrent
+        ? AppColors.primary.withAlpha(8)
+        : Colors.transparent;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      color: isCompleted ? AppColors.primary.withAlpha(15) : Colors.transparent,
+      decoration: BoxDecoration(
+        color: rowColor,
+        border: isCurrent && !isCompleted
+            ? Border(
+                left: BorderSide(
+                  color: AppColors.primary.withAlpha(150),
+                  width: 2,
+                ),
+              )
+            : null,
+      ),
       padding: const EdgeInsets.symmetric(
         horizontal: SpacingTokens.lg,
         vertical: SpacingTokens.sm,
@@ -111,7 +129,9 @@ class WorkoutSetRow extends StatelessWidget {
                 isCompleted
                     ? Icons.check_circle_rounded
                     : Icons.radio_button_unchecked_rounded,
-                color: isCompleted ? AppColors.primary : AppColors.labelTertiary,
+                color: isCompleted
+                    ? AppColors.primary
+                    : AppColors.labelTertiary,
                 size: 28,
               ),
             ),
