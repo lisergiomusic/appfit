@@ -128,7 +128,7 @@ class _ColumnLabelsRow extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(
-        left: SpacingTokens.sm + SpacingTokens.md,
+        left: SpacingTokens.md,
         right: SpacingTokens.lg,
       ),
       child: Row(
