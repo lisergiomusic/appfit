@@ -128,6 +128,10 @@ class RotinaDetalheController extends ChangeNotifier {
         final exRaw = exerciciosRaw[j] as Map<String, dynamic>;
 
         if (ex.nome != (exRaw['nome'] ?? '')) return true;
+        if ((ex.instrucoesPersonalizadas ?? '') !=
+            (exRaw['instrucoesPersonalizadas'] ?? '')) {
+          return true;
+        }
 
         final List<dynamic> seriesRaw = exRaw['series'] ?? [];
         if (ex.series.length != seriesRaw.length) return true;

@@ -113,6 +113,28 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     );
   }
 
+  /// Abre a sessão, aplica o resultado e persiste no Firebase em background.
+  Future<void> _editarSessao(SessaoTreinoModel sessao) async {
+    final result = await _abrirConfigurarExercicios(sessao);
+    if (!mounted) return;
+
+    if (result is Map<String, dynamic>) {
+      final currentIndex = _controller.indexOfSessao(sessao);
+      if (currentIndex < 0) return;
+      _controller.atualizarSessao(
+        currentIndex,
+        result['nome'],
+        sessao.diaSemana,
+        result['sessaoNote'],
+      );
+    }
+
+    // Persiste silenciosamente se a rotina já existe e há algo para salvar.
+    if (_controller.rotinaId != null && _controller.verificarAlteracoes()) {
+      _controller.salvarRotina();
+    }
+  }
+
   void _exibirModalInfo(BuildContext context) async {
     final bool isInitialSetup =
         widget.rotinaId == null && _controller.nomeCtrl.text.isEmpty;
@@ -172,16 +194,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
     // Navega automaticamente para a sessão recém-criada
     if (index == null && mounted && _controller.treinos.length > countBefore) {
       final newIndex = _controller.treinos.length - 1;
-      final sessao = _controller.treinos[newIndex];
-      final result = await _abrirConfigurarExercicios(sessao);
-      if (mounted && result is Map<String, dynamic>) {
-        _controller.atualizarSessao(
-          newIndex,
-          result['nome'],
-          sessao.diaSemana,
-          result['sessaoNote'],
-        );
-      }
+      await _editarSessao(_controller.treinos[newIndex]);
     }
   }
 
@@ -486,23 +499,7 @@ class _RotinaDetalhePageState extends State<RotinaDetalhePage> {
                               sessao: sessao,
                               index: index,
                               isReordering: _isReordering,
-                              onOpen: () async {
-                                final result = await _abrirConfigurarExercicios(
-                                  sessao,
-                                );
-                                if (mounted && result is Map<String, dynamic>) {
-                                  final currentIndex = _controller
-                                      .indexOfSessao(sessao);
-                                  if (currentIndex < 0) return;
-
-                                  _controller.atualizarSessao(
-                                    currentIndex,
-                                    result['nome'],
-                                    sessao.diaSemana,
-                                    result['sessaoNote'],
-                                  );
-                                }
-                              },
+                              onOpen: () => _editarSessao(sessao),
                               onEdit: () {
                                 _renomearSessao(sessao);
                               },

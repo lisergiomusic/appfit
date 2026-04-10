@@ -4,6 +4,7 @@ import '../../models/exercicio_model.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'exercicio_section_header.dart';
 import 'workout_set_row.dart';
+import 'orientacao_personal_banner.dart';
 
 class TreinoScrollableBody extends StatelessWidget {
   final SessaoTreinoModel sessao;
@@ -36,6 +37,10 @@ class TreinoScrollableBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ExercicioSectionHeader(exercicio: exercicio, exIdx: exIdx),
+            if (exercicio.instrucoesParaExibicao != null)
+              OrientacaoPersonalBanner(
+                orientacao: exercicio.instrucoesParaExibicao,
+              ),
             _ColumnLabelsRow(),
             ...List.generate(exercicio.series.length, (sIdx) {
               final isCompleted = seriesList.length > sIdx
