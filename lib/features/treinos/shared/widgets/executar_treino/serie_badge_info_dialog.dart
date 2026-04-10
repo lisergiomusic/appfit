@@ -68,7 +68,7 @@ class SerieBadgeInfoDialog extends StatelessWidget {
                 height: 46,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceLight,
+                  color: AppColors.primary,
                   borderRadius: BorderRadius.circular(AppTheme.radiusMD),
                 ),
                 child: const Center(
@@ -77,7 +77,7 @@ class SerieBadgeInfoDialog extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.labelPrimary,
+                      color: Colors.black,
                     ),
                   ),
                 ),

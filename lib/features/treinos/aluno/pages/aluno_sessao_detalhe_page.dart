@@ -54,6 +54,46 @@ class AlunoSessaoDetalhePage extends StatelessWidget {
     return '${totalSegundos}s';
   }
 
+  Future<void> _confirmarIniciarSessao(BuildContext context) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceDark,
+        title: Text('Iniciar sessão', style: AppTheme.title1),
+        content: Text(
+          'Pronto para treinar? Você vai executar a sessão "${sessao.nome}" e o tempo de treino começará a contar imediatamente.',
+          style: AppTheme.bodyText,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(color: AppColors.labelSecondary),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Iniciar', style: TextStyle(color: AppColors.primary)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true && context.mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AlunoExecutarTreinoPage(
+            sessao: sessao,
+            rotinaId: rotinaId,
+            alunoId: alunoId,
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Mapa de seções da interface desta página:
@@ -181,18 +221,7 @@ class AlunoSessaoDetalhePage extends StatelessWidget {
         child: AppPrimaryButton(
           label: 'Iniciar sessão',
           icon: Icons.play_arrow_rounded,
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AlunoExecutarTreinoPage(
-                  sessao: sessao,
-                  rotinaId: rotinaId,
-                  alunoId: alunoId,
-                ),
-              ),
-            );
-          },
+          onPressed: () => _confirmarIniciarSessao(context),
         ),
       ),
     );
@@ -396,7 +425,7 @@ class _ReadOnlySetRow extends StatelessWidget {
           const SizedBox(width: SpacingTokens.md),
           Expanded(
             child: Text(
-              serie.alvo,
+              '${serie.alvo} reps',
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,

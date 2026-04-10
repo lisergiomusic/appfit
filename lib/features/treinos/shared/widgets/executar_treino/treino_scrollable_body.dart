@@ -39,14 +39,16 @@ class TreinoScrollableBody extends StatelessWidget {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: ListView.builder(
-        padding: const EdgeInsets.only(top: SpacingTokens.md, bottom: 160),
+        padding: const EdgeInsets.only(
+          top: SpacingTokens.screenTopPadding,
+          bottom: SpacingTokens.screenBottomPadding,
+        ),
         itemCount: sessao.exercicios.length,
         itemBuilder: (context, exIdx) {
           final exercicio = sessao.exercicios[exIdx];
           final exData = recordedData['exercicio_$exIdx'] ?? {'series': []};
           final seriesList = (exData['series'] as List?) ?? [];
 
-         
           final completedCount = seriesList
               .where((s) => (s as Map)['completa'] == true)
               .length;
@@ -91,7 +93,7 @@ class TreinoScrollableBody extends StatelessWidget {
                         : false;
 
                     final serieAtual = exercicio.series[sIdx];
-                   
+
                     final indexDentroDoTipo = exercicio.series
                         .take(sIdx)
                         .where((s) => s.tipo == serieAtual.tipo)
@@ -99,7 +101,7 @@ class TreinoScrollableBody extends StatelessWidget {
 
                     final historicoDoExercicio =
                         ultimoHistorico[exercicio.nome] ?? [];
-                   
+
                     final historicoSerie = historicoDoExercicio.firstWhere(
                       (h) =>
                           h.tipo == serieAtual.tipo &&
@@ -132,7 +134,7 @@ class TreinoScrollableBody extends StatelessWidget {
 
   int _calcWorkIndex(ExercicioItem exercicio, int upToIdx) {
     int count = 0;
-   
+
     for (int i = 0; i <= upToIdx; i++) {
       if (exercicio.series[i].tipo == TipoSerie.trabalho) count++;
     }
