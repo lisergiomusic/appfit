@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/services/treino_service.dart';
 import '../../shared/models/rotina_model.dart';
 import '../../shared/models/historico_treino_model.dart';
 import '../../shared/models/exercicio_model.dart';
@@ -14,12 +16,16 @@ class AlunoExecutarTreinoPage extends StatefulWidget {
   final SessaoTreinoModel sessao;
   final String rotinaId;
   final String alunoId;
+  final FirebaseFirestore? firestore;
+  final TreinoService? treinoService;
 
   const AlunoExecutarTreinoPage({
     super.key,
     required this.sessao,
     required this.rotinaId,
     required this.alunoId,
+    this.firestore,
+    this.treinoService,
   });
 
   @override
@@ -59,6 +65,8 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
       sessao: widget.sessao,
       rotinaId: widget.rotinaId,
       alunoId: widget.alunoId,
+      firestore: widget.firestore,
+      treinoService: widget.treinoService,
     );
     _startedAt = DateTime.now();
     _initializeRecordedData();
@@ -289,6 +297,9 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
   }
 
   Future<void> _finalizarTreino() async {
+    _restTimer?.cancel();
+    _dismissRestSheet();
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => _FinalizarDialog(),
@@ -303,20 +314,15 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
           duracaoMinutos: elapsed.inMinutes,
         );
         if (mounted) {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Treino registrado com sucesso!'),
-              backgroundColor: AppColors.primary,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              ),
-            ),
-          );
+          setState(() => _isLoading = false);
+          await Future.delayed(const Duration(milliseconds: 300));
+          if (mounted) {
+            Navigator.pop(context);
+          }
         }
       } catch (e) {
         if (mounted) {
+          setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Erro ao salvar: $e'),
@@ -325,8 +331,6 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
             ),
           );
         }
-      } finally {
-        if (mounted) setState(() => _isLoading = false);
       }
     }
   }
