@@ -22,31 +22,26 @@ class ExecutarTreinoController {
   }) : _firestore = firestore ?? FirebaseFirestore.instance,
        _treinoService = treinoService ?? TreinoService();
 
-  /// Persiste o log da sessão e incrementa o progresso da rotina ativa.
-  Future<void> saveTreinoLog(
+  /// Persiste o log da sessão em background (fire-and-forget).
+  void saveTreinoLog(
     Map<String, dynamic> recordedData, {
     int duracaoMinutos = 0,
-  }) async {
-    try {
-      final dataHora = DateTime.now();
+  }) {
+    final logData = {
+      'alunoId': alunoId,
+      'rotinaId': rotinaId,
+      'sessaoNome': sessao.nome,
+      'dataHora': Timestamp.fromDate(DateTime.now()),
+      'duracaoMinutos': duracaoMinutos,
+      'exercicios': buildExerciciosLog(recordedData),
+    };
 
-      final logData = {
-        'alunoId': alunoId,
-        'rotinaId': rotinaId,
-        'sessaoNome': sessao.nome,
-        'dataHora': Timestamp.fromDate(dataHora),
-        'duracaoMinutos': duracaoMinutos,
-        'exercicios': buildExerciciosLog(recordedData),
-      };
-
-      await _firestore.collection('logs_treino').add(logData);
-
-      await _firestore.collection('rotinas').doc(rotinaId).update({
-        'sessoesConcluidas': FieldValue.increment(1),
-      });
-    } catch (e) {
-      rethrow;
-    }
+    _firestore.collection('logs_treino').doc().set(logData).catchError((_) {});
+    _firestore
+        .collection('rotinas')
+        .doc(rotinaId)
+        .update({'sessoesConcluidas': FieldValue.increment(1)})
+        .catchError((_) {});
   }
 
   List<Map<String, dynamic>> buildExerciciosLog(

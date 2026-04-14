@@ -291,14 +291,37 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
   }
 
   void _dismissRestSheet() {
-    _restSheetController?.close();
+    final controller = _restSheetController;
     _restSheetController = null;
     _restSecondsNotifier.value = 0;
+    if (controller != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          controller.close();
+        } catch (_) {}
+      });
+    }
   }
 
   Future<void> _finalizarTreino() async {
     _restTimer?.cancel();
-    _dismissRestSheet();
+    _restTimer = null;
+    _elapsedTimer?.cancel();
+    _elapsedTimer = null;
+
+    // Fecha o sheet antes do dialog para evitar conflito de contexto.
+    final sheetController = _restSheetController;
+    _restSheetController = null;
+    _restSecondsNotifier.value = 0;
+    if (sheetController != null) {
+      try {
+        sheetController.close();
+      } catch (_) {}
+      // Aguarda o frame fechar o sheet antes de abrir o dialog.
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
+    if (!mounted) return;
 
     final confirm = await showDialog<bool>(
       context: context,
@@ -306,32 +329,14 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
     );
 
     if (confirm == true) {
-      setState(() => _isLoading = true);
-      try {
-        final elapsed = DateTime.now().difference(_startedAt);
-        await _controller.saveTreinoLog(
-          _recordedData,
-          duracaoMinutos: elapsed.inMinutes,
-        );
-        if (mounted) {
-          setState(() => _isLoading = false);
-          await Future.delayed(const Duration(milliseconds: 300));
-          if (mounted) {
-            Navigator.pop(context);
-          }
-        }
-      } catch (e) {
-        if (mounted) {
-          setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Erro ao salvar: $e'),
-              backgroundColor: AppColors.systemRed,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-      }
+      if (!mounted) return;
+      _controller.saveTreinoLog(
+        _recordedData,
+        duracaoMinutos: DateTime.now().difference(_startedAt).inMinutes,
+      );
+      Navigator.of(context).pop();
+    } else {
+      _startElapsedTimer();
     }
   }
 
@@ -387,21 +392,28 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
           onFinalizar: _finalizarTreino,
           onCancelar: _confirmarCancelamento,
         ),
-        body: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              )
-            : TreinoScrollableBody(
-                sessao: widget.sessao,
-                recordedData: _recordedData,
-                repsControllers: _repsControllers,
-                pesoControllers: _pesoControllers,
-                onSerieCompleted: _onSerieCompleted,
-                onMarcarTodasSeries: _onMarcarTodasSeries,
-                onVerHistorico: _onVerHistorico,
-                alunoId: widget.alunoId,
-                ultimoHistorico: _controller.ultimoHistorico,
+        body: Stack(
+          children: [
+            TreinoScrollableBody(
+              sessao: widget.sessao,
+              recordedData: _recordedData,
+              repsControllers: _repsControllers,
+              pesoControllers: _pesoControllers,
+              onSerieCompleted: _onSerieCompleted,
+              onMarcarTodasSeries: _onMarcarTodasSeries,
+              onVerHistorico: _onVerHistorico,
+              alunoId: widget.alunoId,
+              ultimoHistorico: _controller.ultimoHistorico,
+            ),
+            if (_isLoading)
+              Container(
+                color: AppColors.background.withAlpha(200),
+                child: const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                ),
               ),
+          ],
+        ),
       ),
     );
   }

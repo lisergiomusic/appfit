@@ -425,7 +425,7 @@ class _ReadOnlySetRow extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: AppColors.labelSecondary,
+                color: AppColors.labelPrimary,
                 letterSpacing: -0.1,
               ),
               textAlign: TextAlign.center,
@@ -441,7 +441,7 @@ class _ReadOnlySetRow extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: AppColors.labelSecondary,
+                color: AppColors.labelPrimary,
                 letterSpacing: -0.1,
               ),
               textAlign: TextAlign.center,
