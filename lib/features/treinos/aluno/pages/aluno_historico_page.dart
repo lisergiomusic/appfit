@@ -350,206 +350,122 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
         .length;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+      padding: const EdgeInsets.fromLTRB(4, 16, 4, 12),
       decoration: AppTheme.cardDecoration,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Cabeçalho: navegação de mês ────────────────────────────────
-          Row(
-            children: [
-              // Mês e ano
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$nomeMes ${_mesAtual.year}',
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.labelPrimary,
-                        letterSpacing: -0.3,
-                        height: 1,
+          // ── Cabeçalho: seta | mês ano | seta ──────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              children: [
+                _NavButton(icon: Icons.chevron_left_rounded, onTap: _irParaMesAnterior),
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        '$nomeMes ${_mesAtual.year}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.labelPrimary,
+                          letterSpacing: -0.2,
+                          height: 1,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      treinosNoMes == 0
-                          ? 'Nenhum treino'
-                          : treinosNoMes == 1
-                          ? '1 treino'
-                          : '$treinosNoMes treinos',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.labelSecondary,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: -0.1,
+                      const SizedBox(height: 4),
+                      Text(
+                        treinosNoMes == 0
+                            ? 'Nenhum treino neste mês'
+                            : treinosNoMes == 1
+                            ? '1 treino neste mês'
+                            : '$treinosNoMes treinos neste mês',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: treinosNoMes > 0
+                              ? AppColors.primary
+                              : AppColors.labelTertiary,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: -0.1,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              // Botões de navegação
-              _NavButton(
-                icon: Icons.chevron_left_rounded,
-                onTap: _irParaMesAnterior,
-              ),
-              const SizedBox(width: 6),
-              _NavButton(
-                icon: Icons.chevron_right_rounded,
-                onTap: isUltimoMes ? null : _irParaProximoMes,
-              ),
-            ],
+                _NavButton(
+                  icon: Icons.chevron_right_rounded,
+                  onTap: isUltimoMes ? null : _irParaProximoMes,
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 16),
 
-          // ── Grade unificada: labels + divisor + dias ───────────────────
-          _CalendarioGrade(
-            diasNoMes: diasNoMes,
-            offsetInicio: offsetInicio,
-            diasTreinados: widget.diasTreinados,
-            hoje: hoje,
-            mesAtual: _mesAtual,
+          // ── Labels dias da semana ──────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: Row(
+              children: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+                  .asMap()
+                  .entries
+                  .map((e) => Expanded(
+                        child: Text(
+                          e.value,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: e.key == 6
+                                ? AppColors.systemRed.withAlpha(150)
+                                : AppColors.labelTertiary,
+                            letterSpacing: 0.1,
+                          ),
+                        ),
+                      ))
+                  .toList(),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // ── Grade de dias ──────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7,
+                mainAxisSpacing: 2,
+                crossAxisSpacing: 0,
+                childAspectRatio: 1,
+              ),
+              itemCount: offsetInicio + diasNoMes,
+              itemBuilder: (context, index) {
+                if (index < offsetInicio) return const SizedBox.shrink();
+
+                final dia = index - offsetInicio + 1;
+                final data = DateTime(_mesAtual.year, _mesAtual.month, dia);
+                final treinado = widget.diasTreinados.contains(data);
+                final ehHoje = data.year == hoje.year &&
+                    data.month == hoje.month &&
+                    data.day == hoje.day;
+                final futuro = data.isAfter(hoje);
+                final isDomingo = index % 7 == 6;
+
+                return _DiaCelula(
+                  dia: dia,
+                  treinado: treinado,
+                  ehHoje: ehHoje,
+                  futuro: futuro,
+                  isDomingo: isDomingo,
+                );
+              },
+            ),
           ),
         ],
       ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Grade unificada: labels + divisor + dias com separadores de semana
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _CalendarioGrade extends StatelessWidget {
-  final int diasNoMes;
-  final int offsetInicio;
-  final Set<DateTime> diasTreinados;
-  final DateTime hoje;
-  final DateTime mesAtual;
-
-  const _CalendarioGrade({
-    required this.diasNoMes,
-    required this.offsetInicio,
-    required this.diasTreinados,
-    required this.hoje,
-    required this.mesAtual,
-  });
-
-  static const _labels = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
-  static const _cellGap = 4.0;
-  static const _cols = 7;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final totalGap = _cellGap * (_cols - 1);
-        final cellSize = (constraints.maxWidth - totalGap) / _cols;
-
-        // Quantas semanas (linhas) a grade de dias ocupa
-        final totalCells = offsetInicio + diasNoMes;
-        final semanas = (totalCells / 7).ceil();
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Linha de labels ───────────────────────────────────────────
-            _buildLabelRow(cellSize),
-
-            // ── Divisor ───────────────────────────────────────────────────
-            const SizedBox(height: 6),
-            Container(
-              height: 1,
-              color: AppColors.labelTertiary.withAlpha(25),
-            ),
-            const SizedBox(height: 6),
-
-            // ── Semanas ───────────────────────────────────────────────────
-            for (int semana = 0; semana < semanas; semana++) ...[
-              if (semana > 0) ...[
-                const SizedBox(height: 4),
-                Container(
-                  height: 1,
-                  color: AppColors.labelTertiary.withAlpha(15),
-                ),
-                const SizedBox(height: 4),
-              ],
-              _buildSemanaRow(semana, cellSize),
-            ],
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildLabelRow(double cellSize) {
-    return Row(
-      children: List.generate(_cols, (col) {
-        final isDom = col == 6;
-        return SizedBox(
-          width: col < _cols - 1 ? cellSize + _cellGap : cellSize,
-          height: cellSize * 0.6,
-          child: Center(
-            child: Text(
-              _labels[col],
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: isDom
-                    ? AppColors.systemRed.withAlpha(160)
-                    : AppColors.labelTertiary,
-                letterSpacing: 0.3,
-              ),
-            ),
-          ),
-        );
-      }),
-    );
-  }
-
-  Widget _buildSemanaRow(int semana, double cellSize) {
-    return Row(
-      children: List.generate(_cols, (col) {
-        final gridIndex = semana * 7 + col;
-        final diaIndex = gridIndex - offsetInicio;
-
-        // Célula vazia (offset ou além do mês)
-        if (diaIndex < 0 || diaIndex >= diasNoMes) {
-          return SizedBox(
-            width: col < _cols - 1 ? cellSize + _cellGap : cellSize,
-            height: cellSize,
-          );
-        }
-
-        final dia = diaIndex + 1;
-        final data = DateTime(mesAtual.year, mesAtual.month, dia);
-        final treinado = diasTreinados.contains(data);
-        final ehHoje =
-            data.year == hoje.year &&
-            data.month == hoje.month &&
-            data.day == hoje.day;
-        final futuro = data.isAfter(hoje);
-        final isDomingo = col == 6;
-
-        return SizedBox(
-          width: col < _cols - 1 ? cellSize + _cellGap : cellSize,
-          height: cellSize,
-          child: Padding(
-            padding: EdgeInsets.only(
-              right: col < _cols - 1 ? _cellGap : 0,
-            ),
-            child: _DiaCelula(
-              dia: dia,
-              treinado: treinado,
-              ehHoje: ehHoje,
-              futuro: futuro,
-              isDomingo: isDomingo,
-            ),
-          ),
-        );
-      }),
     );
   }
 }
