@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -201,7 +199,7 @@ class _HistoricoContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final stats = _calcularStats(logs);
     final semanas = _agruparPorSemana(logs);
-    final frequenciaSemanal = _frequenciaUltimas8Semanas(logs);
+    final diasTreinados = _extrairDiasTreinados(logs);
 
     return SingleChildScrollView(
       controller: scrollController,
@@ -218,10 +216,10 @@ class _HistoricoContent extends StatelessWidget {
           _MetricsRow(stats: stats),
           const SizedBox(height: SpacingTokens.xxl),
 
-          // ── Gráfico de frequência ──────────────────────────────────────
-          Text('Frequência semanal', style: AppTheme.sectionHeader),
+          // ── Calendário mensal ──────────────────────────────────────────
+          Text('Frequência mensal', style: AppTheme.sectionHeader),
           const SizedBox(height: SpacingTokens.labelToField),
-          _FrequenciaCard(frequencia: frequenciaSemanal),
+          _CalendarioFrequenciaCard(diasTreinados: diasTreinados),
           const SizedBox(height: SpacingTokens.xxl),
 
           // ── Lista de treinos agrupada por semana ───────────────────────
@@ -357,37 +355,18 @@ class _HistoricoContent extends StatelessWidget {
     return grupos;
   }
 
-  // ── Frequência das últimas 8 semanas (treinos/semana) ───────────────────
+  // ── Dias treinados (Set de datas normalizadas) ───────────────────────────
 
-  List<_SemanaFrequencia> _frequenciaUltimas8Semanas(
-    List<Map<String, dynamic>> logs,
-  ) {
-    final agora = DateTime.now();
-    final List<_SemanaFrequencia> resultado = [];
-
-    for (int i = 7; i >= 0; i--) {
-      final inicioSemana = agora.subtract(Duration(days: agora.weekday - 1 + i * 7));
-      final inicio = DateTime(inicioSemana.year, inicioSemana.month, inicioSemana.day);
-      final fim = inicio.add(const Duration(days: 6, hours: 23, minutes: 59));
-
-      final count = logs.where((l) {
-        final ts = l['dataHora'] as Timestamp?;
-        final dt = ts?.toDate();
-        if (dt == null) return false;
-        return dt.isAfter(inicio.subtract(const Duration(seconds: 1))) &&
-            dt.isBefore(fim.add(const Duration(seconds: 1)));
-      }).length;
-
-      resultado.add(
-        _SemanaFrequencia(
-          label: i == 0 ? 'Agora' : '-${i}s',
-          count: count,
-          inicio: inicio,
-        ),
-      );
-    }
-
-    return resultado;
+  Set<DateTime> _extrairDiasTreinados(List<Map<String, dynamic>> logs) {
+    return logs
+        .map((l) {
+          final ts = l['dataHora'] as Timestamp?;
+          final dt = ts?.toDate();
+          if (dt == null) return null;
+          return DateTime(dt.year, dt.month, dt.day);
+        })
+        .whereType<DateTime>()
+        .toSet();
   }
 }
 
@@ -484,144 +463,248 @@ class _MetricCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Card com gráfico de barras de frequência semanal
+// Calendário mensal de frequência
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _SemanaFrequencia {
-  final String label;
-  final int count;
-  final DateTime inicio;
-  const _SemanaFrequencia({
-    required this.label,
-    required this.count,
-    required this.inicio,
-  });
+class _CalendarioFrequenciaCard extends StatefulWidget {
+  final Set<DateTime> diasTreinados;
+  const _CalendarioFrequenciaCard({required this.diasTreinados});
+
+  @override
+  State<_CalendarioFrequenciaCard> createState() =>
+      _CalendarioFrequenciaCardState();
 }
 
-class _FrequenciaCard extends StatelessWidget {
-  final List<_SemanaFrequencia> frequencia;
-  const _FrequenciaCard({required this.frequencia});
+class _CalendarioFrequenciaCardState
+    extends State<_CalendarioFrequenciaCard> {
+  late DateTime _mesAtual;
+
+  @override
+  void initState() {
+    super.initState();
+    final hoje = DateTime.now();
+    _mesAtual = DateTime(hoje.year, hoje.month);
+  }
+
+  void _irParaMesAnterior() {
+    setState(() {
+      _mesAtual = DateTime(_mesAtual.year, _mesAtual.month - 1);
+    });
+  }
+
+  void _irParaProximoMes() {
+    final hoje = DateTime.now();
+    final mesHoje = DateTime(hoje.year, hoje.month);
+    if (_mesAtual.isBefore(mesHoje)) {
+      setState(() {
+        _mesAtual = DateTime(_mesAtual.year, _mesAtual.month + 1);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final maxCount = frequencia.map((s) => s.count).fold(0, math.max);
-    final media = frequencia.isEmpty
-        ? 0.0
-        : frequencia.map((s) => s.count).reduce((a, b) => a + b) /
-              frequencia.length;
+    final hoje = DateTime.now();
+    final mesHoje = DateTime(hoje.year, hoje.month);
+    final isUltimoMes = !_mesAtual.isBefore(mesHoje);
+
+    final nomeMes = DateFormat('MMMM yyyy', 'pt_BR').format(_mesAtual);
+    final diasNoMes = DateUtils.getDaysInMonth(_mesAtual.year, _mesAtual.month);
+    final primeiroDia = DateTime(_mesAtual.year, _mesAtual.month, 1);
+    // weekday: 1=seg ... 7=dom → offset para grade começar na segunda
+    final offsetInicio = (primeiroDia.weekday - 1) % 7;
+
+    // Treinos neste mês
+    final treinosNoMes = widget.diasTreinados
+        .where((d) => d.year == _mesAtual.year && d.month == _mesAtual.month)
+        .length;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       decoration: AppTheme.cardDecoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cabeçalho: média semanal
+          // ── Cabeçalho: mês + contagem + navegação ──────────────────────
           Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                media.round().toString(),
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.labelPrimary,
-                  letterSpacing: -0.5,
-                  height: 1,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$treinosNoMes',
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.labelPrimary,
+                        letterSpacing: -0.5,
+                        height: 1,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      treinosNoMes == 1 ? 'treino em $nomeMes' : 'treinos em $nomeMes',
+                      style: AppTheme.caption.copyWith(
+                        color: AppColors.labelSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 6),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 3),
-                child: Text(
-                  'treinos/semana (média)',
-                  style: AppTheme.caption.copyWith(
-                    color: AppColors.labelSecondary,
-                  ),
-                ),
+              // Botões de navegação
+              _NavButton(
+                icon: Icons.chevron_left_rounded,
+                onTap: _irParaMesAnterior,
+              ),
+              const SizedBox(width: 4),
+              _NavButton(
+                icon: Icons.chevron_right_rounded,
+                onTap: isUltimoMes ? null : _irParaProximoMes,
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
-          // Barras
-          SizedBox(
-            height: 80,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: frequencia.map((semana) {
-                final isAtual = semana.label == 'Agora';
-                final ratio = maxCount == 0
-                    ? 0.0
-                    : semana.count / maxCount;
-                final barColor = isAtual
-                    ? AppColors.primary
-                    : semana.count > 0
-                    ? AppColors.primary.withAlpha(80)
-                    : AppColors.surfaceLight;
-
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (semana.count > 0)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
-                            child: Text(
-                              '${semana.count}',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: isAtual
-                                    ? AppColors.primary
-                                    : AppColors.labelSecondary,
-                                letterSpacing: 0,
-                              ),
-                            ),
-                          ),
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 400),
-                          curve: Curves.easeOut,
-                          height: math.max(4, ratio * 60),
-                          decoration: BoxDecoration(
-                            color: barColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                      ],
+          // ── Labels dos dias da semana ───────────────────────────────────
+          Row(
+            children: const ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']
+                .map(
+                  (d) => Expanded(
+                    child: Text(
+                      d,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.labelTertiary,
+                        letterSpacing: 0.2,
+                      ),
                     ),
                   ),
-                );
-              }).toList(),
-            ),
+                )
+                .toList(),
           ),
           const SizedBox(height: 8),
 
-          // Labels das semanas
-          Row(
-            children: frequencia.map((semana) {
-              final isAtual = semana.label == 'Agora';
-              return Expanded(
-                child: Text(
-                  semana.label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 9,
-                    color: isAtual
-                        ? AppColors.primary
-                        : AppColors.labelTertiary,
-                    fontWeight: isAtual
-                        ? FontWeight.w600
-                        : FontWeight.w400,
-                    letterSpacing: 0.1,
-                  ),
-                ),
+          // ── Grade de dias ───────────────────────────────────────────────
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 7,
+              mainAxisSpacing: 6,
+              crossAxisSpacing: 4,
+              childAspectRatio: 1,
+            ),
+            itemCount: offsetInicio + diasNoMes,
+            itemBuilder: (context, index) {
+              if (index < offsetInicio) return const SizedBox.shrink();
+
+              final dia = index - offsetInicio + 1;
+              final data = DateTime(_mesAtual.year, _mesAtual.month, dia);
+              final treinado = widget.diasTreinados.contains(data);
+              final ehHoje = data.year == hoje.year &&
+                  data.month == hoje.month &&
+                  data.day == hoje.day;
+              final futuro = data.isAfter(hoje);
+
+              return _DiaCelula(
+                dia: dia,
+                treinado: treinado,
+                ehHoje: ehHoje,
+                futuro: futuro,
               );
-            }).toList(),
+            },
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _NavButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onTap;
+  const _NavButton({required this.icon, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final ativo = onTap != null;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceLight,
+          borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+        ),
+        child: Icon(
+          icon,
+          size: 18,
+          color: ativo ? AppColors.labelPrimary : AppColors.labelTertiary,
+        ),
+      ),
+    );
+  }
+}
+
+class _DiaCelula extends StatelessWidget {
+  final int dia;
+  final bool treinado;
+  final bool ehHoje;
+  final bool futuro;
+
+  const _DiaCelula({
+    required this.dia,
+    required this.treinado,
+    required this.ehHoje,
+    required this.futuro,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    Color? bgColor;
+    Color textColor;
+    FontWeight fontWeight;
+    BoxBorder? border;
+
+    if (treinado) {
+      bgColor = AppColors.primary;
+      textColor = Colors.black;
+      fontWeight = FontWeight.w700;
+    } else if (ehHoje) {
+      bgColor = Colors.transparent;
+      textColor = AppColors.primary;
+      fontWeight = FontWeight.w700;
+      border = Border.all(color: AppColors.primary, width: 1.5);
+    } else if (futuro) {
+      bgColor = Colors.transparent;
+      textColor = AppColors.labelTertiary;
+      fontWeight = FontWeight.w400;
+    } else {
+      bgColor = Colors.transparent;
+      textColor = AppColors.labelSecondary;
+      fontWeight = FontWeight.w400;
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+        border: border,
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        '$dia',
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: fontWeight,
+          color: textColor,
+          letterSpacing: -0.2,
+          height: 1,
+        ),
       ),
     );
   }
