@@ -2,9 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/services/aluno_service.dart';
 import '../../../../core/services/treino_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/appfit_sliver_app_bar.dart';
+import '../../../dashboard/aluno/widgets/peso_historico_card.dart';
 
 class AlunoHistoricoPage extends StatefulWidget {
   final String uid;
@@ -196,6 +198,7 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
         scrollController: _scrollController,
         carregandoMais: _carregandoMais,
         temMais: _temMais,
+        uid: widget.uid,
       ),
     );
   }
@@ -254,13 +257,32 @@ class _HistoricoContent extends StatelessWidget {
   final ScrollController scrollController;
   final bool carregandoMais;
   final bool temMais;
+  final String uid;
 
   const _HistoricoContent({
     required this.logs,
     required this.scrollController,
     required this.carregandoMais,
     required this.temMais,
+    required this.uid,
   });
+
+  void _abrirEdicaoPeso(BuildContext context, double? pesoAtual) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) => _PesoEditSheet(
+        uid: uid,
+        pesoAtual: pesoAtual,
+        service: AlunoService(),
+      ),
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppTheme.radiusXL),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -270,6 +292,25 @@ class _HistoricoContent extends StatelessWidget {
     final items = <Widget>[
       const SizedBox(height: SpacingTokens.lg),
       _CalendarioFrequenciaCard(diasTreinados: diasTreinados),
+      const SizedBox(height: SpacingTokens.xxl),
+      StreamBuilder<QuerySnapshot>(
+        stream: AlunoService().getHistoricoPesoStream(uid),
+        builder: (context, historicoSnap) {
+          final historico = historicoSnap.hasData
+              ? historicoSnap.data!.docs
+                    .map((doc) => doc.data() as Map<String, dynamic>)
+                    .toList()
+              : null;
+          final double? pesoAtual = historico != null && historico.isNotEmpty
+              ? (historico.first['peso'] as num?)?.toDouble()
+              : null;
+          return PesoHistoricoCard(
+            pesoAtual: pesoAtual,
+            historico: historico,
+            onAdicionarPeso: () => _abrirEdicaoPeso(context, pesoAtual),
+          );
+        },
+      ),
       const SizedBox(height: SpacingTokens.xxl),
       ...semanas.entries.map(
         (entry) => _SemanaGroup(semanaLabel: entry.key, logs: entry.value),
@@ -936,6 +977,191 @@ class _TreinoDetalheSheet extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Bottom sheet para registrar peso
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _PesoEditSheet extends StatefulWidget {
+  final String uid;
+  final double? pesoAtual;
+  final AlunoService service;
+
+  const _PesoEditSheet({
+    required this.uid,
+    required this.pesoAtual,
+    required this.service,
+  });
+
+  @override
+  State<_PesoEditSheet> createState() => _PesoEditSheetState();
+}
+
+class _PesoEditSheetState extends State<_PesoEditSheet> {
+  late TextEditingController _pesoController;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _pesoController = TextEditingController(
+      text: widget.pesoAtual?.toString() ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _pesoController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _salvarPeso() async {
+    final pesoText = _pesoController.text.trim();
+    if (pesoText.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Digite um peso válido')),
+      );
+      return;
+    }
+
+    final peso = double.tryParse(pesoText);
+    if (peso == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Formato inválido. Use números.')),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      await widget.service.registrarPeso(alunoId: widget.uid, peso: peso);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Peso atualizado com sucesso!')),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao atualizar peso: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppTheme.radiusXL),
+        ),
+      ),
+      padding: EdgeInsets.only(
+        left: SpacingTokens.screenHorizontalPadding,
+        right: SpacingTokens.screenHorizontalPadding,
+        top: SpacingTokens.lg,
+        bottom: keyboardHeight + SpacingTokens.lg,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.labelSecondary.withAlpha(100),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: SpacingTokens.lg),
+          Text('Registrar peso', style: AppTheme.title1),
+          const SizedBox(height: SpacingTokens.xs),
+          Text(
+            'Seu peso atual será atualizado',
+            style: AppTheme.caption.copyWith(
+              color: AppColors.labelSecondary.withAlpha(180),
+            ),
+          ),
+          const SizedBox(height: SpacingTokens.lg),
+          if (widget.pesoAtual != null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Peso atual: ${widget.pesoAtual!.toStringAsFixed(1)} kg',
+                style: AppTheme.caption2.copyWith(
+                  color: AppColors.labelSecondary.withAlpha(150),
+                ),
+              ),
+            ),
+          const SizedBox(height: SpacingTokens.sm),
+          TextField(
+            controller: _pesoController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            enabled: !_isSaving,
+            textAlign: TextAlign.center,
+            style: AppTheme.title1,
+            decoration: InputDecoration(
+              hintText: '0.0',
+              suffixText: 'kg',
+              hintStyle: AppTheme.title1.copyWith(
+                color: AppColors.labelSecondary.withAlpha(100),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                borderSide: const BorderSide(color: AppColors.fillSecondary),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                borderSide: const BorderSide(color: AppColors.fillSecondary),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                borderSide: const BorderSide(color: AppColors.primary, width: 2),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 16,
+                horizontal: 12,
+              ),
+            ),
+          ),
+          const SizedBox(height: SpacingTokens.lg),
+          ElevatedButton(
+            onPressed: _isSaving ? null : _salvarPeso,
+            child: _isSaving
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.labelPrimary,
+                      ),
+                    ),
+                  )
+                : const Text('Salvar'),
+          ),
+          const SizedBox(height: SpacingTokens.sm),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              onPressed: _isSaving ? null : () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
