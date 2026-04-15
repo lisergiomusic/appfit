@@ -7,6 +7,7 @@ import '../personal/personal_home_page.dart';
 import '../../alunos/aluno/pages/aluno_perfil_page.dart';
 import '../../alunos/personal/pages/personal_alunos_page.dart';
 import '../../treinos/personal/pages/personal_treinos_page.dart';
+import '../../treinos/aluno/pages/aluno_historico_page.dart';
 
 class DashboardPage extends StatefulWidget {
   final String userType;
@@ -110,6 +111,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 style: TextStyle(color: AppColors.labelSecondary),
               ),
             ),
+            AlunoHistoricoPage(uid: uid),
             AlunoPerfilPage(uid: uid),
           ]
         : [
@@ -135,6 +137,10 @@ class _DashboardPageState extends State<DashboardPage> {
             BottomNavigationBarItem(
               icon: Icon(Icons.fitness_center),
               label: 'Meu Treino',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.bar_chart_rounded),
+              label: 'Histórico',
             ),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
           ]

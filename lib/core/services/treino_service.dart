@@ -47,6 +47,36 @@ class TreinoService {
     }
   }
 
+  static const int logsPorPagina = 15;
+
+  Future<({List<Map<String, dynamic>> logs, DocumentSnapshot? ultimoDoc})>
+  fetchLogsAlunoPage(
+    String alunoId, {
+    DocumentSnapshot? aposDoc,
+  }) async {
+    try {
+      var query = _firestore
+          .collection('logs_treino')
+          .where('alunoId', isEqualTo: alunoId)
+          .orderBy('dataHora', descending: true)
+          .limit(logsPorPagina);
+
+      if (aposDoc != null) {
+        query = query.startAfterDocument(aposDoc);
+      }
+
+      final snapshot = await query.get();
+      final logs = snapshot.docs
+          .map((doc) => {'id': doc.id, ...doc.data()})
+          .toList();
+      final ultimoDoc = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
+
+      return (logs: logs, ultimoDoc: ultimoDoc);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Stream<List<Map<String, dynamic>>> getLogsRotinaStream(String rotinaId) {
     return _firestore
         .collection('logs_treino')
