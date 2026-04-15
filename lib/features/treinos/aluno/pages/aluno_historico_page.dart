@@ -97,7 +97,7 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
         body: CustomScrollView(
           slivers: [
             AppFitSliverAppBar(
-              title: 'Histórico',
+              title: 'Meu histórico',
               expandedHeight: 120,
               leading: SizedBox.shrink(),
               background: Align(
@@ -108,7 +108,7 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
                     right: SpacingTokens.screenHorizontalPadding,
                     bottom: SpacingTokens.sectionGap,
                   ),
-                  child: Text('Histórico', style: AppTheme.title1),
+                  child: Text('Meu histórico', style: AppTheme.title1),
                 ),
               ),
             ),
@@ -183,9 +183,7 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
                 ),
               ),
             ),
-            SliverToBoxAdapter(
-              child: _buildEmptyState(),
-            ),
+            SliverToBoxAdapter(child: _buildEmptyState()),
           ],
         ),
       );
@@ -296,9 +294,7 @@ class _HistoricoContent extends StatelessWidget {
           child: Center(
             child: Text(
               'Você chegou ao início do histórico',
-              style: AppTheme.caption.copyWith(
-                color: AppColors.labelTertiary,
-              ),
+              style: AppTheme.caption.copyWith(color: AppColors.labelTertiary),
             ),
           ),
         ),
@@ -312,7 +308,7 @@ class _HistoricoContent extends StatelessWidget {
         physics: const BouncingScrollPhysics(),
         slivers: [
           AppFitSliverAppBar(
-            title: 'Histórico',
+            title: 'Meu histórico',
             expandedHeight: 120,
             leading: SizedBox.shrink(),
             background: Align(
@@ -323,7 +319,7 @@ class _HistoricoContent extends StatelessWidget {
                   right: SpacingTokens.screenHorizontalPadding,
                   bottom: SpacingTokens.sectionGap,
                 ),
-                child: Text('Histórico', style: AppTheme.title1),
+                child: Text('Meu histórico', style: AppTheme.title1),
               ),
             ),
           ),
@@ -331,9 +327,7 @@ class _HistoricoContent extends StatelessWidget {
             padding: const EdgeInsets.symmetric(
               horizontal: SpacingTokens.screenHorizontalPadding,
             ),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate(items),
-            ),
+            sliver: SliverList(delegate: SliverChildListDelegate(items)),
           ),
         ],
       ),
@@ -445,7 +439,10 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Row(
               children: [
-                _NavButton(icon: Icons.chevron_left_rounded, onTap: _irParaMesAnterior),
+                _NavButton(
+                  icon: Icons.chevron_left_rounded,
+                  onTap: _irParaMesAnterior,
+                ),
                 Expanded(
                   child: Column(
                     children: [
@@ -496,20 +493,22 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
               children: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
                   .asMap()
                   .entries
-                  .map((e) => Expanded(
-                        child: Text(
-                          e.value,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                            color: e.key == 6
-                                ? AppColors.systemRed.withAlpha(150)
-                                : AppColors.labelTertiary,
-                            letterSpacing: 0.1,
-                          ),
+                  .map(
+                    (e) => Expanded(
+                      child: Text(
+                        e.value,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          color: e.key == 6
+                              ? AppColors.systemRed.withAlpha(150)
+                              : AppColors.labelTertiary,
+                          letterSpacing: 0.1,
                         ),
-                      ))
+                      ),
+                    ),
+                  )
                   .toList(),
             ),
           ),
@@ -534,7 +533,8 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
                 final dia = index - offsetInicio + 1;
                 final data = DateTime(_mesAtual.year, _mesAtual.month, dia);
                 final treinado = widget.diasTreinados.contains(data);
-                final ehHoje = data.year == hoje.year &&
+                final ehHoje =
+                    data.year == hoje.year &&
                     data.month == hoje.month &&
                     data.day == hoje.day;
                 final futuro = data.isAfter(hoje);
@@ -576,11 +576,7 @@ class _NavButton extends StatelessWidget {
             color: AppColors.fillSecondary,
             borderRadius: BorderRadius.circular(AppTheme.radiusSM),
           ),
-          child: Icon(
-            icon,
-            size: 18,
-            color: AppColors.labelPrimary,
-          ),
+          child: Icon(icon, size: 18, color: AppColors.labelPrimary),
         ),
       ),
     );
@@ -633,21 +629,25 @@ class _DiaCelula extends StatelessWidget {
       border = null;
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: bgColor,
-        shape: BoxShape.circle,
-        border: border,
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        '$dia',
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: fontWeight,
-          color: textColor,
-          letterSpacing: -0.2,
-          height: 1,
+    return Center(
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: bgColor,
+          shape: BoxShape.circle,
+          border: border,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          '$dia',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: fontWeight,
+            color: textColor,
+            letterSpacing: -0.2,
+            height: 1,
+          ),
         ),
       ),
     );
