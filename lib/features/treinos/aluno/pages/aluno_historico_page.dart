@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/services/treino_service.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/app_bar_divider.dart';
+import '../../../../core/widgets/appfit_sliver_app_bar.dart';
 
 class AlunoHistoricoPage extends StatefulWidget {
   final String uid;
@@ -91,45 +91,114 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        centerTitle: true,
-        title: const Text('Histórico'),
-        bottom: const AppBarDivider(),
-      ),
-      body: _buildBody(),
-    );
-  }
-
-  Widget _buildBody() {
     if (_carregandoInicial) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: CustomScrollView(
+          slivers: [
+            AppFitSliverAppBar(
+              title: 'Histórico',
+              expandedHeight: 120,
+              leading: SizedBox.shrink(),
+              background: Align(
+                alignment: Alignment.bottomLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: SpacingTokens.screenHorizontalPadding,
+                    right: SpacingTokens.screenHorizontalPadding,
+                    bottom: SpacingTokens.sectionGap,
+                  ),
+                  child: Text('Histórico', style: AppTheme.title1),
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                ),
+              ),
+            ),
+          ],
+        ),
       );
     }
 
     if (_erro != null) {
-      return Center(
-        child: Text(
-          _erro!,
-          style: const TextStyle(color: AppColors.labelSecondary),
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: CustomScrollView(
+          slivers: [
+            AppFitSliverAppBar(
+              title: 'Histórico',
+              expandedHeight: 120,
+              leading: SizedBox.shrink(),
+              background: Align(
+                alignment: Alignment.bottomLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: SpacingTokens.screenHorizontalPadding,
+                    right: SpacingTokens.screenHorizontalPadding,
+                    bottom: SpacingTokens.sectionGap,
+                  ),
+                  child: Text('Histórico', style: AppTheme.title1),
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  child: Text(
+                    _erro!,
+                    style: const TextStyle(color: AppColors.labelSecondary),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       );
     }
 
     if (_logs.isEmpty) {
-      return _buildEmptyState();
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: CustomScrollView(
+          slivers: [
+            AppFitSliverAppBar(
+              title: 'Histórico',
+              expandedHeight: 120,
+              leading: SizedBox.shrink(),
+              background: Align(
+                alignment: Alignment.bottomLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: SpacingTokens.screenHorizontalPadding,
+                    right: SpacingTokens.screenHorizontalPadding,
+                    bottom: SpacingTokens.sectionGap,
+                  ),
+                  child: Text('Histórico', style: AppTheme.title1),
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: _buildEmptyState(),
+            ),
+          ],
+        ),
+      );
     }
 
-    return _HistoricoContent(
-      logs: _logs,
-      scrollController: _scrollController,
-      carregandoMais: _carregandoMais,
-      temMais: _temMais,
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: _HistoricoContent(
+        logs: _logs,
+        scrollController: _scrollController,
+        carregandoMais: _carregandoMais,
+        temMais: _temMais,
+      ),
     );
   }
 
@@ -200,55 +269,72 @@ class _HistoricoContent extends StatelessWidget {
     final semanas = _agruparPorSemana(logs);
     final diasTreinados = _extrairDiasTreinados(logs);
 
-    return SingleChildScrollView(
-      controller: scrollController,
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(
-        horizontal: SpacingTokens.screenHorizontalPadding,
+    final items = <Widget>[
+      const SizedBox(height: SpacingTokens.lg),
+      _CalendarioFrequenciaCard(diasTreinados: diasTreinados),
+      const SizedBox(height: SpacingTokens.xxl),
+      ...semanas.entries.map(
+        (entry) => _SemanaGroup(semanaLabel: entry.key, logs: entry.value),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: SpacingTokens.lg),
-
-          // ── Calendário mensal ──────────────────────────────────────────
-          _CalendarioFrequenciaCard(diasTreinados: diasTreinados),
-          const SizedBox(height: SpacingTokens.xxl),
-
-          // ── Lista de treinos agrupada por semana ───────────────────────
-          ...semanas.entries.map(
-            (entry) => _SemanaGroup(semanaLabel: entry.key, logs: entry.value),
-          ),
-
-          // ── Indicador de carregamento ao fundo ─────────────────────────
-          if (carregandoMais)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: SpacingTokens.xxl),
-              child: Center(
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
-            )
-          else if (!temMais && logs.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: SpacingTokens.xxl),
-              child: Center(
-                child: Text(
-                  'Você chegou ao início do histórico',
-                  style: AppTheme.caption.copyWith(
-                    color: AppColors.labelTertiary,
-                  ),
-                ),
+      if (carregandoMais)
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: SpacingTokens.xxl),
+          child: Center(
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.primary,
               ),
             ),
+          ),
+        )
+      else if (!temMais && logs.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: SpacingTokens.xxl),
+          child: Center(
+            child: Text(
+              'Você chegou ao início do histórico',
+              style: AppTheme.caption.copyWith(
+                color: AppColors.labelTertiary,
+              ),
+            ),
+          ),
+        ),
+      const SizedBox(height: SpacingTokens.screenBottomPadding),
+    ];
 
-          const SizedBox(height: SpacingTokens.screenBottomPadding),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: CustomScrollView(
+        controller: scrollController,
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          AppFitSliverAppBar(
+            title: 'Histórico',
+            expandedHeight: 120,
+            leading: SizedBox.shrink(),
+            background: Align(
+              alignment: Alignment.bottomLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: SpacingTokens.screenHorizontalPadding,
+                  right: SpacingTokens.screenHorizontalPadding,
+                  bottom: SpacingTokens.sectionGap,
+                ),
+                child: Text('Histórico', style: AppTheme.title1),
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: SpacingTokens.screenHorizontalPadding,
+            ),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate(items),
+            ),
+          ),
         ],
       ),
     );
