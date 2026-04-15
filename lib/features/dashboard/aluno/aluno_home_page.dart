@@ -483,233 +483,221 @@ class AlunoHomePage extends StatelessWidget {
       ),
     );
 
+    void verDetalhe() => Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AlunoSessaoDetalhePage(
+          sessao: sessao,
+          letra: letra,
+          rotinaId: rotinaId,
+          alunoId: alunoId,
+        ),
+      ),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Próximo treino', style: AppTheme.sectionHeader),
         const SizedBox(height: SpacingTokens.labelToField),
         Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => AlunoSessaoDetalhePage(
-                  sessao: sessao,
-                  letra: letra,
-                  rotinaId: rotinaId,
-                  alunoId: alunoId,
-                ),
-              ),
-            ),
-            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-            child: Container(
-              decoration: AppTheme.cardDecoration,
-              clipBehavior: Clip.hardEdge,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(16, 16, 4, 14),
-                    decoration: AppTheme.cardDecoration,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: Colors.black.withAlpha(40),
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusSM,
-                            ),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            letra,
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontSize: 26,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.5,
-                              height: 1,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                sessao.nome,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.labelPrimary,
-                                  letterSpacing: -0.5,
-                                  height: 1,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              if (sessao.diaSemana != null &&
-                                  sessao.diaSemana!.isNotEmpty) ...[
-                                const SizedBox(height: 3),
-                                Text(
-                                  sessao.diaSemana!,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.primary.withAlpha(200),
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: -0.1,
-                                  ),
-                                ),
-                              ],
-                              if (grupos.isNotEmpty) ...[
-                                const SizedBox(height: 8),
-                                Wrap(
-                                  spacing: 5,
-                                  runSpacing: 5,
-                                  children: grupos
-                                      .map((g) => _MuscleChip(label: g))
-                                      .toList(),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        PopupMenuButton<String>(
-                          icon: const Icon(
-                            Icons.more_vert_rounded,
-                            size: 20,
-                            color: AppColors.labelTertiary,
-                          ),
-                          iconSize: 20,
-                          padding: EdgeInsets.zero,
-                          color: AppColors.surfaceDark,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusLG,
-                            ),
-                          ),
-                          onSelected: (value) {
-                            if (value == 'ver') {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => AlunoSessaoDetalhePage(
-                                    sessao: sessao,
-                                    letra: letra,
-                                    rotinaId: rotinaId,
-                                    alunoId: alunoId,
-                                  ),
-                                ),
-                              );
-                            }
-                          },
-                          itemBuilder: (_) => [
-                            PopupMenuItem(
-                              value: 'ver',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.visibility_outlined,
-                                    size: 18,
-                                    color: AppColors.labelPrimary,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  const Text('Ver treino'),
-                                ],
-                              ),
-                            ),
-                            PopupMenuItem(
-                              value: 'trocar',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.swap_horiz_rounded,
-                                    size: 18,
-                                    color: AppColors.labelPrimary,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  const Text('Escolher outra sessão'),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+          color: AppColors.surfaceDark,
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+          clipBehavior: Clip.hardEdge,
+          child: Column(
+            children: [
+              // Header: tappable → vai para detalhes da sessão
+              InkWell(
+                onTap: verDetalhe,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.primary.withAlpha(28),
+                        AppColors.primary.withAlpha(5),
                       ],
                     ),
                   ),
-
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                    child: Row(
-                      children: [
-                        _InfoRow(
-                          icon: Icons.fitness_center_rounded,
-                          label: sessao.exercicios.length != 1
-                              ? 'Exercícios'
-                              : 'Exercício',
-                          value: '${sessao.exercicios.length}',
-                        ),
-                        _VerticalDivider(),
-                        _InfoRow(
-                          icon: Icons.repeat_rounded,
-                          label: totalSeries != 1 ? 'Séries' : 'Série',
-                          value: '$totalSeries',
-                        ),
-                        _VerticalDivider(),
-                        _InfoRow(
-                          icon: Icons.timer_outlined,
-                          label: 'Estimado',
-                          value: tempoEstimado,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                    child: GestureDetector(
-                      onTap: iniciar,
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 52,
+                        height: 52,
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(
-                            AppTheme.radiusFull,
+                          color: AppColors.primary.withAlpha(22),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                          border: Border.all(
+                            color: AppColors.primary.withAlpha(60),
+                            width: 1,
                           ),
                         ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        alignment: Alignment.center,
+                        child: Text(
+                          letra,
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                            height: 1,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(
-                              Icons.play_arrow_rounded,
-                              color: Colors.black,
-                              size: 20,
-                            ),
-                            SizedBox(width: 6),
                             Text(
-                              'Iniciar treino',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 15,
+                              sessao.nome,
+                              style: const TextStyle(
+                                fontSize: 18,
                                 fontWeight: FontWeight.w700,
-                                letterSpacing: -0.3,
+                                color: AppColors.labelPrimary,
+                                letterSpacing: -0.5,
+                                height: 1,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
+                            if (sessao.diaSemana != null &&
+                                sessao.diaSemana!.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                sessao.diaSemana!,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.primary.withAlpha(200),
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: -0.1,
+                                ),
+                              ),
+                            ],
+                            if (grupos.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 5,
+                                runSpacing: 5,
+                                children: grupos
+                                    .map((g) => _MuscleChip(label: g))
+                                    .toList(),
+                              ),
+                            ],
                           ],
                         ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        size: 20,
+                        color: AppColors.labelSecondary.withAlpha(80),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+
+              Container(height: 1, color: AppColors.labelSecondary.withAlpha(20)),
+
+              // Stats
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                child: Row(
+                  children: [
+                    _InfoRow(
+                      icon: Icons.fitness_center_rounded,
+                      label: sessao.exercicios.length != 1
+                          ? 'Exercícios'
+                          : 'Exercício',
+                      value: '${sessao.exercicios.length}',
+                    ),
+                    _VerticalDivider(),
+                    _InfoRow(
+                      icon: Icons.repeat_rounded,
+                      label: totalSeries != 1 ? 'Séries' : 'Série',
+                      value: '$totalSeries',
+                    ),
+                    _VerticalDivider(),
+                    _InfoRow(
+                      icon: Icons.timer_outlined,
+                      label: 'Estimado',
+                      value: tempoEstimado,
+                    ),
+                  ],
+                ),
+              ),
+
+              Container(height: 1, color: AppColors.labelSecondary.withAlpha(20)),
+
+              // Ações
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: verDetalhe,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          decoration: BoxDecoration(
+                            color: AppColors.fillSecondary,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'Ver detalhes',
+                            style: TextStyle(
+                              color: AppColors.labelPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 2,
+                      child: GestureDetector(
+                        onTap: iniciar,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.play_arrow_rounded,
+                                color: Colors.black,
+                                size: 20,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                'Iniciar treino',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ],
