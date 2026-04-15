@@ -521,7 +521,7 @@ class _FrequenciaCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                media.toStringAsFixed(1),
+                media.round().toString(),
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
