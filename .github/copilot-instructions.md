@@ -30,11 +30,7 @@
 ## Regras do Copilot
 - Nunca faça commits sem a permissão explícita do usuário. Sempre pergunte antes de criar commits ou pushes envolvendo o repositório.
 
-- Sempre siga o padrão Conventional Commits.
-Ao gerar mensagens de commit.
-O formato deve ser: <tipo>(<escopo>): <descrição curta>
-Exemplo: fix(api): corrigir erro de autenticação (SEMPRE EM INGLES!)
-
+- Para regras de geração de commits e comportamento do assistente, consulte `gemini.md`.
 
 ## UI And Theme Conventions
 - Reuse `AppTheme` tokens for color, spacing, radius, and typography.

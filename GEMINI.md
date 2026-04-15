@@ -62,6 +62,17 @@ The project makes good use of Flutter's state management capabilities, with `Sta
 - No business logic inside widgets
 - Error handling is mandatory — never ignore exceptions silently
 
+### Git & Commits
+Quando o usuário disser **"gere um commit"**, siga rigorosamente este fluxo:
+1.  **Análise:** Execute `git diff --stat` para ver os arquivos e `git diff` para o conteúdo.
+2.  **Formato:**
+    - **Tipo:** feat/fix/refactor/style/docs/test (lowercase).
+    - **Escopo:** entre parênteses (ex: treinos, alunos, auth).
+    - **Descrição:** imperativo, conciso, em inglês ou português.
+    - **Corpo (opcional):** lista com bullets das mudanças.
+3.  **Exemplo:** `feat(treinos): apply AppFitSliverAppBar to student history page`
+4.  **Ação:** **Não execute o commit**. Apenas gere a mensagem e exiba para o usuário.
+
 ### Mindset
 - Think and code as a **Staff-level Flutter engineer**
 - Every decision must be **deliberate, maintainable, and scalable**
