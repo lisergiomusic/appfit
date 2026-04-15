@@ -44,7 +44,6 @@ class RitmoDaSemanaCard extends StatelessWidget {
           children: [
             Text('Ritmo da semana', style: AppTheme.sectionHeader),
             const Spacer(),
-            AppSectionLinkButton(label: 'Ver mais', onPressed: () {}),
           ],
         ),
         const SizedBox(height: SpacingTokens.labelToField),
