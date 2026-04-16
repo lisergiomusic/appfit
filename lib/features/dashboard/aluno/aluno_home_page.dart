@@ -30,8 +30,11 @@ class AlunoHomePage extends StatelessWidget {
         backgroundColor: AppColors.background,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        centerTitle: true,
-        title: const Text('Início'),
+        centerTitle: false,
+        title: const Padding(
+          padding: EdgeInsets.only(left: 4),
+          child: Text('Pagina Inicial'),
+        ),
         actions: [
           IconButton(
             icon: Stack(
@@ -91,7 +94,6 @@ class AlunoHomePage extends StatelessWidget {
 
           final nome = aluno['nome']?.toString().split(' ')[0] ?? 'Aluno';
           final photoUrl = aluno['photoUrl'] as String?;
-          final recado = aluno['recadoPersonal'] as String?;
 
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -177,11 +179,7 @@ class AlunoHomePage extends StatelessWidget {
                   rotina != null
                       ? _buildRotinaCard(context, rotina, rotinaId)
                       : _buildSemTreinoCard(),
-                  const SizedBox(height: SpacingTokens.xxl),
-                  if (recado != null && recado.isNotEmpty) ...[
-                    _buildRecadoCard(recado),
-                    const SizedBox(height: SpacingTokens.xxl),
-                  ],
+
                   const SizedBox(height: SpacingTokens.screenBottomPadding),
                 ],
               ),
@@ -405,37 +403,6 @@ class AlunoHomePage extends StatelessWidget {
     return '${minutes}m';
   }
 
-  Widget _buildRecadoCard(String recado) {
-    return Container(
-      width: double.infinity,
-      decoration: AppTheme.cardDecoration,
-      padding: const EdgeInsets.symmetric(
-        horizontal: SpacingTokens.cardPaddingH,
-        vertical: SpacingTokens.cardPaddingH,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.chat_bubble_outline_rounded,
-                color: AppColors.primary,
-                size: 16,
-              ),
-              const SizedBox(width: SpacingTokens.sm),
-              Text(
-                'Recado do seu Personal',
-                style: AppTheme.caption2.copyWith(fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-          const SizedBox(height: SpacingTokens.sm),
-          Text(recado, style: AppTheme.cardSubtitle),
-        ],
-      ),
-    );
-  }
 
   Widget _buildProximoTreinoCard(
     BuildContext context,
