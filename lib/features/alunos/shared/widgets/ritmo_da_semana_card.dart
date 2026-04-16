@@ -128,13 +128,16 @@ class RitmoDaSemanaCard extends StatelessWidget {
                   final int count = dias
                       .where((d) => d['status'] == 'feito')
                       .length;
+                  
+                  final String diaSingularPlural = count == 1 ? 'dia' : 'dias';
+
                   final String textoResumo = count == 0
                       ? (isAlunoView
                             ? 'Você não treinou essa semana'
                             : '$primeiroNome não treinou essa semana')
                       : (isAlunoView
-                            ? 'Você treinou $count dias essa semana'
-                            : '$primeiroNome treinou $count dias essa semana');
+                            ? 'Você treinou $count $diaSingularPlural essa semana'
+                            : '$primeiroNome treinou $count $diaSingularPlural essa semana');
 
                   return Center(
                     child: Text(

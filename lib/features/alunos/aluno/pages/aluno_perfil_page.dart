@@ -160,6 +160,13 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
 
                       // ── Personal ──────────────────────────────────────────
                       if (data.nomePersonal != null) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
+                          child: Text(
+                            'Personal trainer',
+                            style: AppTheme.sectionHeader,
+                          ),
+                        ),
                         _buildPersonalCard(
                           nome: data.nomePersonal!,
                           especialidade: data.especialidadePersonal,
@@ -210,13 +217,6 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
                           label: 'Sair da conta',
                           labelColor: AppColors.systemRed,
                           onTap: () => _sair(context),
-                        ),
-                        _SettingsItem(
-                          icon: Icons.delete_outline_rounded,
-                          iconColor: AppColors.systemRed,
-                          label: 'Excluir conta',
-                          labelColor: AppColors.systemRed,
-                          onTap: () {},
                         ),
                       ]),
 
@@ -366,65 +366,6 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
 
   // ─── Settings helpers ────────────────────────────────────────────────────────
 
-  Widget _buildNavCard({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: SpacingTokens.cardPaddingH,
-          vertical: 14,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceDark,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: iconColor.withAlpha(20),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, size: 20, color: iconColor),
-            ),
-            const SizedBox(width: SpacingTokens.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: -0.2,
-                      color: AppColors.labelPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(subtitle, style: AppTheme.caption2),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.chevron_right_rounded,
-              size: 20,
-              color: AppColors.labelSecondary.withAlpha(80),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildSettingsGroup(List<_SettingsItem> items) {
     return Container(
