@@ -236,12 +236,18 @@ class AlunoService {
       ) {
         final personalMap = personalSnap.data() ?? {};
         final nomePersonal = personalMap['nome']?.toString();
+        final especialidadePersonal = personalMap['especialidade']?.toString();
+        final photoUrlPersonal = personalMap['photoUrl']?.toString();
+        final telefonePersonal = personalMap['telefone']?.toString();
 
         return AlunoPerfilData(
           aluno: data.aluno,
           rotinaAtiva: data.rotinaAtiva,
           rotinaId: data.rotinaId,
           nomePersonal: nomePersonal,
+          especialidadePersonal: especialidadePersonal,
+          photoUrlPersonal: photoUrlPersonal,
+          telefonePersonal: telefonePersonal,
         );
       });
     });
