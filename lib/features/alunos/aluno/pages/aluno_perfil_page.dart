@@ -1,9 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_bar_divider.dart';
 import '../../../../main.dart';
+import '../../shared/models/aluno_perfil_data.dart';
+import '../../shared/widgets/aluno_avatar.dart';
 
 class AlunoPerfilPage extends StatefulWidget {
   final String uid;
@@ -16,43 +19,43 @@ class AlunoPerfilPage extends StatefulWidget {
 
 class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
   late final AlunoService _service;
-  bool _carregando = true;
-  Map<String, dynamic>? _alunoData;
-  String? _erro;
-  late TextEditingController _recadoController;
-  bool _savingRecado = false;
 
   @override
   void initState() {
     super.initState();
     _service = AlunoService();
-    _recadoController = TextEditingController();
-    _carregarDados();
   }
 
   @override
   void dispose() {
-    _recadoController.dispose();
     super.dispose();
   }
 
-  Future<void> _carregarDados() async {
-    try {
-      final doc = await _service.getAluno(widget.uid);
-      if (mounted) {
-        setState(() {
-          _alunoData = doc.data() as Map<String, dynamic>?;
-          _carregando = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _erro = 'Erro ao carregar perfil: $e';
-          _carregando = false;
-        });
-      }
+  int? _calcularIdade(dynamic dataNascimento) {
+    if (dataNascimento == null) return null;
+    final nascimento = dataNascimento is Timestamp
+        ? dataNascimento.toDate()
+        : dataNascimento as DateTime;
+    final hoje = DateTime.now();
+    int idade = hoje.year - nascimento.year;
+    if (hoje.month < nascimento.month ||
+        (hoje.month == nascimento.month && hoje.day < nascimento.day)) {
+      idade--;
     }
+    return idade;
+  }
+
+  void _abrirEdicaoPeso(Map<String, dynamic> alunoData) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) => _PesoEditSheet(
+        uid: widget.uid,
+        pesoAtual: alunoData['pesoAtual'] as double?,
+        service: _service,
+        onPesoAtualizado: (_) {},
+      ),
+      isScrollControlled: true,
+    );
   }
 
   Future<void> _sair(BuildContext context) async {
@@ -86,138 +89,149 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
     }
   }
 
-  void _abrirEdicaoPeso() {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) => _PesoEditSheet(
-        uid: widget.uid,
-        pesoAtual: _alunoData?['pesoAtual'] as double?,
-        service: _service,
-        onPesoAtualizado: (novoPeso) {
-          setState(() {
-            if (_alunoData != null) {
-              _alunoData!['pesoAtual'] = novoPeso;
-            }
-          });
-        },
-      ),
-      isScrollControlled: true,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Mapa de seções da interface desta página:
-    // 1) Estrutura superior: AppBar, título e ações de navegação.
-    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
-    // 3) Ações finais: botões primários, confirmadores e feedbacks.
-    if (_carregando) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: const Text('Perfil'),
-          bottom: const AppBarDivider(),
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
-      );
-    }
-
-    if (_erro != null || _alunoData == null) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: const Text('Perfil'),
-          bottom: const AppBarDivider(),
-        ),
-        body: Center(
-          child: Text(
-            _erro ?? 'Erro ao carregar perfil',
-            style: const TextStyle(color: AppColors.labelSecondary),
-          ),
-        ),
-      );
-    }
-
-    final nome = _alunoData!['nome'] as String? ?? 'Aluno';
-    final sobrenome = _alunoData!['sobrenome'] as String? ?? '';
-    final nomeCompleto = '$nome $sobrenome'.trim();
-    final pesoAtual = _alunoData!['pesoAtual'] as double?;
-    final photoUrl = _alunoData!['photoUrl'] as String?;
-    final recadoAtual = _alunoData!['recadoPersonal'] as String? ?? '';
-
-    if (_recadoController.text.isEmpty && recadoAtual.isNotEmpty) {
-      _recadoController.text = recadoAtual;
-    }
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Perfil'),
         bottom: const AppBarDivider(),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.paddingScreen,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: SpacingTokens.screenTopPadding),
-              Center(
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundColor: AppColors.surfaceLight,
-                      backgroundImage: photoUrl != null && photoUrl.isNotEmpty
-                          ? NetworkImage(photoUrl)
-                          : null,
-                      child: photoUrl == null || photoUrl.isEmpty
-                          ? const Icon(
-                              Icons.person_rounded,
-                              color: AppColors.labelSecondary,
-                              size: 50,
-                            )
-                          : null,
+      body: StreamBuilder<AlunoPerfilData>(
+        stream: _service.getAlunoPerfilCompletoStream(widget.uid),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            );
+          }
+
+          if (snapshot.hasError || !snapshot.hasData) {
+            return Center(
+              child: Text(
+                'Erro ao carregar perfil',
+                style: const TextStyle(color: AppColors.labelSecondary),
+              ),
+            );
+          }
+
+          final data = snapshot.data!;
+          final alunoData = data.aluno;
+
+          final nome = alunoData['nome'] as String? ?? 'Aluno';
+          final sobrenome = alunoData['sobrenome'] as String? ?? '';
+          final nomeCompleto = '$nome $sobrenome'.trim();
+          final photoUrl = alunoData['photoUrl'] as String?;
+          final pesoAtual = alunoData['pesoAtual'] as double?;
+          final idade = _calcularIdade(alunoData['dataNascimento']);
+          final nomePersonal = data.nomePersonal;
+
+          return SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.paddingScreen,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: SpacingTokens.screenTopPadding),
+                  _buildHeader(
+                    nomeCompleto: nomeCompleto,
+                    photoUrl: photoUrl,
+                    pesoAtual: pesoAtual,
+                    idade: idade,
+                    nomePersonal: nomePersonal,
+                  ),
+                  const SizedBox(height: SpacingTokens.xxl),
+                  Text('Dados físicos', style: AppTheme.sectionHeader),
+                  const SizedBox(height: SpacingTokens.labelToField),
+                  _buildPesoSection(pesoAtual, alunoData),
+                  const SizedBox(height: SpacingTokens.xxl),
+                  const SizedBox(height: SpacingTokens.screenBottomPadding),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => _sair(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.systemRed.withAlpha(20),
+                      ),
+                      child: const Text(
+                        'Sair',
+                        style: TextStyle(color: AppColors.systemRed),
+                      ),
                     ),
-                    const SizedBox(height: SpacingTokens.lg),
-                    Text(nomeCompleto, style: AppTheme.title1),
-                  ],
-                ),
-              ),
-              const SizedBox(height: SpacingTokens.xxl),
-              Text('Dados físicos', style: AppTheme.sectionHeader),
-              const SizedBox(height: SpacingTokens.labelToField),
-              _buildPesoSection(pesoAtual),
-              const SizedBox(height: SpacingTokens.xxl),
-              _buildRecadoSection(),
-              const SizedBox(height: SpacingTokens.screenBottomPadding),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => _sair(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.systemRed.withAlpha(20),
                   ),
-                  child: const Text(
-                    'Sair',
-                    style: TextStyle(color: AppColors.systemRed),
-                  ),
-                ),
+                  const SizedBox(height: SpacingTokens.screenBottomPadding),
+                ],
               ),
-              const SizedBox(height: SpacingTokens.screenBottomPadding),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildPesoSection(double? pesoAtual) {
+  Widget _buildHeader({
+    required String nomeCompleto,
+    required String? photoUrl,
+    required double? pesoAtual,
+    required int? idade,
+    required String? nomePersonal,
+  }) {
+    return Center(
+      child: Column(
+        children: [
+          AlunoAvatar(
+            alunoNome: nomeCompleto,
+            photoUrl: photoUrl,
+            radius: 52,
+          ),
+          const SizedBox(height: SpacingTokens.lg),
+          Text(nomeCompleto, style: AppTheme.title1),
+          const SizedBox(height: SpacingTokens.titleToSubtitle),
+          if (idade != null || pesoAtual != null)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (idade != null) _buildBadge(Icons.cake_outlined, '$idade anos'),
+                if (idade != null && pesoAtual != null)
+                  const SizedBox(width: SpacingTokens.sm),
+                if (pesoAtual != null)
+                  _buildBadge(
+                    Icons.fitness_center_rounded,
+                    '${pesoAtual.toStringAsFixed(1)} kg',
+                  ),
+              ],
+            ),
+          if (nomePersonal != null) ...[
+            const SizedBox(height: SpacingTokens.sm),
+            Text('Aluno de $nomePersonal', style: AppTheme.sectionHeader),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBadge(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: PillTokens.radius,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: AppColors.labelSecondary),
+          const SizedBox(width: 6),
+          Text(label, style: PillTokens.text),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPesoSection(double? pesoAtual, Map<String, dynamic> alunoData) {
     final pesoCodigo = pesoAtual != null
         ? '${pesoAtual.toStringAsFixed(1)} kg'
         : 'Não registrado';
@@ -244,97 +258,13 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
             ),
           ),
           IconButton(
-            onPressed: _abrirEdicaoPeso,
+            onPressed: () => _abrirEdicaoPeso(alunoData),
             icon: const Icon(Icons.edit_outlined),
             color: AppColors.primary,
           ),
         ],
       ),
     );
-  }
-
-  Widget _buildRecadoSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text('Recado para o aluno', style: AppTheme.sectionHeader),
-            const Spacer(),
-            if (_savingRecado)
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppColors.primary,
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: SpacingTokens.labelToField),
-        TextField(
-          controller: _recadoController,
-          maxLines: 3,
-          textCapitalization: TextCapitalization.sentences,
-          enabled: !_savingRecado,
-          decoration: InputDecoration(
-            hintText: 'Ex: Foco no alongamento pós-treino!',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-              borderSide: const BorderSide(color: AppColors.fillSecondary),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-              borderSide: const BorderSide(color: AppColors.fillSecondary),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-              borderSide: const BorderSide(color: AppColors.primary, width: 2),
-            ),
-          ),
-        ),
-        const SizedBox(height: SpacingTokens.sm),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-            onPressed: _savingRecado ? null : _salvarRecado,
-            child: const Text('Salvar recado'),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _salvarRecado() async {
-    final texto = _recadoController.text.trim();
-    setState(() => _savingRecado = true);
-    try {
-      final doc = await _service.getAluno(widget.uid);
-      final d = doc.data() as Map<String, dynamic>;
-      await _service.atualizarAluno(
-        alunoId: widget.uid,
-        nome: d['nome'] ?? '',
-        sobrenome: d['sobrenome'] ?? '',
-        email: d['email'] ?? '',
-        recadoPersonal: texto,
-      );
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Recado salvo!')));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Erro: $e')));
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _savingRecado = false);
-      }
-    }
   }
 }
 
