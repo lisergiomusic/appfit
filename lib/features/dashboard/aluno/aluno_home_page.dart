@@ -10,6 +10,7 @@ import '../../treinos/shared/models/rotina_model.dart';
 import '../../treinos/aluno/pages/aluno_executar_treino_page.dart';
 import '../../alunos/shared/widgets/ritmo_da_semana_card.dart';
 import '../../treinos/aluno/pages/aluno_sessao_detalhe_page.dart';
+import '../../alunos/shared/widgets/aluno_avatar.dart';
 
 class AlunoHomePage extends StatelessWidget {
   final String uid;
@@ -171,7 +172,7 @@ class AlunoHomePage extends StatelessWidget {
                     ),
                     const SizedBox(height: SpacingTokens.xxl),
                   ],
-                  Text('Sua planilha atual', style: AppTheme.sectionHeader),
+                  Text('Planilha atual', style: AppTheme.sectionHeader),
                   const SizedBox(height: SpacingTokens.labelToField),
                   rotina != null
                       ? _buildRotinaCard(context, rotina, rotinaId)
@@ -194,19 +195,10 @@ class AlunoHomePage extends StatelessWidget {
   Widget _buildHeader(String nome, String? photoUrl, String? nomePersonal) {
     return Row(
       children: [
-        CircleAvatar(
-          radius: 34,
-          backgroundColor: AppColors.surfaceLight,
-          backgroundImage: photoUrl != null && photoUrl.isNotEmpty
-              ? NetworkImage(photoUrl)
-              : null,
-          child: photoUrl == null || photoUrl.isEmpty
-              ? const Icon(
-                  Icons.person_rounded,
-                  color: AppColors.labelSecondary,
-                  size: 32,
-                )
-              : null,
+        AlunoAvatar(
+          alunoNome: nome,
+          photoUrl: photoUrl,
+          radius: AvatarTokens.lg,
         ),
         const SizedBox(width: 16),
         Column(
@@ -221,14 +213,7 @@ class AlunoHomePage extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Text(nome, style: AppTheme.title1),
-            const SizedBox(height: SpacingTokens.titleToSubtitle),
-            if (nomePersonal != null && nomePersonal.isNotEmpty)
-              Text(
-                'Personal: $nomePersonal',
-                style: AppTheme.caption.copyWith(
-                  color: AppColors.labelSecondary,
-                ),
-              ),
+
           ],
         ),
       ],

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/app_section_link_button.dart';
 
 class RitmoDaSemanaCard extends StatelessWidget {
   final String alunoNome;
