@@ -145,10 +145,13 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ── Hero ──────────────────────────────────────────
                 _buildHero(
                   nomeCompleto: nomeCompleto,
                   photoUrl: photoUrl,
                 ),
+                const SizedBox(height: SpacingTokens.sectionGap + 8),
+
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: SpacingTokens.screenHorizontalPadding,
@@ -156,8 +159,6 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: SpacingTokens.xxl),
-
                       // ── Personal ──────────────────────────────────────────
                       if (data.nomePersonal != null) ...[
                         Padding(
@@ -173,7 +174,7 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
                           photoUrl: data.photoUrlPersonal,
                           telefone: data.telefonePersonal,
                         ),
-                        const SizedBox(height: SpacingTokens.xxl),
+                        const SizedBox(height: SpacingTokens.sectionGap),
                       ],
 
                       // ── Seções de navegação ────────────────────────────────
@@ -207,7 +208,7 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
                           onTap: () {},
                         ),
                       ]),
-                      const SizedBox(height: SpacingTokens.md),
+                      const SizedBox(height: SpacingTokens.sectionGap),
 
                       // ── Zona de perigo ─────────────────────────────────────
                       _buildSettingsGroup([
@@ -244,13 +245,14 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
         alignment: Alignment.center,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 40, 16, 32),
+            padding: const EdgeInsets.fromLTRB(SpacingTokens.screenHorizontalPadding, SpacingTokens.screenTopPadding, SpacingTokens.screenHorizontalPadding, 0),
             child: Column(
               children: [
                 AlunoAvatar(
                   alunoNome: nomeCompleto,
                   photoUrl: photoUrl,
                   radius: AvatarTokens.lg,
+                  showBorder: false,
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -299,6 +301,7 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
                 alunoNome: nome,
                 photoUrl: photoUrl,
                 radius: AvatarTokens.md,
+                showBorder: false,
               ),
             ),
             const SizedBox(width: 12),

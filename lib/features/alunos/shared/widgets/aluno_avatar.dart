@@ -7,44 +7,51 @@ class AlunoAvatar extends StatelessWidget {
   final String? photoUrl;
   final double radius;
 
+  final bool showBorder;
+
   const AlunoAvatar({
     super.key,
     required this.alunoNome,
     this.photoUrl,
     this.radius = 40,
+    this.showBorder = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    final avatar = Container(
+      decoration: const BoxDecoration(
+        color: AppColors.background,
+        shape: BoxShape.circle,
+      ),
+      child: CircleAvatar(
+        radius: radius,
+        backgroundColor: AppColors.surfaceLight,
+        backgroundImage: photoUrl != null && photoUrl!.isNotEmpty
+            ? CachedNetworkImageProvider(photoUrl!)
+            : null,
+        child: photoUrl == null || photoUrl!.isEmpty
+            ? Text(
+                alunoNome.isNotEmpty ? alunoNome[0].toUpperCase() : '?',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primary,
+                ),
+              )
+            : null,
+      ),
+    );
+
+    if (!showBorder) return avatar;
+
     return Container(
-      padding: EdgeInsets.all(1),
+      padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(color: AppColors.primary.withAlpha(120), width: 2),
       ),
-      child: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.background,
-          shape: BoxShape.circle,
-        ),
-        child: CircleAvatar(
-          radius: radius,
-          backgroundColor: AppColors.surfaceLight,
-          backgroundImage: photoUrl != null && photoUrl!.isNotEmpty
-              ? CachedNetworkImageProvider(photoUrl!)
-              : null,
-          child: photoUrl == null || photoUrl!.isEmpty
-              ? Text(
-                  alunoNome.isNotEmpty ? alunoNome[0].toUpperCase() : '?',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
-                  ),
-                )
-              : null,
-        ),
-      ),
+      child: avatar,
     );
   }
 }
