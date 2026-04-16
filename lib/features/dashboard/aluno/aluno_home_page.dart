@@ -66,7 +66,6 @@ class AlunoHomePage extends StatelessWidget {
           ),
           const SizedBox(width: 8),
         ],
-        bottom: const AppBarDivider(),
       ),
       body: StreamBuilder<AlunoPerfilData>(
         stream: service.getAlunoPerfilCompletoStream(uid),

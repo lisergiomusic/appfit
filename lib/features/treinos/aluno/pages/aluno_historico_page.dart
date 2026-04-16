@@ -106,7 +106,7 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
 
     if (_erro != null) {
       return _buildScaffoldComAppBar(
-        'Histórico',
+        'Meu Histórico',
         Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 40),
@@ -193,7 +193,7 @@ class _HistoricoContent extends StatelessWidget {
           padding: EdgeInsets.only(left: 4),
           child: Text('Meu histórico'),
         ),
-        bottom: const AppBarDivider(),
+
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
