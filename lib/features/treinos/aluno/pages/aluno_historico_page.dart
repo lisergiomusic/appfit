@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/services/treino_service.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/appfit_sliver_app_bar.dart';
+import '../../../../core/widgets/app_bar_divider.dart';
 import '../../../dashboard/aluno/widgets/peso_historico_card.dart';
 
 class AlunoHistoricoPage extends StatefulWidget {
@@ -95,12 +95,10 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
     if (_carregandoInicial) {
       return _buildScaffoldComAppBar(
         'Meu histórico',
-        const SliverToBoxAdapter(
-          child: Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 40),
-              child: CircularProgressIndicator(color: AppColors.primary),
-            ),
+        const Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 40),
+            child: CircularProgressIndicator(color: AppColors.primary),
           ),
         ),
       );
@@ -109,55 +107,41 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
     if (_erro != null) {
       return _buildScaffoldComAppBar(
         'Histórico',
-        SliverToBoxAdapter(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 40),
-              child: Text(
-                _erro!,
-                style: const TextStyle(color: AppColors.labelSecondary),
-              ),
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 40),
+            child: Text(
+              _erro!,
+              style: const TextStyle(color: AppColors.labelSecondary),
             ),
           ),
         ),
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: _HistoricoContent(
-        logsPorDia: _logsPorDia,
-        mesesCarregando: _mesesCarregando,
-        onMesChanged: _carregarMes,
-        uid: widget.uid,
-      ),
+    return _HistoricoContent(
+      logsPorDia: _logsPorDia,
+      mesesCarregando: _mesesCarregando,
+      onMesChanged: _carregarMes,
+      uid: widget.uid,
     );
   }
 
-  Scaffold _buildScaffoldComAppBar(String titulo, Widget sliver) {
+  Scaffold _buildScaffoldComAppBar(String titulo, Widget content) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: CustomScrollView(
-        slivers: [
-          AppFitSliverAppBar(
-            title: titulo,
-            expandedHeight: 120,
-            leading: const SizedBox.shrink(),
-            background: Align(
-              alignment: Alignment.bottomLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  left: SpacingTokens.screenHorizontalPadding,
-                  right: SpacingTokens.screenHorizontalPadding,
-                  bottom: SpacingTokens.sectionGap,
-                ),
-                child: Text(titulo, style: AppTheme.title1),
-              ),
-            ),
-          ),
-          sliver,
-        ],
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        centerTitle: false,
+        title: Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Text(titulo),
+        ),
+        bottom: const AppBarDivider(),
       ),
+      body: content,
     );
   }
 }
@@ -200,63 +184,54 @@ class _HistoricoContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: CustomScrollView(
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        centerTitle: false,
+        title: const Padding(
+          padding: EdgeInsets.only(left: 4),
+          child: Text('Meu histórico'),
+        ),
+        bottom: const AppBarDivider(),
+      ),
+      body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        slivers: [
-          AppFitSliverAppBar(
-            title: 'Meu histórico',
-            expandedHeight: 120,
-            leading: const SizedBox.shrink(),
-            background: Align(
-              alignment: Alignment.bottomLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  left: SpacingTokens.screenHorizontalPadding,
-                  right: SpacingTokens.screenHorizontalPadding,
-                  bottom: SpacingTokens.sectionGap,
-                ),
-                child: Text('Meu histórico', style: AppTheme.bigTitle),
-              ),
+        padding: const EdgeInsets.symmetric(
+          horizontal: SpacingTokens.screenHorizontalPadding,
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: SpacingTokens.lg),
+            _CalendarioFrequenciaCard(
+              logsPorDia: logsPorDia,
+              mesesCarregando: mesesCarregando,
+              onMesChanged: onMesChanged,
             ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: SpacingTokens.screenHorizontalPadding,
+            const SizedBox(height: SpacingTokens.xxl),
+            StreamBuilder<QuerySnapshot>(
+              stream: AlunoService().getHistoricoPesoStream(uid),
+              builder: (context, historicoSnap) {
+                final historico = historicoSnap.hasData
+                    ? historicoSnap.data!.docs
+                          .map((doc) => doc.data() as Map<String, dynamic>)
+                          .toList()
+                    : null;
+                final double? pesoAtual =
+                    historico != null && historico.isNotEmpty
+                    ? (historico.first['peso'] as num?)?.toDouble()
+                    : null;
+                return PesoHistoricoCard(
+                  pesoAtual: pesoAtual,
+                  historico: historico,
+                  onAdicionarPeso: () =>
+                      _abrirEdicaoPeso(context, pesoAtual),
+                );
+              },
             ),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                const SizedBox(height: SpacingTokens.lg),
-                _CalendarioFrequenciaCard(
-                  logsPorDia: logsPorDia,
-                  mesesCarregando: mesesCarregando,
-                  onMesChanged: onMesChanged,
-                ),
-                const SizedBox(height: SpacingTokens.xxl),
-                StreamBuilder<QuerySnapshot>(
-                  stream: AlunoService().getHistoricoPesoStream(uid),
-                  builder: (context, historicoSnap) {
-                    final historico = historicoSnap.hasData
-                        ? historicoSnap.data!.docs
-                              .map((doc) => doc.data() as Map<String, dynamic>)
-                              .toList()
-                        : null;
-                    final double? pesoAtual =
-                        historico != null && historico.isNotEmpty
-                        ? (historico.first['peso'] as num?)?.toDouble()
-                        : null;
-                    return PesoHistoricoCard(
-                      pesoAtual: pesoAtual,
-                      historico: historico,
-                      onAdicionarPeso: () =>
-                          _abrirEdicaoPeso(context, pesoAtual),
-                    );
-                  },
-                ),
-                const SizedBox(height: SpacingTokens.screenBottomPadding),
-              ]),
-            ),
-          ),
-        ],
+            const SizedBox(height: SpacingTokens.screenBottomPadding),
+          ],
+        ),
       ),
     );
   }
