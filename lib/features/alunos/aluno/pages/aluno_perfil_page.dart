@@ -429,7 +429,7 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
                   ),
                   if (item.subtitle != null) ...[
                     const SizedBox(height: 2),
-                    Text(item.subtitle!, style: AppTheme.caption2),
+                    Text(item.subtitle!, style: AppTheme.caption),
                   ],
                 ],
               ),

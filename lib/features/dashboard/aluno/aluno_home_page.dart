@@ -199,6 +199,7 @@ class AlunoHomePage extends StatelessWidget {
           alunoNome: nome,
           photoUrl: photoUrl,
           radius: AvatarTokens.lg,
+          showBorder: false,
         ),
         const SizedBox(width: 16),
         Column(
