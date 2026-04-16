@@ -215,7 +215,7 @@ class _HistoricoContent extends StatelessWidget {
                   right: SpacingTokens.screenHorizontalPadding,
                   bottom: SpacingTokens.sectionGap,
                 ),
-                child: Text('Meu histórico', style: AppTheme.title1),
+                child: Text('Meu histórico', style: AppTheme.bigTitle),
               ),
             ),
           ),

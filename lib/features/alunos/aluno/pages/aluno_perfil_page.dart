@@ -79,7 +79,7 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
         centerTitle: false,
         title: const Padding(
           padding: EdgeInsets.only(left: 4),
-          child: Text('Meu Perfil'),
+          child: Text('Minha Conta'),
         ),
         actions: [
           IconButton(

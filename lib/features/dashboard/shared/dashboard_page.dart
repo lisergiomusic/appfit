@@ -142,7 +142,7 @@ class _DashboardPageState extends State<DashboardPage> {
               icon: Icon(Icons.bar_chart_rounded),
               label: 'Histórico',
             ),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Conta'),
           ]
         : const [
             BottomNavigationBarItem(
