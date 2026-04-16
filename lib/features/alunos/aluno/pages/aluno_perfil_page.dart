@@ -194,6 +194,13 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
                           onTap: () {},
                         ),
                         _SettingsItem(
+                          icon: Icons.receipt_long_rounded,
+                          iconColor: AppColors.labelSecondary,
+                          label: 'Financeiro',
+                          subtitle: 'Faturas, histórico de pagamentos',
+                          onTap: () {},
+                        ),
+                        _SettingsItem(
                           icon: Icons.shield_outlined,
                           iconColor: AppColors.labelSecondary,
                           label: 'Segurança',
