@@ -311,7 +311,7 @@ class AlunoHomePage extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,6 +322,7 @@ class AlunoHomePage extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: SpacingTokens.titleToSubtitle),
                     if (objetivo.isNotEmpty)
                       Text(
                         objetivo,
@@ -329,6 +330,7 @@ class AlunoHomePage extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
+                    const SizedBox(height: SpacingTokens.titleToSubtitle),
                     Text(
                       legendaVencimento,
                       style: CardTokens.cardSubtitle.copyWith(
@@ -786,5 +788,3 @@ class _MuscleChip extends StatelessWidget {
     );
   }
 }
-
-

@@ -475,28 +475,18 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
       decoration: AppTheme.cardDecoration,
       child: Column(
         children: [
-          // ── Cabeçalho: seta | mês ano | seta ──────────────────────────
+          // ── Cabeçalho: mês ano à esquerda | setas à direita ──────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Row(
               children: [
-                _NavButton(
-                  icon: Icons.chevron_left_rounded,
-                  onTap: _irParaMesAnterior,
-                ),
                 Expanded(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         '$nomeMes ${_mesAtual.year}',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.labelPrimary,
-                          letterSpacing: -0.2,
-                          height: 1,
-                        ),
+                        style: CardTokens.cardTitle,
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -505,19 +495,20 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
                             : treinosNoMes == 1
                             ? '1 treino neste mês'
                             : '$treinosNoMes treinos neste mês',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 11,
+                        style: AppTheme.caption.copyWith(
                           color: treinosNoMes > 0
                               ? AppColors.primary
                               : AppColors.labelTertiary,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: -0.1,
                         ),
                       ),
                     ],
                   ),
                 ),
+                _NavButton(
+                  icon: Icons.chevron_left_rounded,
+                  onTap: _irParaMesAnterior,
+                ),
+                const SizedBox(width: 4),
                 _NavButton(
                   icon: Icons.chevron_right_rounded,
                   onTap: isUltimoMes ? null : _irParaProximoMes,
@@ -553,7 +544,6 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
                   .toList(),
             ),
           ),
-          const SizedBox(height: 8),
 
           // ── Grade de dias ──────────────────────────────────────────────
           Padding(
