@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/aluno_service.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_bar_divider.dart';
 import '../../alunos/shared/models/aluno_perfil_data.dart';
 import '../../treinos/aluno/pages/aluno_rotina_view_page.dart';
 import '../../treinos/shared/models/rotina_model.dart';
