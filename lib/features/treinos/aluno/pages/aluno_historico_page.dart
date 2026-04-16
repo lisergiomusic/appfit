@@ -18,47 +18,30 @@ class AlunoHistoricoPage extends StatefulWidget {
 
 class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
   final TreinoService _service = TreinoService();
-  final ScrollController _scrollController = ScrollController();
 
-  final List<Map<String, dynamic>> _logs = [];
-  DocumentSnapshot? _ultimoDoc;
+  // Cache por mês: "yyyy-MM" → lista de logs
+  final Map<String, List<Map<String, dynamic>>> _logsPorMes = {};
+  final Set<String> _mesesCarregando = {};
+  final Set<String> _mesesCarregados = {};
 
   bool _carregandoInicial = true;
-  bool _carregandoMais = false;
-  bool _temMais = true;
   String? _erro;
+
+  static String _chave(DateTime mes) =>
+      '${mes.year}-${mes.month.toString().padLeft(2, '0')}';
 
   @override
   void initState() {
     super.initState();
     _carregarPrimeiraPagina();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    // Dispara quando faltam 200px para o fim da lista
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      _carregarMais();
-    }
   }
 
   Future<void> _carregarPrimeiraPagina() async {
+    final hoje = DateTime.now();
     try {
-      final resultado = await _service.fetchLogsAlunoPage(widget.uid);
+      await _carregarMes(DateTime(hoje.year, hoje.month));
       if (!mounted) return;
-      setState(() {
-        _logs.addAll(resultado.logs);
-        _ultimoDoc = resultado.ultimoDoc;
-        _temMais = resultado.logs.length == TreinoService.logsPorPagina;
-        _carregandoInicial = false;
-      });
+      setState(() => _carregandoInicial = false);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -68,125 +51,74 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
     }
   }
 
-  Future<void> _carregarMais() async {
-    if (_carregandoMais || !_temMais || _ultimoDoc == null) return;
+  Future<void> _carregarMes(DateTime mes) async {
+    final chave = _chave(mes);
+    if (_mesesCarregados.contains(chave) || _mesesCarregando.contains(chave)) {
+      return;
+    }
 
-    setState(() => _carregandoMais = true);
+    setState(() => _mesesCarregando.add(chave));
 
     try {
-      final resultado = await _service.fetchLogsAlunoPage(
-        widget.uid,
-        aposDoc: _ultimoDoc,
-      );
+      final inicio = DateTime(mes.year, mes.month, 1);
+      final fim = DateTime(mes.year, mes.month + 1, 1)
+          .subtract(const Duration(seconds: 1));
+      final logs = await _service.fetchLogsInterval(widget.uid, inicio, fim);
       if (!mounted) return;
       setState(() {
-        _logs.addAll(resultado.logs);
-        _ultimoDoc = resultado.ultimoDoc;
-        _temMais = resultado.logs.length == TreinoService.logsPorPagina;
-        _carregandoMais = false;
+        _logsPorMes[chave] = logs;
+        _mesesCarregados.add(chave);
+        _mesesCarregando.remove(chave);
       });
     } catch (_) {
       if (!mounted) return;
-      setState(() => _carregandoMais = false);
+      setState(() => _mesesCarregando.remove(chave));
     }
+  }
+
+  Map<DateTime, List<Map<String, dynamic>>> get _logsPorDia {
+    final result = <DateTime, List<Map<String, dynamic>>>{};
+    for (final logs in _logsPorMes.values) {
+      for (final log in logs) {
+        final ts = log['dataHora'] as Timestamp?;
+        final dt = ts?.toDate();
+        if (dt == null) continue;
+        final dia = DateTime(dt.year, dt.month, dt.day);
+        result.putIfAbsent(dia, () => []).add(log);
+      }
+    }
+    return result;
   }
 
   @override
   Widget build(BuildContext context) {
     if (_carregandoInicial) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        body: CustomScrollView(
-          slivers: [
-            AppFitSliverAppBar(
-              title: 'Meu histórico',
-              expandedHeight: 120,
-              leading: SizedBox.shrink(),
-              background: Align(
-                alignment: Alignment.bottomLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: SpacingTokens.screenHorizontalPadding,
-                    right: SpacingTokens.screenHorizontalPadding,
-                    bottom: SpacingTokens.sectionGap,
-                  ),
-                  child: Text('Meu histórico', style: AppTheme.title1),
-                ),
-              ),
+      return _buildScaffoldComAppBar(
+        'Meu histórico',
+        const SliverToBoxAdapter(
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 40),
+              child: CircularProgressIndicator(color: AppColors.primary),
             ),
-            const SliverToBoxAdapter(
-              child: Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       );
     }
 
     if (_erro != null) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        body: CustomScrollView(
-          slivers: [
-            AppFitSliverAppBar(
-              title: 'Histórico',
-              expandedHeight: 120,
-              leading: SizedBox.shrink(),
-              background: Align(
-                alignment: Alignment.bottomLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: SpacingTokens.screenHorizontalPadding,
-                    right: SpacingTokens.screenHorizontalPadding,
-                    bottom: SpacingTokens.sectionGap,
-                  ),
-                  child: Text('Histórico', style: AppTheme.title1),
-                ),
+      return _buildScaffoldComAppBar(
+        'Histórico',
+        SliverToBoxAdapter(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              child: Text(
+                _erro!,
+                style: const TextStyle(color: AppColors.labelSecondary),
               ),
             ),
-            SliverToBoxAdapter(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 40),
-                  child: Text(
-                    _erro!,
-                    style: const TextStyle(color: AppColors.labelSecondary),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (_logs.isEmpty) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        body: CustomScrollView(
-          slivers: [
-            AppFitSliverAppBar(
-              title: 'Histórico',
-              expandedHeight: 120,
-              leading: SizedBox.shrink(),
-              background: Align(
-                alignment: Alignment.bottomLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: SpacingTokens.screenHorizontalPadding,
-                    right: SpacingTokens.screenHorizontalPadding,
-                    bottom: SpacingTokens.sectionGap,
-                  ),
-                  child: Text('Histórico', style: AppTheme.title1),
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(child: _buildEmptyState()),
-          ],
+          ),
         ),
       );
     }
@@ -194,76 +126,56 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: _HistoricoContent(
-        logs: _logs,
-        scrollController: _scrollController,
-        carregandoMais: _carregandoMais,
-        temMais: _temMais,
+        logsPorDia: _logsPorDia,
+        mesesCarregando: _mesesCarregando,
+        onMesChanged: _carregarMes,
         uid: widget.uid,
       ),
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: SpacingTokens.screenHorizontalPadding,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: const BoxDecoration(
-                color: AppColors.surfaceDark,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.bar_chart_rounded,
-                size: 40,
-                color: AppColors.labelTertiary,
+  Scaffold _buildScaffoldComAppBar(String titulo, Widget sliver) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: CustomScrollView(
+        slivers: [
+          AppFitSliverAppBar(
+            title: titulo,
+            expandedHeight: 120,
+            leading: const SizedBox.shrink(),
+            background: Align(
+              alignment: Alignment.bottomLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: SpacingTokens.screenHorizontalPadding,
+                  right: SpacingTokens.screenHorizontalPadding,
+                  bottom: SpacingTokens.sectionGap,
+                ),
+                child: Text(titulo, style: AppTheme.title1),
               ),
             ),
-            const SizedBox(height: SpacingTokens.lg),
-            const Text(
-              'Nenhum treino registrado',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: AppColors.labelPrimary,
-                letterSpacing: -0.3,
-              ),
-            ),
-            const SizedBox(height: SpacingTokens.xs),
-            const Text(
-              'Complete seu primeiro treino para\nver seu progresso aqui.',
-              style: AppTheme.cardSubtitle,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+          ),
+          sliver,
+        ],
       ),
     );
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Conteúdo principal quando há dados
+// Conteúdo principal
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _HistoricoContent extends StatelessWidget {
-  final List<Map<String, dynamic>> logs;
-  final ScrollController scrollController;
-  final bool carregandoMais;
-  final bool temMais;
+  final Map<DateTime, List<Map<String, dynamic>>> logsPorDia;
+  final Set<String> mesesCarregando;
+  final void Function(DateTime mes) onMesChanged;
   final String uid;
 
   const _HistoricoContent({
-    required this.logs,
-    required this.scrollController,
-    required this.carregandoMais,
-    required this.temMais,
+    required this.logsPorDia,
+    required this.mesesCarregando,
+    required this.onMesChanged,
     required this.uid,
   });
 
@@ -286,72 +198,15 @@ class _HistoricoContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final semanas = _agruparPorSemana(logs);
-    final diasTreinados = _extrairDiasTreinados(logs);
-
-    final items = <Widget>[
-      const SizedBox(height: SpacingTokens.lg),
-      _CalendarioFrequenciaCard(diasTreinados: diasTreinados),
-      const SizedBox(height: SpacingTokens.xxl),
-      StreamBuilder<QuerySnapshot>(
-        stream: AlunoService().getHistoricoPesoStream(uid),
-        builder: (context, historicoSnap) {
-          final historico = historicoSnap.hasData
-              ? historicoSnap.data!.docs
-                    .map((doc) => doc.data() as Map<String, dynamic>)
-                    .toList()
-              : null;
-          final double? pesoAtual = historico != null && historico.isNotEmpty
-              ? (historico.first['peso'] as num?)?.toDouble()
-              : null;
-          return PesoHistoricoCard(
-            pesoAtual: pesoAtual,
-            historico: historico,
-            onAdicionarPeso: () => _abrirEdicaoPeso(context, pesoAtual),
-          );
-        },
-      ),
-      const SizedBox(height: SpacingTokens.xxl),
-      ...semanas.entries.map(
-        (entry) => _SemanaGroup(semanaLabel: entry.key, logs: entry.value),
-      ),
-      if (carregandoMais)
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: SpacingTokens.xxl),
-          child: Center(
-            child: SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: AppColors.primary,
-              ),
-            ),
-          ),
-        )
-      else if (!temMais && logs.isNotEmpty)
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: SpacingTokens.xxl),
-          child: Center(
-            child: Text(
-              'Você chegou ao início do histórico',
-              style: AppTheme.caption.copyWith(color: AppColors.labelTertiary),
-            ),
-          ),
-        ),
-      const SizedBox(height: SpacingTokens.screenBottomPadding),
-    ];
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
-        controller: scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
           AppFitSliverAppBar(
             title: 'Meu histórico',
             expandedHeight: 120,
-            leading: SizedBox.shrink(),
+            leading: const SizedBox.shrink(),
             background: Align(
               alignment: Alignment.bottomLeft,
               child: Padding(
@@ -368,50 +223,42 @@ class _HistoricoContent extends StatelessWidget {
             padding: const EdgeInsets.symmetric(
               horizontal: SpacingTokens.screenHorizontalPadding,
             ),
-            sliver: SliverList(delegate: SliverChildListDelegate(items)),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                const SizedBox(height: SpacingTokens.lg),
+                _CalendarioFrequenciaCard(
+                  logsPorDia: logsPorDia,
+                  mesesCarregando: mesesCarregando,
+                  onMesChanged: onMesChanged,
+                ),
+                const SizedBox(height: SpacingTokens.xxl),
+                StreamBuilder<QuerySnapshot>(
+                  stream: AlunoService().getHistoricoPesoStream(uid),
+                  builder: (context, historicoSnap) {
+                    final historico = historicoSnap.hasData
+                        ? historicoSnap.data!.docs
+                              .map((doc) => doc.data() as Map<String, dynamic>)
+                              .toList()
+                        : null;
+                    final double? pesoAtual =
+                        historico != null && historico.isNotEmpty
+                        ? (historico.first['peso'] as num?)?.toDouble()
+                        : null;
+                    return PesoHistoricoCard(
+                      pesoAtual: pesoAtual,
+                      historico: historico,
+                      onAdicionarPeso: () =>
+                          _abrirEdicaoPeso(context, pesoAtual),
+                    );
+                  },
+                ),
+                const SizedBox(height: SpacingTokens.screenBottomPadding),
+              ]),
+            ),
           ),
         ],
       ),
     );
-  }
-
-  // ── Estatísticas agregadas ───────────────────────────────────────────────
-
-  // ── Agrupa logs por semana (label "dd MMM – dd MMM") ────────────────────
-
-  Map<String, List<Map<String, dynamic>>> _agruparPorSemana(
-    List<Map<String, dynamic>> logs,
-  ) {
-    final Map<String, List<Map<String, dynamic>>> grupos = {};
-
-    for (final log in logs) {
-      final ts = log['dataHora'] as Timestamp?;
-      final dt = ts?.toDate();
-      if (dt == null) continue;
-
-      final inicio = dt.subtract(Duration(days: dt.weekday - 1));
-      final fim = inicio.add(const Duration(days: 6));
-      final label =
-          '${DateFormat('dd MMM', 'pt_BR').format(inicio)} – ${DateFormat('dd MMM', 'pt_BR').format(fim)}';
-
-      grupos.putIfAbsent(label, () => []).add(log);
-    }
-
-    return grupos;
-  }
-
-  // ── Dias treinados (Set de datas normalizadas) ───────────────────────────
-
-  Set<DateTime> _extrairDiasTreinados(List<Map<String, dynamic>> logs) {
-    return logs
-        .map((l) {
-          final ts = l['dataHora'] as Timestamp?;
-          final dt = ts?.toDate();
-          if (dt == null) return null;
-          return DateTime(dt.year, dt.month, dt.day);
-        })
-        .whereType<DateTime>()
-        .toSet();
   }
 }
 
@@ -420,15 +267,23 @@ class _HistoricoContent extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _CalendarioFrequenciaCard extends StatefulWidget {
-  final Set<DateTime> diasTreinados;
-  const _CalendarioFrequenciaCard({required this.diasTreinados});
+  final Map<DateTime, List<Map<String, dynamic>>> logsPorDia;
+  final Set<String> mesesCarregando;
+  final void Function(DateTime mes) onMesChanged;
+
+  const _CalendarioFrequenciaCard({
+    required this.logsPorDia,
+    required this.mesesCarregando,
+    required this.onMesChanged,
+  });
 
   @override
   State<_CalendarioFrequenciaCard> createState() =>
       _CalendarioFrequenciaCardState();
 }
 
-class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
+class _CalendarioFrequenciaCardState
+    extends State<_CalendarioFrequenciaCard> {
   late DateTime _mesAtual;
 
   @override
@@ -438,19 +293,44 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
     _mesAtual = DateTime(hoje.year, hoje.month);
   }
 
+  String get _chaveMesAtual =>
+      '${_mesAtual.year}-${_mesAtual.month.toString().padLeft(2, '0')}';
+
   void _irParaMesAnterior() {
-    setState(() {
-      _mesAtual = DateTime(_mesAtual.year, _mesAtual.month - 1);
-    });
+    final novoMes = DateTime(_mesAtual.year, _mesAtual.month - 1);
+    setState(() => _mesAtual = novoMes);
+    widget.onMesChanged(novoMes);
   }
 
   void _irParaProximoMes() {
     final hoje = DateTime.now();
     final mesHoje = DateTime(hoje.year, hoje.month);
     if (_mesAtual.isBefore(mesHoje)) {
-      setState(() {
-        _mesAtual = DateTime(_mesAtual.year, _mesAtual.month + 1);
-      });
+      final novoMes = DateTime(_mesAtual.year, _mesAtual.month + 1);
+      setState(() => _mesAtual = novoMes);
+      widget.onMesChanged(novoMes);
+    }
+  }
+
+  void _onDiaTapped(
+    BuildContext context,
+    List<Map<String, dynamic>> logs,
+    DateTime data,
+  ) {
+    if (logs.length == 1) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => _TreinoDetalheSheet(log: logs.first),
+      );
+    } else {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => _DiaTreinosSheet(logs: logs, data: data),
+      );
     }
   }
 
@@ -459,15 +339,19 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
     final hoje = DateTime.now();
     final mesHoje = DateTime(hoje.year, hoje.month);
     final isUltimoMes = !_mesAtual.isBefore(mesHoje);
+    final isCarregando = widget.mesesCarregando.contains(_chaveMesAtual);
 
     final nomeMesRaw = DateFormat('MMMM', 'pt_BR').format(_mesAtual);
     final nomeMes = nomeMesRaw[0].toUpperCase() + nomeMesRaw.substring(1);
-    final diasNoMes = DateUtils.getDaysInMonth(_mesAtual.year, _mesAtual.month);
+    final diasNoMes =
+        DateUtils.getDaysInMonth(_mesAtual.year, _mesAtual.month);
     final primeiroDia = DateTime(_mesAtual.year, _mesAtual.month, 1);
     final offsetInicio = (primeiroDia.weekday - 1) % 7;
 
-    final treinosNoMes = widget.diasTreinados
-        .where((d) => d.year == _mesAtual.year && d.month == _mesAtual.month)
+    final treinosNoMes = widget.logsPorDia.keys
+        .where(
+          (d) => d.year == _mesAtual.year && d.month == _mesAtual.month,
+        )
         .length;
 
     return Container(
@@ -475,7 +359,7 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
       decoration: AppTheme.cardDecoration,
       child: Column(
         children: [
-          // ── Cabeçalho: mês ano à esquerda | setas à direita ──────────
+          // ── Cabeçalho ──────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Row(
@@ -489,18 +373,27 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
                         style: CardTokens.cardTitle,
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        treinosNoMes == 0
-                            ? 'Nenhum treino neste mês'
-                            : treinosNoMes == 1
-                            ? '1 treino neste mês'
-                            : '$treinosNoMes treinos neste mês',
-                        style: AppTheme.caption.copyWith(
-                          color: treinosNoMes > 0
-                              ? AppColors.primary
-                              : AppColors.labelTertiary,
-                        ),
-                      ),
+                      isCarregando
+                          ? const SizedBox(
+                              height: 14,
+                              width: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.5,
+                                color: AppColors.primary,
+                              ),
+                            )
+                          : Text(
+                              treinosNoMes == 0
+                                  ? 'Nenhum treino neste mês'
+                                  : treinosNoMes == 1
+                                  ? '1 treino neste mês'
+                                  : '$treinosNoMes treinos neste mês',
+                              style: AppTheme.caption.copyWith(
+                                color: treinosNoMes > 0
+                                    ? AppColors.primary
+                                    : AppColors.labelTertiary,
+                              ),
+                            ),
                     ],
                   ),
                 ),
@@ -518,7 +411,7 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
           ),
           const SizedBox(height: 16),
 
-          // ── Labels dias da semana ──────────────────────────────────────
+          // ── Labels dias da semana ────────────────────────────────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6),
             child: Row(
@@ -545,7 +438,7 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
             ),
           ),
 
-          // ── Grade de dias ──────────────────────────────────────────────
+          // ── Grade de dias ──────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6),
             child: GridView.builder(
@@ -563,7 +456,8 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
 
                 final dia = index - offsetInicio + 1;
                 final data = DateTime(_mesAtual.year, _mesAtual.month, dia);
-                final treinado = widget.diasTreinados.contains(data);
+                final logsNoDia = widget.logsPorDia[data];
+                final treinado = logsNoDia != null && logsNoDia.isNotEmpty;
                 final ehHoje =
                     data.year == hoje.year &&
                     data.month == hoje.month &&
@@ -577,6 +471,9 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
                   ehHoje: ehHoje,
                   futuro: futuro,
                   isDomingo: isDomingo,
+                  onTap: treinado
+                      ? () => _onDiaTapped(context, logsNoDia, data)
+                      : null,
                 );
               },
             ),
@@ -620,6 +517,7 @@ class _DiaCelula extends StatelessWidget {
   final bool ehHoje;
   final bool futuro;
   final bool isDomingo;
+  final VoidCallback? onTap;
 
   const _DiaCelula({
     required this.dia,
@@ -627,6 +525,7 @@ class _DiaCelula extends StatelessWidget {
     required this.ehHoje,
     required this.futuro,
     required this.isDomingo,
+    this.onTap,
   });
 
   @override
@@ -660,7 +559,7 @@ class _DiaCelula extends StatelessWidget {
       border = null;
     }
 
-    return Center(
+    final cell = Center(
       child: Container(
         width: 32,
         height: 32,
@@ -682,161 +581,165 @@ class _DiaCelula extends StatelessWidget {
         ),
       ),
     );
-  }
-}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Grupo de treinos por semana
-// ─────────────────────────────────────────────────────────────────────────────
+    if (onTap == null) return cell;
 
-class _SemanaGroup extends StatelessWidget {
-  final String semanaLabel;
-  final List<Map<String, dynamic>> logs;
-
-  const _SemanaGroup({required this.semanaLabel, required this.logs});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
-          child: Text(
-            semanaLabel,
-            style: AppTheme.caption.copyWith(
-              color: AppColors.labelSecondary,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        Container(
-          decoration: AppTheme.cardDecoration,
-          clipBehavior: Clip.hardEdge,
-          child: Column(
-            children: List.generate(logs.length, (i) {
-              final log = logs[i];
-              final isLast = i == logs.length - 1;
-              return Column(
-                children: [
-                  _TreinoLogTile(log: log),
-                  if (!isLast)
-                    Divider(
-                      height: 1,
-                      thickness: 0.5,
-                      color: AppColors.labelSecondary.withAlpha(20),
-                      indent: 56,
-                    ),
-                ],
-              );
-            }),
-          ),
-        ),
-        const SizedBox(height: SpacingTokens.lg),
-      ],
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: cell,
     );
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Tile individual de log de treino
+// Sheet: múltiplos treinos no mesmo dia
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _TreinoLogTile extends StatelessWidget {
-  final Map<String, dynamic> log;
-  const _TreinoLogTile({required this.log});
+class _DiaTreinosSheet extends StatelessWidget {
+  final List<Map<String, dynamic>> logs;
+  final DateTime data;
+
+  const _DiaTreinosSheet({required this.logs, required this.data});
 
   @override
   Widget build(BuildContext context) {
-    final sessaoNome = log['sessaoNome'] as String? ?? '—';
-    final ts = log['dataHora'] as Timestamp?;
-    final dt = ts?.toDate();
+    final dataLabel =
+        DateFormat("EEEE, d 'de' MMMM", 'pt_BR').format(data);
+    final dataCapitalizada =
+        dataLabel[0].toUpperCase() + dataLabel.substring(1);
 
-    // Letra da sessão (primeira letra do nome)
-    final letra = sessaoNome.isNotEmpty ? sessaoNome[0].toUpperCase() : '?';
-
-    final dataFormatada = dt != null
-        ? DateFormat("EEE, d 'de' MMM", 'pt_BR').format(dt)
-        : '—';
-    final horaFormatada = dt != null ? DateFormat('HH:mm').format(dt) : '';
-
-    return InkWell(
-      onTap: () => _mostrarDetalhe(context, log),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: SpacingTokens.cardPaddingH,
-          vertical: 12,
-        ),
-        child: Row(
-          children: [
-            // Badge da sessão
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withAlpha(18),
-                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                letra,
-                style: const TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.3,
-                  height: 1,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-
-            // Info central
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    sessaoNome,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.labelPrimary,
-                      letterSpacing: -0.2,
-                      height: 1,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    '$dataFormatada · $horaFormatada',
-                    style: AppTheme.caption.copyWith(
-                      color: AppColors.labelSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Séries concluídas
-            Icon(
-              Icons.chevron_right_rounded,
-              size: 18,
-              color: AppColors.labelSecondary.withAlpha(80),
-            ),
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppTheme.radiusXXL),
         ),
       ),
-    );
-  }
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 12, bottom: 8),
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.labelSecondary.withAlpha(80),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(dataCapitalizada, style: CardTokens.cardTitle),
+            ),
+          ),
+          Divider(
+            height: 1,
+            thickness: 0.5,
+            color: AppColors.labelSecondary.withAlpha(20),
+          ),
+          ...List.generate(logs.length, (i) {
+            final log = logs[i];
+            final sessaoNome = log['sessaoNome'] as String? ?? '—';
+            final ts = log['dataHora'] as Timestamp?;
+            final dt = ts?.toDate();
+            final horaFormatada =
+                dt != null ? DateFormat('HH:mm').format(dt) : '';
+            final letra =
+                sessaoNome.isNotEmpty ? sessaoNome[0].toUpperCase() : '?';
+            final isLast = i == logs.length - 1;
 
-  void _mostrarDetalhe(BuildContext context, Map<String, dynamic> log) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _TreinoDetalheSheet(log: log),
+            return Column(
+              children: [
+                InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => _TreinoDetalheSheet(log: log),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: SpacingTokens.cardPaddingH,
+                      vertical: 14,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withAlpha(18),
+                            borderRadius:
+                                BorderRadius.circular(AppTheme.radiusSM),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            letra,
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.3,
+                              height: 1,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            sessaoNome,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.labelPrimary,
+                              letterSpacing: -0.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (horaFormatada.isNotEmpty) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            horaFormatada,
+                            style: AppTheme.caption.copyWith(
+                              color: AppColors.labelSecondary,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          size: 18,
+                          color: AppColors.labelSecondary.withAlpha(80),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (!isLast)
+                  Divider(
+                    height: 1,
+                    thickness: 0.5,
+                    color: AppColors.labelSecondary.withAlpha(20),
+                    indent: 56,
+                  ),
+              ],
+            );
+          }),
+          SizedBox(
+            height: MediaQuery.of(context).padding.bottom + SpacingTokens.lg,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -875,7 +778,6 @@ class _TreinoDetalheSheet extends StatelessWidget {
           ),
           child: Column(
             children: [
-              // Handle
               Padding(
                 padding: const EdgeInsets.only(top: 12, bottom: 8),
                 child: Container(
@@ -888,7 +790,6 @@ class _TreinoDetalheSheet extends StatelessWidget {
                 ),
               ),
 
-              // Cabeçalho
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                 child: Row(
@@ -949,13 +850,12 @@ class _TreinoDetalheSheet extends StatelessWidget {
                 color: AppColors.labelSecondary.withAlpha(20),
               ),
 
-              // Lista de exercícios
               Expanded(
                 child: ListView.separated(
                   controller: scrollController,
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
                   itemCount: exercicios.length,
-                  separatorBuilder: (_, _) =>
+                  separatorBuilder: (_, index) =>
                       const SizedBox(height: SpacingTokens.sm),
                   itemBuilder: (context, i) {
                     final ex = exercicios[i] as Map<String, dynamic>;
@@ -1118,7 +1018,8 @@ class _PesoEditSheetState extends State<_PesoEditSheet> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-                borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                borderSide:
+                    const BorderSide(color: AppColors.primary, width: 2),
               ),
               contentPadding: const EdgeInsets.symmetric(
                 vertical: 16,
@@ -1178,7 +1079,6 @@ class _ExercicioLogCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Nome + badge de conclusão
           Row(
             children: [
               Expanded(
@@ -1195,7 +1095,8 @@ class _ExercicioLogCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: concluidas.length == totalSeries && totalSeries > 0
                       ? AppColors.primary.withAlpha(20)
@@ -1219,13 +1120,12 @@ class _ExercicioLogCard extends StatelessWidget {
 
           if (concluidas.isNotEmpty) ...[
             const SizedBox(height: 10),
-            // Tabela de séries concluídas
             Row(
               children: const [
                 SizedBox(width: 24),
                 Expanded(
                   child: Text(
-                    'PESO',
+                    'REPS',
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
@@ -1236,7 +1136,7 @@ class _ExercicioLogCard extends StatelessWidget {
                 ),
                 Expanded(
                   child: Text(
-                    'REPS',
+                    'PESO',
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
@@ -1274,7 +1174,7 @@ class _ExercicioLogCard extends StatelessWidget {
                     ),
                     Expanded(
                       child: Text(
-                        peso.isNotEmpty ? '$peso kg' : '—',
+                        reps.isNotEmpty ? '$reps reps' : '—',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -1287,7 +1187,7 @@ class _ExercicioLogCard extends StatelessWidget {
                     ),
                     Expanded(
                       child: Text(
-                        reps.isNotEmpty ? '$reps reps' : '—',
+                        peso.isNotEmpty ? '$peso kg' : '—',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
