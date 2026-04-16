@@ -5,7 +5,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/app_bar_divider.dart';
 import '../../../../main.dart';
 import '../../shared/models/aluno_perfil_data.dart';
 import '../../shared/widgets/aluno_avatar.dart';
@@ -104,8 +103,43 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Perfil'),
-        bottom: const AppBarDivider(),
+        centerTitle: false,
+        title: const Padding(
+          padding: EdgeInsets.only(left: 4),
+          child: Text('Meu Perfil'),
+        ),
+        actions: [
+          IconButton(
+            icon: Stack(
+              children: [
+                const Icon(
+                  Icons.notifications_rounded,
+                  color: AppColors.labelSecondary,
+                  size: 26,
+                ),
+                Positioned(
+                  right: 2,
+                  top: 2,
+                  child: Container(
+                    width: 9,
+                    height: 9,
+                    decoration: BoxDecoration(
+                      color: AppColors.systemRed,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.background,
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            onPressed: () {},
+          ),
+          const SizedBox(width: 8),
+        ],
+
       ),
       body: StreamBuilder<AlunoPerfilData>(
         stream: _service.getAlunoPerfilCompletoStream(widget.uid),
@@ -133,7 +167,7 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
           final nomeCompleto = '$nome $sobrenome'.trim();
           final photoUrl = alunoData['photoUrl'] as String?;
           final pesoAtual = alunoData['pesoAtual'] as double?;
-          final idade = _calcularIdade(alunoData['dataNascimento']);
+          _calcularIdade(alunoData['dataNascimento']);
 
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -143,12 +177,10 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
                 _buildHero(
                   nomeCompleto: nomeCompleto,
                   photoUrl: photoUrl,
-                  idade: idade,
-                  nomePersonal: data.nomePersonal,
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.paddingScreen,
+                    horizontal: SpacingTokens.screenHorizontalPadding,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,31 +215,12 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
   Widget _buildHero({
     required String nomeCompleto,
     required String? photoUrl,
-    required int? idade,
-    required String? nomePersonal,
   }) {
     return SizedBox(
       width: double.infinity,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Radial glow behind avatar
-          Positioned(
-            top: 16,
-            child: Container(
-              width: 240,
-              height: 240,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.primary.withAlpha(35),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 40, 16, 32),
             child: Column(
@@ -215,61 +228,15 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
                 AlunoAvatar(
                   alunoNome: nomeCompleto,
                   photoUrl: photoUrl,
-                  radius: 56,
+                  radius: AvatarTokens.lg,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   nomeCompleto,
-                  style: const TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                    color: AppColors.labelPrimary,
-                  ),
+                  style: AppTheme.title1,
                   textAlign: TextAlign.center,
                 ),
-                if (nomePersonal != null) ...[
-                  const SizedBox(height: SpacingTokens.xs),
-                  Text(
-                    'Aluno de $nomePersonal',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.labelSecondary,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-                if (idade != null) ...[
-                  const SizedBox(height: 20),
-                  _buildAgePill(idade),
-                ],
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAgePill(int idade) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
-        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-        border: Border.all(color: Colors.white.withAlpha(8)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.cake_outlined, size: 13, color: AppColors.labelSecondary),
-          const SizedBox(width: 6),
-          Text(
-            '$idade anos',
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: AppColors.labelSecondary,
             ),
           ),
         ],

@@ -371,7 +371,7 @@ class ButtonTokens {
 class AvatarTokens {
   static const double sm = 14.0;
   static const double md = 20.0;
-  static const double lg = 28.0;
+  static const double lg = 32.0;
 }
 
 class PillTokens {
