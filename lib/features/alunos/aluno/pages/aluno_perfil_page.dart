@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -32,32 +31,6 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
     super.dispose();
   }
 
-  int? _calcularIdade(dynamic dataNascimento) {
-    if (dataNascimento == null) return null;
-    final nascimento = dataNascimento is Timestamp
-        ? dataNascimento.toDate()
-        : dataNascimento as DateTime;
-    final hoje = DateTime.now();
-    int idade = hoje.year - nascimento.year;
-    if (hoje.month < nascimento.month ||
-        (hoje.month == nascimento.month && hoje.day < nascimento.day)) {
-      idade--;
-    }
-    return idade;
-  }
-
-  void _abrirEdicaoPeso(Map<String, dynamic> alunoData) {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) => _PesoEditSheet(
-        uid: widget.uid,
-        pesoAtual: alunoData['pesoAtual'] as double?,
-        service: _service,
-        onPesoAtualizado: (_) {},
-      ),
-      isScrollControlled: true,
-    );
-  }
 
   Future<void> _abrirWhatsApp(String telefone) async {
     final numeroLimpo = telefone.replaceAll(RegExp(r'[^0-9]'), '');
@@ -166,8 +139,6 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
           final sobrenome = alunoData['sobrenome'] as String? ?? '';
           final nomeCompleto = '$nome $sobrenome'.trim();
           final photoUrl = alunoData['photoUrl'] as String?;
-          final pesoAtual = alunoData['pesoAtual'] as double?;
-          _calcularIdade(alunoData['dataNascimento']);
 
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -186,6 +157,8 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: SpacingTokens.xxl),
+
+                      // ── Personal ──────────────────────────────────────────
                       if (data.nomePersonal != null) ...[
                         _buildPersonalCard(
                           nome: data.nomePersonal!,
@@ -195,9 +168,58 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
                         ),
                         const SizedBox(height: SpacingTokens.xxl),
                       ],
-                      _buildPesoCard(pesoAtual, alunoData),
-                      const SizedBox(height: 48),
-                      _buildSairButton(context),
+
+                      // ── Seções de navegação ────────────────────────────────
+                      _buildSettingsGroup([
+                        _SettingsItem(
+                          icon: Icons.person_rounded,
+                          iconColor: AppColors.labelSecondary,
+                          label: 'Editar perfil',
+                          subtitle: 'Nome, data de nascimento, contato',
+                          onTap: () {},
+                        ),
+                        _SettingsItem(
+                          icon: Icons.monitor_weight_outlined,
+                          iconColor: AppColors.labelSecondary,
+                          label: 'Dados físicos',
+                          subtitle: 'Peso, altura, objetivo',
+                          onTap: () {},
+                        ),
+                        _SettingsItem(
+                          icon: Icons.shield_outlined,
+                          iconColor: AppColors.labelSecondary,
+                          label: 'Segurança',
+                          subtitle: 'Senha e e-mail de acesso',
+                          onTap: () {},
+                        ),
+                        _SettingsItem(
+                          icon: Icons.tune_rounded,
+                          iconColor: AppColors.labelSecondary,
+                          label: 'Configurações do app',
+                          subtitle: 'Idioma e aparência',
+                          onTap: () {},
+                        ),
+                      ]),
+                      const SizedBox(height: SpacingTokens.md),
+
+                      // ── Zona de perigo ─────────────────────────────────────
+                      _buildSettingsGroup([
+                        _SettingsItem(
+                          icon: Icons.logout_rounded,
+                          iconColor: AppColors.systemRed,
+                          label: 'Sair da conta',
+                          labelColor: AppColors.systemRed,
+                          onTap: () => _sair(context),
+                        ),
+                        _SettingsItem(
+                          icon: Icons.delete_outline_rounded,
+                          iconColor: AppColors.systemRed,
+                          label: 'Excluir conta',
+                          labelColor: AppColors.systemRed,
+                          onTap: () {},
+                        ),
+                      ]),
+
                       const SizedBox(height: SpacingTokens.screenBottomPadding),
                     ],
                   ),
@@ -342,98 +364,129 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
     );
   }
 
-  // ─── Peso ───────────────────────────────────────────────────────────────────
+  // ─── Settings helpers ────────────────────────────────────────────────────────
 
-  Widget _buildPesoCard(double? pesoAtual, Map<String, dynamic> alunoData) {
+  Widget _buildNavCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: SpacingTokens.cardPaddingH,
+          vertical: 14,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceDark,
+          borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: iconColor.withAlpha(20),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, size: 20, color: iconColor),
+            ),
+            const SizedBox(width: SpacingTokens.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: -0.2,
+                      color: AppColors.labelPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: AppTheme.caption2),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: AppColors.labelSecondary.withAlpha(80),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsGroup(List<_SettingsItem> items) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(SpacingTokens.cardPaddingH),
       decoration: BoxDecoration(
         color: AppColors.surfaceDark,
         borderRadius: BorderRadius.circular(AppTheme.radiusLG),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      clipBehavior: Clip.hardEdge,
+      child: Column(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Peso atual',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.4,
-                    color: AppColors.labelSecondary,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  pesoAtual != null
-                      ? '${pesoAtual.toStringAsFixed(1)} kg'
-                      : '— kg',
-                  style: const TextStyle(
-                    fontSize: 34,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -1,
-                    height: 1,
-                    color: AppColors.labelPrimary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          GestureDetector(
-            onTap: () => _abrirEdicaoPeso(alunoData),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withAlpha(20),
-                shape: BoxShape.circle,
+          for (int i = 0; i < items.length; i++) ...[
+            _buildSettingsRow(items[i]),
+            if (i < items.length - 1)
+              const Divider(
+                height: 1,
+                thickness: 1,
+                indent: 52,
+                color: Color(0x14EBEBF5),
               ),
-              child: const Icon(
-                Icons.edit_outlined,
-                color: AppColors.primary,
-                size: 18,
-              ),
-            ),
-          ),
+          ],
         ],
       ),
     );
   }
 
-  // ─── Logout ─────────────────────────────────────────────────────────────────
-
-  Widget _buildSairButton(BuildContext context) {
+  Widget _buildSettingsRow(_SettingsItem item) {
     return GestureDetector(
-      onTap: () => _sair(context),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 15),
-        decoration: BoxDecoration(
-          color: AppColors.systemRed.withAlpha(12),
-          borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-          border: Border.all(
-            color: AppColors.systemRed.withAlpha(35),
-            width: 1,
-          ),
+      onTap: item.onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: SpacingTokens.cardPaddingH,
+          vertical: item.subtitle != null ? 12 : 15,
         ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
           children: [
-            Icon(Icons.logout_rounded, color: AppColors.systemRed, size: 18),
-            SizedBox(width: 8),
-            Text(
-              'Sair da conta',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppColors.systemRed,
-                letterSpacing: -0.2,
+            Icon(item.icon, size: 19, color: item.iconColor),
+            const SizedBox(width: SpacingTokens.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.label,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: -0.2,
+                      color: item.labelColor ?? AppColors.labelPrimary,
+                    ),
+                  ),
+                  if (item.subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(item.subtitle!, style: AppTheme.caption2),
+                  ],
+                ],
               ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: AppColors.labelSecondary.withAlpha(80),
             ),
           ],
         ),
@@ -442,8 +495,25 @@ class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
   }
 }
 
-// ─── Bottom sheet de edição de peso ─────────────────────────────────────────
+class _SettingsItem {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String? subtitle;
+  final Color? labelColor;
+  final VoidCallback onTap;
 
+  const _SettingsItem({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    this.subtitle,
+    this.labelColor,
+    required this.onTap,
+  });
+}
+
+// ignore: unused_element — será movido para a sub-página de dados físicos
 class _PesoEditSheet extends StatefulWidget {
   final String uid;
   final double? pesoAtual;
