@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:appfit/core/services/treino_service.dart';
 import 'package:appfit/features/treinos/shared/models/historico_treino_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -36,12 +37,16 @@ class ExecutarTreinoController {
       'exercicios': buildExerciciosLog(recordedData),
     };
 
-    _firestore.collection('logs_treino').doc().set(logData).catchError((_) {});
+    _firestore
+        .collection('logs_treino')
+        .doc()
+        .set(logData)
+        .catchError((e) => debugPrint('[TreinoLog] erro ao salvar log: $e'));
     _firestore
         .collection('rotinas')
         .doc(rotinaId)
         .update({'sessoesConcluidas': FieldValue.increment(1)})
-        .catchError((_) {});
+        .catchError((e) => debugPrint('[TreinoLog] erro ao incrementar sessoes: $e'));
   }
 
   List<Map<String, dynamic>> buildExerciciosLog(

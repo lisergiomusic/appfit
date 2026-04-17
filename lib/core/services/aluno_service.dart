@@ -206,50 +206,40 @@ class AlunoService {
         .limit(1)
         .snapshots();
 
-    return Rx.combineLatest2<DocumentSnapshot, QuerySnapshot, AlunoPerfilData>(
-      alunoStream,
-      rotinaStream,
-      (alunoSnap, rotinaSnap) {
-        final alunoMap = alunoSnap.data() as Map<String, dynamic>? ?? {};
-        final rotinaMap = rotinaSnap.docs.isNotEmpty
-            ? rotinaSnap.docs.first.data() as Map<String, dynamic>?
-            : null;
-        final rotinaId = rotinaSnap.docs.isNotEmpty
-            ? rotinaSnap.docs.first.id
-            : null;
+    // Combina aluno + rotina em um único stream reativo.
+    // switchMap é evitado para não perder atualizações da rotina (ex: sessoesConcluidas).
+    return alunoStream.switchMap((alunoSnap) {
+      final alunoMap = alunoSnap.data() as Map<String, dynamic>? ?? {};
+      final personalId = alunoMap['personalId'] as String?;
 
-        return AlunoPerfilData(
-          aluno: alunoMap,
-          rotinaAtiva: rotinaMap,
-          rotinaId: rotinaId,
-        );
-      },
-    ).switchMap((data) {
-      final personalId = data.aluno['personalId'] as String?;
+      final personalStream = personalId != null
+          ? _firestore.collection('usuarios').doc(personalId).snapshots()
+          : Stream<DocumentSnapshot?>.value(null);
 
-      if (personalId == null) {
-        return Stream.value(data);
-      }
+      return Rx.combineLatest2<QuerySnapshot, DocumentSnapshot?, AlunoPerfilData>(
+        rotinaStream,
+        personalStream,
+        (rotinaSnap, personalSnap) {
+          final rotinaMap = rotinaSnap.docs.isNotEmpty
+              ? rotinaSnap.docs.first.data() as Map<String, dynamic>?
+              : null;
+          final rotinaId = rotinaSnap.docs.isNotEmpty
+              ? rotinaSnap.docs.first.id
+              : null;
 
-      return _firestore.collection('usuarios').doc(personalId).snapshots().map((
-        personalSnap,
-      ) {
-        final personalMap = personalSnap.data() ?? {};
-        final nomePersonal = personalMap['nome']?.toString();
-        final especialidadePersonal = personalMap['especialidade']?.toString();
-        final photoUrlPersonal = personalMap['photoUrl']?.toString();
-        final telefonePersonal = personalMap['telefone']?.toString();
+          final personalMap = personalSnap?.data() as Map<String, dynamic>? ?? {};
 
-        return AlunoPerfilData(
-          aluno: data.aluno,
-          rotinaAtiva: data.rotinaAtiva,
-          rotinaId: data.rotinaId,
-          nomePersonal: nomePersonal,
-          especialidadePersonal: especialidadePersonal,
-          photoUrlPersonal: photoUrlPersonal,
-          telefonePersonal: telefonePersonal,
-        );
-      });
+          return AlunoPerfilData(
+            aluno: alunoMap,
+            rotinaAtiva: rotinaMap,
+            rotinaId: rotinaId,
+            nomePersonal: personalMap['nome']?.toString(),
+            especialidadePersonal: personalMap['especialidade']?.toString(),
+            photoUrlPersonal: personalMap['photoUrl']?.toString(),
+            telefonePersonal: personalMap['telefone']?.toString(),
+          );
+        },
+      );
     });
   }
 
@@ -371,6 +361,7 @@ class AlunoService {
 
     if (tipoVencimento == 'sessoes') {
       rotinaData['vencimentoSessoes'] = sessoesAlvo;
+      rotinaData['sessoesConcluidas'] = 0;
       rotinaData.remove('dataVencimento');
     } else {
       rotinaData['dataVencimento'] = Timestamp.fromDate(
