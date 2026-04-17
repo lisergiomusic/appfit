@@ -264,6 +264,29 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
     }
   }
 
+  Future<void> _executarSalvamentoManual() async {
+    if (_controller.isSaving) return;
+
+    // Validação básica antes de tentar salvar
+    if (_controller.nomeCtrl.text.trim().isEmpty ||
+        _controller.objCtrl.text.trim().isEmpty ||
+        _controller.treinos.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Preencha o nome, objetivo e adicione ao menos uma sessão.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    final salvo = await _controller.salvarRotina();
+    if (salvo && mounted) {
+      setState(() => _canPopNow = true);
+      Navigator.of(context).pop();
+    }
+  }
+
   void _removerSessaoComUndo(SessaoTreinoModel sessao) {
     final removed = _controller.removerSessaoPorReferencia(sessao);
     if (removed == null) return;
@@ -398,7 +421,7 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
                     actions: [
                       AppBarTextButton(
                         label: 'Salvar',
-                        onPressed: () => Navigator.of(context).maybePop(),
+                        onPressed: _executarSalvamentoManual,
                       ),
                     ],
                     background: Align(

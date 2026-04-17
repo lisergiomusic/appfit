@@ -18,7 +18,7 @@ class AppNavBackButton extends StatelessWidget {
           const Icon(
             CupertinoIcons.chevron_back,
             size: 20,
-            color: AppColors.primary,
+            color: AppColors.labelPrimary,
           ),
           const SizedBox(width: 4),
           Text(label, style: AppTheme.navBarAction),

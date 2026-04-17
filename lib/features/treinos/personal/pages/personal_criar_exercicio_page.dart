@@ -1,3 +1,4 @@
+import 'package:appfit/core/widgets/app_nav_back_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -19,8 +20,8 @@ class _PersonalCriarExercicioPageState
   final AuthService _authService = AuthService();
 
   final TextEditingController _nomeCtrl = TextEditingController();
-  final TextEditingController _midiaCtrl =
-      TextEditingController();
+  final TextEditingController _midiaCtrl = TextEditingController();
+  final TextEditingController _instrucoesCtrl = TextEditingController();
 
   final List<String> _gruposDisponiveis = [
     'Peito',
@@ -80,6 +81,9 @@ class _PersonalCriarExercicioPageState
       grupoMuscular: _gruposSelecionados.toList(),
       imagemUrl: _midiaCtrl.text.trim().isNotEmpty
           ? _midiaCtrl.text.trim()
+          : null,
+      instrucoes: _instrucoesCtrl.text.trim().isNotEmpty
+          ? _instrucoesCtrl.text.trim()
           : null,
       series: [],
     );
@@ -147,17 +151,10 @@ class _PersonalCriarExercicioPageState
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(CupertinoIcons.back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: AppNavBackButton(),
         title: const Text(
           'Novo Exercício',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
+
         ),
         centerTitle: true,
       ),
@@ -248,90 +245,62 @@ class _PersonalCriarExercicioPageState
                     const SizedBox(height: 32),
 
                     _buildSectionLabel(
-                      'VÍDEO DEMONSTRATIVO (OPCIONAL)',
+                      'LINK DA MÍDIA (GIF OU VÍDEO)',
                       Icons.play_circle_outline,
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceDark,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.white.withAlpha(10),
-                          width: 1,
+                    TextField(
+                      controller: _midiaCtrl,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      decoration: InputDecoration(
+                        hintText: 'Cole o link do YouTube ou GIF...',
+                        hintStyle: TextStyle(
+                          color: AppColors.labelSecondary.withAlpha(100),
+                        ),
+                        filled: true,
+                        fillColor: AppColors.surfaceDark,
+                        contentPadding: const EdgeInsets.all(16),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                            width: 1,
+                          ),
                         ),
                       ),
-                      child: Column(
-                        children: [
-                          TextField(
-                            controller: _midiaCtrl,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'Cole o link do YouTube ou GIF...',
-                              hintStyle: TextStyle(
-                                color: AppColors.labelSecondary.withAlpha(100),
-                              ),
-                              filled: true,
-                              fillColor: Colors.black.withAlpha(50),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    _buildSectionLabel(
+                      'INSTRUÇÕES DO EXERCÍCIO',
+                      Icons.description_outlined,
+                    ),
+                    TextField(
+                      controller: _instrucoesCtrl,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      maxLines: 5,
+                      decoration: InputDecoration(
+                        hintText: 'Passo a passo de como executar...',
+                        hintStyle: TextStyle(
+                          color: AppColors.labelSecondary.withAlpha(100),
+                        ),
+                        filled: true,
+                        fillColor: AppColors.surfaceDark,
+                        contentPadding: const EdgeInsets.all(16),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                            width: 1,
                           ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            child: Text(
-                              'OU',
-                              style: TextStyle(
-                                color: AppColors.labelSecondary,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Upload de dispositivo em breve! Use o link por enquanto.',
-                                    ),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(
-                                Icons.upload_file,
-                                color: AppColors.primary,
-                                size: 18,
-                              ),
-                              label: const Text(
-                                'Enviar mídia do telemóvel',
-                                style: TextStyle(color: AppColors.primary),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                side: BorderSide(
-                                  color: AppColors.primary.withAlpha(50),
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 32),
