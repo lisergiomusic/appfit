@@ -77,7 +77,6 @@ class AlunoService {
     double? peso,
     double? altura,
     DateTime? dataNascimento,
-    String? objetivos,
     String? genero,
     String? recadoPersonal,
   }) async {
@@ -93,7 +92,6 @@ class AlunoService {
     if (dataNascimento != null) {
       data['dataNascimento'] = Timestamp.fromDate(dataNascimento);
     }
-    if (objetivos != null) data['objetivos'] = objetivos;
     if (genero != null) data['genero'] = genero;
     if (recadoPersonal != null) data['recadoPersonal'] = recadoPersonal;
 
