@@ -34,6 +34,12 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
   // campos read-only necessários para o atualizarAluno
   String _emailAtual = '';
 
+  String _nomeInicial = '';
+  String _sobrenomeInicial = '';
+  String _telefoneInicial = '';
+  DateTime? _dataNascimentoInicial;
+  String? _generoInicial;
+
   @override
   void initState() {
     super.initState();
@@ -73,6 +79,12 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
         _generoSelecionado = data['genero'];
       }
 
+      _nomeInicial = _nomeController.text;
+      _sobrenomeInicial = _sobrenomeController.text;
+      _telefoneInicial = _telefoneController.text;
+      _dataNascimentoInicial = _dataNascimento;
+      _generoInicial = _generoSelecionado;
+
       setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) {
@@ -84,7 +96,19 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
     }
   }
 
+  bool get _houveMudanca =>
+      _nomeController.text.trim() != _nomeInicial ||
+      _sobrenomeController.text.trim() != _sobrenomeInicial ||
+      _telefoneController.text.trim() != _telefoneInicial ||
+      _dataNascimento != _dataNascimentoInicial ||
+      _generoSelecionado != _generoInicial;
+
   Future<void> _salvar() async {
+    if (!_houveMudanca) {
+      Navigator.pop(context);
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSaving = true);

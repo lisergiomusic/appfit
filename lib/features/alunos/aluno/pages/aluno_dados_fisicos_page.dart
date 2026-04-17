@@ -30,6 +30,8 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
   String _emailAtual = '';
 
   double? _pesoOriginal;
+  String _pesoInicial = '';
+  String _alturaInicial = '';
 
   @override
   void initState() {
@@ -73,6 +75,9 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
         _alturaController.text = (altura as num).toInt().toString();
       }
 
+      _pesoInicial = _pesoController.text;
+      _alturaInicial = _alturaController.text;
+
       setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) {
@@ -84,7 +89,16 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
     }
   }
 
+  bool get _houveMudanca =>
+      _pesoController.text.trim() != _pesoInicial ||
+      _alturaController.text.trim() != _alturaInicial;
+
   Future<void> _salvar() async {
+    if (!_houveMudanca) {
+      Navigator.pop(context);
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSaving = true);
