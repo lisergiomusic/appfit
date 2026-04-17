@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../main.dart';
 import '../../shared/models/aluno_perfil_data.dart';
 import '../../shared/widgets/aluno_avatar.dart';
+import 'aluno_dados_fisicos_page.dart';
 import 'aluno_editar_perfil_page.dart';
 
 class AlunoContaPage extends StatefulWidget {
@@ -197,7 +198,12 @@ class _AlunoContaPageState extends State<AlunoContaPage> {
                           iconColor: AppColors.labelSecondary,
                           label: 'Dados físicos',
                           subtitle: 'Peso, altura, objetivo',
-                          onTap: () {},
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AlunoDadosFisicosPage(uid: widget.uid),
+                            ),
+                          ),
                         ),
                         _SettingsItem(
                           icon: Icons.receipt_long_rounded,
