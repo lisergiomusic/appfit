@@ -426,7 +426,7 @@ class _PersonalExercicioDetalhePageState
                         ),
                       ),
                       const Text(
-                        'Instruções do personal',
+                        'Instruções gerais',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
@@ -712,7 +712,7 @@ class _PersonalExercicioDetalhePageState
                         const SizedBox(height: SpacingTokens.sectionGap),
                         NoteDisplayField(
                           text: ex.instrucoesPersonalizadasTexto,
-                          label: 'Instruções do personal',
+                          label: 'Instruções gerais',
                           addLabel: 'Adicionar instruções gerais',
                           onTap: _showEditInstructionsSheet,
                         ),
