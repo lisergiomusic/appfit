@@ -53,7 +53,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
   Timer? _elapsedTimer;
   int _elapsedSeconds = 0;
 
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   late AnimationController _progressAnimController;
   late Animation<double> _progressAnim;
@@ -154,7 +154,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
   }
 
   int get _totalSeries =>
-      widget.sessao.exercicios.fold(0, (sum, e) => sum + e.series.length);
+      widget.sessao.exercicios.fold(0, (int sum, e) => sum + e.series.length);
 
   int get _completedSeries {
     int count = 0;
