@@ -39,6 +39,8 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
     _pesoController = TextEditingController();
     _alturaController = TextEditingController();
     _objetivosController = TextEditingController();
+    _pesoController.addListener(_onMedidasChanged);
+    _alturaController.addListener(_onMedidasChanged);
     _carregarDados();
   }
 
@@ -48,6 +50,32 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
     _alturaController.dispose();
     _objetivosController.dispose();
     super.dispose();
+  }
+
+  void _onMedidasChanged() => setState(() {});
+
+  double? get _imc {
+    final peso = double.tryParse(_pesoController.text.trim());
+    final alturaCm = double.tryParse(_alturaController.text.trim());
+    if (peso == null || alturaCm == null || alturaCm == 0) return null;
+    final alturaM = alturaCm / 100;
+    return peso / (alturaM * alturaM);
+  }
+
+  String _classificacaoImc(double imc) {
+    if (imc < 18.5) return 'Abaixo do peso';
+    if (imc < 25.0) return 'Peso normal';
+    if (imc < 30.0) return 'Sobrepeso';
+    if (imc < 35.0) return 'Obesidade grau I';
+    if (imc < 40.0) return 'Obesidade grau II';
+    return 'Obesidade grau III';
+  }
+
+  Color _corImc(double imc) {
+    if (imc < 18.5) return AppColors.iosBlue;
+    if (imc < 25.0) return AppColors.success;
+    if (imc < 30.0) return AppColors.accentMetrics;
+    return AppColors.systemRed;
   }
 
   Future<void> _carregarDados() async {
@@ -97,7 +125,6 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
       final novoPeso = double.tryParse(_pesoController.text.trim());
       final novaAltura = double.tryParse(_alturaController.text.trim());
 
-      // registra no histórico de peso somente se o valor mudou
       if (novoPeso != null && novoPeso != _pesoOriginal) {
         await _service.registrarPeso(alunoId: widget.uid, peso: novoPeso);
       }
@@ -198,6 +225,7 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ── Medidas principais ────────────────────────────────
               _buildTextField(
                 controller: _pesoController,
                 label: 'Peso',
@@ -215,12 +243,169 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
                 hint: 'Ex: 175',
                 suffix: 'cm',
               ),
+              if (_imc != null) ...[
+                const SizedBox(height: 12),
+                _buildImcCard(_imc!),
+              ],
               const SizedBox(height: 20),
               _buildObjetivosField(),
+
+              // ── Medidas corporais (em breve) ──────────────────────
+              const SizedBox(height: SpacingTokens.sectionGap + 4),
+              _buildEmBreveHeader(),
+              const SizedBox(height: SpacingTokens.sm),
+              _buildEmBreveGroup([
+                _EmBreveField(label: 'Cintura', hint: 'Ex: 80', suffix: 'cm', icon: Icons.radio_button_unchecked_rounded),
+                _EmBreveField(label: 'Quadril', hint: 'Ex: 95', suffix: 'cm', icon: Icons.radio_button_unchecked_rounded),
+                _EmBreveField(label: 'Peito', hint: 'Ex: 100', suffix: 'cm', icon: Icons.radio_button_unchecked_rounded),
+                _EmBreveField(label: 'Braço', hint: 'Ex: 35', suffix: 'cm', icon: Icons.radio_button_unchecked_rounded),
+                _EmBreveField(label: 'Coxa', hint: 'Ex: 55', suffix: 'cm', icon: Icons.radio_button_unchecked_rounded),
+                _EmBreveField(label: 'Panturrilha', hint: 'Ex: 38', suffix: 'cm', icon: Icons.radio_button_unchecked_rounded),
+                _EmBreveField(label: '% Gordura corporal', hint: 'Ex: 18.5', suffix: '%', icon: Icons.percent_rounded),
+              ]),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildImcCard(double imc) {
+    final classificacao = _classificacaoImc(imc);
+    final cor = _corImc(imc);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: cor.withAlpha(18),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+        border: Border.all(color: cor.withAlpha(50)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.insights_rounded, size: 16, color: cor),
+          const SizedBox(width: 10),
+          Text(
+            'IMC  ',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: cor,
+            ),
+          ),
+          Text(
+            imc.toStringAsFixed(1),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: cor,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '· $classificacao',
+            style: TextStyle(
+              fontSize: 12,
+              color: cor.withAlpha(180),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmBreveHeader() {
+    return Row(
+      children: [
+        Text('Medidas corporais', style: AppTheme.sectionHeader),
+        const SizedBox(width: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: AppColors.fillSecondary,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.lock_outline_rounded, size: 10, color: AppColors.labelSecondary),
+              const SizedBox(width: 4),
+              Text(
+                'Em breve',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.labelSecondary,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmBreveGroup(List<_EmBreveField> fields) {
+    return Column(
+      children: fields
+          .map(
+            (f) => Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: _buildEmBreveField(f),
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Widget _buildEmBreveField(_EmBreveField field) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          field.label,
+          style: AppTheme.formLabel.copyWith(
+            color: AppColors.labelSecondary.withAlpha(100),
+          ),
+        ),
+        const SizedBox(height: SpacingTokens.labelToField),
+        Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceDark.withAlpha(120),
+                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    field.icon,
+                    size: 20,
+                    color: AppColors.labelSecondary.withAlpha(50),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      field.hint,
+                      style: AppTheme.inputPlaceHolder.copyWith(
+                        color: AppColors.labelSecondary.withAlpha(50),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    field.suffix,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.labelSecondary.withAlpha(50),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -342,4 +527,18 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
       ],
     );
   }
+}
+
+class _EmBreveField {
+  final String label;
+  final String hint;
+  final String suffix;
+  final IconData icon;
+
+  const _EmBreveField({
+    required this.label,
+    required this.hint,
+    required this.suffix,
+    required this.icon,
+  });
 }
