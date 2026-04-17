@@ -3,7 +3,10 @@ import 'package:appfit/features/treinos/shared/models/exercicio_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TreinoService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+
+  TreinoService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
 
   Future<void> saveTreinoLog({
