@@ -338,38 +338,40 @@ class _AlunoContaPageState extends State<AlunoContaPage> {
             // WhatsApp button
             Padding(
               padding: const EdgeInsets.all(12),
-              child: GestureDetector(
-                onTap: hasPhone ? () => _abrirWhatsApp(telefone) : null,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: hasPhone
-                        ? AppColors.primary.withAlpha(20)
-                        : AppColors.fillSecondary,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      FaIcon(
-                        FontAwesomeIcons.whatsapp,
-                        size: 15,
-                        color: hasPhone
-                            ? AppColors.primary
-                            : AppColors.labelSecondary,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        'Chamar',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+              child: Material(
+                color: hasPhone
+                    ? AppColors.primary.withAlpha(20)
+                    : AppColors.fillSecondary,
+                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                child: InkWell(
+                  onTap: hasPhone ? () => _abrirWhatsApp(telefone) : null,
+                  splashColor: AppColors.splash,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        FaIcon(
+                          FontAwesomeIcons.whatsapp,
+                          size: 15,
                           color: hasPhone
                               ? AppColors.primary
                               : AppColors.labelSecondary,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 5),
+                        Text(
+                          'Chamar',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: hasPhone
+                                ? AppColors.primary
+                                : AppColors.labelSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -408,44 +410,48 @@ class _AlunoContaPageState extends State<AlunoContaPage> {
   }
 
   Widget _buildSettingsRow(_SettingsItem item) {
-    return GestureDetector(
-      onTap: item.onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: SpacingTokens.cardPaddingH,
-          vertical: item.subtitle != null ? 12 : 15,
-        ),
-        child: Row(
-          children: [
-            Icon(item.icon, size: 19, color: item.iconColor),
-            const SizedBox(width: SpacingTokens.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.label,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: -0.2,
-                      color: item.labelColor ?? AppColors.labelPrimary,
+    final isLogout = item.labelColor == AppColors.systemRed;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: item.onTap,
+        splashColor: isLogout ? AppColors.systemRed.withAlpha(60) : AppColors.splash,
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: SpacingTokens.cardPaddingH,
+            vertical: item.subtitle != null ? 12 : 15,
+          ),
+          child: Row(
+            children: [
+              Icon(item.icon, size: 19, color: item.iconColor),
+              const SizedBox(width: SpacingTokens.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.label,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: -0.2,
+                        color: item.labelColor ?? AppColors.labelPrimary,
+                      ),
                     ),
-                  ),
-                  if (item.subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(item.subtitle!, style: AppTheme.caption),
+                    if (item.subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(item.subtitle!, style: AppTheme.caption),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-            Icon(
-              Icons.chevron_right_rounded,
-              size: 20,
-              color: AppColors.labelSecondary.withAlpha(80),
-            ),
-          ],
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: AppColors.labelSecondary.withAlpha(80),
+              ),
+            ],
+          ),
         ),
       ),
     );
