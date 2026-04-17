@@ -218,6 +218,71 @@ class ExerciseService {
     }
   }
 
+  /// Busca os dados de um exercício para ser usado como base (template) para novos exercícios.
+  Future<Map<String, dynamic>?> obterTemplateDeExercicio(String nome) async {
+    try {
+      final exercicio = await buscarExercicioPorNome(nome);
+      return exercicio?.toFirestore();
+    } catch (e) {
+      debugPrint('Erro ao obter template: $e');
+      return null;
+    }
+  }
+
+  /// Realiza o cadastro de múltiplos exercícios de uma vez usando WriteBatch.
+  Future<void> cadastrarExerciciosEmMassa(
+    List<ExercicioItem> exercicios, {
+    bool asSystemExercises = false,
+  }) async {
+    final personalId = _auth.currentUser?.uid;
+    final batch = _db.batch();
+
+    try {
+      for (var ex in exercicios) {
+        // Se for exercício de sistema, forçamos o personalId como null
+        if (asSystemExercises) {
+          ex.personalId = null;
+        } else if (ex.personalId == null && personalId != null) {
+          // Caso contrário, se for um personal comum criando, associamos ao ID dele
+          ex.personalId = personalId;
+        }
+
+        final docRef = _db.collection('exercicios_base').doc();
+        batch.set(docRef, ex.toFirestore());
+      }
+
+      await batch.commit();
+    } catch (e) {
+      throw Exception('Erro no upload em massa: $e');
+    }
+  }
+
+  /// Limpa a biblioteca de exercícios, mantendo apenas o modelo de base.
+  Future<void> limparColecaoExcetoModelo(String nomeModelo) async {
+    try {
+      final snapshot = await _db.collection('exercicios_base').get();
+      final batch = _db.batch();
+      bool encontrouModelo = false;
+
+      for (var doc in snapshot.docs) {
+        final nome = doc.data()['nome'] as String?;
+        if (nome == nomeModelo) {
+          encontrouModelo = true;
+          continue; // Mantém o modelo
+        }
+        batch.delete(doc.reference);
+      }
+
+      if (!encontrouModelo) {
+        throw Exception('Modelo "$nomeModelo" não encontrado. Abortando para evitar limpeza total.');
+      }
+
+      await batch.commit();
+    } catch (e) {
+      throw Exception('Erro ao limpar coleção: $e');
+    }
+  }
+
   Future<void> semearExerciciosBase() async {
     final List<ExercicioItem> exerciciosSemente = [
       ExercicioItem(

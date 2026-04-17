@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
+import 'package:flutter/services.dart';
+import 'dart:convert';
 import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/exercise_service.dart';
+import '../../../../core/services/auth_service.dart';
 import '../../shared/models/exercicio_model.dart';
 import 'personal_criar_exercicio_page.dart';
 
@@ -19,6 +22,7 @@ class PersonalExerciciosLibraryPage extends StatefulWidget {
 class _PersonalExerciciosLibraryPageState
     extends State<PersonalExerciciosLibraryPage> {
   final ExerciseService _exerciseService = ExerciseService();
+  final AuthService _authService = AuthService();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
@@ -26,6 +30,7 @@ class _PersonalExerciciosLibraryPageState
 
   List<ExercicioItem> _listaExercicios = [];
   bool _isLoading = false;
+  bool _isAdmin = false;
   bool _hasMore = true;
   DocumentSnapshot? _lastDoc;
 
@@ -50,6 +55,7 @@ class _PersonalExerciciosLibraryPageState
   @override
   void initState() {
     super.initState();
+    _checkAdminStatus();
     _carregarDados(reset: true);
     _scrollController.addListener(_onScroll);
     _searchFocusNode.addListener(() {
@@ -64,6 +70,121 @@ class _PersonalExerciciosLibraryPageState
     _searchFocusNode.dispose();
     _debounce?.cancel();
     super.dispose();
+  }
+
+  Future<void> _checkAdminStatus() async {
+    final isAdmin = await _authService.isAdmin();
+    if (mounted) {
+      setState(() => _isAdmin = isAdmin);
+    }
+  }
+
+  /// FUNÇÃO 1: Puxa o template e copia para o Clipboard
+  Future<void> _copiarTemplateParaIA() async {
+    try {
+      final template = await _exerciseService.obterTemplateDeExercicio('Leg Press 45°');
+      if (template == null) throw Exception('Modelo Leg Press 45° não encontrado.');
+
+      // Remove IDs e campos nulos para ficar um JSON limpo para a IA
+      template.remove('id');
+      template.remove('personalId');
+
+      final jsonString = const JsonEncoder.withIndent('  ').convert(template);
+      await Clipboard.setData(ClipboardData(text: jsonString));
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Template Copiado!'),
+            content: const Text('O formato JSON do Leg Press 45° foi copiado. Cole na sua IA e peça para ela gerar novos exercícios seguindo este exato padrão de campos.'),
+            actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro: $e')));
+    }
+  }
+
+  /// FUNÇÃO 2: Abre campo para colar o JSON da IA e salvar
+  void _abrirDialogUploadMassa() {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Upload em Massa'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: TextField(
+            controller: controller,
+            maxLines: 10,
+            decoration: const InputDecoration(
+              hintText: 'Cole aqui o JSON (Lista) gerado pela IA...',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                final List<dynamic> decoded = jsonDecode(controller.text);
+                final exercicios = decoded.map((item) => ExercicioItem.fromFirestore(item)).toList();
+                
+                await _exerciseService.cadastrarExerciciosEmMassa(
+                  exercicios,
+                  asSystemExercises: true, // Garante que fiquem sem estrela
+                );
+                if (mounted) {
+                  Navigator.pop(context);
+                  _carregarDados(reset: true);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Upload concluído!')));
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro no JSON: $e')));
+              }
+            },
+            child: const Text('Enviar para Firebase'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// FUNÇÃO 3: Limpa tudo exceto o Leg Press 45°
+  Future<void> _limparBibliotecaComConfirmacao() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Limpar Biblioteca?'),
+        content: const Text('Isso apagará TODOS os exercícios, mantendo apenas o "Leg Press 45°" como base. Esta ação não pode ser desfeita.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Apagar Tudo'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true) {
+      setState(() => _isLoading = true);
+      try {
+        await _exerciseService.limparColecaoExcetoModelo('Leg Press 45°');
+        if (mounted) {
+          _carregarDados(reset: true);
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Biblioteca limpa com sucesso!')));
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro: $e')));
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
   }
 
   void _onScroll() {
@@ -510,6 +631,23 @@ class _PersonalExerciciosLibraryPageState
         ),
         centerTitle: false,
         actions: [
+          if (_isAdmin) ...[
+            IconButton(
+              icon: const Icon(Icons.delete_sweep_outlined, color: Colors.redAccent),
+              onPressed: _limparBibliotecaComConfirmacao,
+              tooltip: 'Limpar Biblioteca (Admin)',
+            ),
+            IconButton(
+              icon: const Icon(Icons.copy_all_outlined, color: AppColors.primary),
+              onPressed: _copiarTemplateParaIA,
+              tooltip: 'Copiar Template (Admin)',
+            ),
+            IconButton(
+              icon: const Icon(Icons.cloud_upload_outlined, color: AppColors.primary),
+              onPressed: _abrirDialogUploadMassa,
+              tooltip: 'Upload em Massa (Admin)',
+            ),
+          ],
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: Tooltip(
