@@ -75,6 +75,7 @@ class AlunoService {
     required String email,
     String? telefone,
     double? peso,
+    double? altura,
     DateTime? dataNascimento,
     String? objetivos,
     String? genero,
@@ -88,6 +89,7 @@ class AlunoService {
 
     if (telefone != null) data['telefone'] = telefone;
     if (peso != null) data['pesoAtual'] = peso;
+    if (altura != null) data['alturaAtual'] = altura;
     if (dataNascimento != null) {
       data['dataNascimento'] = Timestamp.fromDate(dataNascimento);
     }
