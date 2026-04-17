@@ -152,7 +152,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: paginas[_indiceAtual],
+      body: IndexedStack(index: _indiceAtual, children: paginas),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _indiceAtual,
         onTap: (index) {

@@ -18,6 +18,7 @@ class AlunoHistoricoPage extends StatefulWidget {
 
 class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
   final TreinoService _service = TreinoService();
+  late final Stream<QuerySnapshot> _pesoStream;
 
   // Cache por mês: "yyyy-MM" → lista de logs
   final Map<String, List<Map<String, dynamic>>> _logsPorMes = {};
@@ -33,6 +34,7 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
   @override
   void initState() {
     super.initState();
+    _pesoStream = AlunoService().getHistoricoPesoStream(widget.uid);
     _carregarPrimeiraPagina();
   }
 
@@ -43,6 +45,7 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
       if (!mounted) return;
       setState(() => _carregandoInicial = false);
     } catch (e) {
+      debugPrint('[AlunoHistoricoPage] erro: $e');
       if (!mounted) return;
       setState(() {
         _erro = 'Erro ao carregar histórico.';
@@ -110,12 +113,32 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
       return _buildScaffoldComAppBar(
         'Meu Histórico',
         Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 40),
-            child: Text(
-              _erro!,
-              style: const TextStyle(color: AppColors.labelSecondary),
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _erro!,
+                style: const TextStyle(color: AppColors.labelSecondary),
+              ),
+              const SizedBox(height: 16),
+              TextButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _erro = null;
+                    _carregandoInicial = true;
+                    _logsPorMes.clear();
+                    _mesesCarregando.clear();
+                    _mesesCarregados.clear();
+                  });
+                  _carregarPrimeiraPagina();
+                },
+                icon: const Icon(Icons.refresh, color: AppColors.primary),
+                label: const Text(
+                  'Tentar novamente',
+                  style: TextStyle(color: AppColors.primary),
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -126,6 +149,7 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
       mesesCarregando: _mesesCarregando,
       onMesChanged: _carregarMes,
       uid: widget.uid,
+      pesoStream: _pesoStream,
     );
   }
 
@@ -157,12 +181,14 @@ class _HistoricoContent extends StatelessWidget {
   final Set<String> mesesCarregando;
   final void Function(DateTime mes) onMesChanged;
   final String uid;
+  final Stream<QuerySnapshot> pesoStream;
 
   const _HistoricoContent({
     required this.logsPorDia,
     required this.mesesCarregando,
     required this.onMesChanged,
     required this.uid,
+    required this.pesoStream,
   });
 
   void _abrirEdicaoPeso(BuildContext context, double? pesoAtual) {
@@ -212,7 +238,7 @@ class _HistoricoContent extends StatelessWidget {
             ),
             const SizedBox(height: SpacingTokens.xxl),
             StreamBuilder<QuerySnapshot>(
-              stream: AlunoService().getHistoricoPesoStream(uid),
+              stream: pesoStream,
               builder: (context, historicoSnap) {
                 if (historicoSnap.hasError) {
                   return const Padding(

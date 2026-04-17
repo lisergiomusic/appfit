@@ -203,28 +203,38 @@ class AlunoService {
         .limit(1)
         .snapshots();
 
-    // Combina aluno + rotina em um único stream reativo.
-    // switchMap é evitado para não perder atualizações da rotina (ex: sessoesConcluidas).
-    return alunoStream.switchMap((alunoSnap) {
-      final alunoMap = alunoSnap.data() as Map<String, dynamic>? ?? {};
-      final personalId = alunoMap['personalId'] as String?;
+    // Obtém o personalId uma vez e monta os três streams estáticos.
+    // Nenhum stream interno é recriado quando o aluno recebe updates
+    // (ex: ultimoTreino), evitando o reset para waiting do StreamBuilder.
+    return alunoStream.take(1).asyncExpand((firstSnap) {
+      final personalId =
+          (firstSnap.data() as Map<String, dynamic>?)?['personalId'] as String?;
 
       final personalStream = personalId != null
-          ? _firestore.collection('usuarios').doc(personalId).snapshots()
-          : Stream<DocumentSnapshot?>.value(null);
+          ? _firestore
+              .collection('usuarios')
+              .doc(personalId)
+              .snapshots()
+              .cast<DocumentSnapshot?>()
+          : Stream<DocumentSnapshot?>.multi((c) {
+              c.add(null);
+              // Stream que emite null e permanece aberto indefinidamente.
+            });
 
-      return Rx.combineLatest2<QuerySnapshot, DocumentSnapshot?, AlunoPerfilData>(
+      return Rx.combineLatest3<DocumentSnapshot, QuerySnapshot,
+          DocumentSnapshot?, AlunoPerfilData>(
+        alunoStream,
         rotinaStream,
         personalStream,
-        (rotinaSnap, personalSnap) {
+        (alunoSnap, rotinaSnap, personalSnap) {
+          final alunoMap = alunoSnap.data() as Map<String, dynamic>? ?? {};
           final rotinaMap = rotinaSnap.docs.isNotEmpty
               ? rotinaSnap.docs.first.data() as Map<String, dynamic>?
               : null;
-          final rotinaId = rotinaSnap.docs.isNotEmpty
-              ? rotinaSnap.docs.first.id
-              : null;
-
-          final personalMap = personalSnap?.data() as Map<String, dynamic>? ?? {};
+          final rotinaId =
+              rotinaSnap.docs.isNotEmpty ? rotinaSnap.docs.first.id : null;
+          final personalMap =
+              personalSnap?.data() as Map<String, dynamic>? ?? {};
           final pNome = personalMap['nome']?.toString() ?? '';
           final pSobrenome = personalMap['sobrenome']?.toString() ?? '';
           final pNomeCompleto = '$pNome $pSobrenome'.trim();

@@ -7,7 +7,15 @@
       "Bash(flutter pub:*)",
       "Bash(find /c/Dev/Projetos/appfit/lib/core/widgets -type f -name \"*.dart\" -exec grep -l \"empty\\\\|Empty\\\\|no data\\\\|No data\" {} \\\\;)",
       "Bash(grep -E \"\\\\.\\(dart|md\\)$\")",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(flutter run *)",
+      "Bash(flutter logs *)",
+      "Bash(keytool -list -v -keystore \"%USERPROFILE%\\\\.android\\\\debug.keystore\" -alias androiddebugkey -storepass android -keypass android)",
+      "Bash(\"/c/Program Files/Android/Android Studio/jbr/bin/keytool\" -list -v -keystore \"C:/Users/sergi/.android/debug.keystore\" -alias androiddebugkey -storepass android -keypass android)",
+      "Bash(firebase apps:sdkconfig android 1:589594654448:android:9e9546bd28a6c279a27435 --project appfit-43178)",
+      "Bash(firebase apps:android:sha create 1:589594654448:android:9e9546bd28a6c279a27435 B9:9F:60:8B:DD:9C:E0:A2:60:FA:66:A7:4F:BD:F8:41:D3:FD:8B:E1 --project appfit-43178)",
+      "Bash(firebase --help)",
+      "Bash(firebase apps:android:sha:list 1:589594654448:android:9e9546bd28a6c279a27435 --project appfit-43178)"
     ]
   }
 }

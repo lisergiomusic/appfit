@@ -46,7 +46,8 @@ class TreinoService {
           .where('alunoId', isEqualTo: alunoId)
           .orderBy('dataHora', descending: true)
           .limit(50)
-          .get();
+          .get()
+          .timeout(const Duration(seconds: 30));
 
       return snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
     } catch (e) {
@@ -72,7 +73,7 @@ class TreinoService {
         query = query.startAfterDocument(aposDoc);
       }
 
-      final snapshot = await query.get();
+      final snapshot = await query.get().timeout(const Duration(seconds: 30));
       final logs = snapshot.docs
           .map((doc) => {'id': doc.id, ...doc.data()})
           .toList();
@@ -112,7 +113,8 @@ class TreinoService {
           )
           .where('dataHora', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
           .orderBy('dataHora', descending: true)
-          .get();
+          .get()
+          .timeout(const Duration(seconds: 30));
 
       return snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
     } catch (e) {

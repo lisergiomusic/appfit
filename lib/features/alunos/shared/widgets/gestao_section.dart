@@ -61,7 +61,7 @@ class GestaoSection extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          PersonalFeedbackHistoricoPage(alunoNome: alunoNome),
+                          PersonalFeedbackHistoricoPage(alunoId: alunoId, alunoNome: alunoNome),
                     ),
                   );
                 },

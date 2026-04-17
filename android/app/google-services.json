@@ -9,7 +9,8 @@
       "client_info": {
         "mobilesdk_app_id": "1:589594654448:android:9e9546bd28a6c279a27435",
         "android_client_info": {
-          "package_name": "com.example.appfit"
+          "package_name": "com.example.appfit",
+          "certificate_hash": ["B99F608BDD9CE0A260FA66A74FBDF841D3FD8BE1"]
         }
       },
       "oauth_client": [],
