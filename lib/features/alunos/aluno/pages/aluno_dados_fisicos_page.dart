@@ -23,7 +23,6 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
 
   late TextEditingController _pesoController;
   late TextEditingController _alturaController;
-  late TextEditingController _objetivosController;
 
   // campos read-only necessários para atualizarAluno
   String _nomeAtual = '';
@@ -38,7 +37,6 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
     _service = AlunoService();
     _pesoController = TextEditingController();
     _alturaController = TextEditingController();
-    _objetivosController = TextEditingController();
     _pesoController.addListener(_onMedidasChanged);
     _alturaController.addListener(_onMedidasChanged);
     _carregarDados();
@@ -48,7 +46,6 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
   void dispose() {
     _pesoController.dispose();
     _alturaController.dispose();
-    _objetivosController.dispose();
     super.dispose();
   }
 
@@ -104,8 +101,6 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
         _alturaController.text = (altura as num).toInt().toString();
       }
 
-      _objetivosController.text = data['objetivos'] ?? '';
-
       setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) {
@@ -137,7 +132,6 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
             email: _emailAtual,
             peso: novoPeso,
             altura: novaAltura,
-            objetivos: _objetivosController.text.trim(),
           )
           .timeout(const Duration(seconds: 12));
 
@@ -247,8 +241,6 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
                 const SizedBox(height: 12),
                 _buildImcCard(_imc!),
               ],
-              const SizedBox(height: 20),
-              _buildObjetivosField(),
 
               // ── Medidas corporais (em breve) ──────────────────────
               const SizedBox(height: SpacingTokens.sectionGap + 4),
@@ -489,44 +481,6 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
     );
   }
 
-  Widget _buildObjetivosField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Objetivo', style: AppTheme.formLabel),
-        const SizedBox(height: SpacingTokens.labelToField),
-        TextFormField(
-          controller: _objetivosController,
-          maxLines: 4,
-          minLines: 3,
-          textCapitalization: TextCapitalization.sentences,
-          style: AppTheme.inputText,
-          decoration: InputDecoration(
-            hintText: 'Ex: Perder peso, ganhar massa muscular...',
-            hintStyle: AppTheme.inputPlaceHolder,
-            filled: true,
-            fillColor: AppColors.surfaceDark,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: const BorderSide(color: AppColors.primary, width: 1),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 class _EmBreveField {
