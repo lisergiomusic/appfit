@@ -531,6 +531,16 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
       }
     }
 
+    // Define a cor da borda baseada no status real
+    Color statusColor;
+    if (!isAtivo) {
+      statusColor = AppColors.labelSecondary.withAlpha(100); // Inativo
+    } else if (emRisco) {
+      statusColor = Colors.orangeAccent; // Risco
+    } else {
+      statusColor = AppColors.success; // Ativo
+    }
+
     return Container(
       decoration: AppTheme.cardDecoration,
       child: InkWell(
@@ -543,7 +553,12 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
               Stack(
                 alignment: Alignment.bottomRight,
                 children: [
-                  AlunoAvatar(alunoNome: nome, photoUrl: photoUrl, radius: 20),
+                  AlunoAvatar(
+                    alunoNome: nome,
+                    photoUrl: photoUrl,
+                    radius: 20,
+                    borderColor: statusColor,
+                  ),
                 ],
               ),
               const SizedBox(width: 16),

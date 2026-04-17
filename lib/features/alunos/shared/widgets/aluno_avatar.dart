@@ -6,8 +6,8 @@ class AlunoAvatar extends StatelessWidget {
   final String alunoNome;
   final String? photoUrl;
   final double radius;
-
   final bool showBorder;
+  final Color? borderColor;
 
   const AlunoAvatar({
     super.key,
@@ -15,6 +15,7 @@ class AlunoAvatar extends StatelessWidget {
     this.photoUrl,
     this.radius = 40,
     this.showBorder = true,
+    this.borderColor,
   });
 
   @override
@@ -49,7 +50,10 @@ class AlunoAvatar extends StatelessWidget {
       padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.primary.withAlpha(120), width: 2),
+        border: Border.all(
+          color: borderColor ?? AppColors.primary.withAlpha(120),
+          width: 1,
+        ),
       ),
       child: avatar,
     );

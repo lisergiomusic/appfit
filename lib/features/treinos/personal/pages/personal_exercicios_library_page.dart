@@ -553,7 +553,7 @@ class _PersonalExerciciosLibraryPageState
                         );
                         if (result != null && mounted) {
                           Navigator.pop(context); // Fecha o modal
-                          _carregarExercicios(); // Recarrega a lista
+                          _carregarDados(reset: true); // Recarrega a lista
                         }
                       },
                       icon: const Icon(Icons.edit, size: 18),
