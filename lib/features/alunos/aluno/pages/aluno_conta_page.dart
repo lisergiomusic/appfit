@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/utils/app_ui_utils.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -211,7 +212,7 @@ class _AlunoContaPageState extends State<AlunoContaPage> {
                           iconColor: AppColors.labelSecondary,
                           label: 'Financeiro',
                           subtitle: 'Faturas, histórico de pagamentos',
-                          onTap: () {},
+                          onTap: () => AppUIUtils.showFutureFeatureWarning(context),
                         ),
                         _SettingsItem(
                           icon: Icons.shield_outlined,
@@ -230,7 +231,7 @@ class _AlunoContaPageState extends State<AlunoContaPage> {
                           iconColor: AppColors.labelSecondary,
                           label: 'Configurações do app',
                           subtitle: 'Idioma e aparência',
-                          onTap: () {},
+                          onTap: () => AppUIUtils.showFutureFeatureWarning(context),
                         ),
                       ]),
                       const SizedBox(height: SpacingTokens.sectionGap),
