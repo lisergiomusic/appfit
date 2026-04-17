@@ -27,14 +27,18 @@ class ExecutarTreinoController {
   void saveTreinoLog(
     Map<String, dynamic> recordedData, {
     int duracaoMinutos = 0,
+    int esforco = 0,
+    String observacoes = '',
   }) {
-    final logData = {
+    final logData = <String, dynamic>{
       'alunoId': alunoId,
       'rotinaId': rotinaId,
       'sessaoNome': sessao.nome,
       'dataHora': Timestamp.fromDate(DateTime.now()),
       'duracaoMinutos': duracaoMinutos,
       'exercicios': buildExerciciosLog(recordedData),
+      if (esforco > 0) 'esforco': esforco,
+      if (observacoes.isNotEmpty) 'observacoes': observacoes,
     };
 
     _firestore

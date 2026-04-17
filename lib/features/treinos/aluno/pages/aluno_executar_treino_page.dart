@@ -8,6 +8,7 @@ import '../../shared/models/rotina_model.dart';
 import '../../shared/models/historico_treino_model.dart';
 import '../../shared/models/exercicio_model.dart';
 import '../controllers/executar_treino_controller.dart';
+import 'aluno_feedback_treino_page.dart';
 import '../../shared/widgets/executar_treino/treino_scrollable_body.dart';
 import '../../shared/widgets/executar_treino/rest_timer_sheet.dart';
 
@@ -314,9 +315,21 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
 
     if (confirm == true) {
       if (!mounted) return;
+      final duracao = DateTime.now().difference(_startedAt).inMinutes;
+      final feedback = await Navigator.of(context).push<FeedbackTreino>(
+        MaterialPageRoute(
+          builder: (_) => AlunoFeedbackTreinoPage(
+            sessaoNome: widget.sessao.nome,
+            duracaoMinutos: duracao,
+          ),
+        ),
+      );
+      if (!mounted) return;
       _controller.saveTreinoLog(
         _recordedData,
-        duracaoMinutos: DateTime.now().difference(_startedAt).inMinutes,
+        duracaoMinutos: duracao,
+        esforco: feedback?.esforco ?? 0,
+        observacoes: feedback?.observacoes ?? '',
       );
       Navigator.of(context).pop();
     } else {
