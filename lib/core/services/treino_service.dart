@@ -24,8 +24,15 @@ class TreinoService {
 
       await _firestore.collection('logs_treino').add(logData);
 
+      // Atualiza o contador na rotina
       await _firestore.collection('rotinas').doc(rotinaId).update({
         'sessoesConcluidas': FieldValue.increment(1),
+      });
+
+      // CORREÇÃO: Atualiza a data do último treino no perfil do aluno
+      // Isso tira o aluno do status de "Risco" no dashboard do Personal
+      await _firestore.collection('usuarios').doc(alunoId).update({
+        'ultimoTreino': FieldValue.serverTimestamp(),
       });
     } catch (e) {
       rethrow;

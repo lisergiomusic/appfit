@@ -115,31 +115,28 @@ class AlunoService {
         .where('tipoUsuario', isEqualTo: 'aluno')
         .where('personalId', isEqualTo: personalId);
 
-    final total = await baseQuery.count().get();
-    final ativos = await baseQuery
-        .where('status', isEqualTo: 'ativo')
-        .count()
-        .get();
-    final inativos = await baseQuery
-        .where('status', isEqualTo: 'inativo')
-        .count()
-        .get();
-
     final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
-    final risco = await baseQuery
-        .where('status', isEqualTo: 'ativo')
-        .where(
-          'ultimoTreino',
-          isLessThanOrEqualTo: Timestamp.fromDate(sevenDaysAgo),
-        )
-        .count()
-        .get();
+
+    // Executa as contagens em paralelo para ganhar performance
+    final results = await Future.wait([
+      baseQuery.count().get(),
+      baseQuery.where('status', isEqualTo: 'ativo').count().get(),
+      baseQuery.where('status', isEqualTo: 'inativo').count().get(),
+      baseQuery
+          .where('status', isEqualTo: 'ativo')
+          .where(
+            'ultimoTreino',
+            isLessThanOrEqualTo: Timestamp.fromDate(sevenDaysAgo),
+          )
+          .count()
+          .get(),
+    ]);
 
     return ContagemAlunos(
-      total: total.count ?? 0,
-      ativos: ativos.count ?? 0,
-      inativos: inativos.count ?? 0,
-      risco: risco.count ?? 0,
+      total: results[0].count ?? 0,
+      ativos: results[1].count ?? 0,
+      inativos: results[2].count ?? 0,
+      risco: results[3].count ?? 0,
     );
   }
 

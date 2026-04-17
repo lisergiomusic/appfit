@@ -101,8 +101,9 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
 
   Future<void> _updateSummaryCounts() async {
     try {
+      // Tenta buscar as contagens com um timeout generoso, mas sem travar o resto
       final contagens = await _alunoService.fetchContagens().timeout(
-        const Duration(seconds: 8),
+        const Duration(seconds: 10),
       );
       if (mounted) {
         setState(() {
@@ -113,7 +114,9 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
         });
       }
     } catch (e) {
-      debugPrint("Erro ao buscar contagens: $e");
+      // Se der erro nas contagens (timeout ou falta de índice), apenas logamos.
+      // A lista de alunos abaixo continuará tentando carregar.
+      debugPrint("Aviso: Falha ao carregar contagens (resumo), mas continuando... Erro: $e");
     }
   }
 
