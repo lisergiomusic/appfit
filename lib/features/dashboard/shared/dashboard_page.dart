@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../main.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/auth_utils.dart';
 import '../aluno/aluno_home_page.dart';
 import '../personal/personal_home_page.dart';
 import '../../alunos/aluno/pages/aluno_conta_page.dart';
@@ -51,17 +52,6 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  Future<void> _sair(BuildContext context) async {
-    await _authService.signOut();
-    if (context.mounted) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const ChecagemPagina()),
-        (route) => false,
-      );
-    }
-  }
-
   Widget _buildAjustes(BuildContext context) {
     return Center(
       child: Column(
@@ -79,12 +69,12 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           const SizedBox(height: AppTheme.space32),
           ElevatedButton.icon(
-            onPressed: () => _sair(context),
+            onPressed: () => AuthUtils.confirmarESair(context),
             icon: const Icon(Icons.logout),
             label: const Text('Sair do AppFit'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent.withAlpha(25),
-              foregroundColor: Colors.redAccent,
+              backgroundColor: AppColors.systemRed.withAlpha(25),
+              foregroundColor: AppColors.systemRed,
               elevation: 0,
             ),
           ),

@@ -75,6 +75,11 @@ class ExecutarTreinoController {
         .doc(rotinaId)
         .update({'sessoesConcluidas': FieldValue.increment(1)})
         .catchError((e) => debugPrint('[TreinoLog] erro ao incrementar sessoes: $e'));
+    _firestore
+        .collection('usuarios')
+        .doc(alunoId)
+        .update({'ultimoTreino': FieldValue.serverTimestamp()})
+        .catchError((e) => debugPrint('[TreinoLog] erro ao atualizar ultimoTreino: $e'));
   }
 
   List<Map<String, dynamic>> buildExerciciosLog(

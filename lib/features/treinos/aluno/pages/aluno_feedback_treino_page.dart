@@ -84,47 +84,50 @@ class _AlunoFeedbackTreinoPageState extends State<AlunoFeedbackTreinoPage> {
         actions: [AppBarTextButton(label: 'Pular', onPressed: _pular)],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: SpacingTokens.screenHorizontalPadding,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: SpacingTokens.screenTopPadding),
-              _SessaoResumo(
-                nome: widget.sessaoNome,
-                duracao: widget.duracaoMinutos,
-              ),
-              const SizedBox(height: SpacingTokens.sectionGap),
-              _SectionLabel(text: 'Como foi o esforço?'),
-              const SizedBox(height: SpacingTokens.labelToField),
-              _EsforcoGrid(
-                selecionado: esforcoSelecionado,
-                onSelect: (v) {
-                  HapticFeedback.selectionClick();
-                  setState(() => _esforco = v);
-                },
-              ),
-              if (temEsforco) ...[
-                const SizedBox(height: SpacingTokens.sm),
-                _EsforcoIndicador(
-                  valor: esforcoSelecionado,
-                  label: _esforcoLabel(esforcoSelecionado),
-                  color: _esforcoColor(esforcoSelecionado),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: SpacingTokens.screenHorizontalPadding,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: SpacingTokens.screenTopPadding),
+                _SessaoResumo(
+                  nome: widget.sessaoNome,
+                  duracao: widget.duracaoMinutos,
                 ),
+                const SizedBox(height: SpacingTokens.sectionGap),
+                _SectionLabel(text: 'Como foi o esforço?'),
+                const SizedBox(height: SpacingTokens.labelToField),
+                _EsforcoGrid(
+                  selecionado: esforcoSelecionado,
+                  onSelect: (v) {
+                    HapticFeedback.selectionClick();
+                    setState(() => _esforco = v);
+                  },
+                ),
+                if (temEsforco) ...[
+                  const SizedBox(height: SpacingTokens.sm),
+                  _EsforcoIndicador(
+                    valor: esforcoSelecionado,
+                    label: _esforcoLabel(esforcoSelecionado),
+                    color: _esforcoColor(esforcoSelecionado),
+                  ),
+                ],
+                const SizedBox(height: SpacingTokens.xxl),
+                _SectionLabel(text: 'Observações (Opcional)'),
+                const SizedBox(height: SpacingTokens.labelToField),
+                _ObservacoesField(
+                  controller: _obsController,
+                  maxChars: _maxChars,
+                ),
+                const SizedBox(height: SpacingTokens.xxl),
+                _ConfirmarButton(onPressed: _confirmar),
+                const SizedBox(height: SpacingTokens.screenBottomPadding),
               ],
-              const SizedBox(height: SpacingTokens.xxl),
-              _SectionLabel(text: 'Observações (Opcional)'),
-              const SizedBox(height: SpacingTokens.labelToField),
-              _ObservacoesField(
-                controller: _obsController,
-                maxChars: _maxChars,
-              ),
-              const Spacer(),
-              _ConfirmarButton(onPressed: _confirmar),
-              const SizedBox(height: SpacingTokens.screenBottomPadding),
-            ],
+            ),
           ),
         ),
       ),

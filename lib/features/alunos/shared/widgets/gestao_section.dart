@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/app_ui_utils.dart';
 import '../../personal/pages/personal_feedback_historico_page.dart';
 
 class GestaoSection extends StatelessWidget {
@@ -41,14 +42,14 @@ class GestaoSection extends StatelessWidget {
                 context,
                 icon: CupertinoIcons.graph_square,
                 title: 'Progressão de Cargas',
-                onTap: () {},
+                onTap: () => AppUIUtils.showFutureFeatureWarning(context),
                 showBorder: true,
               ),
               _buildManagementItem(
                 context,
                 icon: CupertinoIcons.chart_bar_alt_fill,
                 title: 'Avaliação Física',
-                onTap: () {},
+                onTap: () => AppUIUtils.showFutureFeatureWarning(context),
                 showBorder: true,
               ),
               _buildManagementItem(
