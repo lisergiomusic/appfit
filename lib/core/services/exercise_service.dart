@@ -218,6 +218,28 @@ class ExerciseService {
     }
   }
 
+  Future<void> atualizarExercicio(
+    ExercicioItem exercicio, {
+    bool forPublico = false,
+  }) async {
+    if (exercicio.id == null) {
+      throw Exception('ID do exercício é necessário para atualização.');
+    }
+    final personalId = _auth.currentUser?.uid;
+    if (personalId == null) throw Exception('Utilizador não autenticado');
+
+    exercicio.personalId = forPublico ? null : personalId;
+
+    try {
+      await _db
+          .collection('exercicios_base')
+          .doc(exercicio.id)
+          .update(exercicio.toFirestore());
+    } catch (e) {
+      throw Exception('Erro ao atualizar exercício: $e');
+    }
+  }
+
   /// Busca os dados de um exercício para ser usado como base (template) para novos exercícios.
   Future<Map<String, dynamic>?> obterTemplateDeExercicio(String nome) async {
     try {

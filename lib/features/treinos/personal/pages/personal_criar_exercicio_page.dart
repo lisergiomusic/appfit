@@ -7,7 +7,8 @@ import '../../../../core/services/auth_service.dart';
 import '../../shared/models/exercicio_model.dart';
 
 class PersonalCriarExercicioPage extends StatefulWidget {
-  const PersonalCriarExercicioPage({super.key});
+  final ExercicioItem? exercicioParaEditar;
+  const PersonalCriarExercicioPage({super.key, this.exercicioParaEditar});
 
   @override
   State<PersonalCriarExercicioPage> createState() =>
@@ -43,6 +44,15 @@ class _PersonalCriarExercicioPageState
   void initState() {
     super.initState();
     _checkAdminStatus();
+    
+    // Se estiver editando, preenche os campos
+    if (widget.exercicioParaEditar != null) {
+      _nomeCtrl.text = widget.exercicioParaEditar!.nome;
+      _midiaCtrl.text = widget.exercicioParaEditar!.imagemUrl ?? '';
+      _instrucoesCtrl.text = widget.exercicioParaEditar!.instrucoes ?? '';
+      _gruposSelecionados.addAll(widget.exercicioParaEditar!.grupoMuscular);
+      _isPublico = widget.exercicioParaEditar!.personalId == null;
+    }
   }
 
   Future<void> _checkAdminStatus() async {
@@ -77,6 +87,7 @@ class _PersonalCriarExercicioPageState
     setState(() => _isSaving = true);
 
     final novoEx = ExercicioItem(
+      id: widget.exercicioParaEditar?.id,
       nome: _nomeCtrl.text.trim(),
       grupoMuscular: _gruposSelecionados.toList(),
       imagemUrl: _midiaCtrl.text.trim().isNotEmpty
@@ -85,25 +96,33 @@ class _PersonalCriarExercicioPageState
       instrucoes: _instrucoesCtrl.text.trim().isNotEmpty
           ? _instrucoesCtrl.text.trim()
           : null,
-      series: [],
+      series: widget.exercicioParaEditar?.series ?? [],
+      personalId: widget.exercicioParaEditar?.personalId,
     );
 
     try {
-      await _exerciseService.criarExercicioCustomizado(
-        novoEx,
-        forPublico: _isAdmin && _isPublico,
-      );
+      if (widget.exercicioParaEditar != null) {
+        await _exerciseService.atualizarExercicio(
+          novoEx,
+          forPublico: _isAdmin && _isPublico,
+        );
+      } else {
+        await _exerciseService.criarExercicioCustomizado(
+          novoEx,
+          forPublico: _isAdmin && _isPublico,
+        );
+      }
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Exercício criado com sucesso!'),
+          SnackBar(
+            content: Text(widget.exercicioParaEditar != null 
+              ? 'Exercício atualizado!' 
+              : 'Exercício criado com sucesso!'),
             backgroundColor: AppColors.success,
           ),
         );
-        Navigator.pop(
-          context,
-          novoEx,
-        );
+        Navigator.pop(context, novoEx);
       }
     } catch (e) {
       if (mounted) {
@@ -151,10 +170,14 @@ class _PersonalCriarExercicioPageState
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: AppNavBackButton(),
-        title: const Text(
-          'Novo Exercício',
-
+        leading: const AppNavBackButton(),
+        title: Text(
+          widget.exercicioParaEditar != null ? 'Editar Exercício' : 'Novo Exercício',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
         ),
         centerTitle: true,
       ),

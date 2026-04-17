@@ -538,6 +538,38 @@ class _PersonalExerciciosLibraryPageState
                   ),
                 ],
                 const SizedBox(height: 32),
+                if (_isAdmin) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PersonalCriarExercicioPage(
+                              exercicioParaEditar: ex,
+                            ),
+                          ),
+                        );
+                        if (result != null && mounted) {
+                          Navigator.pop(context); // Fecha o modal
+                          _carregarExercicios(); // Recarrega a lista
+                        }
+                      },
+                      icon: const Icon(Icons.edit, size: 18),
+                      label: const Text('Editar Exercício (Admin)'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(color: AppColors.primary),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 ElevatedButton(
                   onPressed: () {
                     _alternarSelecao(ex);
