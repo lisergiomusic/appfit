@@ -115,21 +115,42 @@ class WorkoutSetRow extends StatelessWidget {
           const SizedBox(width: SpacingTokens.md),
           SizedBox(
             width: 52,
-            child: Text(
-              serie.alvo,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: isCompleted
-                    ? AppColors.labelSecondary
-                    : AppColors.labelSecondary,
-                letterSpacing: -0.1,
-              ),
-              textAlign: TextAlign.center,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  serie.alvo,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.labelSecondary,
+                    letterSpacing: -0.1,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (serie.descanso.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.timer_outlined,
+                        size: 9,
+                        color: AppColors.labelSecondary,
+                      ),
+                      const SizedBox(width: 2),
+                      Text(
+                        serie.descanso,
+                        style: AppTheme.caption2,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ],
+              ],
             ),
           ),
           const SizedBox(width: SpacingTokens.md),
-
           Expanded(
             child: _SetInputField(
               controller: repsController,
@@ -312,4 +333,3 @@ class _SetInputFieldState extends State<_SetInputField> {
     );
   }
 }
-

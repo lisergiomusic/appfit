@@ -123,7 +123,7 @@ class TreinoScrollableBody extends StatelessWidget {
                     );
 
                     return WorkoutSetRow(
-                      serie: exercicio.series[sIdx],
+                      serie: serieAtual,
                       visualIndex: _calcWorkIndex(exercicio, sIdx),
                       repsController: repsControllers[exIdx][sIdx],
                       pesoController: pesoControllers[exIdx][sIdx],
