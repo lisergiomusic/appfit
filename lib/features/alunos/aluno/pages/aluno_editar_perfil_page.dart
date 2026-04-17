@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/app_bar_divider.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../../../core/widgets/app_bar_text_button.dart';
 
@@ -31,8 +30,14 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
 
   final List<String> _generos = ['Masculino', 'Feminino', 'Outro'];
 
-  // campos read-only necessários para o atualizarAluno
   String _emailAtual = '';
+
+  // valores originais para detectar alterações
+  String _nomeOriginal = '';
+  String _sobrenomeOriginal = '';
+  String _telefoneOriginal = '';
+  DateTime? _dataNascimentoOriginal;
+  String? _generoOriginal;
 
   @override
   void initState() {
@@ -61,16 +66,22 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
 
       final data = doc.data() as Map<String, dynamic>;
 
-      _nomeController.text = data['nome'] ?? '';
-      _sobrenomeController.text = data['sobrenome'] ?? '';
-      _telefoneController.text = data['telefone'] ?? '';
+      _nomeOriginal = data['nome'] ?? '';
+      _sobrenomeOriginal = data['sobrenome'] ?? '';
+      _telefoneOriginal = data['telefone'] ?? '';
       _emailAtual = data['email'] ?? '';
 
+      _nomeController.text = _nomeOriginal;
+      _sobrenomeController.text = _sobrenomeOriginal;
+      _telefoneController.text = _telefoneOriginal;
+
       if (data['dataNascimento'] != null) {
-        _dataNascimento = (data['dataNascimento'] as Timestamp).toDate();
+        _dataNascimentoOriginal = (data['dataNascimento'] as Timestamp).toDate();
+        _dataNascimento = _dataNascimentoOriginal;
       }
       if (data['genero'] != null && _generos.contains(data['genero'])) {
-        _generoSelecionado = data['genero'];
+        _generoOriginal = data['genero'];
+        _generoSelecionado = _generoOriginal;
       }
 
       setState(() => _isLoading = false);
@@ -84,7 +95,22 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
     }
   }
 
+  bool _houveAlteracao() {
+    if (_nomeController.text.trim() != _nomeOriginal) return true;
+    if (_sobrenomeController.text.trim() != _sobrenomeOriginal) return true;
+    if (_telefoneController.text.trim() != _telefoneOriginal) return true;
+    if (_generoSelecionado != _generoOriginal) return true;
+    final dataDifere = _dataNascimento?.toIso8601String() !=
+        _dataNascimentoOriginal?.toIso8601String();
+    if (dataDifere) return true;
+    return false;
+  }
+
   Future<void> _salvar() async {
+    if (!_houveAlteracao()) {
+      Navigator.pop(context);
+      return;
+    }
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSaving = true);
@@ -165,7 +191,7 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
           ),
         ),
       ],
-      bottom: const AppBarDivider(),
+
     );
   }
 
