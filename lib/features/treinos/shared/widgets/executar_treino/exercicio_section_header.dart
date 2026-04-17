@@ -4,7 +4,7 @@ import '../../../../../core/theme/app_theme.dart';
 import '../exercicio_thumbnail.dart';
 import '../../../aluno/pages/aluno_exercicio_view_page.dart';
 
-enum ExercicioMenuAction { verUltimoTreino }
+enum ExercicioMenuAction { verUltimoTreino, detalhes }
 
 class ExercicioSectionHeader extends StatelessWidget {
   final ExercicioItem exercicio;
@@ -19,6 +19,18 @@ class ExercicioSectionHeader extends StatelessWidget {
     this.onMenuAction,
     this.alunoId,
   });
+
+  void _goToExercicioDetails(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AlunoExercicioViewPage(
+          exercicio: exercicio,
+          alunoId: alunoId,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,17 +50,7 @@ class ExercicioSectionHeader extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => AlunoExercicioViewPage(
-                        exercicio: exercicio,
-                        alunoId: alunoId,
-                      ),
-                    ),
-                  );
-                },
+                onTap: () => _goToExercicioDetails(context),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -89,30 +91,49 @@ class ExercicioSectionHeader extends StatelessWidget {
               ),
             ),
           ),
-          if (onMenuAction != null) PopupMenuButton<ExercicioMenuAction>(
-            icon: const Icon(
-              Icons.more_vert,
-              color: AppColors.labelTertiary,
-              size: 22,
-            ),
-            color: AppColors.surfaceLight,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-            ),
-            onSelected: onMenuAction!,
-            itemBuilder: (_) => [
-              PopupMenuItem(
-                value: ExercicioMenuAction.verUltimoTreino,
-                child: Row(
-                  children: [
-                    Icon(Icons.history_rounded, size: 18, color: AppColors.labelSecondary),
-                    const SizedBox(width: 10),
-                    const Text('Último registro'),
-                  ],
-                ),
+          if (onMenuAction != null)
+            PopupMenuButton<ExercicioMenuAction>(
+              icon: const Icon(
+                Icons.more_vert,
+                color: AppColors.labelTertiary,
+                size: 22,
               ),
-            ],
-          ),
+              color: AppColors.surfaceLight,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              ),
+              onSelected: (action) {
+                if (action == ExercicioMenuAction.detalhes) {
+                  _goToExercicioDetails(context);
+                } else {
+                  onMenuAction?.call(action);
+                }
+              },
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: ExercicioMenuAction.detalhes,
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline_rounded,
+                          size: 18, color: AppColors.labelSecondary),
+                      const SizedBox(width: 10),
+                      const Text('Detalhes do exercício'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: ExercicioMenuAction.verUltimoTreino,
+                  child: Row(
+                    children: [
+                      Icon(Icons.history_rounded,
+                          size: 18, color: AppColors.labelSecondary),
+                      const SizedBox(width: 10),
+                      const Text('Último registro'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );

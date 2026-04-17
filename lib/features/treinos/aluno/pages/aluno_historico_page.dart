@@ -64,15 +64,17 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
       final fim = DateTime(mes.year, mes.month + 1, 1)
           .subtract(const Duration(seconds: 1));
       final logs = await _service.fetchLogsInterval(widget.uid, inicio, fim);
+      
       if (!mounted) return;
       setState(() {
         _logsPorMes[chave] = logs;
         _mesesCarregados.add(chave);
         _mesesCarregando.remove(chave);
       });
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       setState(() => _mesesCarregando.remove(chave));
+      rethrow; // Propaga para o _carregarPrimeiraPagina capturar
     }
   }
 
@@ -212,20 +214,43 @@ class _HistoricoContent extends StatelessWidget {
             StreamBuilder<QuerySnapshot>(
               stream: AlunoService().getHistoricoPesoStream(uid),
               builder: (context, historicoSnap) {
+                if (historicoSnap.hasError) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: Center(
+                      child: Text(
+                        'Erro ao carregar histórico de peso',
+                        style: TextStyle(color: AppColors.labelTertiary),
+                      ),
+                    ),
+                  );
+                }
+
+                if (historicoSnap.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  );
+                }
+
                 final historico = historicoSnap.hasData
                     ? historicoSnap.data!.docs
-                          .map((doc) => doc.data() as Map<String, dynamic>)
-                          .toList()
+                        .map((doc) => doc.data() as Map<String, dynamic>)
+                        .toList()
                     : null;
                 final double? pesoAtual =
                     historico != null && historico.isNotEmpty
-                    ? (historico.first['peso'] as num?)?.toDouble()
-                    : null;
+                        ? (historico.first['peso'] as num?)?.toDouble()
+                        : null;
                 return PesoHistoricoCard(
                   pesoAtual: pesoAtual,
                   historico: historico,
-                  onAdicionarPeso: () =>
-                      _abrirEdicaoPeso(context, pesoAtual),
+                  onAdicionarPeso: () => _abrirEdicaoPeso(context, pesoAtual),
                 );
               },
             ),
