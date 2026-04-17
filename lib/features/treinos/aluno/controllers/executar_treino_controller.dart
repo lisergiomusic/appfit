@@ -30,6 +30,29 @@ class ExecutarTreinoController {
     int esforco = 0,
     String observacoes = '',
   }) {
+    _saveLogAsync(
+      recordedData,
+      duracaoMinutos: duracaoMinutos,
+      esforco: esforco,
+      observacoes: observacoes,
+    );
+  }
+
+  Future<void> _saveLogAsync(
+    Map<String, dynamic> recordedData, {
+    required int duracaoMinutos,
+    required int esforco,
+    required String observacoes,
+  }) async {
+    String? personalId;
+    try {
+      final alunoDoc = await _firestore
+          .collection('usuarios')
+          .doc(alunoId)
+          .get();
+      personalId = alunoDoc.data()?['personalId']?.toString();
+    } catch (_) {}
+
     final logData = <String, dynamic>{
       'alunoId': alunoId,
       'rotinaId': rotinaId,
@@ -37,6 +60,7 @@ class ExecutarTreinoController {
       'dataHora': Timestamp.fromDate(DateTime.now()),
       'duracaoMinutos': duracaoMinutos,
       'exercicios': buildExerciciosLog(recordedData),
+      'personalId': personalId,
       if (esforco > 0) 'esforco': esforco,
       if (observacoes.isNotEmpty) 'observacoes': observacoes,
     };

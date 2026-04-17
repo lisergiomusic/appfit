@@ -225,12 +225,15 @@ class AlunoService {
               : null;
 
           final personalMap = personalSnap?.data() as Map<String, dynamic>? ?? {};
+          final pNome = personalMap['nome']?.toString() ?? '';
+          final pSobrenome = personalMap['sobrenome']?.toString() ?? '';
+          final pNomeCompleto = '$pNome $pSobrenome'.trim();
 
           return AlunoPerfilData(
             aluno: alunoMap,
             rotinaAtiva: rotinaMap,
             rotinaId: rotinaId,
-            nomePersonal: personalMap['nome']?.toString(),
+            nomePersonal: pNomeCompleto.isNotEmpty ? pNomeCompleto : null,
             especialidadePersonal: personalMap['especialidade']?.toString(),
             photoUrlPersonal: personalMap['photoUrl']?.toString(),
             telefonePersonal: personalMap['telefone']?.toString(),
@@ -369,4 +372,83 @@ class AlunoService {
 
     await _firestore.collection('rotinas').add(rotinaData);
   }
+
+  /// Stream dos N logs mais recentes dos alunos do personal logado,
+  /// enriquecidos com nome e photoUrl do aluno.
+  Stream<List<AtividadeRecenteItem>> getAtividadeRecenteStream({int limit = 10}) {
+    final personalId = _currentPersonalId;
+    if (personalId == null) return const Stream.empty();
+
+    return _firestore
+        .collection('logs_treino')
+        .where('personalId', isEqualTo: personalId)
+        .orderBy('dataHora', descending: true)
+        .limit(limit)
+        .snapshots()
+        .asyncMap((snapshot) async {
+      final alunoCache = <String, Map<String, dynamic>>{};
+
+      final items = <AtividadeRecenteItem>[];
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final alunoId = data['alunoId'] as String? ?? '';
+
+        if (!alunoCache.containsKey(alunoId)) {
+          try {
+            final alunoDoc = await _firestore
+                .collection('usuarios')
+                .doc(alunoId)
+                .get();
+            alunoCache[alunoId] = Map<String, dynamic>.from(
+                alunoDoc.data() ?? {});
+          } catch (_) {
+            alunoCache[alunoId] = {};
+          }
+        }
+
+        final aluno = alunoCache[alunoId]!;
+        items.add(AtividadeRecenteItem(
+          logId: doc.id,
+          alunoId: alunoId,
+          alunoNome: aluno['nome']?.toString() ?? 'Aluno',
+          alunoPhotoUrl: aluno['photoUrl']?.toString(),
+          sessaoNome: data['sessaoNome']?.toString() ?? '',
+          dataHora: (data['dataHora'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          duracaoMinutos: (data['duracaoMinutos'] as num?)?.toInt() ?? 0,
+          esforco: (data['esforco'] as num?)?.toInt(),
+          observacoes: data['observacoes']?.toString(),
+          exercicios: (data['exercicios'] as List?)
+                  ?.cast<Map<String, dynamic>>() ??
+              [],
+        ));
+      }
+      return items;
+    });
+  }
+}
+
+class AtividadeRecenteItem {
+  final String logId;
+  final String alunoId;
+  final String alunoNome;
+  final String? alunoPhotoUrl;
+  final String sessaoNome;
+  final DateTime dataHora;
+  final int duracaoMinutos;
+  final int? esforco;
+  final String? observacoes;
+  final List<Map<String, dynamic>> exercicios;
+
+  const AtividadeRecenteItem({
+    required this.logId,
+    required this.alunoId,
+    required this.alunoNome,
+    this.alunoPhotoUrl,
+    required this.sessaoNome,
+    required this.dataHora,
+    required this.duracaoMinutos,
+    this.esforco,
+    this.observacoes,
+    required this.exercicios,
+  });
 }

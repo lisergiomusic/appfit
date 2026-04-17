@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/aluno_service.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/widgets/app_bar_divider.dart';
 import '../../../core/widgets/app_section_link_button.dart';
+import '../../alunos/shared/widgets/aluno_avatar.dart';
+import '../../alunos/personal/pages/personal_log_detalhe_page.dart';
 
 class PersonalHomePage extends StatefulWidget {
   final VoidCallback? onNovoAlunoTap;
@@ -241,36 +244,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
               padding: const EdgeInsets.symmetric(
                 horizontal: AppTheme.paddingScreen,
               ),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceDark,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-                  border: Border.all(color: Colors.white.withAlpha(5)),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: Column(
-                  children: [
-                    _buildRecentActivityItem(
-                      name: 'Cristiano Ronaldo',
-                      action: 'Concluiu Treino A',
-                      time: 'Há 2h',
-                      showDivider: true,
-                    ),
-                    _buildRecentActivityItem(
-                      name: 'Paola Oliveira',
-                      action: 'Atualizou medidas',
-                      time: 'Há 4h',
-                      showDivider: true,
-                    ),
-                    _buildRecentActivityItem(
-                      name: 'Everton Ribeiro',
-                      action: 'Novo PR no Supino',
-                      time: 'Ontem',
-                      showDivider: false,
-                    ),
-                  ],
-                ),
-              ),
+              child: _AtividadeRecenteSection(alunoService: _alunoService),
             ),
             const SizedBox(height: 48),
           ],
@@ -349,44 +323,120 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
     );
   }
 
-  Widget _buildRecentActivityItem({
-    required String name,
-    required String action,
-    required String time,
-    required bool showDivider,
-    String? photoUrl,
-  }) {
+}
+
+class _AtividadeRecenteSection extends StatelessWidget {
+  final AlunoService alunoService;
+  const _AtividadeRecenteSection({required this.alunoService});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<AtividadeRecenteItem>>(
+      stream: alunoService.getAtividadeRecenteStream(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildShimmer();
+        }
+
+        final items = snapshot.data ?? [];
+
+        if (items.isEmpty) {
+          return _buildEmpty();
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.surfaceDark,
+            borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+            border: Border.all(color: Colors.white.withAlpha(5)),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: [
+              for (var i = 0; i < items.length; i++)
+                _AtividadeItem(
+                  item: items[i],
+                  showDivider: i < items.length - 1,
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildEmpty() {
+    return Container(
+      padding: CardTokens.padding,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        border: Border.all(color: Colors.white.withAlpha(5)),
+      ),
+      child: Center(
+        child: Text(
+          'Nenhum treino concluído ainda.',
+          style: AppTheme.cardSubtitle,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmer() {
+    return Container(
+      height: 160,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+      ),
+    );
+  }
+}
+
+class _AtividadeItem extends StatelessWidget {
+  final AtividadeRecenteItem item;
+  final bool showDivider;
+  const _AtividadeItem({required this.item, required this.showDivider});
+
+  String _tempoRelativo(DateTime data) {
+    final diff = DateTime.now().difference(data);
+    if (diff.inMinutes < 60) return 'Há ${diff.inMinutes}min';
+    if (diff.inHours < 24) return 'Há ${diff.inHours}h';
+    if (diff.inDays == 1) return 'Ontem';
+    if (diff.inDays < 7) return 'Há ${diff.inDays}d';
+    return DateFormat('d MMM', 'pt_BR').format(data);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PersonalLogDetalhePage(item: item),
+        ),
+      ),
       child: Column(
         children: [
           Padding(
             padding: CardTokens.padding,
             child: Row(
               children: [
-                CircleAvatar(
+                AlunoAvatar(
+                  alunoNome: item.alunoNome,
+                  photoUrl: item.alunoPhotoUrl,
                   radius: AvatarTokens.md,
-                  backgroundColor: AppColors.surfaceLight,
-                  backgroundImage: photoUrl != null && photoUrl.isNotEmpty
-                      ? NetworkImage(photoUrl)
-                      : null,
-                  child: photoUrl == null || photoUrl.isEmpty
-                      ? const Icon(
-                          Icons.person_rounded,
-                          color: AppColors.labelSecondary,
-                          size: 20,
-                        )
-                      : null,
+                  showBorder: false,
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(name, style: AppTheme.cardTitle),
+                      Text(item.alunoNome, style: AppTheme.cardTitle),
                       const SizedBox(height: SpacingTokens.titleToSubtitle),
                       Text(
-                        action,
+                        'Concluiu ${item.sessaoNome}',
                         style: AppTheme.cardSubtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -398,7 +448,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(time, style: AppTheme.caption),
+                    Text(_tempoRelativo(item.dataHora), style: AppTheme.caption),
                     const SizedBox(width: 4),
                     Icon(
                       Icons.chevron_right_rounded,
