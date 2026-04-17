@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../main.dart';
 import '../../shared/models/aluno_perfil_data.dart';
 import '../../shared/widgets/aluno_avatar.dart';
+import 'aluno_editar_perfil_page.dart';
 
 class AlunoContaPage extends StatefulWidget {
   final String uid;
@@ -184,7 +185,12 @@ class _AlunoContaPageState extends State<AlunoContaPage> {
                           iconColor: AppColors.labelSecondary,
                           label: 'Editar perfil',
                           subtitle: 'Nome, data de nascimento, contato',
-                          onTap: () {},
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AlunoEditarPerfilPage(uid: widget.uid),
+                            ),
+                          ),
                         ),
                         _SettingsItem(
                           icon: Icons.monitor_weight_outlined,
