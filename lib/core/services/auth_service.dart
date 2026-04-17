@@ -172,6 +172,45 @@ class AuthService {
     }
   }
 
+  Future<void> alterarSenha({
+    required String senhaAtual,
+    required String novaSenha,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('Usuário não autenticado.');
+    final email = user.email!;
+
+    try {
+      final credential = EmailAuthProvider.credential(
+        email: email,
+        password: senhaAtual,
+      );
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(novaSenha);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    }
+  }
+
+  Future<void> alterarEmail({
+    required String senhaAtual,
+    required String novoEmail,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('Usuário não autenticado.');
+
+    try {
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: senhaAtual,
+      );
+      await user.reauthenticateWithCredential(credential);
+      await user.verifyBeforeUpdateEmail(novoEmail);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    }
+  }
+
   Future<void> signOut() async {
     await _auth.signOut();
   }
