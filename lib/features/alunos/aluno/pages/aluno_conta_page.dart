@@ -8,16 +8,16 @@ import '../../../../main.dart';
 import '../../shared/models/aluno_perfil_data.dart';
 import '../../shared/widgets/aluno_avatar.dart';
 
-class AlunoPerfilPage extends StatefulWidget {
+class AlunoContaPage extends StatefulWidget {
   final String uid;
 
-  const AlunoPerfilPage({super.key, required this.uid});
+  const AlunoContaPage({super.key, required this.uid});
 
   @override
-  State<AlunoPerfilPage> createState() => _AlunoPerfilPageState();
+  State<AlunoContaPage> createState() => _AlunoContaPageState();
 }
 
-class _AlunoPerfilPageState extends State<AlunoPerfilPage> {
+class _AlunoContaPageState extends State<AlunoContaPage> {
   late final AlunoService _service;
 
   @override
