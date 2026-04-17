@@ -486,14 +486,57 @@ class _PersonalExerciciosLibraryPageState
                 ),
                 const SizedBox(height: 24),
                 Text(ex.nome, style: AppTheme.title1),
-                const SizedBox(height: 4),
-                Text(
-                  ex.grupoMuscular.join(' • '),
-                  style: const TextStyle(
-                    color: AppColors.labelSecondary,
-                    fontSize: 16,
-                  ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: ex.grupoMuscular.map((grupo) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceLight,
+                        borderRadius: PillTokens.radius,
+                      ),
+                      child: Text(
+                        grupo,
+                        style: PillTokens.text.copyWith(
+                          color: AppColors.labelSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
+                if (ex.instrucoes != null && ex.instrucoes!.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Instruções',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.3,
+                    ),
+                    child: SingleChildScrollView(
+                      child: Text(
+                        ex.instrucoes!,
+                        style: const TextStyle(
+                          color: AppColors.textLabel,
+                          fontSize: 14,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 32),
                 ElevatedButton(
                   onPressed: () {
