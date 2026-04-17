@@ -4,7 +4,7 @@ import '../../../core/services/auth_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../aluno/aluno_home_page.dart';
 import '../personal/personal_home_page.dart';
-import '../../alunos/aluno/pages/aluno_perfil_page.dart';
+import '../../alunos/aluno/pages/aluno_conta_page.dart';
 import '../../alunos/personal/pages/personal_alunos_page.dart';
 import '../../treinos/personal/pages/personal_treinos_page.dart';
 import '../../treinos/aluno/pages/aluno_historico_page.dart';
@@ -112,7 +112,7 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ),
             AlunoHistoricoPage(uid: uid),
-            AlunoPerfilPage(uid: uid),
+            AlunoContaPage(uid: uid),
           ]
         : [
             PersonalHomePage(
