@@ -112,7 +112,7 @@ class _AlunoContaPageState extends State<AlunoContaPage> {
                 ),
               ],
             ),
-            onPressed: () {},
+            onPressed: () => AppUIUtils.showFutureFeatureWarning(context),
           ),
           const SizedBox(width: 8),
         ],

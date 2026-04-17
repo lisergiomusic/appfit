@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/aluno_service.dart';
+import '../../../core/utils/app_ui_utils.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../alunos/shared/models/aluno_perfil_data.dart';
 import '../../treinos/aluno/pages/aluno_rotina_view_page.dart';
@@ -40,7 +41,7 @@ class AlunoHomePage extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.notifications_rounded,
-                  color: AppColors.primary,
+                  color: AppColors.labelSecondary,
                   size: 26,
                 ),
                 Positioned(
@@ -61,7 +62,7 @@ class AlunoHomePage extends StatelessWidget {
                 ),
               ],
             ),
-            onPressed: () {},
+            onPressed: () => AppUIUtils.showFutureFeatureWarning(context),
           ),
           const SizedBox(width: 8),
         ],
