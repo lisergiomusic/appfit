@@ -12,18 +12,31 @@ import '../../alunos/shared/widgets/ritmo_da_semana_card.dart';
 import '../../treinos/aluno/pages/aluno_sessao_detalhe_page.dart';
 import '../../alunos/shared/widgets/aluno_avatar.dart';
 
-class AlunoHomePage extends StatelessWidget {
+class AlunoHomePage extends StatefulWidget {
   final String uid;
   const AlunoHomePage({super.key, required this.uid});
 
   @override
-  Widget build(BuildContext context) {
-    // Mapa de seções da interface desta página:
-    // 1) Estrutura superior: AppBar, título e ações de navegação.
-    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
-    // 3) Ações finais: botões primários, confirmadores e feedbacks.
-    final service = AlunoService();
+  State<AlunoHomePage> createState() => _AlunoHomePageState();
+}
 
+class _AlunoHomePageState extends State<AlunoHomePage> {
+  late final AlunoService _service;
+  late final Stream<AlunoPerfilData> _perfilStream;
+  late final Stream<QuerySnapshot> _logsSemanaStream;
+  late final Stream<QuerySnapshot> _ultimoLogStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _service = AlunoService();
+    _perfilStream = _service.getAlunoPerfilCompletoStream(widget.uid);
+    _logsSemanaStream = _service.getLogsDaSemanaStream(widget.uid);
+    _ultimoLogStream = _service.getUltimoLogStream(widget.uid);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -68,7 +81,7 @@ class AlunoHomePage extends StatelessWidget {
         ],
       ),
       body: StreamBuilder<AlunoPerfilData>(
-        stream: service.getAlunoPerfilCompletoStream(uid),
+        stream: _perfilStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -107,7 +120,7 @@ class AlunoHomePage extends StatelessWidget {
                   _buildHeader(nome, photoUrl, nomePersonal),
                   const SizedBox(height: SpacingTokens.xxl),
                   StreamBuilder<QuerySnapshot>(
-                    stream: service.getLogsDaSemanaStream(uid),
+                    stream: _logsSemanaStream,
                     builder: (context, logsSnap) {
                       List<DateTime>? diasTreinados;
 
@@ -133,7 +146,7 @@ class AlunoHomePage extends StatelessWidget {
                   const SizedBox(height: SpacingTokens.xxl),
                   if (rotina != null) ...[
                     StreamBuilder<QuerySnapshot>(
-                      stream: service.getUltimoLogStream(uid),
+                      stream: _ultimoLogStream,
                       builder: (context, ultimoLogSnap) {
                         final sessoes = (rotina['sessoes'] as List? ?? [])
                             .map(
@@ -167,7 +180,7 @@ class AlunoHomePage extends StatelessWidget {
                           proxSessao,
                           sessoes.indexOf(proxSessao),
                           rotinaId!,
-                          uid,
+                          widget.uid,
                         );
                       },
                     ),
@@ -261,7 +274,7 @@ class AlunoHomePage extends StatelessWidget {
                   builder: (context) => AlunoRotinaViewPage(
                     rotinaData: rotina,
                     rotinaId: rotinaId,
-                    alunoId: uid,
+                    alunoId: widget.uid,
                   ),
                 ),
               )

@@ -9,11 +9,31 @@
       "client_info": {
         "mobilesdk_app_id": "1:589594654448:android:9e9546bd28a6c279a27435",
         "android_client_info": {
-          "package_name": "com.example.appfit",
-          "certificate_hash": ["B99F608BDD9CE0A260FA66A74FBDF841D3FD8BE1"]
+          "package_name": "com.example.appfit"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "589594654448-8scp2lppoujj9kreuag4pp7nukgms1rb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.appfit",
+            "certificate_hash": "b99f608bdd9ce0a260fa66a74fbdf841d3fd8be1"
+          }
+        },
+        {
+          "client_id": "589594654448-rd9ofpt557i42p647tsta87njqehn18u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.appfit",
+            "certificate_hash": "b06c33686e016e8a969404cdb423a10fb05ceba7"
+          }
+        },
+        {
+          "client_id": "589594654448-i066301ji8ne8u4l87nnregdsj053apt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCJWK6XJ9d4sRjUDlv6Qs3nctfXhmK_yPs"
@@ -21,7 +41,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "589594654448-i066301ji8ne8u4l87nnregdsj053apt.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "589594654448-77nfo2vi8g8b63de123hjs940ck0bck9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.appfit"
+              }
+            }
+          ]
         }
       }
     }

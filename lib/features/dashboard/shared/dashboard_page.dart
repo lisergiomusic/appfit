@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../main.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/auth_utils.dart';
@@ -21,78 +20,15 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   int _indiceAtual = 0;
   final AuthService _authService = AuthService();
-  bool _openCadastroAlunoOnNextBuild = false;
-  bool _openCriarRotinaOnNextBuild = false;
-
-  void _abrirCadastroAlunoPeloAtalhoHome() {
-    setState(() {
-      _indiceAtual = 1;
-      _openCadastroAlunoOnNextBuild = true;
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_openCadastroAlunoOnNextBuild) return;
-      setState(() {
-        _openCadastroAlunoOnNextBuild = false;
-      });
-    });
-  }
-
-  void _abrirCriacaoRotinaPeloAtalhoHome() {
-    setState(() {
-      _indiceAtual = 2;
-      _openCriarRotinaOnNextBuild = true;
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_openCriarRotinaOnNextBuild) return;
-      setState(() {
-        _openCriarRotinaOnNextBuild = false;
-      });
-    });
-  }
-
-  Widget _buildAjustes(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.settings, size: 64, color: AppColors.labelSecondary),
-          const SizedBox(height: AppTheme.space16),
-          const Text(
-            'Ajustes',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: AppTheme.space32),
-          ElevatedButton.icon(
-            onPressed: () => AuthUtils.confirmarESair(context),
-            icon: const Icon(Icons.logout),
-            label: const Text('Sair do AppFit'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.systemRed.withAlpha(25),
-              foregroundColor: AppColors.systemRed,
-              elevation: 0,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  late final List<Widget> _paginas;
 
   @override
-  Widget build(BuildContext context) {
-    // Mapa de seções da interface desta página:
-    // 1) Estrutura superior: AppBar, título e ações de navegação.
-    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
-    // 3) Ações finais: botões primários, confirmadores e feedbacks.
-    final isAluno = widget.userType == 'aluno';
+  void initState() {
+    super.initState();
     final uid = _authService.currentUser?.uid ?? '';
+    final isAluno = widget.userType == 'aluno';
 
-    final List<Widget> paginas = isAluno
+    _paginas = isAluno
         ? [
             AlunoHomePage(uid: uid),
             const Center(
@@ -109,14 +45,85 @@ class _DashboardPageState extends State<DashboardPage> {
               onNovoAlunoTap: _abrirCadastroAlunoPeloAtalhoHome,
               onCriarRotinaTap: _abrirCriacaoRotinaPeloAtalhoHome,
             ),
-            PersonalAlunosPage(
-              openCadastroOnLoad: _openCadastroAlunoOnNextBuild,
-            ),
-            PersonalTreinosPage(
-              openCriarRotinaOnLoad: _openCriarRotinaOnNextBuild,
-            ),
-            _buildAjustes(context),
+            PersonalAlunosPage(openCadastroOnLoad: false),
+            PersonalTreinosPage(openCriarRotinaOnLoad: false),
+            _buildAjustes(),
           ];
+  }
+
+  void _abrirCadastroAlunoPeloAtalhoHome() {
+    setState(() => _indiceAtual = 1);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final page = _paginas[1];
+      if (page is PersonalAlunosPage) {
+        setState(() {
+          _paginas[1] = const PersonalAlunosPage(openCadastroOnLoad: true);
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          setState(() {
+            _paginas[1] = const PersonalAlunosPage(openCadastroOnLoad: false);
+          });
+        });
+      }
+    });
+  }
+
+  void _abrirCriacaoRotinaPeloAtalhoHome() {
+    setState(() => _indiceAtual = 2);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        _paginas[2] = const PersonalTreinosPage(openCriarRotinaOnLoad: true);
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() {
+          _paginas[2] = const PersonalTreinosPage(openCriarRotinaOnLoad: false);
+        });
+      });
+    });
+  }
+
+  Widget _buildAjustes() {
+    return Builder(
+      builder: (context) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.settings, size: 64, color: AppColors.labelSecondary),
+            const SizedBox(height: AppTheme.space16),
+            const Text(
+              'Ajustes',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: AppTheme.space32),
+            ElevatedButton.icon(
+              onPressed: () => AuthUtils.confirmarESair(context),
+              icon: const Icon(Icons.logout),
+              label: const Text('Sair do AppFit'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.systemRed.withAlpha(25),
+                foregroundColor: AppColors.systemRed,
+                elevation: 0,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isAluno = widget.userType == 'aluno';
 
     final List<BottomNavigationBarItem> items = isAluno
         ? const [
@@ -152,7 +159,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: IndexedStack(index: _indiceAtual, children: paginas),
+      body: IndexedStack(index: _indiceAtual, children: _paginas),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _indiceAtual,
         onTap: (index) {
