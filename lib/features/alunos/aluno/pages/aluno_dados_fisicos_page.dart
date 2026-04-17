@@ -37,8 +37,6 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
     _service = AlunoService();
     _pesoController = TextEditingController();
     _alturaController = TextEditingController();
-    _pesoController.addListener(_onMedidasChanged);
-    _alturaController.addListener(_onMedidasChanged);
     _carregarDados();
   }
 
@@ -47,32 +45,6 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
     _pesoController.dispose();
     _alturaController.dispose();
     super.dispose();
-  }
-
-  void _onMedidasChanged() => setState(() {});
-
-  double? get _imc {
-    final peso = double.tryParse(_pesoController.text.trim());
-    final alturaCm = double.tryParse(_alturaController.text.trim());
-    if (peso == null || alturaCm == null || alturaCm == 0) return null;
-    final alturaM = alturaCm / 100;
-    return peso / (alturaM * alturaM);
-  }
-
-  String _classificacaoImc(double imc) {
-    if (imc < 18.5) return 'Abaixo do peso';
-    if (imc < 25.0) return 'Peso normal';
-    if (imc < 30.0) return 'Sobrepeso';
-    if (imc < 35.0) return 'Obesidade grau I';
-    if (imc < 40.0) return 'Obesidade grau II';
-    return 'Obesidade grau III';
-  }
-
-  Color _corImc(double imc) {
-    if (imc < 18.5) return AppColors.iosBlue;
-    if (imc < 25.0) return AppColors.success;
-    if (imc < 30.0) return AppColors.accentMetrics;
-    return AppColors.systemRed;
   }
 
   Future<void> _carregarDados() async {
@@ -237,70 +209,26 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
                 hint: 'Ex: 175',
                 suffix: 'cm',
               ),
-              if (_imc != null) ...[
-                const SizedBox(height: 12),
-                _buildImcCard(_imc!),
-              ],
-
               // ── Medidas corporais (em breve) ──────────────────────
               const SizedBox(height: SpacingTokens.sectionGap + 4),
               _buildEmBreveHeader(),
               const SizedBox(height: SpacingTokens.sm),
               _buildEmBreveGroup([
-                _EmBreveField(label: 'Cintura', hint: 'Ex: 80', suffix: 'cm', icon: Icons.radio_button_unchecked_rounded),
-                _EmBreveField(label: 'Quadril', hint: 'Ex: 95', suffix: 'cm', icon: Icons.radio_button_unchecked_rounded),
-                _EmBreveField(label: 'Peito', hint: 'Ex: 100', suffix: 'cm', icon: Icons.radio_button_unchecked_rounded),
-                _EmBreveField(label: 'Braço', hint: 'Ex: 35', suffix: 'cm', icon: Icons.radio_button_unchecked_rounded),
-                _EmBreveField(label: 'Coxa', hint: 'Ex: 55', suffix: 'cm', icon: Icons.radio_button_unchecked_rounded),
-                _EmBreveField(label: 'Panturrilha', hint: 'Ex: 38', suffix: 'cm', icon: Icons.radio_button_unchecked_rounded),
-                _EmBreveField(label: '% Gordura corporal', hint: 'Ex: 18.5', suffix: '%', icon: Icons.percent_rounded),
+                _EmBreveField(label: 'Abdômen', hint: 'Ex: 85', suffix: 'cm', icon: Icons.straighten_rounded),
+                _EmBreveField(label: 'Cintura', hint: 'Ex: 80', suffix: 'cm', icon: Icons.straighten_rounded),
+                _EmBreveField(label: 'Quadril', hint: 'Ex: 95', suffix: 'cm', icon: Icons.straighten_rounded),
+                _EmBreveField(label: 'Tórax', hint: 'Ex: 100', suffix: 'cm', icon: Icons.straighten_rounded),
+                _EmBreveField(label: 'Ombro', hint: 'Ex: 110', suffix: 'cm', icon: Icons.straighten_rounded),
+                _EmBreveField(label: 'Braço relaxado', hint: 'Ex: 33', suffix: 'cm', icon: Icons.straighten_rounded),
+                _EmBreveField(label: 'Braço contraído', hint: 'Ex: 36', suffix: 'cm', icon: Icons.straighten_rounded),
+                _EmBreveField(label: 'Antebraço', hint: 'Ex: 28', suffix: 'cm', icon: Icons.straighten_rounded),
+                _EmBreveField(label: 'Coxa (direita)', hint: 'Ex: 55', suffix: 'cm', icon: Icons.straighten_rounded),
+                _EmBreveField(label: 'Panturrilha', hint: 'Ex: 38', suffix: 'cm', icon: Icons.straighten_rounded),
+                _EmBreveField(label: '% Gordura corporal', hint: 'Ex: 18.5', suffix: '%', icon: Icons.monitor_weight_outlined),
               ]),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildImcCard(double imc) {
-    final classificacao = _classificacaoImc(imc);
-    final cor = _corImc(imc);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: cor.withAlpha(18),
-        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-        border: Border.all(color: cor.withAlpha(50)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.insights_rounded, size: 16, color: cor),
-          const SizedBox(width: 10),
-          Text(
-            'IMC  ',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: cor,
-            ),
-          ),
-          Text(
-            imc.toStringAsFixed(1),
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: cor,
-            ),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            '· $classificacao',
-            style: TextStyle(
-              fontSize: 12,
-              color: cor.withAlpha(180),
-            ),
-          ),
-        ],
       ),
     );
   }
