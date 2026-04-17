@@ -111,6 +111,7 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
       Navigator.pop(context);
       return;
     }
+
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSaving = true);
@@ -191,7 +192,6 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
           ),
         ),
       ],
-
     );
   }
 
