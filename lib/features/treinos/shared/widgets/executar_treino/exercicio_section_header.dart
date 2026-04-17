@@ -4,7 +4,7 @@ import '../../../../../core/theme/app_theme.dart';
 import '../exercicio_thumbnail.dart';
 import '../../../aluno/pages/aluno_exercicio_view_page.dart';
 
-enum ExercicioMenuAction { marcarTodas, verUltimoTreino }
+enum ExercicioMenuAction { verUltimoTreino }
 
 class ExercicioSectionHeader extends StatelessWidget {
   final ExercicioItem exercicio;
@@ -90,7 +90,7 @@ class ExercicioSectionHeader extends StatelessWidget {
             ),
           ),
           if (onMenuAction != null) PopupMenuButton<ExercicioMenuAction>(
-            icon: Icon(
+            icon: const Icon(
               Icons.more_vert,
               color: AppColors.labelTertiary,
               size: 22,
@@ -101,16 +101,6 @@ class ExercicioSectionHeader extends StatelessWidget {
             ),
             onSelected: onMenuAction!,
             itemBuilder: (_) => [
-              PopupMenuItem(
-                value: ExercicioMenuAction.marcarTodas,
-                child: Row(
-                  children: [
-                    Icon(Icons.checklist_rounded, size: 18, color: AppColors.primary),
-                    const SizedBox(width: 10),
-                    const Text('Marcar todas as séries'),
-                  ],
-                ),
-              ),
               PopupMenuItem(
                 value: ExercicioMenuAction.verUltimoTreino,
                 child: Row(
