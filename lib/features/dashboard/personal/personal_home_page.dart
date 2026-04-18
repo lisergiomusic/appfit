@@ -45,8 +45,11 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        centerTitle: true,
-        title: const Text('Painel de Controle'),
+        centerTitle: false,
+        title: Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: const Text('Painel de Controle'),
+        ),
         actions: [
           IconButton(
             icon: Stack(
@@ -338,7 +341,7 @@ class _AtividadeRecenteSection extends StatelessWidget {
           return _buildShimmer();
         }
 
-        final items = snapshot.data ?? [];
+        final items = (snapshot.data ?? []).take(4).toList();
 
         if (items.isEmpty) {
           return _buildEmpty();
