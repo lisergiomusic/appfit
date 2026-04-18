@@ -194,8 +194,6 @@ class AlunoService {
   }
 
   Stream<AlunoPerfilData> getAlunoPerfilCompletoStream(String alunoId) {
-    final alunoStream = getAlunoStream(alunoId);
-
     final rotinaStream = _firestore
         .collection('rotinas')
         .where('alunoId', isEqualTo: alunoId)
@@ -203,12 +201,9 @@ class AlunoService {
         .limit(1)
         .snapshots();
 
-    // Obtém o personalId uma vez e monta os três streams estáticos.
-    // Nenhum stream interno é recriado quando o aluno recebe updates
-    // (ex: ultimoTreino), evitando o reset para waiting do StreamBuilder.
-    return alunoStream.take(1).asyncExpand((firstSnap) {
-      final personalId =
-          (firstSnap.data() as Map<String, dynamic>?)?['personalId'] as String?;
+    return getAlunoStream(alunoId).switchMap((alunoSnap) {
+      final alunoMap = alunoSnap.data() as Map<String, dynamic>? ?? {};
+      final personalId = alunoMap['personalId'] as String?;
 
       final personalStream = personalId != null
           ? _firestore
@@ -216,18 +211,13 @@ class AlunoService {
               .doc(personalId)
               .snapshots()
               .cast<DocumentSnapshot?>()
-          : Stream<DocumentSnapshot?>.multi((c) {
-              c.add(null);
-              // Stream que emite null e permanece aberto indefinidamente.
-            });
+          : Stream<DocumentSnapshot?>.value(null);
 
-      return Rx.combineLatest3<DocumentSnapshot, QuerySnapshot,
-          DocumentSnapshot?, AlunoPerfilData>(
-        alunoStream,
+      return Rx.combineLatest2<QuerySnapshot, DocumentSnapshot?,
+          AlunoPerfilData>(
         rotinaStream,
         personalStream,
-        (alunoSnap, rotinaSnap, personalSnap) {
-          final alunoMap = alunoSnap.data() as Map<String, dynamic>? ?? {};
+        (rotinaSnap, personalSnap) {
           final rotinaMap = rotinaSnap.docs.isNotEmpty
               ? rotinaSnap.docs.first.data() as Map<String, dynamic>?
               : null;
