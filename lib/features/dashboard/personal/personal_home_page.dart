@@ -7,6 +7,7 @@ import '../../../core/widgets/app_bar_divider.dart';
 import '../../../core/widgets/app_section_link_button.dart';
 import '../../alunos/shared/widgets/aluno_avatar.dart';
 import '../../alunos/personal/pages/personal_log_detalhe_page.dart';
+import 'personal_atividade_recente_page.dart';
 
 class PersonalHomePage extends StatefulWidget {
   final VoidCallback? onNovoAlunoTap;
@@ -238,7 +239,17 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('Atividade recente', style: AppTheme.sectionHeader),
-                  AppSectionLinkButton(label: 'Ver tudo', onPressed: () {}),
+                  AppSectionLinkButton(
+                    label: 'Ver tudo',
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PersonalAtividadeRecentePage(
+                          alunoService: _alunoService,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

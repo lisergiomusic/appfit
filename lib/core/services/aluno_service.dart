@@ -373,6 +373,70 @@ class AlunoService {
     await _firestore.collection('rotinas').add(rotinaData);
   }
 
+  Future<({List<AtividadeRecenteItem> items, DocumentSnapshot? lastDoc})>
+      fetchAtividadePage({
+    int limit = 20,
+    DocumentSnapshot? startAfter,
+  }) async {
+    final personalId = _currentPersonalId;
+    if (personalId == null) {
+      return (items: <AtividadeRecenteItem>[], lastDoc: null);
+    }
+
+    var query = _firestore
+        .collection('logs_treino')
+        .where('personalId', isEqualTo: personalId)
+        .orderBy('dataHora', descending: true)
+        .limit(limit);
+
+    if (startAfter != null) {
+      query = query.startAfterDocument(startAfter);
+    }
+
+    final snapshot = await query.get();
+    if (snapshot.docs.isEmpty) {
+      return (items: <AtividadeRecenteItem>[], lastDoc: null);
+    }
+
+    final alunoCache = <String, Map<String, dynamic>>{};
+    final items = <AtividadeRecenteItem>[];
+
+    for (final doc in snapshot.docs) {
+      final data = doc.data();
+      final alunoId = data['alunoId'] as String? ?? '';
+
+      if (!alunoCache.containsKey(alunoId)) {
+        try {
+          final alunoDoc =
+              await _firestore.collection('usuarios').doc(alunoId).get();
+          alunoCache[alunoId] = Map<String, dynamic>.from(alunoDoc.data() ?? {});
+        } catch (_) {
+          alunoCache[alunoId] = {};
+        }
+      }
+
+      final aluno = alunoCache[alunoId]!;
+      items.add(AtividadeRecenteItem(
+        logId: doc.id,
+        alunoId: alunoId,
+        alunoNome: aluno['nome']?.toString() ?? 'Aluno',
+        alunoPhotoUrl: aluno['photoUrl']?.toString(),
+        sessaoNome: data['sessaoNome']?.toString() ?? '',
+        dataHora:
+            (data['dataHora'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        duracaoMinutos: (data['duracaoMinutos'] as num?)?.toInt() ?? 0,
+        esforco: (data['esforco'] as num?)?.toInt(),
+        observacoes: data['observacoes']?.toString(),
+        exercicios:
+            (data['exercicios'] as List?)?.cast<Map<String, dynamic>>() ?? [],
+      ));
+    }
+
+    final lastDoc =
+        snapshot.docs.length == limit ? snapshot.docs.last : null;
+    return (items: items, lastDoc: lastDoc);
+  }
+
   /// Stream dos N logs mais recentes dos alunos do personal logado,
   /// enriquecidos com nome e photoUrl do aluno.
   Stream<List<AtividadeRecenteItem>> getAtividadeRecenteStream({int limit = 10}) {
