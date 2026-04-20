@@ -56,7 +56,14 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
       await controller.initialize();
       if (!mounted) return;
       await controller.setLooping(true);
-      if (mounted) setState(() => _initialized = true);
+      if (mounted) {
+        setState(() => _initialized = true);
+        // Se o usuário já clicou em play enquanto inicializava, começa a tocar
+        if (_userStarted) {
+          _controller?.play();
+          _scheduleHide();
+        }
+      }
     } catch (_) {
       if (mounted) setState(() => _error = true);
     }
@@ -80,8 +87,20 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
   }
 
   void _onTap() {
+    if (_error) return;
     final ctrl = _controller;
-    if (ctrl == null || !_initialized) return;
+
+    // Se ainda não inicializou, marca que o usuário quer começar
+    // O _initVideo vai cuidar de dar play quando terminar
+    if (ctrl == null || !_initialized) {
+      if (!_userStarted) {
+        setState(() {
+          _userStarted = true;
+          _controlsVisible = true;
+        });
+      }
+      return;
+    }
 
     if (!_userStarted) {
       ctrl.play();
@@ -113,6 +132,8 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
 
   @override
   Widget build(BuildContext context) {
+    final hasMedia = widget.mediaUrl != null && widget.mediaUrl!.isNotEmpty;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withAlpha(8),
@@ -129,44 +150,84 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
               fit: StackFit.expand,
               children: [
                 _buildVideoOrThumbnail(),
-                if (_initialized && _controller != null)
-                  ValueListenableBuilder<VideoPlayerValue>(
-                    valueListenable: _controller!,
-                    builder: (_, value, __) {
-                      final isPlaying = value.isPlaying;
-                      final show = _controlsVisible || !_userStarted;
-                      return AnimatedOpacity(
-                        opacity: show ? 1.0 : 0.0,
-                        duration: const Duration(milliseconds: 200),
-                        child: Container(
-                          color: Colors.black.withAlpha(_userStarted ? 60 : 0),
-                          child: Center(
-                            child: Container(
-                              width: 64,
-                              height: 64,
-                              decoration: BoxDecoration(
-                                color: Colors.black.withAlpha(110),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white.withAlpha(180),
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Icon(
-                                isPlaying
-                                    ? Icons.pause_rounded
-                                    : Icons.play_arrow_rounded,
-                                color: Colors.white,
-                                size: 36,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                if (hasMedia && !_error) _buildControlsOverlay(),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildControlsOverlay() {
+    final ctrl = _controller;
+
+    // Se ainda não temos o controller ou não inicializou, mostramos o botão de play
+    // ou um loading se o usuário já clicou.
+    if (ctrl == null || !_initialized) {
+      return _buildPlayButtonIcon(
+        show: true,
+        isPlaying: false,
+        isBuffering: _userStarted,
+      );
+    }
+
+    return ValueListenableBuilder<VideoPlayerValue>(
+      valueListenable: ctrl,
+      builder: (_, value, __) {
+        final isPlaying = value.isPlaying;
+        // Mostra controles se pausado, se o usuário ainda não começou, 
+        // ou se explicitamente visível por tap ou buffering
+        final show =
+            _controlsVisible || !isPlaying || !_userStarted || value.isBuffering;
+
+        return _buildPlayButtonIcon(
+          show: show,
+          isPlaying: isPlaying,
+          isBuffering: value.isBuffering,
+        );
+      },
+    );
+  }
+
+  Widget _buildPlayButtonIcon({
+    required bool show,
+    required bool isPlaying,
+    required bool isBuffering,
+  }) {
+    return AnimatedOpacity(
+      opacity: show ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 200),
+      child: Container(
+        color: Colors.black.withAlpha(_userStarted ? 60 : 0),
+        child: Center(
+          child: Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: Colors.black.withAlpha(110),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withAlpha(180),
+                width: 1.5,
+              ),
+            ),
+            child: isBuffering
+                ? const Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  )
+                : Icon(
+                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                    color: Colors.white,
+                    size: 36,
+                  ),
           ),
         ),
       ),
