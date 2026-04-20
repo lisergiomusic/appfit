@@ -3,6 +3,7 @@ import '../../../../core/services/exercise_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/appfit_sliver_app_bar.dart';
 import '../../shared/models/exercicio_model.dart';
+import '../../shared/widgets/exercicio_detalhe/exercicio_constants.dart';
 import '../../shared/widgets/exercicio_detalhe/exercise_video_card.dart';
 
 class AlunoExercicioViewPage extends StatefulWidget {
@@ -101,13 +102,25 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
         widget.exercicio.imagemUrl!.isNotEmpty;
     final temMusculos = widget.exercicio.grupoMuscular.isNotEmpty;
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final titleWidth = screenWidth - SpacingTokens.screenHorizontalPadding * 2;
+    final titlePainter = TextPainter(
+      text: TextSpan(text: widget.exercicio.nome, style: AppTheme.bigTitle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final quebra2Linhas = titlePainter.width > titleWidth;
+
+    final expandedHeight = quebra2Linhas
+        ? (temMusculos ? 188.0 : 160.0)
+        : (temMusculos ? 148.0 : 120.0);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
           AppFitSliverAppBar(
             title: widget.exercicio.nome,
-            expandedHeight: temMusculos ? 148 : 120,
+            expandedHeight: expandedHeight,
             background: Align(
               alignment: Alignment.bottomLeft,
               child: Padding(
@@ -298,7 +311,7 @@ class _VideoCardLoadingPlaceholder extends StatelessWidget {
         border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
       ),
       child: AspectRatio(
-        aspectRatio: 16 / 9,
+        aspectRatio: ExercicioDetalheConstants.videoAspectRatio,
         child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
       ),
     );

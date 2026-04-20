@@ -10,7 +10,7 @@ class ExercicioDetalheConstants {
   static const Duration newHintDelay = Duration(milliseconds: 400);
   static const Duration newHintAnimationDuration = Duration(milliseconds: 1200);
   static const Duration snackBarDuration = Duration(seconds: 4);
-  static const double videoAspectRatio = 16 / 9;
+  static const double videoAspectRatio = 1 / 1;
 }
 
 class SerieTypeOption {
