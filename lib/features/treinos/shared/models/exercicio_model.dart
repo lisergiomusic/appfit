@@ -75,7 +75,7 @@ class ExercicioItem {
   bool get hasInstrucoesPadrao => instrucoesPadraoTexto != null;
   bool get hasInstrucoesPersonalizadas => instrucoesPersonalizadasTexto != null;
   String? get instrucoesParaExibicao =>
-      instrucoesPersonalizadasTexto ?? instrucoesPadraoTexto;
+      instrucoesPersonalizadasTexto;
 
   Map<String, dynamic> toFirestore() {
     return {
