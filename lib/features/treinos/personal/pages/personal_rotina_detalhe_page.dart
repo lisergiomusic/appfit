@@ -130,7 +130,7 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
     }
 
     if (_controller.rotinaId != null && _controller.verificarAlteracoes()) {
-      _controller.salvarRotina();
+      await _controller.salvarRotina();
     }
   }
 
