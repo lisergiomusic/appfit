@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
@@ -23,6 +24,9 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
   VideoPlayerController? _controller;
   bool _initialized = false;
   bool _error = false;
+  bool _userStarted = false;
+  bool _controlsVisible = true;
+  Timer? _hideTimer;
 
   @override
   void initState() {
@@ -43,15 +47,15 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
     final media = widget.mediaUrl;
     if (media == null || media.isEmpty) return;
 
-    final videoUrl = Cloudinary.video(media);
-    final controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+    final controller = VideoPlayerController.networkUrl(
+      Uri.parse(Cloudinary.video(media)),
+    );
     _controller = controller;
 
     try {
       await controller.initialize();
       if (!mounted) return;
       await controller.setLooping(true);
-      await controller.play();
       if (mounted) setState(() => _initialized = true);
     } catch (_) {
       if (mounted) setState(() => _error = true);
@@ -59,23 +63,51 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
   }
 
   void _disposeController() {
+    _hideTimer?.cancel();
     _controller?.dispose();
     _controller = null;
     _initialized = false;
     _error = false;
+    _userStarted = false;
+    _controlsVisible = true;
   }
 
   @override
   void dispose() {
+    _hideTimer?.cancel();
     _disposeController();
     super.dispose();
   }
 
-  void _togglePlayPause() {
+  void _onTap() {
     final ctrl = _controller;
     if (ctrl == null || !_initialized) return;
-    setState(() {
-      ctrl.value.isPlaying ? ctrl.pause() : ctrl.play();
+
+    if (!_userStarted) {
+      ctrl.play();
+      setState(() {
+        _userStarted = true;
+        _controlsVisible = true;
+      });
+      _scheduleHide();
+      return;
+    }
+
+    if (ctrl.value.isPlaying) {
+      ctrl.pause();
+      _hideTimer?.cancel();
+      setState(() => _controlsVisible = true);
+    } else {
+      ctrl.play();
+      setState(() => _controlsVisible = true);
+      _scheduleHide();
+    }
+  }
+
+  void _scheduleHide() {
+    _hideTimer?.cancel();
+    _hideTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _controlsVisible = false);
     });
   }
 
@@ -91,67 +123,68 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
         borderRadius: BorderRadius.circular(12),
         child: AspectRatio(
           aspectRatio: ExercicioDetalheConstants.videoAspectRatio,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              _buildContent(),
-              if (_initialized && _controller != null)
-                Positioned(
-                  bottom: 8,
-                  right: 8,
-                  child: GestureDetector(
-                    onTap: _togglePlayPause,
-                    child: ValueListenableBuilder<VideoPlayerValue>(
-                      valueListenable: _controller!,
-                      builder: (_, value, __) => Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withAlpha(140),
-                          shape: BoxShape.circle,
+          child: GestureDetector(
+            onTap: _onTap,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                _buildVideoOrThumbnail(),
+                if (_initialized && _controller != null)
+                  ValueListenableBuilder<VideoPlayerValue>(
+                    valueListenable: _controller!,
+                    builder: (_, value, __) {
+                      final isPlaying = value.isPlaying;
+                      final show = _controlsVisible || !_userStarted;
+                      return AnimatedOpacity(
+                        opacity: show ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 200),
+                        child: Container(
+                          color: Colors.black.withAlpha(_userStarted ? 60 : 0),
+                          child: Center(
+                            child: Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withAlpha(110),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withAlpha(180),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Icon(
+                                isPlaying
+                                    ? Icons.pause_rounded
+                                    : Icons.play_arrow_rounded,
+                                color: Colors.white,
+                                size: 36,
+                              ),
+                            ),
+                          ),
                         ),
-                        child: Icon(
-                          value.isPlaying
-                              ? Icons.pause_rounded
-                              : Icons.play_arrow_rounded,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildVideoOrThumbnail() {
     final media = widget.mediaUrl;
-    if (_error || media == null || media.isEmpty) {
-      return _buildThumbnailOrEmpty();
-    }
-
-    if (!_initialized) {
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          _buildThumbnailOrEmpty(),
-          const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-        ],
-      );
-    }
-
+    if (_error || media == null || media.isEmpty) return _buildThumbnailOrEmpty();
+    if (!_initialized || !_userStarted) return _buildThumbnailOrEmpty();
     return VideoPlayer(_controller!);
   }
 
   Widget _buildThumbnailOrEmpty() {
     final media = widget.mediaUrl;
     if (media != null && media.isNotEmpty) {
-      final thumbUrl = Cloudinary.thumbnail(media);
       return CachedNetworkImage(
-        imageUrl: thumbUrl,
+        imageUrl: Cloudinary.thumbnail(media),
         fit: BoxFit.cover,
         placeholder: (_, __) => Container(color: AppColors.surfaceDark),
         errorWidget: (_, __, ___) => _emptyState(),
