@@ -62,23 +62,9 @@ class _ChecagemPaginaState extends State<ChecagemPagina> {
         }
 
         if (snapshot.hasData && snapshot.data != null) {
-          return FutureBuilder<String?>(
-            future: _authService.getUserType(snapshot.data!.uid),
-            builder: (context, typeSnapshot) {
-              if (typeSnapshot.connectionState == ConnectionState.waiting) {
-                return const Scaffold(
-                  body: Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  ),
-                );
-              }
-
-              if (typeSnapshot.hasData && typeSnapshot.data != null) {
-                return DashboardPage(userType: typeSnapshot.data!);
-              }
-
-              return const SelecaoPerfilScreen();
-            },
+          return _UserTypeLoader(
+            uid: snapshot.data!.uid,
+            authService: _authService,
           );
         }
 

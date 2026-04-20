@@ -65,7 +65,7 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
     super.dispose();
   }
 
-  Future<bool> _showDescartarDialog() async {
+  Future<bool> _showDescartarDialog({bool erroDeRede = false}) async {
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
@@ -74,9 +74,11 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
               'Descartar alterações?',
               style: TextStyle(color: Colors.white),
             ),
-            content: const Text(
-              'Os dados preenchidos não são válidos para salvar e serão perdidos.',
-              style: TextStyle(color: Colors.white70),
+            content: Text(
+              erroDeRede
+                  ? 'Não foi possível salvar. Deseja descartar as alterações e sair?'
+                  : 'Os dados preenchidos não são válidos para salvar e serão perdidos.',
+              style: const TextStyle(color: Colors.white70),
             ),
             actions: [
               TextButton(
@@ -99,37 +101,46 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
         false;
   }
 
-  Future<Map<String, dynamic>?> _abrirConfigurarExercicios(
-    SessaoTreinoModel sessao,
-  ) {
-    return Navigator.push(
+  Future<void> _editarSessao(SessaoTreinoModel sessao) async {
+    final currentIndex = _controller.indexOfSessao(sessao);
+    if (currentIndex < 0) return;
+
+    final result = await Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute(
         builder: (context) => PersonalSessaoDetalhePage(
           nomeTreino: sessao.nome,
           exercicios: sessao.exercicios,
           sessaoNote: sessao.orientacoes ?? '',
+          onSaveToFirebase: _controller.rotinaId != null
+              ? (exercicios, nome, note) async {
+                  final idx = _controller.indexOfSessao(sessao);
+                  if (idx < 0) return false;
+                  _controller.atualizarSessao(idx, nome, sessao.diaSemana, note);
+                  return _controller.salvarRotina();
+                }
+              : null,
         ),
       ),
     );
-  }
 
-  Future<void> _editarSessao(SessaoTreinoModel sessao) async {
-    final result = await _abrirConfigurarExercicios(sessao);
     if (!mounted) return;
 
     if (result is Map<String, dynamic>) {
-      final currentIndex = _controller.indexOfSessao(sessao);
-      if (currentIndex < 0) return;
+      final latestIndex = _controller.indexOfSessao(sessao);
+      if (latestIndex < 0) return;
       _controller.atualizarSessao(
-        currentIndex,
+        latestIndex,
         result['nome'],
         sessao.diaSemana,
         result['sessaoNote'],
       );
     }
 
-    if (_controller.rotinaId != null && _controller.verificarAlteracoes()) {
+    // For new rotinas (no rotinaId), P1 is still responsible for the full save.
+    if (_controller.rotinaId == null &&
+        !_controller.isSaving &&
+        _controller.verificarAlteracoes()) {
       await _controller.salvarRotina();
     }
   }
@@ -252,14 +263,29 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
     }
 
     final salvo = await _controller.salvarRotina();
-    if (salvo && mounted) {
+    if (!mounted) return;
+    if (salvo) {
       setState(() => _canPopNow = true);
       Navigator.of(context).pop();
-    } else if (mounted) {
-      final descartar = await _showDescartarDialog();
-      if (descartar && mounted) {
+    } else {
+      final descartar = await _showDescartarDialog(erroDeRede: true);
+      if (!mounted) return;
+      if (descartar) {
         setState(() => _canPopNow = true);
         Navigator.of(context).pop();
+      } else {
+        _scaffoldMessengerKey.currentState?.showSnackBar(
+          SnackBar(
+            content: const Text('Falha ao salvar. Verifique sua conexão.'),
+            backgroundColor: Colors.redAccent,
+            action: SnackBarAction(
+              label: 'TENTAR NOVAMENTE',
+              textColor: Colors.white,
+              onPressed: _executarSalvamentoManual,
+            ),
+            duration: const Duration(seconds: 6),
+          ),
+        );
       }
     }
   }
@@ -267,7 +293,6 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
   Future<void> _executarSalvamentoManual() async {
     if (_controller.isSaving) return;
 
-    // Validação básica antes de tentar salvar
     if (_controller.nomeCtrl.text.trim().isEmpty ||
         _controller.objCtrl.text.trim().isEmpty ||
         _controller.treinos.isEmpty) {
@@ -281,9 +306,23 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
     }
 
     final salvo = await _controller.salvarRotina();
-    if (salvo && mounted) {
+    if (!mounted) return;
+    if (salvo) {
       setState(() => _canPopNow = true);
       Navigator.of(context).pop();
+    } else {
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(
+          content: const Text('Falha ao salvar. Verifique sua conexão.'),
+          backgroundColor: Colors.redAccent,
+          action: SnackBarAction(
+            label: 'TENTAR NOVAMENTE',
+            textColor: Colors.white,
+            onPressed: _executarSalvamentoManual,
+          ),
+          duration: const Duration(seconds: 6),
+        ),
+      );
     }
   }
 
@@ -395,19 +434,15 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Mapa de seções da interface desta página:
-    // 1) Estrutura superior: AppBar, título e ações de navegação.
-    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
-    // 3) Ações finais: botões primários, confirmadores e feedbacks.
-    return ListenableBuilder(
-      listenable: _controller,
-      builder: (context, _) {
-        return PopScope(
-          canPop: _canPopNow,
-          onPopInvokedWithResult: (didPop, result) => _handlePop(didPop),
-          child: ScaffoldMessenger(
-            key: _scaffoldMessengerKey,
-            child: Scaffold(
+    return PopScope(
+      canPop: _canPopNow,
+      onPopInvokedWithResult: (didPop, result) => _handlePop(didPop),
+      child: ScaffoldMessenger(
+        key: _scaffoldMessengerKey,
+        child: ListenableBuilder(
+          listenable: _controller,
+          builder: (context, _) {
+            return Scaffold(
               backgroundColor: AppColors.background,
               body: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(
@@ -421,6 +456,7 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
                     actions: [
                       AppBarTextButton(
                         label: 'Salvar',
+                        isLoading: _controller.isSaving,
                         onPressed: _executarSalvamentoManual,
                       ),
                     ],
@@ -553,10 +589,10 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
                   ],
                 ],
               ),
-            ),
-          ),
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 }

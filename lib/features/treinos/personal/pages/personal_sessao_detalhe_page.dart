@@ -22,34 +22,51 @@ class PersonalSessaoDetalhePage extends StatelessWidget {
   final List<ExercicioItem> exercicios;
   final String sessaoNote;
 
+  /// Called when the session has changes to persist. Receives the updated
+  /// exercicios list, session name and note. Returns true on success.
+  /// Null means the parent will handle persistence (e.g. new unsaved rotina).
+  final Future<bool> Function(
+    List<ExercicioItem> exercicios,
+    String nome,
+    String sessaoNote,
+  )? onSaveToFirebase;
+
   const PersonalSessaoDetalhePage({
     super.key,
     required this.nomeTreino,
     required this.exercicios,
     this.sessaoNote = '',
+    this.onSaveToFirebase,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Mapa de seções da interface desta página:
-    // 1) Estrutura superior: AppBar, título e ações de navegação.
-    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
-    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     return ChangeNotifierProvider(
       create: (_) => ConfigurarTreinoController(
         nomeTreino: nomeTreino,
         exercicios: exercicios,
         sessaoNote: sessaoNote,
       ),
-      child: _SessaoDetalhePersonalView(originalExercicios: exercicios),
+      child: _SessaoDetalhePersonalView(
+        originalExercicios: exercicios,
+        onSaveToFirebase: onSaveToFirebase,
+      ),
     );
   }
 }
 
 class _SessaoDetalhePersonalView extends StatefulWidget {
   final List<ExercicioItem> originalExercicios;
+  final Future<bool> Function(
+    List<ExercicioItem> exercicios,
+    String nome,
+    String sessaoNote,
+  )? onSaveToFirebase;
 
-  const _SessaoDetalhePersonalView({required this.originalExercicios});
+  const _SessaoDetalhePersonalView({
+    required this.originalExercicios,
+    this.onSaveToFirebase,
+  });
 
   @override
   State<_SessaoDetalhePersonalView> createState() =>
@@ -78,23 +95,45 @@ class _SessaoDetalhePersonalViewState
     });
   }
 
-  void _concluirESalvar(BuildContext context) {
+  Future<void> _concluirESalvar(BuildContext context) async {
     if (_isSaving) return;
-    _isSaving = true;
+    setState(() => _isSaving = true);
 
     final controller = context.read<ConfigurarTreinoController>();
+    final finalExercicios = controller.getFinalExercicios();
+    final nome = controller.nomeTreinoController.text.trim();
+    final note = controller.sessaoNote;
 
     widget.originalExercicios.clear();
-    widget.originalExercicios.addAll(controller.getFinalExercicios());
+    widget.originalExercicios.addAll(finalExercicios);
 
-    setState(() => _canPopNow = true);
-
-    if (mounted) {
-      Navigator.of(context).pop({
-        'nome': controller.nomeTreinoController.text.trim(),
-        'sessaoNote': controller.sessaoNote,
-      });
+    if (widget.onSaveToFirebase != null) {
+      final salvo = await widget.onSaveToFirebase!(finalExercicios, nome, note);
+      if (!mounted) return;
+      if (!salvo) {
+        setState(() => _isSaving = false);
+        _scaffoldMessengerKey.currentState?.showSnackBar(
+          SnackBar(
+            content: const Text('Falha ao salvar. Verifique sua conexão.'),
+            backgroundColor: Colors.redAccent,
+            action: SnackBarAction(
+              label: 'TENTAR NOVAMENTE',
+              textColor: Colors.white,
+              onPressed: () => _concluirESalvar(context),
+            ),
+            duration: const Duration(seconds: 6),
+          ),
+        );
+        return;
+      }
     }
+
+    // setState schedules a rebuild; PopScope.canPop only updates after that
+    // frame. Using addPostFrameCallback ensures canPop == true before pop().
+    setState(() => _canPopNow = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) Navigator.of(context).pop({'nome': nome, 'sessaoNote': note});
+    });
   }
 
   Future<void> _openLibrary(BuildContext context) async {
@@ -165,7 +204,10 @@ class _SessaoDetalhePersonalViewState
                 actions: [
                   AppBarTextButton(
                     label: 'Salvar',
-                    onPressed: () => Navigator.of(context).maybePop(),
+                    isLoading: _isSaving,
+                    onPressed: _isSaving
+                        ? null
+                        : () => Navigator.of(context).maybePop(),
                   ),
                 ],
                 background: Align(
@@ -634,6 +676,15 @@ class _SessaoDetalhePersonalViewState
                       ),
                     ),
                   );
+                  if (!mounted) return;
+                  if (widget.onSaveToFirebase != null && controller.hasChanges) {
+                    final finalExercicios = controller.getFinalExercicios();
+                    final nome = controller.nomeTreinoController.text.trim();
+                    final note = controller.sessaoNote;
+                    widget.originalExercicios.clear();
+                    widget.originalExercicios.addAll(finalExercicios);
+                    widget.onSaveToFirebase!(finalExercicios, nome, note);
+                  }
                 },
           child: Padding(
             padding: CardTokens.padding,

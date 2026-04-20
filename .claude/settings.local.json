@@ -15,7 +15,9 @@
       "Bash(firebase apps:sdkconfig android 1:589594654448:android:9e9546bd28a6c279a27435 --project appfit-43178)",
       "Bash(firebase apps:android:sha create 1:589594654448:android:9e9546bd28a6c279a27435 B9:9F:60:8B:DD:9C:E0:A2:60:FA:66:A7:4F:BD:F8:41:D3:FD:8B:E1 --project appfit-43178)",
       "Bash(firebase --help)",
-      "Bash(firebase apps:android:sha:list 1:589594654448:android:9e9546bd28a6c279a27435 --project appfit-43178)"
+      "Bash(firebase apps:android:sha:list 1:589594654448:android:9e9546bd28a6c279a27435 --project appfit-43178)",
+      "Bash(cat)",
+      "Bash(bash /tmp/check_dialogs.sh)"
     ]
   }
 }
