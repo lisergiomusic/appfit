@@ -21,7 +21,7 @@ class _PersonalCriarExercicioPageState
   final AuthService _authService = AuthService();
 
   final TextEditingController _nomeCtrl = TextEditingController();
-  final TextEditingController _midiaCtrl = TextEditingController();
+  final TextEditingController _mediaUrlCtrl = TextEditingController();
   final TextEditingController _instrucoesCtrl = TextEditingController();
 
   final List<String> _gruposDisponiveis = [
@@ -48,7 +48,7 @@ class _PersonalCriarExercicioPageState
     // Se estiver editando, preenche os campos
     if (widget.exercicioParaEditar != null) {
       _nomeCtrl.text = widget.exercicioParaEditar!.nome;
-      _midiaCtrl.text = widget.exercicioParaEditar!.imagemUrl ?? '';
+      _mediaUrlCtrl.text = widget.exercicioParaEditar!.mediaUrl ?? '';
       _instrucoesCtrl.text = widget.exercicioParaEditar!.instrucoes ?? '';
       _gruposSelecionados.addAll(widget.exercicioParaEditar!.grupoMuscular);
       _isPublico = widget.exercicioParaEditar!.personalId == null;
@@ -90,8 +90,8 @@ class _PersonalCriarExercicioPageState
       id: widget.exercicioParaEditar?.id,
       nome: _nomeCtrl.text.trim(),
       grupoMuscular: _gruposSelecionados.toList(),
-      imagemUrl: _midiaCtrl.text.trim().isNotEmpty
-          ? _midiaCtrl.text.trim()
+      mediaUrl: _mediaUrlCtrl.text.trim().isNotEmpty
+          ? _mediaUrlCtrl.text.trim()
           : null,
       instrucoes: _instrucoesCtrl.text.trim().isNotEmpty
           ? _instrucoesCtrl.text.trim()
@@ -268,14 +268,14 @@ class _PersonalCriarExercicioPageState
                     const SizedBox(height: 32),
 
                     _buildSectionLabel(
-                      'LINK DA MÍDIA (GIF OU VÍDEO)',
+                      'LINK DA MÍDIA (Cloudinary)',
                       Icons.play_circle_outline,
                     ),
                     TextField(
-                      controller: _midiaCtrl,
+                      controller: _mediaUrlCtrl,
                       style: const TextStyle(color: Colors.white, fontSize: 16),
                       decoration: InputDecoration(
-                        hintText: 'Cole o link do YouTube ou GIF...',
+                        hintText: 'Cole o link base do Cloudinary...',
                         hintStyle: TextStyle(
                           color: AppColors.labelSecondary.withAlpha(100),
                         ),

@@ -52,6 +52,7 @@ class ExercicioItem {
   List<String> grupoMuscular;
   String tipoAlvo;
   String? imagemUrl;
+  String? mediaUrl;
   String? personalId;
   String? instrucoes;
   String? instrucoesPersonalizadas;
@@ -63,6 +64,7 @@ class ExercicioItem {
     this.grupoMuscular = const ['Geral'],
     this.tipoAlvo = 'Reps',
     this.imagemUrl,
+    this.mediaUrl,
     this.personalId,
     this.instrucoes,
     this.instrucoesPersonalizadas,
@@ -82,6 +84,7 @@ class ExercicioItem {
       'nome': nome,
       'grupoMuscular': grupoMuscular,
       'imagemUrl': imagemUrl,
+      'mediaUrl': mediaUrl,
       'tipoAlvo': tipoAlvo,
       'personalId': personalId,
       'instrucoes': instrucoes,
@@ -107,6 +110,7 @@ class ExercicioItem {
       nome: data['nome'] ?? '',
       grupoMuscular: grupos,
       imagemUrl: data['imagemUrl'],
+      mediaUrl: data['mediaUrl'],
       tipoAlvo: data['tipoAlvo'] ?? 'Reps',
       personalId: data['personalId'],
       instrucoes: data['instrucoes'],
@@ -122,6 +126,7 @@ class ExercicioItem {
       grupoMuscular: List<String>.from(grupoMuscular),
       tipoAlvo: tipoAlvo,
       imagemUrl: imagemUrl,
+      mediaUrl: mediaUrl,
       personalId: personalId,
       instrucoes: instrucoes,
       instrucoesPersonalizadas: instrucoesPersonalizadas,

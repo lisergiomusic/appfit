@@ -53,8 +53,8 @@ class _PersonalExercicioDetalhePageState
     super.initState();
     ex = widget.exercicio;
     controller = ExercicioDetalheController(ex);
-    final hasLocalImage = ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty;
-    _exercicioBaseFuture = hasLocalImage
+    final hasLocalMedia = ex.mediaUrl != null && ex.mediaUrl!.isNotEmpty;
+    _exercicioBaseFuture = hasLocalMedia
         ? Future.value(null)
         : _exerciseService.buscarExercicioPorNome(ex.nome);
   }
@@ -689,22 +689,21 @@ class _PersonalExercicioDetalhePageState
                         FutureBuilder<ExercicioItem?>(
                           future: _exercicioBaseFuture,
                           builder: (context, snapshot) {
-                            final hasLocalImage =
-                                ex.imagemUrl != null &&
-                                ex.imagemUrl!.isNotEmpty;
+                            final hasLocalMedia =
+                                ex.mediaUrl != null && ex.mediaUrl!.isNotEmpty;
 
-                            if (!hasLocalImage &&
+                            if (!hasLocalMedia &&
                                 snapshot.connectionState ==
                                     ConnectionState.waiting) {
                               return _buildVideoCardLoadingPlaceholder();
                             }
 
-                            final resolvedImage = hasLocalImage
-                                ? ex.imagemUrl
-                                : snapshot.data?.imagemUrl;
+                            final resolvedMedia = hasLocalMedia
+                                ? ex.mediaUrl
+                                : snapshot.data?.mediaUrl;
 
                             return ExerciseVideoCard(
-                              imageUrl: resolvedImage,
+                              mediaUrl: resolvedMedia,
                               exerciseTitle: exerciseTitle,
                             );
                           },

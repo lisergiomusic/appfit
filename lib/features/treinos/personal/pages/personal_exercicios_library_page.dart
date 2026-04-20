@@ -9,6 +9,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/exercise_service.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../shared/models/exercicio_model.dart';
+import '../../../../core/utils/cloudinary.dart';
 import 'personal_criar_exercicio_page.dart';
 
 class PersonalExerciciosLibraryPage extends StatefulWidget {
@@ -460,8 +461,8 @@ class _PersonalExerciciosLibraryPageState
                     aspectRatio: 16 / 9,
                     child: Container(
                       color: AppColors.surfaceLight,
-                      child: ex.imagemUrl != null && ex.imagemUrl!.isNotEmpty
-                          ? _buildMediaPreview(ex.imagemUrl!)
+                      child: ex.mediaUrl != null && ex.mediaUrl!.isNotEmpty
+                          ? _buildMediaPreview(Cloudinary.thumbnail(ex.mediaUrl!))
                           : const Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -606,52 +607,6 @@ class _PersonalExerciciosLibraryPageState
   }
 
   Widget _buildMediaPreview(String url) {
-    final videoId = _getYoutubeId(url);
-    if (videoId != null) {
-      final thumbUrl = 'https://img.youtube.com/vi/$videoId/0.jpg';
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          CachedNetworkImage(
-            imageUrl: thumbUrl,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              color: AppColors.surfaceLight,
-              child: const Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppColors.primary,
-                ),
-              ),
-            ),
-            errorWidget: (context, url, error) => Container(
-              color: AppColors.surfaceLight,
-              child: const Center(
-                child: Icon(
-                  Icons.videocam_off,
-                  color: AppColors.labelSecondary,
-                  size: 40,
-                ),
-              ),
-            ),
-          ),
-          Center(
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.black.withAlpha(150),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.play_arrow,
-                color: Colors.white,
-                size: 40,
-              ),
-            ),
-          ),
-        ],
-      );
-    }
     return CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.cover,
@@ -675,16 +630,6 @@ class _PersonalExerciciosLibraryPageState
         ),
       ),
     );
-  }
-
-  String? _getYoutubeId(String url) {
-    final RegExp regExp = RegExp(
-      r"(?<=vi/|v/|vi=|/v/|youtu\.be/|/embed/|v=).+?(?=\?|#|&|$)",
-      caseSensitive: false,
-      multiLine: false,
-    );
-    final match = regExp.firstMatch(url);
-    return match?.group(0);
   }
 
   @override
@@ -980,15 +925,29 @@ class _PersonalExerciciosLibraryPageState
                                                 size: 28,
                                               ),
                                             )
-                                          : (ex.imagemUrl != null &&
-                                                ex.imagemUrl!.isNotEmpty)
+                                          : (ex.mediaUrl != null &&
+                                                ex.mediaUrl!.isNotEmpty)
                                           ? ClipRRect(
                                               borderRadius:
                                                   BorderRadius.circular(
                                                     AppTheme.radiusLG,
                                                   ),
-                                              child: _StaticImage(
-                                                url: ex.imagemUrl!,
+                                              child: CachedNetworkImage(
+                                                imageUrl: Cloudinary.thumbnail(ex.mediaUrl!),
+                                                fit: BoxFit.cover,
+                                                width: 56,
+                                                height: 56,
+                                                placeholder: (_, __) =>
+                                                    Container(
+                                                      color: AppColors.surfaceLight,
+                                                    ),
+                                                errorWidget: (_, __, ___) =>
+                                                    const Center(
+                                                      child: Icon(
+                                                        Icons.fitness_center,
+                                                        color: AppColors.labelSecondary,
+                                                      ),
+                                                    ),
                                               ),
                                             )
                                           : const Center(
@@ -1185,109 +1144,3 @@ class _PersonalExerciciosLibraryPageState
   }
 }
 
-class _StaticImage extends StatefulWidget {
-  final String url;
-  const _StaticImage({required this.url});
-
-  @override
-  State<_StaticImage> createState() => _StaticImageState();
-}
-
-class _StaticImageState extends State<_StaticImage> {
-  ImageStream? _imageStream;
-  ImageInfo? _imageInfo;
-  ImageStreamListener? _listener;
-  bool _hasError = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _getImage();
-  }
-
-  @override
-  void didUpdateWidget(_StaticImage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.url != widget.url) _getImage();
-  }
-
-  void _getImage() {
-    _cleanup();
-    if (widget.url.isEmpty) return;
-
-    _hasError = false;
-    _imageInfo = null;
-
-    final videoId = _getYoutubeIdStatic(widget.url);
-    final finalUrl = videoId != null
-        ? 'https://img.youtube.com/vi/$videoId/0.jpg'
-        : widget.url;
-
-    _imageStream = CachedNetworkImageProvider(
-      finalUrl,
-    ).resolve(createLocalImageConfiguration(context));
-
-    _listener = ImageStreamListener(
-      (info, _) {
-        if (mounted && _imageInfo == null) {
-          setState(() => _imageInfo = info);
-          _cleanup();
-        }
-      },
-      onError: (dynamic exception, StackTrace? stackTrace) {
-        if (mounted) setState(() => _hasError = true);
-      },
-    );
-    _imageStream!.addListener(_listener!);
-  }
-
-  String? _getYoutubeIdStatic(String url) {
-    final RegExp regExp = RegExp(
-      r"(?<=vi/|v/|vi=|/v/|youtu\.be/|/embed/|v=).+?(?=\?|#|&|$)",
-      caseSensitive: false,
-      multiLine: false,
-    );
-    final match = regExp.firstMatch(url);
-    return match?.group(0);
-  }
-
-  void _cleanup() {
-    if (_imageStream != null && _listener != null) {
-      _imageStream!.removeListener(_listener!);
-    }
-    _imageStream = null;
-    _listener = null;
-  }
-
-  @override
-  void dispose() {
-    _cleanup();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_hasError) {
-      return Container(
-        width: 56,
-        height: 56,
-        color: AppColors.surfaceLight,
-        child: const Icon(
-          Icons.fitness_center,
-          color: AppColors.labelSecondary,
-        ),
-      );
-    }
-
-    if (_imageInfo == null) {
-      return Container(width: 56, height: 56, color: AppColors.surfaceLight);
-    }
-
-    return RawImage(
-      image: _imageInfo!.image,
-      fit: BoxFit.cover,
-      width: 56,
-      height: 56,
-    );
-  }
-}

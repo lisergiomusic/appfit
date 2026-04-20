@@ -98,8 +98,8 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
     // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
     // 3) Ações finais: botões primários, confirmadores e feedbacks.
     final temImagem =
-        widget.exercicio.imagemUrl != null &&
-        widget.exercicio.imagemUrl!.isNotEmpty;
+        widget.exercicio.mediaUrl != null &&
+        widget.exercicio.mediaUrl!.isNotEmpty;
     final temMusculos = widget.exercicio.grupoMuscular.isNotEmpty;
 
     final screenWidth = MediaQuery.of(context).size.width;
@@ -171,23 +171,22 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                   FutureBuilder<ExercicioItem?>(
                     future: _exercicioBaseFuture,
                     builder: (context, snapshot) {
-                      final temImagemPropria =
-                          widget.exercicio.imagemUrl != null &&
-                          widget.exercicio.imagemUrl!.isNotEmpty;
+                      final hasLocalMedia =
+                          widget.exercicio.mediaUrl != null &&
+                          widget.exercicio.mediaUrl!.isNotEmpty;
 
-                      if (!temImagemPropria &&
+                      if (!hasLocalMedia &&
                           snapshot.connectionState == ConnectionState.waiting) {
                         return const _VideoCardLoadingPlaceholder();
                       }
 
-                      final resolvedImage = temImagemPropria
-                          ? widget.exercicio.imagemUrl
-                          : snapshot.data?.imagemUrl;
+                      final resolvedMedia = hasLocalMedia
+                          ? widget.exercicio.mediaUrl
+                          : snapshot.data?.mediaUrl;
 
                       return ExerciseVideoCard(
-                        imageUrl: resolvedImage,
+                        mediaUrl: resolvedMedia,
                         exerciseTitle: widget.exercicio.nome,
-                        autoplayGif: true,
                       );
                     },
                   ),

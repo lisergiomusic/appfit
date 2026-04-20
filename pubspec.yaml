@@ -24,6 +24,7 @@ dependencies:
   shimmer: ^3.0.0 # Adicionado para placeholders de carregamento
   rxdart: ^0.28.0 # Adicionado para combinar Streams de dados
   flutter_inset_shadow: ^2.0.3
+  video_player: ^2.9.2
 
 dev_dependencies:
   flutter_test:

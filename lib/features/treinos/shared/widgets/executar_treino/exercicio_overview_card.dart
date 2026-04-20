@@ -1,8 +1,9 @@
-import 'dart:ui' as ui;
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../models/exercicio_model.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/services/exercise_service.dart';
+import '../../../../../core/utils/cloudinary.dart';
 
 class ExercicioOverviewCard extends StatefulWidget {
   final ExercicioItem exercicio;
@@ -26,22 +27,19 @@ class ExercicioOverviewCard extends StatefulWidget {
 
 class _ExercicioOverviewCardState extends State<ExercicioOverviewCard> {
   final ExerciseService _exerciseService = ExerciseService();
-  late final Future<String?> _imagemUrlFuture;
+  late final Future<String?> _thumbnailFuture;
 
   ExercicioItem get exercicio => widget.exercicio;
 
   @override
   void initState() {
     super.initState();
-    bool isGif(String? url) =>
-        url != null && url.toLowerCase().contains('.gif');
-
-    if (isGif(exercicio.imagemUrl)) {
-      _imagemUrlFuture = Future.value(exercicio.imagemUrl);
+    if (exercicio.mediaUrl != null && exercicio.mediaUrl!.isNotEmpty) {
+      _thumbnailFuture = Future.value(Cloudinary.thumbnail(exercicio.mediaUrl!));
     } else {
-      _imagemUrlFuture = _exerciseService
+      _thumbnailFuture = _exerciseService
           .buscarExercicioPorNome(exercicio.nome)
-          .then((base) => isGif(base?.imagemUrl) ? base!.imagemUrl : null);
+          .then((base) => base?.mediaUrl != null ? Cloudinary.thumbnail(base!.mediaUrl!) : null);
     }
   }
 
@@ -54,7 +52,6 @@ class _ExercicioOverviewCardState extends State<ExercicioOverviewCard> {
 
   @override
   Widget build(BuildContext context) {
-
     return Container(
       decoration: AppTheme.cardDecoration,
       child: InkWell(
@@ -73,9 +70,8 @@ class _ExercicioOverviewCardState extends State<ExercicioOverviewCard> {
                     height: 56,
                     color: Colors.black.withAlpha(40),
                     child: FutureBuilder<String?>(
-                      future: _imagemUrlFuture,
+                      future: _thumbnailFuture,
                       builder: (context, snapshot) {
-                        final url = snapshot.data;
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
                           return Center(
@@ -85,6 +81,7 @@ class _ExercicioOverviewCardState extends State<ExercicioOverviewCard> {
                             ),
                           );
                         }
+                        final url = snapshot.data;
                         if (url == null || url.isEmpty) {
                           return Center(
                             child: Icon(
@@ -94,7 +91,23 @@ class _ExercicioOverviewCardState extends State<ExercicioOverviewCard> {
                             ),
                           );
                         }
-                        return _GifFirstFrame(url: url);
+                        return CachedNetworkImage(
+                          imageUrl: url,
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) => Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.primary.withAlpha(100),
+                            ),
+                          ),
+                          errorWidget: (_, __, ___) => Center(
+                            child: Icon(
+                              Icons.fitness_center,
+                              color: AppColors.labelSecondary,
+                              size: 26,
+                            ),
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -163,70 +176,5 @@ class _ExercicioOverviewCardState extends State<ExercicioOverviewCard> {
         ),
       ],
     );
-  }
-}
-
-class _GifFirstFrame extends StatefulWidget {
-  final String url;
-  const _GifFirstFrame({required this.url});
-
-  @override
-  State<_GifFirstFrame> createState() => _GifFirstFrameState();
-}
-
-class _GifFirstFrameState extends State<_GifFirstFrame> {
-  ui.Image? _frame;
-  bool _error = false;
-  ImageStream? _stream;
-  ImageStreamListener? _listener;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  void _load() {
-    final provider = NetworkImage(widget.url);
-    _stream = provider.resolve(ImageConfiguration.empty);
-    _listener = ImageStreamListener(
-      (info, _) {
-        if (mounted) setState(() => _frame = info.image);
-        _stream?.removeListener(_listener!);
-      },
-      onError: (_, _) {
-        if (mounted) setState(() => _error = true);
-        _stream?.removeListener(_listener!);
-      },
-    );
-    _stream!.addListener(_listener!);
-  }
-
-  @override
-  void dispose() {
-    _stream?.removeListener(_listener!);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_error) {
-      return Center(
-        child: Icon(
-          Icons.fitness_center,
-          color: AppColors.labelSecondary,
-          size: 26,
-        ),
-      );
-    }
-    if (_frame == null) {
-      return Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: AppColors.primary.withAlpha(100),
-        ),
-      );
-    }
-    return RawImage(image: _frame, fit: BoxFit.cover);
   }
 }
