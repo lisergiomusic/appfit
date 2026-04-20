@@ -23,12 +23,20 @@ class AlunoExercicioViewPage extends StatefulWidget {
 class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
   final ExerciseService _exerciseService = ExerciseService();
   late final Future<ExercicioItem?>? _exercicioBaseFuture;
+  late final Future<ExercicioItem?> _exercicioBaseParaMidiaFuture;
 
   @override
   void initState() {
     super.initState();
     _exercicioBaseFuture = widget.exercicio.hasInstrucoesPadrao
         ? null
+        : _exerciseService.buscarExercicioPorNome(widget.exercicio.nome);
+
+    final hasLocalMedia =
+        widget.exercicio.mediaUrl != null &&
+        widget.exercicio.mediaUrl!.isNotEmpty;
+    _exercicioBaseParaMidiaFuture = hasLocalMedia
+        ? Future.value(null)
         : _exerciseService.buscarExercicioPorNome(widget.exercicio.nome);
   }
 
@@ -169,7 +177,7 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                   const SizedBox(height: SpacingTokens.sm),
 
                   FutureBuilder<ExercicioItem?>(
-                    future: _exercicioBaseFuture,
+                    future: _exercicioBaseParaMidiaFuture,
                     builder: (context, snapshot) {
                       final hasLocalMedia =
                           widget.exercicio.mediaUrl != null &&
