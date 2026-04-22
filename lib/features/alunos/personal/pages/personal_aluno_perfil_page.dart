@@ -165,6 +165,8 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                   photoUrl: widget.photoUrl ?? photoUrl,
                   peso: peso,
                   idade: idade,
+                  rotinaAtiva: data.rotinaAtiva,
+                  rotinaId: data.rotinaId,
                   onPrescreverTreino: () =>
                       _exibirOpcoesVincularTreino(context),
                 ),
@@ -366,9 +368,11 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
-      builder: (context) => SizedBox(
-        height: MediaQuery.of(context).size.height * 0.85,
-        child: Padding(
+      builder: (context) {
+        final rotinasStream = _alunoService.getRotinasTemplates();
+        return SizedBox(
+          height: MediaQuery.of(context).size.height * 0.85,
+          child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppTheme.paddingScreen,
             vertical: 12,
@@ -421,7 +425,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
               const SizedBox(height: SpacingTokens.sectionGap),
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: _alunoService.getRotinasTemplates(),
+                  stream: rotinasStream,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
@@ -521,7 +525,8 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
             ],
           ),
         ),
-      ),
+        );
+      },
     );
   }
 

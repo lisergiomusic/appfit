@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -26,6 +27,11 @@ class RotinaDetalheController extends ChangeNotifier {
 
   bool isSaving = false;
   bool isDeleting = false;
+
+  // Debounce: evita disparar múltiplos saves em sequência rápida
+  Timer? _debounceTimer;
+
+  Future<void>? _lastSaveFuture;
 
   final Map<String, dynamic>? initialData;
 
@@ -288,10 +294,12 @@ class RotinaDetalheController extends ChangeNotifier {
         treinos.isNotEmpty;
   }
 
-  /// Fire-and-forget para rotinas existentes. Não altera [isSaving].
+  /// Fire-and-forget com debounce para rotinas existentes. Não altera [isSaving].
+  /// Saves chamados dentro de 800ms são coalesced em um único write.
   void salvarRotinaBackground() {
     if (rotinaId == null) return;
-    _dispararSave();
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 800), _dispararSave);
   }
 
   /// Aguardado apenas na criação (rotinaId == null), onde o ID ainda não existe.
@@ -357,7 +365,7 @@ class RotinaDetalheController extends ChangeNotifier {
         'dataVencimento': Timestamp.fromDate(vencimentoData),
     };
 
-    _rotinaService
+    _lastSaveFuture = _rotinaService
         .atualizarRotina(
           rotinaId: rotinaId!,
           nome: nomeParaSalvar,
@@ -367,11 +375,25 @@ class RotinaDetalheController extends ChangeNotifier {
           sessoesAlvo: tipoVencimento == 'sessoes' ? vencimentoSessoes : null,
           dataVencimento: tipoVencimento == 'data' ? vencimentoData : null,
         )
-        .catchError((e) => debugPrint('Erro ao salvar rotina: $e'));
+        .catchError((e) {
+      debugPrint('Erro ao salvar rotina: $e');
+    });
+  }
+
+  /// Força o save imediatamente, cancelando o debounce pendente.
+  /// Aguarda o write completar antes de retornar.
+  Future<void> flushPendingSave() async {
+    _debounceTimer?.cancel();
+    _debounceTimer = null;
+    _dispararSave();
+    if (_lastSaveFuture != null) {
+      await _lastSaveFuture;
+    }
   }
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     nomeCtrl.dispose();
     objCtrl.dispose();
     super.dispose();

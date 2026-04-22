@@ -11,15 +11,6 @@ class AuthService {
   User? get currentUser => _auth.currentUser;
 
   Future<String?> getUserType(String uid) async {
-    // Tenta cache local primeiro para resposta imediata sem esperar rede.
-    try {
-      final cached = await _db
-          .collection('usuarios')
-          .doc(uid)
-          .get(const GetOptions(source: Source.cache));
-      if (cached.exists) return cached.data()?['tipoUsuario'] as String?;
-    } catch (_) {}
-
     try {
       final doc = await _db
           .collection('usuarios')

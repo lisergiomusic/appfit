@@ -347,10 +347,6 @@ class AlunoService {
         .where('ativa', isEqualTo: true)
         .get();
 
-    for (var doc in rotinasAntigas.docs) {
-      await doc.reference.update({'ativa': false});
-    }
-
     final rotinaData = templateDoc.data() as Map<String, dynamic>;
     rotinaData['alunoId'] = alunoId;
     rotinaData['ativa'] = true;
@@ -368,7 +364,15 @@ class AlunoService {
       rotinaData.remove('vencimentoSessoes');
     }
 
-    await _firestore.collection('rotinas').add(rotinaData);
+    final novaRotinaRef = _firestore.collection('rotinas').doc();
+    final batch = _firestore.batch();
+
+    for (var doc in rotinasAntigas.docs) {
+      batch.update(doc.reference, {'ativa': false});
+    }
+    batch.set(novaRotinaRef, rotinaData);
+
+    await batch.commit();
   }
 
   Future<({List<AtividadeRecenteItem> items, DocumentSnapshot? lastDoc})>
@@ -396,24 +400,29 @@ class AlunoService {
       return (items: <AtividadeRecenteItem>[], lastDoc: null);
     }
 
-    final alunoCache = <String, Map<String, dynamic>>{};
+    final alunoIds = snapshot.docs
+        .map((doc) => doc.data()['alunoId'] as String? ?? '')
+        .where((id) => id.isNotEmpty)
+        .toSet()
+        .toList();
+
+    final alunoFutures = alunoIds.map((id) => _firestore
+        .collection('usuarios')
+        .doc(id)
+        .get()
+        .then((d) => MapEntry(id, Map<String, dynamic>.from(d.data() ?? {})))
+        .catchError((_) => MapEntry(id, <String, dynamic>{})));
+
+    final alunoEntries = await Future.wait(alunoFutures);
+    final alunoCache = Map<String, Map<String, dynamic>>.fromEntries(alunoEntries);
+
     final items = <AtividadeRecenteItem>[];
 
     for (final doc in snapshot.docs) {
       final data = doc.data();
       final alunoId = data['alunoId'] as String? ?? '';
+      final aluno = alunoCache[alunoId] ?? {};
 
-      if (!alunoCache.containsKey(alunoId)) {
-        try {
-          final alunoDoc =
-              await _firestore.collection('usuarios').doc(alunoId).get();
-          alunoCache[alunoId] = Map<String, dynamic>.from(alunoDoc.data() ?? {});
-        } catch (_) {
-          alunoCache[alunoId] = {};
-        }
-      }
-
-      final aluno = alunoCache[alunoId]!;
       items.add(AtividadeRecenteItem(
         logId: doc.id,
         alunoId: alunoId,
@@ -437,6 +446,8 @@ class AlunoService {
 
   /// Stream dos N logs mais recentes dos alunos do personal logado,
   /// enriquecidos com nome e photoUrl do aluno.
+  /// Os docs de aluno são buscados em paralelo via Future.wait para evitar
+  /// latência acumulada de gets sequenciais.
   Stream<List<AtividadeRecenteItem>> getAtividadeRecenteStream({int limit = 10}) {
     final personalId = _currentPersonalId;
     if (personalId == null) return const Stream.empty();
@@ -448,28 +459,31 @@ class AlunoService {
         .limit(limit)
         .snapshots()
         .asyncMap((snapshot) async {
-      final alunoCache = <String, Map<String, dynamic>>{};
+      if (snapshot.docs.isEmpty) return <AtividadeRecenteItem>[];
 
-      final items = <AtividadeRecenteItem>[];
-      for (final doc in snapshot.docs) {
+      // Coleta IDs únicos de alunos e busca todos em paralelo.
+      final alunoIds = snapshot.docs
+          .map((doc) => doc.data()['alunoId'] as String? ?? '')
+          .where((id) => id.isNotEmpty)
+          .toSet()
+          .toList();
+
+      final alunoFutures = alunoIds.map((id) => _firestore
+          .collection('usuarios')
+          .doc(id)
+          .get()
+          .then((d) => MapEntry(id, Map<String, dynamic>.from(d.data() ?? {})))
+          .catchError((_) => MapEntry(id, <String, dynamic>{})));
+
+      final alunoEntries = await Future.wait(alunoFutures);
+      final alunoCache = Map<String, Map<String, dynamic>>.fromEntries(alunoEntries);
+
+      return snapshot.docs.map((doc) {
         final data = doc.data();
         final alunoId = data['alunoId'] as String? ?? '';
+        final aluno = alunoCache[alunoId] ?? {};
 
-        if (!alunoCache.containsKey(alunoId)) {
-          try {
-            final alunoDoc = await _firestore
-                .collection('usuarios')
-                .doc(alunoId)
-                .get();
-            alunoCache[alunoId] = Map<String, dynamic>.from(
-                alunoDoc.data() ?? {});
-          } catch (_) {
-            alunoCache[alunoId] = {};
-          }
-        }
-
-        final aluno = alunoCache[alunoId]!;
-        items.add(AtividadeRecenteItem(
+        return AtividadeRecenteItem(
           logId: doc.id,
           alunoId: alunoId,
           alunoNome: aluno['nome']?.toString() ?? 'Aluno',
@@ -482,9 +496,8 @@ class AlunoService {
           exercicios: (data['exercicios'] as List?)
                   ?.cast<Map<String, dynamic>>() ??
               [],
-        ));
-      }
-      return items;
+        );
+      }).toList();
     });
   }
 }

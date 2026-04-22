@@ -289,7 +289,7 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
       return;
     }
 
-    _controller.salvarRotinaBackground();
+    await _controller.flushPendingSave();
     if (!mounted) return;
     setState(() => _canPopNow = true);
     Navigator.of(context).pop();
@@ -310,7 +310,7 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
       return;
     }
 
-    _controller.salvarRotinaBackground();
+    await _controller.flushPendingSave();
     if (!mounted) return;
     setState(() => _canPopNow = true);
     Navigator.of(context).pop();

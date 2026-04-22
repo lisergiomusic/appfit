@@ -1,10 +1,20 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// Serviço responsável por criação, atualização e ciclo de vida de rotinas.
+///
+/// Writes são serializados por [rotinaId]: um segundo [atualizarRotina] para o
+/// mesmo documento só começa depois que o anterior terminar, evitando o
+/// deadlock no canal gRPC do Firestore Android SDK causado por writes
+/// concorrentes no mesmo doc.
 class RotinaService {
   final FirebaseFirestore _db;
   final FirebaseAuth _auth;
+
+  // Fila de serialização por rotinaId → garante no máximo 1 write simultâneo
+  // por documento.
+  final Map<String, Future<void>> _writeQueue = {};
 
   RotinaService({FirebaseFirestore? firestore, FirebaseAuth? auth})
     : _db = firestore ?? FirebaseFirestore.instance,
@@ -62,6 +72,9 @@ class RotinaService {
     await novaRotinaRef.set(payload);
   }
 
+  /// Atualiza uma rotina existente, serializando writes para evitar deadlock
+  /// no canal gRPC do Firestore quando múltiplos saves são disparados
+  /// em sequência rápida no mesmo documento.
   Future<void> atualizarRotina({
     required String rotinaId,
     required String nome,
@@ -86,11 +99,33 @@ class RotinaService {
       }
     }
 
-    await _db.collection('rotinas').doc(rotinaId).set(updateData, SetOptions(merge: true));
+    // Encadeia na fila do rotinaId: espera o write anterior terminar antes
+    // de iniciar este. Ignora erros do anterior para não bloquear a fila.
+    final previous = _writeQueue[rotinaId] ?? Future.value();
+    final current = previous.catchError((_) {}).then((_) async {
+      await _db
+          .collection('rotinas')
+          .doc(rotinaId)
+          .set(updateData, SetOptions(merge: true));
+    });
+
+    _writeQueue[rotinaId] = current;
+
+    // Limpa a entrada do map quando terminar para não acumular memória.
+    current.whenComplete(() {
+      if (_writeQueue[rotinaId] == current) {
+        _writeQueue.remove(rotinaId);
+      }
+    });
+
+    await current;
   }
 
   Future<void> renomearRotina(String rotinaId, String novoNome) async {
-    await _db.collection('rotinas').doc(rotinaId).set({'nome': novoNome}, SetOptions(merge: true));
+    await _db
+        .collection('rotinas')
+        .doc(rotinaId)
+        .set({'nome': novoNome}, SetOptions(merge: true));
   }
 
   Future<void> excluirRotina(String rotinaId) async {
