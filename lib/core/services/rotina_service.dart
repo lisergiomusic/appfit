@@ -10,7 +10,6 @@ class RotinaService {
     : _db = firestore ?? FirebaseFirestore.instance,
       _auth = auth ?? FirebaseAuth.instance;
 
- 
   Future<void> criarRotina({
     String? alunoId,
     required String nome,
@@ -23,7 +22,6 @@ class RotinaService {
     final personalId = _auth.currentUser?.uid;
     if (personalId == null) throw Exception('Personal não autenticado.');
 
-   
     if (alunoId != null) {
       final rotinasAntigas = await _db
           .collection('rotinas')
@@ -64,7 +62,6 @@ class RotinaService {
     await novaRotinaRef.set(payload);
   }
 
- 
   Future<void> atualizarRotina({
     required String rotinaId,
     required String nome,
@@ -98,15 +95,5 @@ class RotinaService {
 
   Future<void> excluirRotina(String rotinaId) async {
     await _db.collection('rotinas').doc(rotinaId).delete();
-  }
-
-  /// Busca o dado mais recente de uma rotina direto do servidor (ignora cache).
-  Future<Map<String, dynamic>?> buscarRotinaPorId(String rotinaId) async {
-    final doc = await _db
-        .collection('rotinas')
-        .doc(rotinaId)
-        .get(const GetOptions(source: Source.serverAndCache));
-    if (!doc.exists) return null;
-    return doc.data();
   }
 }

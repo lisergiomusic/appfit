@@ -47,6 +47,9 @@ class ChecagemPagina extends StatefulWidget {
 
 class _ChecagemPaginaState extends State<ChecagemPagina> {
   final AuthService _authService = AuthService();
+  // Guarda o widget uma vez construído para não recriar em rebuilds do auth.
+  Widget? _cachedHome;
+  String? _cachedUid;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +57,8 @@ class _ChecagemPaginaState extends State<ChecagemPagina> {
       stream: _authService.authStateChanges,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
+          // Se já temos home em cache, mostra ele em vez de spinner.
+          if (_cachedHome != null) return _cachedHome!;
           return const Scaffold(
             body: Center(
               child: CircularProgressIndicator(color: AppColors.primary),
@@ -62,19 +67,28 @@ class _ChecagemPaginaState extends State<ChecagemPagina> {
         }
 
         if (snapshot.hasData && snapshot.data != null) {
-          return _UserTypeLoader(
-            uid: snapshot.data!.uid,
-            authService: _authService,
-          );
+          final uid = snapshot.data!.uid;
+          // Só reconstrói se o uid mudou (login de outro usuário).
+          if (_cachedUid != uid) {
+            _cachedUid = uid;
+            _cachedHome = _UserTypeLoader(
+              uid: uid,
+              authService: _authService,
+            );
+          }
+          return _cachedHome!;
         }
 
+        // Usuário deslogou — limpa o cache.
+        _cachedHome = null;
+        _cachedUid = null;
         return const SelecaoPerfilScreen();
       },
     );
   }
 }
 
-class _UserTypeLoader extends StatelessWidget {
+class _UserTypeLoader extends StatefulWidget {
   final String uid;
   final AuthService authService;
 
@@ -84,9 +98,23 @@ class _UserTypeLoader extends StatelessWidget {
   });
 
   @override
+  State<_UserTypeLoader> createState() => _UserTypeLoaderState();
+}
+
+class _UserTypeLoaderState extends State<_UserTypeLoader> {
+  late final Future<String?> _userTypeFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // Future criado uma única vez em initState — não recria em rebuilds.
+    _userTypeFuture = widget.authService.getUserType(widget.uid);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder<String?>(
-      future: authService.getUserType(uid),
+      future: _userTypeFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
@@ -108,9 +136,7 @@ class _UserTypeLoader extends StatelessWidget {
                   const Text('Erro ao carregar perfil.', style: TextStyle(color: AppColors.labelSecondary)),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () {
-                      authService.signOut();
-                    },
+                    onPressed: () => widget.authService.signOut(),
                     child: const Text('Voltar ao login'),
                   ),
                 ],
@@ -123,7 +149,6 @@ class _UserTypeLoader extends StatelessWidget {
           return DashboardPage(userType: snapshot.data!);
         }
 
-        // Caso o perfil não seja encontrado no Firestore, volta para a seleção
         return const SelecaoPerfilScreen();
       },
     );

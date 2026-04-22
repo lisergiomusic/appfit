@@ -589,6 +589,7 @@ class _PersonalGerenciarPlanilhasPageState
       context,
       MaterialPageRoute(
         builder: (context) => PersonalRotinaDetalhePage(
+          rotinaData: data,
           rotinaId: id,
           alunoId: widget.alunoId,
           alunoNome: widget.alunoNome,

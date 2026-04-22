@@ -52,22 +52,13 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
       initialData: widget.rotinaData,
     );
 
-    if (widget.rotinaId != null) {
-      // Rotina existente: busca dado fresco do Firestore sempre.
-      _recarregarDadosFrescos();
-    } else if (widget.rotinaData == null) {
-      // Nova rotina: abre modal de configuração inicial.
+    if (widget.rotinaData == null && widget.rotinaId == null) {
+      // Nova rotina sem dados: abre modal de configuração inicial.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _exibirModalInfo(context);
       });
     }
-  }
-
-  Future<void> _recarregarDadosFrescos() async {
-    final service = widget.rotinaService ?? RotinaService();
-    final data = await service.buscarRotinaPorId(widget.rotinaId!);
-    if (!mounted || data == null) return;
-    _controller.recarregarDados(data);
+    // rotinaData já vem da stream em tempo real — não precisa buscar nada.
   }
 
   @override
@@ -113,8 +104,12 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
   }
 
   Future<void> _editarSessao(SessaoTreinoModel sessao) async {
-    final currentIndex = _controller.indexOfSessao(sessao);
-    if (currentIndex < 0) return;
+    // Captura o índice AGORA, antes de qualquer navegação ou recarregamento assíncrono.
+    // Não usamos identical() depois porque recarregarDados() substitui os objetos.
+    final indexNoMomento = _controller.indexOfSessao(sessao);
+    if (indexNoMomento < 0) return;
+
+    final diaSemana = sessao.diaSemana;
 
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
@@ -125,9 +120,9 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
           sessaoNote: sessao.orientacoes ?? '',
           onSaveToFirebase: _controller.rotinaId != null
               ? (exercicios, nome, note) async {
-                  final idx = _controller.indexOfSessao(sessao);
-                  if (idx < 0) return false;
-                  _controller.atualizarSessaoCompleta(idx, nome, sessao.diaSemana, note, exercicios);
+                  final idx = indexNoMomento;
+                  if (idx >= _controller.treinos.length) return false;
+                  _controller.atualizarSessaoCompleta(idx, nome, diaSemana, note, exercicios);
                   _controller.salvarRotinaBackground();
                   return true;
                 }
@@ -139,17 +134,18 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
     if (!mounted) return;
 
     if (result is Map<String, dynamic>) {
-      final latestIndex = _controller.indexOfSessao(sessao);
-      if (latestIndex < 0) return;
       if (_controller.rotinaId == null) {
-        // Rotina nova: onSaveToFirebase é null, então aplicamos o resultado manualmente.
-        _controller.atualizarSessaoCompleta(
-          latestIndex,
-          result['nome'],
-          sessao.diaSemana,
-          result['sessaoNote'] ?? '',
-          sessao.exercicios,
-        );
+        // Rotina nova: onSaveToFirebase é null, aplica resultado pelo índice capturado.
+        final idx = indexNoMomento;
+        if (idx < _controller.treinos.length) {
+          _controller.atualizarSessaoCompleta(
+            idx,
+            result['nome'],
+            diaSemana,
+            result['sessaoNote'] ?? '',
+            sessao.exercicios,
+          );
+        }
       }
       // Rotina existente: onSaveToFirebase já chamou atualizarSessaoCompleta + salvarRotinaBackground.
     }

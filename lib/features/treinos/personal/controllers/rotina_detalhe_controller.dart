@@ -29,12 +29,16 @@ class RotinaDetalheController extends ChangeNotifier {
 
   final Map<String, dynamic>? initialData;
 
+  // Baseline para comparação de alterações — atualizado quando dados frescos chegam do Firestore.
+  Map<String, dynamic>? _loadedData;
+
   RotinaDetalheController({
     this.rotinaId,
     this.alunoId,
     RotinaService? rotinaService,
     this.initialData,
   }) : _rotinaService = rotinaService ?? RotinaService() {
+    _loadedData = initialData;
     nomeCtrl = TextEditingController(text: initialData?['nome'] ?? '');
     objCtrl = TextEditingController(text: initialData?['objetivo'] ?? '');
     _preencherDados();
@@ -84,6 +88,7 @@ class RotinaDetalheController extends ChangeNotifier {
   /// Recarrega todos os campos com dados frescos do Firestore.
   /// Usado ao abrir a página para garantir que o cache local não mostre dados antigos.
   void recarregarDados(Map<String, dynamic> data) {
+    _loadedData = data; // salva como baseline para verificarAlteracoes
     nomeCtrl.text = data['nome'] ?? '';
     objCtrl.text = data['objetivo'] ?? '';
     tipoVencimento = data['tipoVencimento'] ?? 'data';
@@ -108,7 +113,10 @@ class RotinaDetalheController extends ChangeNotifier {
           treinos.isNotEmpty;
     }
 
-    final data = initialData!;
+    // Dados ainda não carregados do Firestore — sem alterações por enquanto.
+    if (_loadedData == null) return false;
+
+    final data = _loadedData!;
     if (nomeCtrl.text.trim() != (data['nome'] ?? '')) return true;
     if (objCtrl.text.trim() != (data['objetivo'] ?? '')) return true;
     if (tipoVencimento != (data['tipoVencimento'] ?? 'data')) return true;
@@ -335,6 +343,20 @@ class RotinaDetalheController extends ChangeNotifier {
       return;
     }
     final sessoesJson = treinos.map((t) => t.toFirestore()).toList();
+
+    // Atualiza o baseline antes do save para que verificarAlteracoes()
+    // não trate esses dados como "não salvos" em verificações futuras.
+    _loadedData = {
+      ...?_loadedData,
+      'nome': nomeParaSalvar,
+      'objetivo': objetivoParaSalvar,
+      'sessoes': sessoesJson,
+      'tipoVencimento': tipoVencimento,
+      if (tipoVencimento == 'sessoes') 'vencimentoSessoes': vencimentoSessoes,
+      if (tipoVencimento == 'data')
+        'dataVencimento': Timestamp.fromDate(vencimentoData),
+    };
+
     _rotinaService
         .atualizarRotina(
           rotinaId: rotinaId!,

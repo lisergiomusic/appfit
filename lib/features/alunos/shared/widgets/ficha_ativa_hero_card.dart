@@ -125,6 +125,7 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => PersonalRotinaDetalhePage(
+                        rotinaData: rotina,
                         rotinaId: treinoDoc.id,
                         alunoId: widget.alunoId,
                         alunoNome: widget.alunoNome,
@@ -205,6 +206,7 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => PersonalRotinaDetalhePage(
+                                  rotinaData: rotina,
                                   rotinaId: treinoDoc.id,
                                   alunoId: widget.alunoId,
                                   alunoNome: widget.alunoNome,

@@ -245,7 +245,7 @@ class AlunoService {
 
   Stream<QuerySnapshot> getRotinasTemplates() {
     final personalId = _currentPersonalId;
-    if (personalId == null) throw Exception('Personal não autenticado');
+    if (personalId == null) return const Stream.empty();
 
     return _firestore
         .collection('rotinas')
@@ -256,7 +256,7 @@ class AlunoService {
 
   Stream<QuerySnapshot> getPlanilhasStream(String alunoId) {
     final personalId = _currentPersonalId;
-    if (personalId == null) throw Exception('Personal não autenticado');
+    if (personalId == null) return const Stream.empty();
 
     return _firestore
         .collection('rotinas')
@@ -267,7 +267,7 @@ class AlunoService {
 
   Stream<QuerySnapshot> getRotinaAtivaStream(String alunoId) {
     final personalId = _currentPersonalId;
-    if (personalId == null) throw Exception('Personal não autenticado');
+    if (personalId == null) return const Stream.empty();
 
     return _firestore
         .collection('rotinas')

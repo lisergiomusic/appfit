@@ -35,12 +35,14 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
 
   late final AlunoService _alunoService;
   late final RotinaService _rotinaService;
+  late final Stream<QuerySnapshot> _rotinasStream;
 
   @override
   void initState() {
     super.initState();
     _alunoService = widget.alunoService ?? AlunoService();
     _rotinaService = widget.rotinaService ?? RotinaService();
+    _rotinasStream = _alunoService.getRotinasTemplates();
 
     if (widget.openCriarRotinaOnLoad && widget.alunoId == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -177,7 +179,7 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
           _buildSliverAppBar(isSelecting),
           SliverToBoxAdapter(child: _buildSearchBar()),
           StreamBuilder<QuerySnapshot>(
-            stream: _alunoService.getRotinasTemplates(),
+            stream: _rotinasStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SliverFillRemaining(
@@ -471,6 +473,7 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => PersonalRotinaDetalhePage(
+                          rotinaData: rotina,
                           rotinaId: id,
                           rotinaService: _rotinaService,
                         ),
@@ -538,7 +541,7 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
                               context,
                               MaterialPageRoute(
                                 builder: (_) => PersonalRotinaDetalhePage(
-                                  rotinaData: isSelecting ? rotina : null,
+                                  rotinaData: rotina,
                                   rotinaId: isSelecting ? null : id,
                                   alunoId: isSelecting ? widget.alunoId : null,
                                   alunoNome: isSelecting
