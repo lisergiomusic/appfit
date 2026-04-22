@@ -55,6 +55,16 @@ class _PersonalFinanceiroAlunoPageState
             );
           }
 
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text(
+                'Erro ao carregar faturas.\nVerifique sua conexão.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.labelSecondary),
+              ),
+            );
+          }
+
           final faturas = snapshot.data ?? [];
           final faturasAbertas = faturas
               .where((f) => f.status != 'pago')

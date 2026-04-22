@@ -16,7 +16,7 @@ void main() async {
 
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,
-    cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+    cacheSizeBytes: 104857600, // 100 MB
   );
 
   await initializeDateFormatting('pt_BR', null);
@@ -74,6 +74,62 @@ class _ChecagemPaginaState extends State<ChecagemPagina> {
   }
 }
 
+class _UserTypeLoader extends StatelessWidget {
+  final String uid;
+  final AuthService authService;
+
+  const _UserTypeLoader({
+    required this.uid,
+    required this.authService,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: authService.getUserType(uid),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.wifi_off_rounded, color: AppColors.labelSecondary, size: 48),
+                  const SizedBox(height: 16),
+                  const Text('Erro ao carregar perfil.', style: TextStyle(color: AppColors.labelSecondary)),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      authService.signOut();
+                    },
+                    child: const Text('Voltar ao login'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        if (snapshot.hasData && snapshot.data != null) {
+          return DashboardPage(userType: snapshot.data!);
+        }
+
+        // Caso o perfil não seja encontrado no Firestore, volta para a seleção
+        return const SelecaoPerfilScreen();
+      },
+    );
+  }
+}
+
 class SelecaoPerfilScreen extends StatelessWidget {
   const SelecaoPerfilScreen({super.key});
 
@@ -88,16 +144,16 @@ class SelecaoPerfilScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(flex: 3),
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.fitness_center,
                     size: 42,
                     color: AppColors.primary,
                   ),
-                  const SizedBox(width: 12),
-                  const Text(
+                  SizedBox(width: 12),
+                  Text(
                     'APPFIT',
                     style: TextStyle(
                       fontSize: 34,

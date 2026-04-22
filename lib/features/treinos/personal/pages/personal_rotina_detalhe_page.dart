@@ -52,11 +52,22 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
       initialData: widget.rotinaData,
     );
 
-    if (widget.rotinaData == null) {
+    if (widget.rotinaId != null) {
+      // Rotina existente: busca dado fresco do Firestore sempre.
+      _recarregarDadosFrescos();
+    } else if (widget.rotinaData == null) {
+      // Nova rotina: abre modal de configuração inicial.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _exibirModalInfo(context);
       });
     }
+  }
+
+  Future<void> _recarregarDadosFrescos() async {
+    final service = widget.rotinaService ?? RotinaService();
+    final data = await service.buscarRotinaPorId(widget.rotinaId!);
+    if (!mounted || data == null) return;
+    _controller.recarregarDados(data);
   }
 
   @override
@@ -116,8 +127,9 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
               ? (exercicios, nome, note) async {
                   final idx = _controller.indexOfSessao(sessao);
                   if (idx < 0) return false;
-                  _controller.atualizarSessao(idx, nome, sessao.diaSemana, note);
-                  return _controller.salvarRotina();
+                  _controller.atualizarSessaoCompleta(idx, nome, sessao.diaSemana, note, exercicios);
+                  _controller.salvarRotinaBackground();
+                  return true;
                 }
               : null,
         ),
@@ -129,15 +141,20 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
     if (result is Map<String, dynamic>) {
       final latestIndex = _controller.indexOfSessao(sessao);
       if (latestIndex < 0) return;
-      _controller.atualizarSessao(
-        latestIndex,
-        result['nome'],
-        sessao.diaSemana,
-        result['sessaoNote'],
-      );
+      if (_controller.rotinaId == null) {
+        // Rotina nova: onSaveToFirebase é null, então aplicamos o resultado manualmente.
+        _controller.atualizarSessaoCompleta(
+          latestIndex,
+          result['nome'],
+          sessao.diaSemana,
+          result['sessaoNote'] ?? '',
+          sessao.exercicios,
+        );
+      }
+      // Rotina existente: onSaveToFirebase já chamou atualizarSessaoCompleta + salvarRotinaBackground.
     }
 
-    // For new rotinas (no rotinaId), P1 is still responsible for the full save.
+    // Rotinas novas ainda sem ID precisam do await para criar o documento.
     if (_controller.rotinaId == null &&
         !_controller.isSaving &&
         _controller.verificarAlteracoes()) {
@@ -262,32 +279,24 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
       return;
     }
 
-    final salvo = await _controller.salvarRotina();
-    if (!mounted) return;
-    if (salvo) {
-      setState(() => _canPopNow = true);
-      Navigator.of(context).pop();
-    } else {
-      final descartar = await _showDescartarDialog(erroDeRede: true);
+    final podesSalvar = _controller.nomeCtrl.text.trim().isNotEmpty &&
+        _controller.objCtrl.text.trim().isNotEmpty &&
+        _controller.treinos.isNotEmpty;
+
+    if (!podesSalvar) {
+      final descartar = await _showDescartarDialog(erroDeRede: false);
       if (!mounted) return;
       if (descartar) {
         setState(() => _canPopNow = true);
         Navigator.of(context).pop();
-      } else {
-        _scaffoldMessengerKey.currentState?.showSnackBar(
-          SnackBar(
-            content: const Text('Falha ao salvar. Verifique sua conexão.'),
-            backgroundColor: Colors.redAccent,
-            action: SnackBarAction(
-              label: 'TENTAR NOVAMENTE',
-              textColor: Colors.white,
-              onPressed: _executarSalvamentoManual,
-            ),
-            duration: const Duration(seconds: 6),
-          ),
-        );
       }
+      return;
     }
+
+    _controller.salvarRotinaBackground();
+    if (!mounted) return;
+    setState(() => _canPopNow = true);
+    Navigator.of(context).pop();
   }
 
   Future<void> _executarSalvamentoManual() async {
@@ -305,25 +314,10 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
       return;
     }
 
-    final salvo = await _controller.salvarRotina();
+    _controller.salvarRotinaBackground();
     if (!mounted) return;
-    if (salvo) {
-      setState(() => _canPopNow = true);
-      Navigator.of(context).pop();
-    } else {
-      _scaffoldMessengerKey.currentState?.showSnackBar(
-        SnackBar(
-          content: const Text('Falha ao salvar. Verifique sua conexão.'),
-          backgroundColor: Colors.redAccent,
-          action: SnackBarAction(
-            label: 'TENTAR NOVAMENTE',
-            textColor: Colors.white,
-            onPressed: _executarSalvamentoManual,
-          ),
-          duration: const Duration(seconds: 6),
-        ),
-      );
-    }
+    setState(() => _canPopNow = true);
+    Navigator.of(context).pop();
   }
 
   void _removerSessaoComUndo(SessaoTreinoModel sessao) {
@@ -456,7 +450,6 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
                     actions: [
                       AppBarTextButton(
                         label: 'Salvar',
-                        isLoading: _controller.isSaving,
                         onPressed: _executarSalvamentoManual,
                       ),
                     ],
@@ -477,7 +470,7 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
                       ),
                     ),
                   ),
-                  if (_controller.isDeleting || _controller.isSaving)
+                  if (_controller.isDeleting)
                     const SliverFillRemaining(
                       hasScrollBody: false,
                       child: Center(

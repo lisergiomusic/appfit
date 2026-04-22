@@ -28,15 +28,15 @@ class TreinoService {
       await _firestore.collection('logs_treino').add(logData);
 
       // Atualiza o contador na rotina
-      await _firestore.collection('rotinas').doc(rotinaId).update({
-        'sessoesConcluidas': FieldValue.increment(1),
-      });
+      await _firestore.collection('rotinas').doc(rotinaId).set(
+        {'sessoesConcluidas': FieldValue.increment(1)},
+        SetOptions(merge: true),
+      );
 
-      // CORREÇÃO: Atualiza a data do último treino no perfil do aluno
-      // Isso tira o aluno do status de "Risco" no dashboard do Personal
-      await _firestore.collection('usuarios').doc(alunoId).update({
-        'ultimoTreino': FieldValue.serverTimestamp(),
-      });
+      await _firestore.collection('usuarios').doc(alunoId).set(
+        {'ultimoTreino': FieldValue.serverTimestamp()},
+        SetOptions(merge: true),
+      );
     } catch (e) {
       rethrow;
     }

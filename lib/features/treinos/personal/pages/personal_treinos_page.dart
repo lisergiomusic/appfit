@@ -187,6 +187,19 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
                 );
               }
 
+              if (snapshot.hasError) {
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Text(
+                      'Erro ao carregar rotinas.\nVerifique sua conexão.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: AppColors.labelSecondary),
+                    ),
+                  ),
+                );
+              }
+
               final docs = snapshot.data?.docs ?? [];
               final filteredDocs = docs.where((doc) {
                 final data = doc.data() as Map<String, dynamic>;
@@ -458,7 +471,6 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => PersonalRotinaDetalhePage(
-                          rotinaData: rotina,
                           rotinaId: id,
                           rotinaService: _rotinaService,
                         ),
@@ -526,7 +538,7 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
                               context,
                               MaterialPageRoute(
                                 builder: (_) => PersonalRotinaDetalhePage(
-                                  rotinaData: rotina,
+                                  rotinaData: isSelecting ? rotina : null,
                                   rotinaId: isSelecting ? null : id,
                                   alunoId: isSelecting ? widget.alunoId : null,
                                   alunoNome: isSelecting

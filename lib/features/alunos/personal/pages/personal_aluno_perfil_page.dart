@@ -38,11 +38,15 @@ class PersonalAlunoPerfilPage extends StatefulWidget {
 
 class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
   late final AlunoService _alunoService;
+  late final Stream<AlunoPerfilData> _perfilStream;
+  late final Stream<QuerySnapshot> _logsSemanaStream;
 
   @override
   void initState() {
     super.initState();
     _alunoService = AlunoService();
+    _perfilStream = _alunoService.getAlunoPerfilCompletoStream(widget.alunoId);
+    _logsSemanaStream = _alunoService.getLogsDaSemanaStream(widget.alunoId);
   }
 
   Future<void> _abrirWhatsApp(BuildContext context, String? telefone) async {
@@ -87,17 +91,18 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
         bottom: const AppBarDivider(),
       ),
       body: StreamBuilder<AlunoPerfilData>(
-        stream: _alunoService.getAlunoPerfilCompletoStream(widget.alunoId),
+        stream: _perfilStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return _buildShimmerLoading();
           }
 
-          if (!snapshot.hasData) {
+          if (snapshot.hasError || !snapshot.hasData) {
             return const Center(
               child: Text(
-                "Erro ao carregar dados",
-                style: TextStyle(color: Colors.white),
+                "Erro ao carregar dados.\nVerifique sua conexão.",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.labelSecondary),
               ),
             );
           }
@@ -138,7 +143,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                 _buildActions(context, telefone),
                 const SizedBox(height: SpacingTokens.sectionGap),
                 StreamBuilder<QuerySnapshot>(
-                  stream: _alunoService.getLogsDaSemanaStream(widget.alunoId),
+                  stream: _logsSemanaStream,
                   builder: (context, logsSnapshot) {
                     List<DateTime>? diasTreinados;
                     if (logsSnapshot.hasData) {
@@ -425,10 +430,14 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                         ),
                       );
                     }
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    if (snapshot.hasError ||
+                        !snapshot.hasData ||
+                        snapshot.data!.docs.isEmpty) {
                       return Center(
                         child: Text(
-                          'Sua biblioteca está vazia.',
+                          snapshot.hasError
+                              ? 'Erro ao carregar biblioteca.'
+                              : 'Sua biblioteca está vazia.',
                           style: TextStyle(
                             color: AppColors.labelSecondary.withAlpha(100),
                           ),

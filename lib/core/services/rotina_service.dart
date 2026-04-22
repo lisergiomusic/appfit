@@ -89,14 +89,24 @@ class RotinaService {
       }
     }
 
-    await _db.collection('rotinas').doc(rotinaId).update(updateData);
+    await _db.collection('rotinas').doc(rotinaId).set(updateData, SetOptions(merge: true));
   }
 
   Future<void> renomearRotina(String rotinaId, String novoNome) async {
-    await _db.collection('rotinas').doc(rotinaId).update({'nome': novoNome});
+    await _db.collection('rotinas').doc(rotinaId).set({'nome': novoNome}, SetOptions(merge: true));
   }
 
   Future<void> excluirRotina(String rotinaId) async {
     await _db.collection('rotinas').doc(rotinaId).delete();
+  }
+
+  /// Busca o dado mais recente de uma rotina direto do servidor (ignora cache).
+  Future<Map<String, dynamic>?> buscarRotinaPorId(String rotinaId) async {
+    final doc = await _db
+        .collection('rotinas')
+        .doc(rotinaId)
+        .get(const GetOptions(source: Source.serverAndCache));
+    if (!doc.exists) return null;
+    return doc.data();
   }
 }

@@ -97,43 +97,55 @@ class _SessaoDetalhePersonalViewState
 
   Future<void> _concluirESalvar(BuildContext context) async {
     if (_isSaving) return;
+
     setState(() => _isSaving = true);
 
-    final controller = context.read<ConfigurarTreinoController>();
-    final finalExercicios = controller.getFinalExercicios();
-    final nome = controller.nomeTreinoController.text.trim();
-    final note = controller.sessaoNote;
+    try {
+      final controller = context.read<ConfigurarTreinoController>();
+      final finalExercicios = controller.getFinalExercicios();
+      final nome = controller.nomeTreinoController.text.trim();
+      final note = controller.sessaoNote;
 
-    widget.originalExercicios.clear();
-    widget.originalExercicios.addAll(finalExercicios);
+      widget.originalExercicios.clear();
+      widget.originalExercicios.addAll(finalExercicios);
 
-    if (widget.onSaveToFirebase != null) {
-      final salvo = await widget.onSaveToFirebase!(finalExercicios, nome, note);
-      if (!mounted) return;
-      if (!salvo) {
-        setState(() => _isSaving = false);
-        _scaffoldMessengerKey.currentState?.showSnackBar(
-          SnackBar(
-            content: const Text('Falha ao salvar. Verifique sua conexão.'),
-            backgroundColor: Colors.redAccent,
-            action: SnackBarAction(
-              label: 'TENTAR NOVAMENTE',
-              textColor: Colors.white,
-              onPressed: () => _concluirESalvar(context),
+      if (widget.onSaveToFirebase != null) {
+        final salvo = await widget.onSaveToFirebase!(finalExercicios, nome, note);
+
+        if (!mounted) return;
+
+        if (!salvo) {
+          setState(() => _isSaving = false);
+          _scaffoldMessengerKey.currentState?.showSnackBar(
+            SnackBar(
+              content: const Text('Falha ao salvar. Verifique sua conexão.'),
+              backgroundColor: Colors.redAccent,
+              action: SnackBarAction(
+                label: 'TENTAR NOVAMENTE',
+                textColor: Colors.white,
+                onPressed: () => _concluirESalvar(context),
+              ),
+              duration: const Duration(seconds: 6),
             ),
-            duration: const Duration(seconds: 6),
-          ),
-        );
-        return;
+          );
+          return;
+        }
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        _isSaving = false;
+        _canPopNow = true;
+      });
+      if (context.mounted) {
+        Navigator.of(context).pop({'nome': nome, 'sessaoNote': note});
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSaving = false);
       }
     }
-
-    // setState schedules a rebuild; PopScope.canPop only updates after that
-    // frame. Using addPostFrameCallback ensures canPop == true before pop().
-    setState(() => _canPopNow = true);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) Navigator.of(context).pop({'nome': nome, 'sessaoNote': note});
-    });
   }
 
   Future<void> _openLibrary(BuildContext context) async {
@@ -207,7 +219,7 @@ class _SessaoDetalhePersonalViewState
                     isLoading: _isSaving,
                     onPressed: _isSaving
                         ? null
-                        : () => Navigator.of(context).maybePop(),
+                        : () => _concluirESalvar(context),
                   ),
                 ],
                 background: Align(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/services/rotina_service.dart';
+import '../../shared/models/exercicio_model.dart';
 import '../../shared/models/rotina_model.dart';
 
 class RemovedSessaoResult {
@@ -78,6 +79,26 @@ class RotinaDetalheController extends ChangeNotifier {
       final rotinaModel = RotinaModel.fromFirestore(initialData!, rotinaId);
       treinos = rotinaModel.sessoes;
     }
+  }
+
+  /// Recarrega todos os campos com dados frescos do Firestore.
+  /// Usado ao abrir a página para garantir que o cache local não mostre dados antigos.
+  void recarregarDados(Map<String, dynamic> data) {
+    nomeCtrl.text = data['nome'] ?? '';
+    objCtrl.text = data['objetivo'] ?? '';
+    tipoVencimento = data['tipoVencimento'] ?? 'data';
+
+    if (tipoVencimento == 'sessoes') {
+      vencimentoSessoes = data['vencimentoSessoes'] ?? 20;
+    } else {
+      if (data['dataVencimento'] != null) {
+        vencimentoData = (data['dataVencimento'] as Timestamp).toDate();
+      }
+    }
+
+    final rotinaModel = RotinaModel.fromFirestore(data, rotinaId);
+    treinos = rotinaModel.sessoes;
+    notifyListeners();
   }
 
   bool verificarAlteracoes() {
@@ -180,6 +201,20 @@ class RotinaDetalheController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void atualizarSessaoCompleta(
+    int index,
+    String nome,
+    String? dia,
+    String notas,
+    List<ExercicioItem> exercicios,
+  ) {
+    treinos[index].nome = nome;
+    treinos[index].diaSemana = dia;
+    treinos[index].orientacoes = notas;
+    treinos[index].exercicios = exercicios;
+    notifyListeners();
+  }
+
   void removerSessao(int index) {
     treinos.removeAt(index);
     notifyListeners();
@@ -235,6 +270,23 @@ class RotinaDetalheController extends ChangeNotifier {
     }
   }
 
+  /// Valida os campos sem tocar em [isSaving].
+  bool podeSerSalva() {
+    if (rotinaId == null && nomeCtrl.text.trim().isEmpty && treinos.isEmpty) {
+      return true;
+    }
+    return nomeCtrl.text.trim().isNotEmpty &&
+        objCtrl.text.trim().isNotEmpty &&
+        treinos.isNotEmpty;
+  }
+
+  /// Fire-and-forget para rotinas existentes. Não altera [isSaving].
+  void salvarRotinaBackground() {
+    if (rotinaId == null) return;
+    _dispararSave();
+  }
+
+  /// Aguardado apenas na criação (rotinaId == null), onde o ID ainda não existe.
   Future<bool> salvarRotina() async {
     final String nomeParaSalvar = nomeCtrl.text.trim();
     final String objetivoParaSalvar = objCtrl.text.trim();
@@ -253,12 +305,38 @@ class RotinaDetalheController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      List<Map<String, dynamic>> sessoesJson = treinos
-          .map((t) => t.toFirestore())
-          .toList();
+      final sessoesJson = treinos.map((t) => t.toFirestore()).toList();
+      await _rotinaService.criarRotina(
+        alunoId: alunoId,
+        nome: nomeParaSalvar,
+        objetivo: objetivoParaSalvar,
+        sessoes: sessoesJson,
+        tipoVencimento: tipoVencimento,
+        sessoesAlvo: tipoVencimento == 'sessoes' ? vencimentoSessoes : null,
+        dataVencimento: tipoVencimento == 'data' ? vencimentoData : null,
+      );
+      return true;
+    } catch (e) {
+      debugPrint('Erro ao criar rotina: $e');
+      return false;
+    } finally {
+      isSaving = false;
+      notifyListeners();
+    }
+  }
 
-      if (rotinaId != null) {
-        await _rotinaService.atualizarRotina(
+  void _dispararSave() {
+    final nomeParaSalvar = nomeCtrl.text.trim();
+    final objetivoParaSalvar = objCtrl.text.trim();
+    if (rotinaId == null ||
+        nomeParaSalvar.isEmpty ||
+        objetivoParaSalvar.isEmpty ||
+        treinos.isEmpty) {
+      return;
+    }
+    final sessoesJson = treinos.map((t) => t.toFirestore()).toList();
+    _rotinaService
+        .atualizarRotina(
           rotinaId: rotinaId!,
           nome: nomeParaSalvar,
           objetivo: objetivoParaSalvar,
@@ -266,26 +344,8 @@ class RotinaDetalheController extends ChangeNotifier {
           tipoVencimento: tipoVencimento,
           sessoesAlvo: tipoVencimento == 'sessoes' ? vencimentoSessoes : null,
           dataVencimento: tipoVencimento == 'data' ? vencimentoData : null,
-        );
-      } else {
-        await _rotinaService.criarRotina(
-          alunoId: alunoId,
-          nome: nomeParaSalvar,
-          objetivo: objetivoParaSalvar,
-          sessoes: sessoesJson,
-          tipoVencimento: tipoVencimento,
-          sessoesAlvo: tipoVencimento == 'sessoes' ? vencimentoSessoes : null,
-          dataVencimento: tipoVencimento == 'data' ? vencimentoData : null,
-        );
-      }
-      return true;
-    } catch (e) {
-      debugPrint('Erro ao salvar rotina: $e');
-      return false;
-    } finally {
-      isSaving = false;
-      notifyListeners();
-    }
+        )
+        .catchError((e) => debugPrint('Erro ao salvar rotina: $e'));
   }
 
   @override

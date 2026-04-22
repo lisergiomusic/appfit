@@ -234,7 +234,7 @@ class ExerciseService {
       await _db
           .collection('exercicios_base')
           .doc(exercicio.id)
-          .update(exercicio.toFirestore());
+          .set(exercicio.toFirestore(), SetOptions(merge: true));
     } catch (e) {
       throw Exception('Erro ao atualizar exercício: $e');
     }

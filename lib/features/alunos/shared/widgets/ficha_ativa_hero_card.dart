@@ -8,7 +8,7 @@ import '../../../../core/services/aluno_service.dart';
 import '../../../treinos/personal/pages/personal_rotina_detalhe_page.dart';
 import '../../personal/pages/personal_gerenciar_planilhas_page.dart';
 
-class FichaAtivaHeroCard extends StatelessWidget {
+class FichaAtivaHeroCard extends StatefulWidget {
   final String alunoId;
   final String alunoNome;
   final String? photoUrl;
@@ -27,21 +27,37 @@ class FichaAtivaHeroCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final AlunoService alunoService = AlunoService();
-    final RotinaService rotinaService = RotinaService();
+  State<FichaAtivaHeroCard> createState() => _FichaAtivaHeroCardState();
+}
 
+class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
+  late final AlunoService _alunoService;
+  late final RotinaService _rotinaService;
+  late final Stream<QuerySnapshot> _stream;
+
+  @override
+  void initState() {
+    super.initState();
+    _alunoService = AlunoService();
+    _rotinaService = RotinaService();
+    _stream = _alunoService.getRotinaAtivaStream(widget.alunoId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: alunoService.getRotinaAtivaStream(alunoId),
+      stream: _stream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const SizedBox(
             height: 100,
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
           );
         }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+        if (snapshot.hasError ||
+            !snapshot.hasData ||
+            snapshot.data!.docs.isEmpty) {
           return _buildEmptyState();
         }
 
@@ -88,11 +104,11 @@ class FichaAtivaHeroCard extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => PersonalGerenciarPlanilhasPage(
-                          alunoId: alunoId,
-                          alunoNome: alunoNome,
-                          photoUrl: photoUrl,
-                          peso: peso,
-                          idade: idade,
+                          alunoId: widget.alunoId,
+                          alunoNome: widget.alunoNome,
+                          photoUrl: widget.photoUrl,
+                          peso: widget.peso,
+                          idade: widget.idade,
                         ),
                       ),
                     );
@@ -109,10 +125,9 @@ class FichaAtivaHeroCard extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => PersonalRotinaDetalhePage(
-                        rotinaData: rotina,
                         rotinaId: treinoDoc.id,
-                        alunoId: alunoId,
-                        alunoNome: alunoNome,
+                        alunoId: widget.alunoId,
+                        alunoNome: widget.alunoNome,
                       ),
                     ),
                   );
@@ -190,17 +205,15 @@ class FichaAtivaHeroCard extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => PersonalRotinaDetalhePage(
-                                  rotinaData: rotina,
                                   rotinaId: treinoDoc.id,
-                                  alunoId: alunoId,
-                                  alunoNome: alunoNome,
+                                  alunoId: widget.alunoId,
+                                  alunoNome: widget.alunoNome,
                                 ),
                               ),
                             );
                           } else if (value == 'remover') {
                             _confirmarRemoverRotina(
                               context,
-                              rotinaService,
                               treinoDoc.id,
                             );
                           }
@@ -248,7 +261,6 @@ class FichaAtivaHeroCard extends StatelessWidget {
 
   Future<void> _confirmarRemoverRotina(
     BuildContext context,
-    RotinaService rotinaService,
     String rotinaId,
   ) async {
     final confirmado = await showDialog<bool>(
@@ -291,12 +303,12 @@ class FichaAtivaHeroCard extends StatelessWidget {
     if (confirmado != true) return;
 
     try {
-      await rotinaService.excluirRotina(rotinaId);
+      await _rotinaService.excluirRotina(rotinaId);
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erro ao remover planilha: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao remover planilha: $e')),
+      );
     }
   }
 
@@ -315,7 +327,7 @@ class FichaAtivaHeroCard extends StatelessWidget {
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: onPrescreverTreino,
+              onTap: widget.onPrescreverTreino,
               borderRadius: BorderRadius.circular(24),
               child: Padding(
                 padding: const EdgeInsets.symmetric(

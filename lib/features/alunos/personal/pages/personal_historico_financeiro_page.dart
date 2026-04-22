@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/financeiro_service.dart';
 
-class PersonalHistoricoFinanceiroPage extends StatelessWidget {
+class PersonalHistoricoFinanceiroPage extends StatefulWidget {
   final String alunoId;
   final String alunoNome;
 
@@ -14,17 +14,28 @@ class PersonalHistoricoFinanceiroPage extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    // Mapa de seções da interface desta página:
-    // 1) Estrutura superior: AppBar, título e ações de navegação.
-    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
-    // 3) Ações finais: botões primários, confirmadores e feedbacks.
-    final FinanceiroService financeiroService = FinanceiroService();
-    final NumberFormat currencyFormat = NumberFormat.currency(
-      locale: 'pt_BR',
-      symbol: 'R\$',
-    );
+  State<PersonalHistoricoFinanceiroPage> createState() =>
+      _PersonalHistoricoFinanceiroPageState();
+}
 
+class _PersonalHistoricoFinanceiroPageState
+    extends State<PersonalHistoricoFinanceiroPage> {
+  late final FinanceiroService _financeiroService;
+  late final Stream<List<FaturaModel>> _stream;
+  final NumberFormat _currencyFormat = NumberFormat.currency(
+    locale: 'pt_BR',
+    symbol: 'R\$',
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _financeiroService = FinanceiroService();
+    _stream = _financeiroService.getFaturasStream(widget.alunoId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -42,11 +53,20 @@ class PersonalHistoricoFinanceiroPage extends StatelessWidget {
         title: const Text('Histórico de Pagamentos', style: AppTheme.pageTitle),
       ),
       body: StreamBuilder<List<FaturaModel>>(
-        stream: financeiroService.getFaturasStream(alunoId),
+        stream: _stream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(color: AppColors.primary),
+            );
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Erro ao carregar histórico.',
+                style: TextStyle(color: AppColors.labelSecondary),
+              ),
             );
           }
 
@@ -117,7 +137,7 @@ class PersonalHistoricoFinanceiroPage extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Pago em ${DateFormat('dd/MM/yyyy').format(fatura.dataPagamento ?? DateTime.now())}',
+                              'Pago em ${DateFormat('dd/MM/yyyy', 'pt_BR').format(fatura.dataPagamento ?? DateTime.now())}',
                               style: TextStyle(
                                 color: AppColors.labelSecondary.withValues(
                                   alpha: 0.7,
@@ -129,7 +149,7 @@ class PersonalHistoricoFinanceiroPage extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        currencyFormat.format(fatura.valor),
+                        _currencyFormat.format(fatura.valor),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,

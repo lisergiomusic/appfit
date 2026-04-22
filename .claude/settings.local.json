@@ -17,7 +17,8 @@
       "Bash(firebase --help)",
       "Bash(firebase apps:android:sha:list 1:589594654448:android:9e9546bd28a6c279a27435 --project appfit-43178)",
       "Bash(cat)",
-      "Bash(bash /tmp/check_dialogs.sh)"
+      "Bash(bash /tmp/check_dialogs.sh)",
+      "Bash(python -c \"import sys,json; data=json.load\\(sys.stdin\\); print\\(data[0]['text']\\)\")"
     ]
   }
 }

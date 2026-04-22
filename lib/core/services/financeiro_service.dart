@@ -63,10 +63,10 @@ class FinanceiroService {
   }
 
   Future<void> marcarComoPaga(String faturaId) async {
-    await _db.collection('faturas').doc(faturaId).update({
+    await _db.collection('faturas').doc(faturaId).set({
       'status': 'pago',
       'dataPagamento': FieldValue.serverTimestamp(),
-    });
+    }, SetOptions(merge: true));
   }
 
   Future<void> excluirFatura(String faturaId) async {

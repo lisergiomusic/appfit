@@ -89,7 +89,7 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
             );
           }
 
-          if (!snapshot.hasData) {
+          if (snapshot.hasError || !snapshot.hasData) {
             return const Center(
               child: Text(
                 'Erro ao carregar dados.',

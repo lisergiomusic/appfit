@@ -95,11 +95,16 @@ class _PersonalAtivarTemplatePageState
               child: CircularProgressIndicator(color: AppColors.primary),
             );
           }
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(
+          if (snapshot.hasError ||
+              !snapshot.hasData ||
+              !snapshot.data!.exists) {
+            return Center(
               child: Text(
-                'Rotina não encontrada.',
-                style: TextStyle(color: Colors.white),
+                snapshot.hasError
+                    ? 'Erro ao carregar rotina.\nVerifique sua conexão.'
+                    : 'Rotina não encontrada.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.labelSecondary),
               ),
             );
           }

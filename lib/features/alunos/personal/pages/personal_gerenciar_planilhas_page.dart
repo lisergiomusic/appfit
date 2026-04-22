@@ -185,6 +185,26 @@ class _PersonalGerenciarPlanilhasPageState
     return StreamBuilder<QuerySnapshot>(
       stream: _planilhasStream,
       builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Scaffold(
+            body: Center(
+              child: Text(
+                'Erro ao carregar planilhas.\nVerifique sua conexão.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.labelSecondary),
+              ),
+            ),
+          );
+        }
+
         final allDocs = snapshot.data?.docs ?? [];
         final planilhas = allDocs.toList()
           ..sort((a, b) {
@@ -569,7 +589,6 @@ class _PersonalGerenciarPlanilhasPageState
       context,
       MaterialPageRoute(
         builder: (context) => PersonalRotinaDetalhePage(
-          rotinaData: data,
           rotinaId: id,
           alunoId: widget.alunoId,
           alunoNome: widget.alunoNome,

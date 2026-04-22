@@ -352,6 +352,10 @@ class _AtividadeRecenteSection extends StatelessWidget {
           return _buildShimmer();
         }
 
+        if (snapshot.hasError) {
+          return _buildEmpty();
+        }
+
         final items = (snapshot.data ?? []).take(4).toList();
 
         if (items.isEmpty) {

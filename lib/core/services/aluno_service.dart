@@ -95,7 +95,7 @@ class AlunoService {
     if (genero != null) data['genero'] = genero;
     if (recadoPersonal != null) data['recadoPersonal'] = recadoPersonal;
 
-    await _firestore.collection('usuarios').doc(alunoId).update(data);
+    await _firestore.collection('usuarios').doc(alunoId).set(data, SetOptions(merge: true));
   }
 
   Future<DocumentSnapshot> getAluno(String alunoId) async {
@@ -325,9 +325,7 @@ class AlunoService {
         .collection('historico_peso')
         .add({'peso': peso, 'dataHora': agora});
 
-    await _firestore.collection('usuarios').doc(alunoId).update({
-      'pesoAtual': peso,
-    });
+    await _firestore.collection('usuarios').doc(alunoId).set({'pesoAtual': peso}, SetOptions(merge: true));
   }
 
   Future<void> atribuirTreinoAoAluno({
