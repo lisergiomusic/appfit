@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,9 +15,16 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  // Habilita logging detalhado para diagnosticar problemas de conexão na raiz
+  if (kDebugMode) {
+    FirebaseFirestore.setLoggingEnabled(true);
+  }
+
+  // CONFIGURAÇÃO DE ESTABILIZAÇÃO:
+  // 1. Desativamos persistência temporariamente para limpar filas travadas
+  // 2. Removemos links de índices manuais pois já foram criados no console
   FirebaseFirestore.instance.settings = const Settings(
-    persistenceEnabled: true,
-    cacheSizeBytes: 104857600, // 100 MB
+    persistenceEnabled: false, 
   );
 
   await initializeDateFormatting('pt_BR', null);

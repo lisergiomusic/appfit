@@ -38,8 +38,14 @@ class PersonalAlunoPerfilPage extends StatefulWidget {
 
 class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
   late final AlunoService _alunoService;
+
   late final Stream<AlunoPerfilData> _perfilStream;
   late final Stream<QuerySnapshot> _logsSemanaStream;
+
+  // Último dado recebido — exibido enquanto o stream reemite, evitando shimmer
+  // desnecessário quando o cache local já tem os dados.
+  AlunoPerfilData? _ultimoPerfil;
+  List<DateTime>? _ultimosDiasTreinados;
 
   @override
   void initState() {
@@ -93,21 +99,77 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
       body: StreamBuilder<AlunoPerfilData>(
         stream: _perfilStream,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          // Usa dado em cache se o stream está recomeçando — evita shimmer
+          // desnecessário quando voltamos de uma página filha.
+          final perfilAtual = snapshot.data ?? _ultimoPerfil;
+
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              perfilAtual == null) {
             return _buildShimmerLoading();
           }
 
-          if (snapshot.hasError || !snapshot.hasData) {
+          if (snapshot.hasError) {
+            final error = snapshot.error;
+            final stack = snapshot.stackTrace;
+            debugPrint('[PERFIL_ERROR] Error: $error\nStack: $stack');
+
+            // Se já temos um perfil (cache), não mostra erro de tela cheia,
+            // apenas loga. Isso evita que falhas em streams secundários
+            // quebrem a visualização principal.
+            if (perfilAtual == null) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.error_outline,
+                          color: AppColors.systemRed, size: 48),
+                      const SizedBox(height: 16),
+                      const Text(
+                        "Erro ao carregar perfil completo.",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "$error",
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: AppColors.labelSecondary),
+                      ),
+                      const SizedBox(height: 24),
+                      AppPrimaryButton(
+                        label: "Tentar Novamente",
+                        onPressed: () {
+                          setState(() {
+                            _perfilStream = _alunoService
+                                .getAlunoPerfilCompletoStream(widget.alunoId);
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+          }
+
+          if (perfilAtual == null) {
             return const Center(
               child: Text(
-                "Erro ao carregar dados.\nVerifique sua conexão.",
+                "Nenhum dado encontrado para este aluno.",
                 textAlign: TextAlign.center,
                 style: TextStyle(color: AppColors.labelSecondary),
               ),
             );
           }
 
-          final data = snapshot.data!;
+          // Atualiza o cache local sempre que chega dado novo.
+          if (snapshot.hasData) _ultimoPerfil = snapshot.data;
+
+          final data = perfilAtual;
           final alunoData = data.aluno;
           final String nomeFirestore =
               '${alunoData['nome'] ?? ''} ${alunoData['sobrenome'] ?? ''}'
@@ -145,16 +207,15 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                 StreamBuilder<QuerySnapshot>(
                   stream: _logsSemanaStream,
                   builder: (context, logsSnapshot) {
-                    List<DateTime>? diasTreinados;
                     if (logsSnapshot.hasData) {
-                      diasTreinados = logsSnapshot.data!.docs.map((doc) {
-                        final data = doc.data() as Map<String, dynamic>;
-                        return (data['dataHora'] as Timestamp).toDate();
+                      _ultimosDiasTreinados = logsSnapshot.data!.docs.map((doc) {
+                        final d = doc.data() as Map<String, dynamic>;
+                        return (d['dataHora'] as Timestamp).toDate();
                       }).toList();
                     }
                     return RitmoDaSemanaCard(
                       alunoNome: nomeExibicao,
-                      diasTreinados: diasTreinados,
+                      diasTreinados: _ultimosDiasTreinados,
                     );
                   },
                 ),

@@ -31,9 +31,11 @@ class RotinaDetalheController extends ChangeNotifier {
   // Debounce: evita disparar múltiplos saves em sequência rápida
   Timer? _debounceTimer;
 
-  Future<void>? _lastSaveFuture;
+  // Verdadeiro entre o momento em que um save foi disparado manualmente
+  // e o dispose do controller — impede que _handlePop dispare um segundo write.
+  bool _saveFlushed = false;
 
-  final Map<String, dynamic>? initialData;
+final Map<String, dynamic>? initialData;
 
   // Baseline para comparação de alterações — atualizado quando dados frescos chegam do Firestore.
   Map<String, dynamic>? _loadedData;
@@ -294,6 +296,56 @@ class RotinaDetalheController extends ChangeNotifier {
         treinos.isNotEmpty;
   }
 
+  /// Save bloqueante — aguarda o write completar e retorna true/false.
+  /// Usado pelo onSaveToFirebase da SessaoDetalhePage para garantir que
+  /// o spinner da sessão só desaparece quando o dado foi persistido.
+  Future<bool> salvarRotinaAgora() async {
+    if (rotinaId == null || isSaving) return false;
+    _debounceTimer?.cancel();
+    _debounceTimer = null;
+
+    final nomeParaSalvar = nomeCtrl.text.trim();
+    final objetivoParaSalvar = objCtrl.text.trim();
+    if (nomeParaSalvar.isEmpty || objetivoParaSalvar.isEmpty || treinos.isEmpty) {
+      return false;
+    }
+
+    isSaving = true;
+    notifyListeners();
+
+    final sessoesJson = treinos.map((t) => t.toFirestore()).toList();
+
+    _loadedData = {
+      ...?_loadedData,
+      'nome': nomeParaSalvar,
+      'objetivo': objetivoParaSalvar,
+      'sessoes': sessoesJson,
+      'tipoVencimento': tipoVencimento,
+      if (tipoVencimento == 'sessoes') 'vencimentoSessoes': vencimentoSessoes,
+      if (tipoVencimento == 'data') 'dataVencimento': Timestamp.fromDate(vencimentoData),
+    };
+
+    try {
+      await _rotinaService.atualizarRotina(
+        rotinaId: rotinaId!,
+        nome: nomeParaSalvar,
+        objetivo: objetivoParaSalvar,
+        sessoes: sessoesJson,
+        tipoVencimento: tipoVencimento,
+        sessoesAlvo: tipoVencimento == 'sessoes' ? vencimentoSessoes : null,
+        dataVencimento: tipoVencimento == 'data' ? vencimentoData : null,
+      );
+      _saveFlushed = true;
+      return true;
+    } catch (e) {
+      debugPrint('Erro ao salvar rotina: $e');
+      return false;
+    } finally {
+      isSaving = false;
+      notifyListeners();
+    }
+  }
+
   /// Fire-and-forget com debounce para rotinas existentes. Não altera [isSaving].
   /// Saves chamados dentro de 800ms são coalesced em um único write.
   void salvarRotinaBackground() {
@@ -350,6 +402,15 @@ class RotinaDetalheController extends ChangeNotifier {
         treinos.isEmpty) {
       return;
     }
+
+    // Evita write duplicado: se os dados em memória são idênticos ao baseline
+    // (já foram salvos pelo debounce anterior), não dispara outro write.
+    if (!verificarAlteracoes()) {
+      debugPrint('[CONTROLLER-SAVE] _dispararSave ignorado — sem alterações desde último save');
+      return;
+    }
+
+    debugPrint('[CONTROLLER-SAVE] _dispararSave chamado stack:\n${StackTrace.current}');
     final sessoesJson = treinos.map((t) => t.toFirestore()).toList();
 
     // Atualiza o baseline antes do save para que verificarAlteracoes()
@@ -365,7 +426,7 @@ class RotinaDetalheController extends ChangeNotifier {
         'dataVencimento': Timestamp.fromDate(vencimentoData),
     };
 
-    _lastSaveFuture = _rotinaService
+    unawaited(_rotinaService
         .atualizarRotina(
           rotinaId: rotinaId!,
           nome: nomeParaSalvar,
@@ -376,19 +437,20 @@ class RotinaDetalheController extends ChangeNotifier {
           dataVencimento: tipoVencimento == 'data' ? vencimentoData : null,
         )
         .catchError((e) {
-      debugPrint('Erro ao salvar rotina: $e');
-    });
+          debugPrint('Erro ao salvar rotina: $e');
+        }));
   }
 
+  /// Verdadeiro após o primeiro flush manual — impede double-write via _handlePop.
+  bool get saveFlushed => _saveFlushed;
+
   /// Força o save imediatamente, cancelando o debounce pendente.
-  /// Aguarda o write completar antes de retornar.
-  Future<void> flushPendingSave() async {
+  /// Não bloqueia — o write Firestore completa em background.
+  void flushPendingSave() {
     _debounceTimer?.cancel();
     _debounceTimer = null;
+    _saveFlushed = true;
     _dispararSave();
-    if (_lastSaveFuture != null) {
-      await _lastSaveFuture;
-    }
   }
 
   @override

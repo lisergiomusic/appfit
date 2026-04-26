@@ -123,8 +123,7 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
                   final idx = indexNoMomento;
                   if (idx >= _controller.treinos.length) return false;
                   _controller.atualizarSessaoCompleta(idx, nome, diaSemana, note, exercicios);
-                  _controller.salvarRotinaBackground();
-                  return true;
+                  return await _controller.salvarRotinaAgora();
                 }
               : null,
         ),
@@ -269,6 +268,13 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
     if (didPop) return;
     if (_controller.isSaving) return;
 
+    // Save já foi disparado manualmente (botão Salvar) — não dispara outro.
+    if (_controller.saveFlushed) {
+      setState(() => _canPopNow = true);
+      Navigator.of(context).pop();
+      return;
+    }
+
     if (!_controller.verificarAlteracoes()) {
       setState(() => _canPopNow = true);
       Navigator.of(context).pop();
@@ -289,13 +295,26 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
       return;
     }
 
-    await _controller.flushPendingSave();
+    if (_controller.rotinaId != null) {
+      await _controller.salvarRotinaAgora();
+    } else {
+      await _controller.salvarRotina();
+    }
     if (!mounted) return;
     setState(() => _canPopNow = true);
     Navigator.of(context).pop();
   }
 
   Future<void> _executarSalvamentoManual() async {
+    // Se não houve alteração desde o último save (ex: save da sessão já enviou tudo),
+    // apenas fecha a tela sem disparar um novo write pesado.
+    if (!_controller.verificarAlteracoes()) {
+      if (mounted) Navigator.pop(context);
+      return;
+    }
+
+    debugPrint(
+        '[SALVAR] isSaving=${_controller.isSaving} rotinaId=${_controller.rotinaId} nome="${_controller.nomeCtrl.text.trim()}" treinos=${_controller.treinos.length}');
     if (_controller.isSaving) return;
 
     if (_controller.nomeCtrl.text.trim().isEmpty ||
@@ -310,7 +329,36 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
       return;
     }
 
-    await _controller.flushPendingSave();
+    // Rotina existente: flush do debounce + aguarda write Firestore.
+    // Rotina nova (rotinaId == null): usa salvarRotina() que chama criarRotina.
+    if (_controller.rotinaId != null) {
+      debugPrint('[SALVAR] chamando salvarRotinaAgora...');
+      final salvo = await _controller.salvarRotinaAgora();
+      if (!salvo) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Falha ao salvar. Verifique sua conexão.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        return;
+      }
+      debugPrint('[SALVAR] salvarRotinaAgora concluído, fazendo pop');
+    } else {
+      final salvo = await _controller.salvarRotina();
+      if (!salvo) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Falha ao salvar. Verifique sua conexão.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        return;
+      }
+    }
+
     if (!mounted) return;
     setState(() => _canPopNow = true);
     Navigator.of(context).pop();

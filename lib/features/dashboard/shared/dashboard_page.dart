@@ -20,6 +20,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   int _indiceAtual = 0;
   final AuthService _authService = AuthService();
+
   late final List<Widget> _paginas;
 
   @override
@@ -45,8 +46,8 @@ class _DashboardPageState extends State<DashboardPage> {
               onNovoAlunoTap: _abrirCadastroAlunoPeloAtalhoHome,
               onCriarRotinaTap: _abrirCriacaoRotinaPeloAtalhoHome,
             ),
-            PersonalAlunosPage(openCadastroOnLoad: false),
-            PersonalTreinosPage(openCriarRotinaOnLoad: false),
+            const PersonalAlunosPage(openCadastroOnLoad: false),
+            const PersonalTreinosPage(openCriarRotinaOnLoad: false),
             _buildAjustes(),
           ];
   }
@@ -162,11 +163,7 @@ class _DashboardPageState extends State<DashboardPage> {
       body: IndexedStack(index: _indiceAtual, children: _paginas),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _indiceAtual,
-        onTap: (index) {
-          setState(() {
-            _indiceAtual = index;
-          });
-        },
+        onTap: (index) => setState(() => _indiceAtual = index),
         type: BottomNavigationBarType.fixed,
         backgroundColor: AppColors.surfaceDark,
         selectedItemColor: AppColors.primary,

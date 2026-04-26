@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../features/alunos/shared/models/aluno_perfil_data.dart';
 
@@ -193,52 +194,45 @@ class AlunoService {
     return _firestore.collection('usuarios').doc(alunoId).snapshots();
   }
 
+  /// Stream simplificada para evitar deadlock no gRPC.
+  /// Em vez de combinar múltiplos streams complexos que podem ficar órfãos,
+  /// observamos apenas o documento do aluno e buscamos o resto de forma pontual.
   Stream<AlunoPerfilData> getAlunoPerfilCompletoStream(String alunoId) {
-    final rotinaStream = _firestore
-        .collection('rotinas')
-        .where('alunoId', isEqualTo: alunoId)
-        .where('ativa', isEqualTo: true)
-        .limit(1)
-        .snapshots();
-
-    return getAlunoStream(alunoId).switchMap((alunoSnap) {
+    return _firestore
+        .collection('usuarios')
+        .doc(alunoId)
+        .snapshots()
+        .asyncMap((alunoSnap) async {
       final alunoMap = alunoSnap.data() as Map<String, dynamic>? ?? {};
       final personalId = alunoMap['personalId'] as String?;
 
-      final personalStream = personalId != null
-          ? _firestore
-              .collection('usuarios')
-              .doc(personalId)
-              .snapshots()
-              .cast<DocumentSnapshot?>()
-          : Stream<DocumentSnapshot?>.value(null);
+      // Busca rotina ativa de forma pontual (Future) em vez de manter um stream aberto
+      final rotinaSnap = await _firestore
+          .collection('rotinas')
+          .where('alunoId', isEqualTo: alunoId)
+          .where('ativa', isEqualTo: true)
+          .limit(1)
+          .get();
 
-      return Rx.combineLatest2<QuerySnapshot, DocumentSnapshot?,
-          AlunoPerfilData>(
-        rotinaStream,
-        personalStream,
-        (rotinaSnap, personalSnap) {
-          final rotinaMap = rotinaSnap.docs.isNotEmpty
-              ? rotinaSnap.docs.first.data() as Map<String, dynamic>?
-              : null;
-          final rotinaId =
-              rotinaSnap.docs.isNotEmpty ? rotinaSnap.docs.first.id : null;
-          final personalMap =
-              personalSnap?.data() as Map<String, dynamic>? ?? {};
-          final pNome = personalMap['nome']?.toString() ?? '';
-          final pSobrenome = personalMap['sobrenome']?.toString() ?? '';
-          final pNomeCompleto = '$pNome $pSobrenome'.trim();
+      Map<String, dynamic>? personalMap;
+      if (personalId != null) {
+        final pSnap = await _firestore.collection('usuarios').doc(personalId).get();
+        personalMap = pSnap.data();
+      }
 
-          return AlunoPerfilData(
-            aluno: alunoMap,
-            rotinaAtiva: rotinaMap,
-            rotinaId: rotinaId,
-            nomePersonal: pNomeCompleto.isNotEmpty ? pNomeCompleto : null,
-            especialidadePersonal: personalMap['especialidade']?.toString(),
-            photoUrlPersonal: personalMap['photoUrl']?.toString(),
-            telefonePersonal: personalMap['telefone']?.toString(),
-          );
-        },
+      final rotinaDoc = rotinaSnap.docs.isNotEmpty ? rotinaSnap.docs.first : null;
+      final pNome = personalMap?['nome']?.toString() ?? '';
+      final pSobrenome = personalMap?['sobrenome']?.toString() ?? '';
+      final pNomeCompleto = '$pNome $pSobrenome'.trim();
+
+      return AlunoPerfilData(
+        aluno: alunoMap,
+        rotinaAtiva: rotinaDoc?.data(),
+        rotinaId: rotinaDoc?.id,
+        nomePersonal: pNomeCompleto.isNotEmpty ? pNomeCompleto : null,
+        especialidadePersonal: personalMap?['especialidade']?.toString(),
+        photoUrlPersonal: personalMap?['photoUrl']?.toString(),
+        telefonePersonal: personalMap?['telefone']?.toString(),
       );
     });
   }

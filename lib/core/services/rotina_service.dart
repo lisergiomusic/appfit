@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 /// Serviço responsável por criação, atualização e ciclo de vida de rotinas.
 ///
@@ -103,10 +104,16 @@ class RotinaService {
     // de iniciar este. Ignora erros do anterior para não bloquear a fila.
     final previous = _writeQueue[rotinaId] ?? Future.value();
     final current = previous.catchError((_) {}).then((_) async {
-      await _db
-          .collection('rotinas')
-          .doc(rotinaId)
-          .set(updateData, SetOptions(merge: true));
+      try {
+        // O Firestore registra o write localmente (offline persistence)
+        // e sincroniza quando houver conexão.
+        await _db
+            .collection('rotinas')
+            .doc(rotinaId)
+            .set(updateData, SetOptions(merge: true));
+      } catch (e) {
+        rethrow;
+      }
     });
 
     _writeQueue[rotinaId] = current;

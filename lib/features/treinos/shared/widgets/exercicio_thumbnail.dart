@@ -52,9 +52,23 @@ class _ExercicioThumbnailState extends State<ExercicioThumbnail> {
     if (exercicio.mediaUrl != null && exercicio.mediaUrl!.isNotEmpty) {
       return Future.value(Cloudinary.thumbnail(exercicio.mediaUrl!));
     }
+    
+    // Se não tem mediaUrl mas tem imagemUrl (legado ou cache), usa ela como fallback imediato
+    if (exercicio.imagemUrl != null && exercicio.imagemUrl!.isNotEmpty) {
+      return Future.value(Cloudinary.thumbnail(exercicio.imagemUrl!));
+    }
+
     return _exerciseService
         .buscarExercicioPorNome(exercicio.nome)
-        .then((base) => base?.mediaUrl != null ? Cloudinary.thumbnail(base!.mediaUrl!) : null);
+        .then((base) {
+      if (base?.mediaUrl != null) {
+        final url = Cloudinary.thumbnail(base!.mediaUrl!);
+        // Atualiza o objeto em memória para evitar buscas futuras no mesmo ciclo de vida
+        exercicio.mediaUrl = base.mediaUrl;
+        return url;
+      }
+      return null;
+    });
   }
 
   @override

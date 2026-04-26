@@ -70,11 +70,15 @@ class ConfigurarTreinoController extends ChangeNotifier {
   }
 
   void _onNomeTreinoChanged() {
-    if (nomeTreinoController.text.trim() != initialNomeTreino) {
-      if (!_hasChanges) {
-        _hasChanges = true;
-        notifyListeners();
-      }
+    final text = nomeTreinoController.text.trim();
+    final hasChangedNow = text != initialNomeTreino;
+
+    if (hasChangedNow != _hasChanges) {
+      _hasChanges = hasChangedNow;
+      notifyListeners();
+    } else if (_hasChanges) {
+      // Notifica para atualizar o título na UI mesmo que _hasChanges já fosse true
+      notifyListeners();
     }
   }
 

@@ -106,9 +106,6 @@ class _SessaoDetalhePersonalViewState
       final nome = controller.nomeTreinoController.text.trim();
       final note = controller.sessaoNote;
 
-      widget.originalExercicios.clear();
-      widget.originalExercicios.addAll(finalExercicios);
-
       if (widget.onSaveToFirebase != null) {
         final salvo = await widget.onSaveToFirebase!(finalExercicios, nome, note);
 
@@ -132,6 +129,10 @@ class _SessaoDetalhePersonalViewState
         }
       }
 
+      // Atualiza a lista original apenas após o sucesso do salvamento
+      widget.originalExercicios.clear();
+      widget.originalExercicios.addAll(finalExercicios);
+
       if (!mounted) return;
 
       setState(() {
@@ -144,6 +145,12 @@ class _SessaoDetalhePersonalViewState
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
+        _scaffoldMessengerKey.currentState?.showSnackBar(
+          SnackBar(
+            content: Text('Erro ao salvar: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
       }
     }
   }
@@ -693,9 +700,22 @@ class _SessaoDetalhePersonalViewState
                     final finalExercicios = controller.getFinalExercicios();
                     final nome = controller.nomeTreinoController.text.trim();
                     final note = controller.sessaoNote;
-                    widget.originalExercicios.clear();
-                    widget.originalExercicios.addAll(finalExercicios);
-                    widget.onSaveToFirebase!(finalExercicios, nome, note);
+
+                    final salvo = await widget.onSaveToFirebase!(finalExercicios, nome, note);
+
+                    if (!mounted) return;
+
+                    if (salvo) {
+                      widget.originalExercicios.clear();
+                      widget.originalExercicios.addAll(finalExercicios);
+                    } else {
+                      _scaffoldMessengerKey.currentState?.showSnackBar(
+                        const SnackBar(
+                          content: Text('Falha ao auto-salvar alterações.'),
+                          backgroundColor: Colors.redAccent,
+                        ),
+                      );
+                    }
                   }
                 },
           child: Padding(
