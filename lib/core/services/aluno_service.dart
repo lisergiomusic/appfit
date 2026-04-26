@@ -194,45 +194,60 @@ class AlunoService {
     return _firestore.collection('usuarios').doc(alunoId).snapshots();
   }
 
-  /// Stream simplificada para evitar deadlock no gRPC.
-  /// Em vez de combinar múltiplos streams complexos que podem ficar órfãos,
-  /// observamos apenas o documento do aluno e buscamos o resto de forma pontual.
+  /// Stream reativa e otimizada para o perfil do aluno.
+  /// Agora que os índices estão criados, podemos usar a combinação de streams
+  /// para garantir que mudanças na rotina reflitam instantaneamente na UI.
   Stream<AlunoPerfilData> getAlunoPerfilCompletoStream(String alunoId) {
     return _firestore
         .collection('usuarios')
         .doc(alunoId)
         .snapshots()
-        .asyncMap((alunoSnap) async {
+        .switchMap((alunoSnap) {
       final alunoMap = alunoSnap.data() as Map<String, dynamic>? ?? {};
       final personalId = alunoMap['personalId'] as String?;
 
-      // Busca rotina ativa de forma pontual (Future) em vez de manter um stream aberto
-      final rotinaSnap = await _firestore
+      // Stream da Rotina Ativa
+      final rotinaStream = _firestore
           .collection('rotinas')
           .where('alunoId', isEqualTo: alunoId)
           .where('ativa', isEqualTo: true)
           .limit(1)
-          .get();
+          .snapshots();
 
-      Map<String, dynamic>? personalMap;
-      if (personalId != null) {
-        final pSnap = await _firestore.collection('usuarios').doc(personalId).get();
-        personalMap = pSnap.data();
-      }
+      // Stream do Personal (ou valor nulo se não houver)
+      final personalStream = personalId != null
+          ? _firestore
+              .collection('usuarios')
+              .doc(personalId)
+              .snapshots()
+              .map((doc) => doc as DocumentSnapshot?)
+              .startWith(null)
+          : Stream<DocumentSnapshot?>.value(null);
 
-      final rotinaDoc = rotinaSnap.docs.isNotEmpty ? rotinaSnap.docs.first : null;
-      final pNome = personalMap?['nome']?.toString() ?? '';
-      final pSobrenome = personalMap?['sobrenome']?.toString() ?? '';
-      final pNomeCompleto = '$pNome $pSobrenome'.trim();
+      return Rx.combineLatest2<QuerySnapshot, DocumentSnapshot?,
+          AlunoPerfilData>(
+        rotinaStream,
+        personalStream,
+        (rotinaSnap, personalSnap) {
+          final rotinaDoc =
+              rotinaSnap.docs.isNotEmpty ? rotinaSnap.docs.first : null;
+          final personalMap =
+              personalSnap?.data() as Map<String, dynamic>? ?? {};
+          
+          final pNome = personalMap['nome']?.toString() ?? '';
+          final pSobrenome = personalMap['sobrenome']?.toString() ?? '';
+          final pNomeCompleto = '$pNome $pSobrenome'.trim();
 
-      return AlunoPerfilData(
-        aluno: alunoMap,
-        rotinaAtiva: rotinaDoc?.data(),
-        rotinaId: rotinaDoc?.id,
-        nomePersonal: pNomeCompleto.isNotEmpty ? pNomeCompleto : null,
-        especialidadePersonal: personalMap?['especialidade']?.toString(),
-        photoUrlPersonal: personalMap?['photoUrl']?.toString(),
-        telefonePersonal: personalMap?['telefone']?.toString(),
+          return AlunoPerfilData(
+            aluno: alunoMap,
+            rotinaAtiva: rotinaDoc?.data(),
+            rotinaId: rotinaDoc?.id,
+            nomePersonal: pNomeCompleto.isNotEmpty ? pNomeCompleto : null,
+            especialidadePersonal: personalMap['especialidade']?.toString(),
+            photoUrlPersonal: personalMap['photoUrl']?.toString(),
+            telefonePersonal: personalMap['telefone']?.toString(),
+          );
+        },
       );
     });
   }
