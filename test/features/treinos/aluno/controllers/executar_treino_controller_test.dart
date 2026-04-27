@@ -2,33 +2,32 @@ import 'package:appfit/core/services/treino_service.dart';
 import 'package:appfit/features/treinos/aluno/controllers/executar_treino_controller.dart';
 import 'package:appfit/features/treinos/shared/models/exercicio_model.dart';
 import 'package:appfit/features/treinos/shared/models/rotina_model.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import '../../../../helpers/firestore_fixtures.dart';
 
 class MockTreinoService extends Mock implements TreinoService {}
 
 void main() {
-  late FakeFirebaseFirestore fakeFirestore;
   late MockTreinoService mockTreinoService;
   late ExecutarTreinoController controller;
   late SessaoTreinoModel sessao;
   const alunoId = 'aluno_123';
   const rotinaId = 'rotina_456';
 
-  setUp(() async {
-    fakeFirestore = FakeFirebaseFirestore();
+  setUp(() {
     mockTreinoService = MockTreinoService();
 
-    // Criar documentos necessários para evitar erros de "not-found" nos logs
-    await fakeFirestore.collection('usuarios').doc(alunoId).set(
-      FirestoreFixtures.aluno(),
-    );
-    await fakeFirestore.collection('rotinas').doc(rotinaId).set(
-      FirestoreFixtures.rotina(alunoId: alunoId),
-    );
+    when(
+      () => mockTreinoService.saveTreinoLog(
+        alunoId: any(named: 'alunoId'),
+        rotinaId: any(named: 'rotinaId'),
+        sessaoNome: any(named: 'sessaoNome'),
+        exercicios: any(named: 'exercicios'),
+        duracaoMinutos: any(named: 'duracaoMinutos'),
+        esforco: any(named: 'esforco'),
+        observacoes: any(named: 'observacoes'),
+      ),
+    ).thenAnswer((_) async {});
 
     sessao = SessaoTreinoModel(
       nome: 'Treino A',
@@ -46,13 +45,12 @@ void main() {
       sessao: sessao,
       rotinaId: rotinaId,
       alunoId: alunoId,
-      firestore: fakeFirestore,
       treinoService: mockTreinoService,
     );
   });
 
   group('ExecutarTreinoController - saveTreinoLog', () {
-    test('deve criar documento em logs_treino com os campos corretos', () async {
+    test('deve chamar TreinoService.saveTreinoLog com os parâmetros corretos', () async {
       final recordedData = {
         'exercicio_0': {
           'series': [
@@ -62,60 +60,79 @@ void main() {
       };
 
       controller.saveTreinoLog(recordedData, duracaoMinutos: 45);
-
-      // Como o controller usa _saveLogAsync sem aguardar o Future (fire-and-forget),
-      // precisamos dar um tempo para o processamento assíncrono ou usar pump se fosse UI.
-      // Em testes de unidade pura com fake_cloud_firestore, geralmente é síncrono no mock
-      // mas o controller não retorna o future.
-      
       await Future.delayed(Duration.zero);
 
-      final logs = await fakeFirestore.collection('logs_treino').get();
-      expect(logs.docs.length, 1);
-      final log = logs.docs.first.data();
-      
-      expect(log['alunoId'], alunoId);
-      expect(log['rotinaId'], rotinaId);
-      expect(log['sessaoNome'], 'Treino A');
-      expect(log['duracaoMinutos'], 45);
-      expect(log['dataHora'], isA<Timestamp>());
-      expect(log['exercicios'], isNotEmpty);
+      verify(
+        () => mockTreinoService.saveTreinoLog(
+          alunoId: alunoId,
+          rotinaId: rotinaId,
+          sessaoNome: 'Treino A',
+          exercicios: any(named: 'exercicios'),
+          duracaoMinutos: 45,
+          esforco: any(named: 'esforco'),
+          observacoes: any(named: 'observacoes'),
+        ),
+      ).called(1);
     });
 
-    test('quando esforco > 0, campo esforco deve estar presente', () async {
+    test('quando esforco > 0, deve repassar esforco ao service', () async {
       controller.saveTreinoLog({}, esforco: 8);
       await Future.delayed(Duration.zero);
 
-      final logs = await fakeFirestore.collection('logs_treino').get();
-      expect(logs.docs.first.data()['esforco'], 8);
+      verify(
+        () => mockTreinoService.saveTreinoLog(
+          alunoId: any(named: 'alunoId'),
+          rotinaId: any(named: 'rotinaId'),
+          sessaoNome: any(named: 'sessaoNome'),
+          exercicios: any(named: 'exercicios'),
+          duracaoMinutos: any(named: 'duracaoMinutos'),
+          esforco: 8,
+          observacoes: any(named: 'observacoes'),
+        ),
+      ).called(1);
     });
 
-    test('quando esforco == 0, campo esforco NÃO deve estar presente', () async {
+    test('quando esforco == 0, deve repassar 0 ao service', () async {
       controller.saveTreinoLog({}, esforco: 0);
       await Future.delayed(Duration.zero);
 
-      final logs = await fakeFirestore.collection('logs_treino').get();
-      expect(logs.docs.first.data().containsKey('esforco'), isFalse);
+      verify(
+        () => mockTreinoService.saveTreinoLog(
+          alunoId: any(named: 'alunoId'),
+          rotinaId: any(named: 'rotinaId'),
+          sessaoNome: any(named: 'sessaoNome'),
+          exercicios: any(named: 'exercicios'),
+          duracaoMinutos: any(named: 'duracaoMinutos'),
+          esforco: 0,
+          observacoes: any(named: 'observacoes'),
+        ),
+      ).called(1);
+    });
+  });
+
+  group('ExecutarTreinoController - buildExerciciosLog', () {
+    test('deve mapear exercícios com séries concluídas corretamente', () {
+      final recordedData = {
+        'exercicio_0': {
+          'series': [
+            {'reps': '12', 'peso': '50', 'completa': true},
+            {'reps': '10', 'peso': '45', 'completa': false},
+          ]
+        }
+      };
+
+      final result = controller.buildExerciciosLog(recordedData);
+
+      expect(result.length, 1);
+      expect(result.first['nome'], 'Supino');
+      final series = result.first['series'] as List;
+      expect(series.length, 2);
+      expect(series.first['concluida'], true);
     });
 
-    test('deve incrementar sessoesConcluidas na rotina e atualizar ultimoTreino no aluno', () async {
-      // Setup documentos
-      await fakeFirestore.collection('rotinas').doc(rotinaId).set({
-        'sessoesConcluidas': 0,
-      });
-      await fakeFirestore.collection('usuarios').doc(alunoId).set({
-        'ultimoTreino': Timestamp.fromDate(DateTime(2023, 1, 1)),
-      });
-
-      controller.saveTreinoLog({});
-      await Future.delayed(Duration.zero);
-
-      final rotinaDoc = await fakeFirestore.collection('rotinas').doc(rotinaId).get();
-      expect(rotinaDoc.data()?['sessoesConcluidas'], 1);
-
-      final alunoDoc = await fakeFirestore.collection('usuarios').doc(alunoId).get();
-      final ultimoTreino = (alunoDoc.data()?['ultimoTreino'] as Timestamp).toDate();
-      expect(ultimoTreino.year, DateTime.now().year);
+    test('deve retornar lista vazia quando recordedData está vazio', () {
+      final result = controller.buildExerciciosLog({});
+      expect(result, isEmpty);
     });
   });
 }

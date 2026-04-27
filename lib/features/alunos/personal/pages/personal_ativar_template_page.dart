@@ -1,6 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
@@ -84,11 +84,12 @@ class _PersonalAtivarTemplatePageState
         leading: const AppNavBackButton(),
         title: const Text('Prescrever Treino'),
       ),
-      body: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance
-            .collection('rotinas')
-            .doc(widget.templateId)
-            .get(),
+      body: FutureBuilder<dynamic>(
+        future: Supabase.instance.client
+            .from('rotinas')
+            .select()
+            .eq('id', widget.templateId)
+            .maybeSingle(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -97,7 +98,7 @@ class _PersonalAtivarTemplatePageState
           }
           if (snapshot.hasError ||
               !snapshot.hasData ||
-              !snapshot.data!.exists) {
+              snapshot.data == null) {
             return Center(
               child: Text(
                 snapshot.hasError
@@ -109,7 +110,7 @@ class _PersonalAtivarTemplatePageState
             );
           }
 
-          final template = snapshot.data!.data() as Map<String, dynamic>;
+          final template = snapshot.data as Map<String, dynamic>;
           final sessoes =
               (template['sessoes'] as List?)?.cast<Map<String, dynamic>>() ??
               [];

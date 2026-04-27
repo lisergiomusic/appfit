@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/services/auth_service.dart';
+import '../../core/services/supabase_auth_service.dart';
 import '../dashboard/shared/dashboard_page.dart';
 
 class PrimeiroAcessoPage extends StatefulWidget {
@@ -14,7 +14,7 @@ class _PrimeiroAcessoPageState extends State<PrimeiroAcessoPage> {
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
   final _confirmarSenhaController = TextEditingController();
-  final AuthService _authService = AuthService();
+  final SupabaseAuthService _authService = SupabaseAuthService();
 
   bool _obscureSenha = true;
   bool _obscureConfirmar = true;

@@ -1,7 +1,6 @@
 import 'package:appfit/core/widgets/app_bar_divider.dart';
 import 'package:appfit/core/widgets/app_nav_back_button.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/services/aluno_service.dart';
@@ -32,7 +31,7 @@ class PersonalGerenciarPlanilhasPage extends StatefulWidget {
 
 class _PersonalGerenciarPlanilhasPageState
     extends State<PersonalGerenciarPlanilhasPage> {
-  late final Stream<QuerySnapshot> _planilhasStream;
+  late final Stream<dynamic> _planilhasStream;
   final AlunoService _alunoService = AlunoService();
 
   @override
@@ -182,7 +181,7 @@ class _PersonalGerenciarPlanilhasPageState
     // 1) Estrutura superior: AppBar, título e ações de navegação.
     // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
     // 3) Ações finais: botões primários, confirmadores e feedbacks.
-    return StreamBuilder<QuerySnapshot>(
+    return StreamBuilder<dynamic>(
       stream: _planilhasStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -205,26 +204,25 @@ class _PersonalGerenciarPlanilhasPageState
           );
         }
 
-        final allDocs = snapshot.data?.docs ?? [];
-        final planilhas = allDocs.toList()
-          ..sort((a, b) {
-            final da =
-                (a.data() as Map<String, dynamic>)['dataCriacao'] as Timestamp?;
-            final db =
-                (b.data() as Map<String, dynamic>)['dataCriacao'] as Timestamp?;
-            if (da == null) return 1;
-            if (db == null) return -1;
-            return db.compareTo(da);
-          });
+        final List<Map<String, dynamic>> planilhas = (snapshot.data as List<Map<String, dynamic>>?) ?? [];
+        planilhas.sort((a, b) {
+          final daRaw = a['dataCriacao'];
+          final dbRaw = b['dataCriacao'];
+          final da = daRaw != null ? DateTime.tryParse(daRaw.toString()) : null;
+          final db = dbRaw != null ? DateTime.tryParse(dbRaw.toString()) : null;
+          if (da == null) return 1;
+          if (db == null) return -1;
+          return db.compareTo(da);
+        });
 
         final ativa = planilhas
             .where(
-              (doc) => (doc.data() as Map<String, dynamic>)['ativa'] == true,
+              (data) => data['ativa'] == true,
             )
             .toList();
         final historico = planilhas
             .where(
-              (doc) => (doc.data() as Map<String, dynamic>)['ativa'] != true,
+              (data) => data['ativa'] != true,
             )
             .toList();
 
@@ -257,10 +255,10 @@ class _PersonalGerenciarPlanilhasPageState
                 const SizedBox(height: 12),
                 if (ativa.isNotEmpty)
                   ...ativa.map(
-                    (d) => _buildPlanilhaItem(
+                    (data) => _buildPlanilhaItem(
                       context,
-                      d.data() as Map<String, dynamic>,
-                      d.id,
+                      data,
+                      data['id'].toString(),
                       isAtiva: true,
                     ),
                   )
@@ -273,10 +271,10 @@ class _PersonalGerenciarPlanilhasPageState
                 const SizedBox(height: 12),
                 if (historico.isNotEmpty)
                   ...historico.map(
-                    (d) => _buildPlanilhaItem(
+                    (data) => _buildPlanilhaItem(
                       context,
-                      d.data() as Map<String, dynamic>,
-                      d.id,
+                      data,
+                      data['id'].toString(),
                     ),
                   )
                 else
@@ -403,11 +401,12 @@ class _PersonalGerenciarPlanilhasPageState
         infoLabel = '$concluidas / $total treinos';
       } else {
         DateTime hoje = DateTime.now();
+        final criacaoRaw = data['dataCriacao'];
+        final vencRaw = data['dataVencimento'];
         DateTime criacao =
-            (data['dataCriacao'] as Timestamp?)?.toDate() ?? hoje;
+            criacaoRaw != null ? DateTime.tryParse(criacaoRaw.toString()) ?? hoje : hoje;
         DateTime venc =
-            (data['dataVencimento'] as Timestamp?)?.toDate() ??
-            hoje.add(const Duration(days: 30));
+            vencRaw != null ? DateTime.tryParse(vencRaw.toString()) ?? hoje.add(const Duration(days: 30)) : hoje.add(const Duration(days: 30));
         int totalDays = venc.difference(criacao).inDays;
         progress =
             (hoje.difference(criacao).inDays / (totalDays > 0 ? totalDays : 1))
@@ -415,12 +414,14 @@ class _PersonalGerenciarPlanilhasPageState
         infoLabel = 'Vence em ${DateFormat('dd/MM').format(venc)}';
       }
     } else if (isProgramada) {
+      final dataCRaw = data['dataCriacao'];
       DateTime dataC =
-          (data['dataCriacao'] as Timestamp?)?.toDate() ?? DateTime.now();
+          dataCRaw != null ? DateTime.tryParse(dataCRaw.toString()) ?? DateTime.now() : DateTime.now();
       infoLabel = 'Inicia ${DateFormat('dd/MM').format(dataC)}';
     } else {
+      final dataCRaw = data['dataCriacao'];
       DateTime dataC =
-          (data['dataCriacao'] as Timestamp?)?.toDate() ?? DateTime.now();
+          dataCRaw != null ? DateTime.tryParse(dataCRaw.toString()) ?? DateTime.now() : DateTime.now();
       infoLabel = DateFormat('dd MMM yyyy').format(dataC);
     }
 

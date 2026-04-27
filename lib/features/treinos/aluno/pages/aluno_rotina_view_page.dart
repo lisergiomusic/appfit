@@ -28,7 +28,7 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
   @override
   void initState() {
     super.initState();
-    _rotina = RotinaModel.fromFirestore(widget.rotinaData);
+    _rotina = RotinaModel.fromMap(widget.rotinaData);
   }
 
   @override
@@ -130,11 +130,13 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
       legenda = '$concluidas de $total ${total == 1 ? 'sessão' : 'sessões'}';
     } else {
       final hoje = DateTime.now();
-      final dataCriacao =
-          (widget.rotinaData['dataCriacao'] as dynamic)?.toDate() ?? hoje;
-      final dataVencimento =
-          (widget.rotinaData['dataVencimento'] as dynamic)?.toDate() ??
-          hoje.add(const Duration(days: 30));
+      final dataCriacao = widget.rotinaData['dataCriacao'] != null
+          ? DateTime.tryParse(widget.rotinaData['dataCriacao'].toString()) ?? hoje
+          : hoje;
+      final dataVencimento = widget.rotinaData['dataVencimento'] != null
+          ? DateTime.tryParse(widget.rotinaData['dataVencimento'].toString()) ??
+              hoje.add(const Duration(days: 30))
+          : hoje.add(const Duration(days: 30));
       int totalDias = dataVencimento.difference(dataCriacao).inDays;
       if (totalDias <= 0) totalDias = 1;
       final diasPassados = hoje.difference(dataCriacao).inDays;

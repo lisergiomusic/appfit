@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseAuthService {
@@ -75,7 +76,7 @@ class SupabaseAuthService {
           .maybeSingle();
       return data?['tipo_usuario'] as String?;
     } catch (e) {
-      print('Erro ao buscar tipo de usuário no Supabase: $e');
+      debugPrint('Erro ao buscar tipo de usuário no Supabase: $e');
       return null;
     }
   }
@@ -119,5 +120,45 @@ class SupabaseAuthService {
   /// Logout
   Future<void> signOut() async {
     await _supabase.auth.signOut();
+  }
+
+  /// Altera a senha do usuário logado
+  Future<void> alterarSenha({required String novaSenha}) async {
+    try {
+      await _supabase.auth.updateUser(
+        UserAttributes(password: novaSenha),
+      );
+    } catch (e) {
+      throw Exception('Erro ao alterar senha: $e');
+    }
+  }
+
+  /// Primeiro acesso de aluno pré-cadastrado pelo personal.
+  /// Cria a conta no Auth do Supabase e vincula ao perfil existente na tabela profiles.
+  Future<void> primeiroAcessoAluno({
+    required String email,
+    required String password,
+  }) async {
+    final existing = await _supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .eq('tipo_usuario', 'aluno')
+        .maybeSingle();
+
+    if (existing == null) {
+      throw Exception(
+        'Nenhum cadastro encontrado para este e-mail. Peça ao seu personal para te cadastrar.',
+      );
+    }
+
+    try {
+      await _supabase.auth.signUp(email: email, password: password);
+    } on AuthException catch (e) {
+      if (e.message.contains('already registered')) {
+        throw Exception('Este e-mail já possui uma conta. Use a tela de login.');
+      }
+      throw Exception(e.message);
+    }
   }
 }

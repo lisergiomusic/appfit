@@ -51,12 +51,11 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
 
   Future<void> _carregarDados() async {
     try {
-      final doc = await _service
+      final data = await _service
           .getAluno(widget.uid)
           .timeout(const Duration(seconds: 12));
-      if (!doc.exists) throw Exception('Dados não encontrados');
-
-      final data = doc.data() as Map<String, dynamic>;
+      
+      if (data.isEmpty) throw Exception('Dados não encontrados');
 
       _nomeAtual = data['nome'] ?? '';
       _sobrenomeAtual = data['sobrenome'] ?? '';

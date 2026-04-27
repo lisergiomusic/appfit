@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -59,12 +58,11 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
 
   Future<void> _carregarDados() async {
     try {
-      final doc = await _service
+      final data = await _service
           .getAluno(widget.uid)
           .timeout(const Duration(seconds: 12));
-      if (!doc.exists) throw Exception('Dados não encontrados');
-
-      final data = doc.data() as Map<String, dynamic>;
+      
+      if (data.isEmpty) throw Exception('Dados não encontrados');
 
       _nomeOriginal = data['nome'] ?? '';
       _sobrenomeOriginal = data['sobrenome'] ?? '';
@@ -76,7 +74,7 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
       _telefoneController.text = _telefoneOriginal;
 
       if (data['dataNascimento'] != null) {
-        _dataNascimentoOriginal = (data['dataNascimento'] as Timestamp).toDate();
+        _dataNascimentoOriginal = DateTime.tryParse(data['dataNascimento'].toString());
         _dataNascimento = _dataNascimentoOriginal;
       }
       if (data['genero'] != null && _generos.contains(data['genero'])) {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/widgets/app_section_link_button.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -65,11 +64,12 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
           '$concluidas de $totalSessoes ${totalSessoes == 1 ? 'sessão' : 'sessões'}';
     } else {
       DateTime hoje = DateTime.now();
-      DateTime dataCriacao =
-          (rotina['dataCriacao'] as Timestamp?)?.toDate() ?? hoje;
-      DateTime dataVencimento =
-          (rotina['dataVencimento'] as Timestamp?)?.toDate() ??
-          hoje.add(const Duration(days: 30));
+      final dataCriacaoRaw = rotina['dataCriacao'];
+      final dataVencimentoRaw = rotina['dataVencimento'];
+      
+      DateTime dataCriacao = dataCriacaoRaw != null ? DateTime.tryParse(dataCriacaoRaw.toString()) ?? hoje : hoje;
+      DateTime dataVencimento = dataVencimentoRaw != null ? DateTime.tryParse(dataVencimentoRaw.toString()) ?? hoje.add(const Duration(days: 30)) : hoje.add(const Duration(days: 30));
+
       int totalDias = dataVencimento.difference(dataCriacao).inDays;
       if (totalDias <= 0) totalDias = 1;
       int diasPassados = hoje.difference(dataCriacao).inDays;

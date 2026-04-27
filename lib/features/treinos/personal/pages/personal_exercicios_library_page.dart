@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/exercise_service.dart';
@@ -33,7 +32,7 @@ class _PersonalExerciciosLibraryPageState
   bool _isLoading = false;
   bool _isAdmin = false;
   bool _hasMore = true;
-  DocumentSnapshot? _lastDoc;
+  dynamic _lastDoc;
 
   final List<String> _categorias = [
     'Tudo',
@@ -132,7 +131,7 @@ class _PersonalExerciciosLibraryPageState
             onPressed: () async {
               try {
                 final List<dynamic> decoded = jsonDecode(controller.text);
-                final exercicios = decoded.map((item) => ExercicioItem.fromFirestore(item)).toList();
+                final exercicios = decoded.map((item) => ExercicioItem.fromSupabase(item)).toList();
                 
                 await _exerciseService.cadastrarExerciciosEmMassa(
                   exercicios,

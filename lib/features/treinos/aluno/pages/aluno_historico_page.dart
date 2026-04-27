@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -18,7 +17,7 @@ class AlunoHistoricoPage extends StatefulWidget {
 
 class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
   final TreinoService _service = TreinoService();
-  late final Stream<QuerySnapshot> _pesoStream;
+  late final Stream<dynamic> _pesoStream;
 
   // Cache por mês: "yyyy-MM" → lista de logs
   final Map<String, List<Map<String, dynamic>>> _logsPorMes = {};
@@ -85,10 +84,10 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
     final result = <DateTime, List<Map<String, dynamic>>>{};
     for (final logs in _logsPorMes.values) {
       for (final log in logs) {
-        final ts = log['dataHora'] as Timestamp?;
-        final dt = ts?.toDate();
-        if (dt == null) continue;
-        final dia = DateTime(dt.year, dt.month, dt.day);
+        final tsRaw = log['dataHora'];
+        final ts = tsRaw != null ? DateTime.tryParse(tsRaw.toString()) : null;
+        if (ts == null) continue;
+        final dia = DateTime(ts.year, ts.month, ts.day);
         result.putIfAbsent(dia, () => []).add(log);
       }
     }
@@ -181,7 +180,7 @@ class _HistoricoContent extends StatelessWidget {
   final Set<String> mesesCarregando;
   final void Function(DateTime mes) onMesChanged;
   final String uid;
-  final Stream<QuerySnapshot> pesoStream;
+  final Stream<dynamic> pesoStream;
 
   const _HistoricoContent({
     required this.logsPorDia,
@@ -237,7 +236,7 @@ class _HistoricoContent extends StatelessWidget {
               onMesChanged: onMesChanged,
             ),
             const SizedBox(height: SpacingTokens.xxl),
-            StreamBuilder<QuerySnapshot>(
+            StreamBuilder<dynamic>(
               stream: pesoStream,
               builder: (context, historicoSnap) {
                 if (historicoSnap.hasError) {
@@ -264,10 +263,8 @@ class _HistoricoContent extends StatelessWidget {
                   );
                 }
 
-                final historico = historicoSnap.hasData
-                    ? historicoSnap.data!.docs
-                        .map((doc) => doc.data() as Map<String, dynamic>)
-                        .toList()
+                final List<Map<String, dynamic>>? historico = historicoSnap.hasData
+                    ? List<Map<String, dynamic>>.from(historicoSnap.data!)
                     : null;
                 final double? pesoAtual =
                     historico != null && historico.isNotEmpty
@@ -671,8 +668,8 @@ class _DiaTreinosSheet extends StatelessWidget {
           ...List.generate(logs.length, (i) {
             final log = logs[i];
             final sessaoNome = log['sessaoNome'] as String? ?? '—';
-            final ts = log['dataHora'] as Timestamp?;
-            final dt = ts?.toDate();
+            final tsRaw = log['dataHora'];
+            final dt = tsRaw != null ? DateTime.tryParse(tsRaw.toString()) : null;
             final horaFormatada =
                 dt != null ? DateFormat('HH:mm').format(dt) : '';
             final letra =
@@ -781,8 +778,9 @@ class _TreinoDetalheSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sessaoNome = log['sessaoNome'] as String? ?? '—';
-    final ts = log['dataHora'] as Timestamp?;
-    final dt = ts?.toDate();
+    final tsRaw = log['dataHora'];
+    final ts = tsRaw != null ? DateTime.tryParse(tsRaw.toString()) : null;
+    final dt = ts;
     final exercicios = log['exercicios'] as List? ?? [];
 
     final dataFormatada = dt != null

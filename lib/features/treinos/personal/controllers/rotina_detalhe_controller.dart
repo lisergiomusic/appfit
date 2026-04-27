@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/services/rotina_service.dart';
 import '../../shared/models/exercicio_model.dart';
@@ -82,13 +81,13 @@ final Map<String, dynamic>? initialData;
       if (tipoVencimento == 'sessoes') {
         vencimentoSessoes = initialData!['vencimentoSessoes'] ?? 20;
       } else {
-        if (initialData!['dataVencimento'] != null) {
-          vencimentoData = (initialData!['dataVencimento'] as Timestamp)
-              .toDate();
+        final dataVencRaw = initialData!['dataVencimento'];
+        if (dataVencRaw != null) {
+          vencimentoData = DateTime.tryParse(dataVencRaw.toString()) ?? vencimentoData;
         }
       }
 
-      final rotinaModel = RotinaModel.fromFirestore(initialData!, rotinaId);
+      final rotinaModel = RotinaModel.fromMap(initialData!, rotinaId);
       treinos = rotinaModel.sessoes;
     }
   }
@@ -104,12 +103,13 @@ final Map<String, dynamic>? initialData;
     if (tipoVencimento == 'sessoes') {
       vencimentoSessoes = data['vencimentoSessoes'] ?? 20;
     } else {
-      if (data['dataVencimento'] != null) {
-        vencimentoData = (data['dataVencimento'] as Timestamp).toDate();
+      final dataVencRaw = data['dataVencimento'];
+      if (dataVencRaw != null) {
+        vencimentoData = DateTime.tryParse(dataVencRaw.toString()) ?? vencimentoData;
       }
     }
 
-    final rotinaModel = RotinaModel.fromFirestore(data, rotinaId);
+    final rotinaModel = RotinaModel.fromMap(data, rotinaId);
     treinos = rotinaModel.sessoes;
     notifyListeners();
   }
@@ -132,7 +132,8 @@ final Map<String, dynamic>? initialData;
     if (tipoVencimento == 'sessoes') {
       if (vencimentoSessoes != (data['vencimentoSessoes'] ?? 20)) return true;
     } else {
-      final oldDate = (data['dataVencimento'] as Timestamp?)?.toDate();
+      final oldDateRaw = data['dataVencimento'];
+      final oldDate = oldDateRaw != null ? DateTime.tryParse(oldDateRaw.toString()) : null;
       if (oldDate == null ||
           vencimentoData.day != oldDate.day ||
           vencimentoData.month != oldDate.month ||
@@ -313,7 +314,7 @@ final Map<String, dynamic>? initialData;
     isSaving = true;
     notifyListeners();
 
-    final sessoesJson = treinos.map((t) => t.toFirestore()).toList();
+    final sessoesJson = treinos.map((t) => t.toMap()).toList();
 
     _loadedData = {
       ...?_loadedData,
@@ -322,7 +323,7 @@ final Map<String, dynamic>? initialData;
       'sessoes': sessoesJson,
       'tipoVencimento': tipoVencimento,
       if (tipoVencimento == 'sessoes') 'vencimentoSessoes': vencimentoSessoes,
-      if (tipoVencimento == 'data') 'dataVencimento': Timestamp.fromDate(vencimentoData),
+      if (tipoVencimento == 'data') 'dataVencimento': vencimentoData.toIso8601String(),
     };
 
     try {
@@ -373,7 +374,7 @@ final Map<String, dynamic>? initialData;
     notifyListeners();
 
     try {
-      final sessoesJson = treinos.map((t) => t.toFirestore()).toList();
+      final sessoesJson = treinos.map((t) => t.toMap()).toList();
       await _rotinaService.criarRotina(
         alunoId: alunoId,
         nome: nomeParaSalvar,
@@ -411,7 +412,7 @@ final Map<String, dynamic>? initialData;
     }
 
     debugPrint('[CONTROLLER-SAVE] _dispararSave chamado stack:\n${StackTrace.current}');
-    final sessoesJson = treinos.map((t) => t.toFirestore()).toList();
+    final sessoesJson = treinos.map((t) => t.toMap()).toList();
 
     // Atualiza o baseline antes do save para que verificarAlteracoes()
     // não trate esses dados como "não salvos" em verificações futuras.
@@ -423,7 +424,7 @@ final Map<String, dynamic>? initialData;
       'tipoVencimento': tipoVencimento,
       if (tipoVencimento == 'sessoes') 'vencimentoSessoes': vencimentoSessoes,
       if (tipoVencimento == 'data')
-        'dataVencimento': Timestamp.fromDate(vencimentoData),
+        'dataVencimento': vencimentoData.toIso8601String(),
     };
 
     unawaited(_rotinaService

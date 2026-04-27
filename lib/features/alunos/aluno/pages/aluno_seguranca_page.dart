@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/supabase_auth_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 
@@ -11,7 +11,7 @@ class AlunoSegurancaPage extends StatefulWidget {
 }
 
 class _AlunoSegurancaPageState extends State<AlunoSegurancaPage> {
-  final String? _email = AuthService().currentUser?.email;
+  final String? _email = SupabaseAuthService().currentUser?.email;
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +46,6 @@ class _AlunoSegurancaPageState extends State<AlunoSegurancaPage> {
                 onTap: () => _abrirAlterarSenha(context),
               ),
               // TODO: reativar "Alterar e-mail" quando os usuários forem reais.
-              // firebase_auth 6.x só oferece verifyBeforeUpdateEmail (envia link
-              // de confirmação), o que não funciona com e-mails falsos de teste.
             ]),
           ],
         ),
@@ -203,8 +201,7 @@ class _AlterarSenhaSheetState extends State<_AlterarSenhaSheet> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
     try {
-      await AuthService().alterarSenha(
-        senhaAtual: _senhaAtualController.text,
+      await SupabaseAuthService().alterarSenha(
         novaSenha: _novaSenhaController.text,
       );
       if (mounted) {

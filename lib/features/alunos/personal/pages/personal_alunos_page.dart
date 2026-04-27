@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/widgets/app_swipe_to_delete.dart';
@@ -26,11 +25,11 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
   String _searchQuery = "";
   String _statusFilter = "todos";
 
-  List<DocumentSnapshot> _alunosDocs = [];
+  List<dynamic> _alunosDocs = [];
   bool _isLoading = true;
   bool _isLoadingMore = false;
   bool _hasMore = true;
-  DocumentSnapshot? _lastDocument;
+  dynamic _lastDocument;
   static const int _limit = 20;
 
   int _totalCount = 0;
@@ -294,8 +293,8 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
                           : const SizedBox.shrink();
                     }
                     final doc = _alunosDocs[index];
-                    final aluno = doc.data() as Map<String, dynamic>;
-                    return _buildDismissibleCard(doc.id, aluno);
+                    final aluno = doc as Map<String, dynamic>;
+                    return _buildDismissibleCard(aluno['id'], aluno);
                   }, childCount: _alunosDocs.length + 1),
                 ),
               ),
@@ -525,8 +524,8 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
 
     bool emRisco = false;
     if (ultimoTreino != null && isAtivo) {
-      final DateTime lastWorkout = (ultimoTreino as Timestamp).toDate();
-      if (DateTime.now().difference(lastWorkout).inDays >= 7) {
+      final DateTime? lastWorkout = DateTime.tryParse(ultimoTreino.toString());
+      if (lastWorkout != null && DateTime.now().difference(lastWorkout).inDays >= 7) {
         emRisco = true;
       }
     }

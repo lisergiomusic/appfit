@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/aluno_service.dart';
@@ -24,7 +23,7 @@ class _PersonalAtividadeRecentePageState
   final _items = <AtividadeRecenteItem>[];
   final _scrollController = ScrollController();
 
-  DocumentSnapshot? _lastDoc;
+  dynamic _lastDoc;
   bool _isLoading = false;
   bool _hasMore = true;
 

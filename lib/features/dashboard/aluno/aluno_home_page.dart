@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/aluno_service.dart';
@@ -23,8 +22,8 @@ class AlunoHomePage extends StatefulWidget {
 class _AlunoHomePageState extends State<AlunoHomePage> {
   late final AlunoService _service;
   late final Stream<AlunoPerfilData> _perfilStream;
-  late final Stream<QuerySnapshot> _logsSemanaStream;
-  late final Stream<QuerySnapshot> _ultimoLogStream;
+  late final Stream<dynamic> _logsSemanaStream;
+  late final Stream<dynamic> _ultimoLogStream;
 
   @override
   void initState() {
@@ -119,18 +118,19 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
                   const SizedBox(height: SpacingTokens.screenTopPadding),
                   _buildHeader(nome, photoUrl, nomePersonal),
                   const SizedBox(height: SpacingTokens.xxl),
-                  StreamBuilder<QuerySnapshot>(
+                  StreamBuilder<dynamic>(
                     stream: _logsSemanaStream,
                     builder: (context, logsSnap) {
                       List<DateTime>? diasTreinados;
 
                       if (logsSnap.connectionState != ConnectionState.waiting &&
                           logsSnap.hasData) {
-                        diasTreinados = logsSnap.data!.docs
-                            .map((doc) {
-                              final data = doc.data() as Map<String, dynamic>;
-                              final ts = data['dataHora'] as Timestamp?;
-                              return ts?.toDate();
+                        final dataList = logsSnap.data as List<Map<String, dynamic>>;
+                        diasTreinados = dataList
+                            .map((data) {
+                              final ts = data['dataHora'];
+                              if (ts == null) return null;
+                              return DateTime.tryParse(ts.toString());
                             })
                             .whereType<DateTime>()
                             .toList();
@@ -145,12 +145,12 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
                   ),
                   const SizedBox(height: SpacingTokens.xxl),
                   if (rotina != null) ...[
-                    StreamBuilder<QuerySnapshot>(
+                    StreamBuilder<dynamic>(
                       stream: _ultimoLogStream,
                       builder: (context, ultimoLogSnap) {
                         final sessoes = (rotina['sessoes'] as List? ?? [])
                             .map(
-                              (s) => SessaoTreinoModel.fromFirestore(
+                              (s) => SessaoTreinoModel.fromMap(
                                 s as Map<String, dynamic>,
                               ),
                             )
@@ -161,9 +161,10 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
                         SessaoTreinoModel proxSessao = sessoes.first;
 
                         if (ultimoLogSnap.hasData &&
-                            ultimoLogSnap.data!.docs.isNotEmpty) {
+                            ultimoLogSnap.data is List &&
+                            (ultimoLogSnap.data as List).isNotEmpty) {
                           final lastLog =
-                              ultimoLogSnap.data!.docs.first.data()
+                              (ultimoLogSnap.data as List).first
                                   as Map<String, dynamic>;
                           final ultimoNome =
                               lastLog['sessaoNome'] as String? ?? '';
@@ -251,11 +252,15 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
           '$concluidas de $totalSessoes ${totalSessoes == 1 ? 'sessão' : 'sessões'}';
     } else {
       final hoje = DateTime.now();
-      final dataCriacao =
-          (rotina['dataCriacao'] as Timestamp?)?.toDate() ?? hoje;
-      final dataVencimento =
-          (rotina['dataVencimento'] as Timestamp?)?.toDate() ??
-          hoje.add(const Duration(days: 30));
+      final dataCriacaoStr = rotina['dataCriacao'];
+      final dataVencimentoStr = rotina['dataVencimento'];
+
+      final dataCriacao = dataCriacaoStr != null 
+          ? DateTime.tryParse(dataCriacaoStr.toString()) ?? hoje 
+          : hoje;
+      final dataVencimento = dataVencimentoStr != null 
+          ? DateTime.tryParse(dataVencimentoStr.toString()) ?? hoje.add(const Duration(days: 30))
+          : hoje.add(const Duration(days: 30));
       int totalDias = dataVencimento.difference(dataCriacao).inDays;
       if (totalDias <= 0) totalDias = 1;
       final diasPassados = hoje.difference(dataCriacao).inDays;

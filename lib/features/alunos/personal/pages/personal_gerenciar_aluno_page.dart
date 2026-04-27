@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/widgets/app_bar_divider.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -38,13 +37,12 @@ class _PersonalGerenciarAlunoPageState
 
   Future<void> _buscarDadosAluno() async {
     try {
-      final doc = await _alunoService.getAluno(widget.alunoId);
-      if (doc.exists && mounted) {
-        final data = doc.data() as Map<String, dynamic>;
+      final data = await _alunoService.getAluno(widget.alunoId);
+      if (data.isNotEmpty && mounted) {
         setState(() {
           _fotoUrl = data['photoUrl'] ?? data['fotoUrl'];
           if (data['dataCriacao'] != null) {
-            _dataCriacao = (data['dataCriacao'] as Timestamp).toDate();
+            _dataCriacao = DateTime.tryParse(data['dataCriacao'].toString());
           }
         });
       }

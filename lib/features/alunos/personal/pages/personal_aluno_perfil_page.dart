@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -40,7 +39,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
   late final AlunoService _alunoService;
 
   late final Stream<AlunoPerfilData> _perfilStream;
-  late final Stream<QuerySnapshot> _logsSemanaStream;
+  late final Stream<dynamic> _logsSemanaStream;
 
   // Último dado recebido — exibido enquanto o stream reemite, evitando shimmer
   // desnecessário quando o cache local já tem os dados.
@@ -180,7 +179,8 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
 
           final photoUrl = alunoData['photoUrl'] as String?;
           final telefone = alunoData['telefone'] as String?;
-          final dataNascimento = alunoData['dataNascimento'] as Timestamp?;
+          final dataNascimentoRaw = alunoData['dataNascimento'];
+          final DateTime? dataNascimento = dataNascimentoRaw != null ? DateTime.tryParse(dataNascimentoRaw.toString()) : null;
           final peso = alunoData['pesoAtual']?.toString() ?? '--';
           final idade = dataNascimento != null
               ? _calcularIdade(dataNascimento).toString()
@@ -204,13 +204,14 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                 const SizedBox(height: 16),
                 _buildActions(context, telefone),
                 const SizedBox(height: SpacingTokens.sectionGap),
-                StreamBuilder<QuerySnapshot>(
+                StreamBuilder<dynamic>(
                   stream: _logsSemanaStream,
                   builder: (context, logsSnapshot) {
-                    if (logsSnapshot.hasData) {
-                      _ultimosDiasTreinados = logsSnapshot.data!.docs.map((doc) {
-                        final d = doc.data() as Map<String, dynamic>;
-                        return (d['dataHora'] as Timestamp).toDate();
+                    if (logsSnapshot.hasData && logsSnapshot.data is List) {
+                      final list = logsSnapshot.data as List;
+                      _ultimosDiasTreinados = list.map((d) {
+                        final tsRaw = d['dataHora'];
+                        return DateTime.tryParse(tsRaw.toString()) ?? DateTime.now();
                       }).toList();
                     }
                     return RitmoDaSemanaCard(
@@ -485,7 +486,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
               ),
               const SizedBox(height: SpacingTokens.sectionGap),
               Expanded(
-                child: StreamBuilder<QuerySnapshot>(
+                child: StreamBuilder<dynamic>(
                   stream: rotinasStream,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -495,9 +496,9 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                         ),
                       );
                     }
-                    if (snapshot.hasError ||
-                        !snapshot.hasData ||
-                        snapshot.data!.docs.isEmpty) {
+                    final List<Map<String, dynamic>> docs = (snapshot.data as List<Map<String, dynamic>>?) ?? [];
+
+                    if (snapshot.hasError || docs.isEmpty) {
                       return Center(
                         child: Text(
                           snapshot.hasError
@@ -511,10 +512,10 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                     }
 
                     return ListView.builder(
-                      itemCount: snapshot.data!.docs.length,
+                      itemCount: docs.length,
                       itemBuilder: (context, index) {
-                        var doc = snapshot.data!.docs[index];
-                        var rotina = doc.data() as Map<String, dynamic>;
+                        var rotina = docs[index];
+                        final id = rotina['id'].toString();
                         int qtdSessoes = rotina['sessoes'] != null
                             ? (rotina['sessoes'] as List).length
                             : 0;
@@ -532,7 +533,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                                 MaterialPageRoute(
                                   builder: (context) =>
                                       PersonalAtivarTemplatePage(
-                                        templateId: doc.id,
+                                        templateId: id,
                                         alunoId: widget.alunoId,
                                         alunoNome: widget.alunoNome,
                                       ),
@@ -591,9 +592,9 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
     );
   }
 
-  int _calcularIdade(Timestamp? dataNascimento) {
+  int _calcularIdade(DateTime? dataNascimento) {
     if (dataNascimento == null) return 0;
-    DateTime nascimento = dataNascimento.toDate();
+    DateTime nascimento = dataNascimento;
     DateTime hoje = DateTime.now();
     int idade = hoje.year - nascimento.year;
     if (hoje.month < nascimento.month ||

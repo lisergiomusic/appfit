@@ -79,7 +79,7 @@ class ExercicioItem {
   String? get instrucoesParaExibicao =>
       instrucoesPersonalizadasTexto;
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toMap() {
     return {
       'nome': nome,
       'grupoMuscular': grupoMuscular,
@@ -92,7 +92,7 @@ class ExercicioItem {
     };
   }
 
-  factory ExercicioItem.fromFirestore(
+  factory ExercicioItem.fromMap(
     Map<String, dynamic> data, [
     String? docId,
   ]) {

@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
@@ -25,10 +24,14 @@ class PesoHistoricoCard extends StatelessWidget {
     final sorted = historico!
         .take(8)
         .map(
-          (doc) => (
-            peso: (doc['peso'] as num).toDouble(),
-            data: (doc['dataHora'] as Timestamp).toDate(),
-          ),
+          (doc) {
+            final tsRaw = doc['dataHora'];
+            final dt = tsRaw != null ? DateTime.tryParse(tsRaw.toString()) : null;
+            return (
+              peso: (doc['peso'] as num).toDouble(),
+              data: dt ?? DateTime.now(),
+            );
+          },
         )
         .toList()
         .reversed

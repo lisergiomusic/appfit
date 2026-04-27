@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/services/rotina_service.dart';
@@ -35,7 +34,7 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
 
   late final AlunoService _alunoService;
   late final RotinaService _rotinaService;
-  late final Stream<QuerySnapshot> _rotinasStream;
+  late final Stream<dynamic> _rotinasStream;
 
   @override
   void initState() {
@@ -178,7 +177,7 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
         slivers: [
           _buildSliverAppBar(isSelecting),
           SliverToBoxAdapter(child: _buildSearchBar()),
-          StreamBuilder<QuerySnapshot>(
+          StreamBuilder<dynamic>(
             stream: _rotinasStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -202,9 +201,8 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
                 );
               }
 
-              final docs = snapshot.data?.docs ?? [];
-              final filteredDocs = docs.where((doc) {
-                final data = doc.data() as Map<String, dynamic>;
+              final docs = (snapshot.data as List<Map<String, dynamic>>?) ?? [];
+              final filteredDocs = docs.where((data) {
                 final nome = (data['nome'] ?? '').toString().toLowerCase();
                 return nome.contains(_searchQuery.toLowerCase());
               }).toList();
@@ -236,14 +234,14 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate((context, index) {
-                        var doc = filteredDocs[index];
-                        var rotina = doc.data() as Map<String, dynamic>;
+                        var rotina = filteredDocs[index];
+                        final id = rotina['id'].toString();
                         int qtdSessoes = rotina['sessoes'] != null
                             ? (rotina['sessoes'] as List).length
                             : 0;
 
                         return _buildTreinoCard(
-                          doc.id,
+                          id,
                           rotina,
                           qtdSessoes,
                           isSelecting,

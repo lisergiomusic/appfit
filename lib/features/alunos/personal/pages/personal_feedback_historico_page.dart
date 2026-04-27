@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/services/treino_service.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -52,7 +51,9 @@ class _PersonalFeedbackHistoricoPageState
 
   String _formatarData(dynamic dataHora) {
     if (dataHora == null) return '';
-    final dt = (dataHora as Timestamp).toDate();
+    final dt = DateTime.tryParse(dataHora.toString());
+    if (dt == null) return '';
+
     final hoje = DateTime.now();
     final ontem = hoje.subtract(const Duration(days: 1));
     if (dt.year == hoje.year && dt.month == hoje.month && dt.day == hoje.day) {

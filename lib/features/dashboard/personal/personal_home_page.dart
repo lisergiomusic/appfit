@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/aluno_service.dart';
 import '../../../core/services/supabase_auth_service.dart';
-import '../../../core/services/migration_service.dart';
 import '../../../core/widgets/app_bar_divider.dart';
 import '../../../core/widgets/app_section_link_button.dart';
 import '../../alunos/shared/widgets/aluno_avatar.dart';
@@ -60,39 +59,6 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
               context,
               MaterialPageRoute(builder: (_) => const StressTestPage()),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.cloud_sync_rounded, color: Colors.orange),
-            tooltip: 'Migrar para Supabase',
-            onPressed: () async {
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
-              scaffoldMessenger.showSnackBar(
-                const SnackBar(content: Text('Iniciando migração...')),
-              );
-              
-              final result = await MigrationService().migrarBibliotecaExercicios();
-              
-              if (result.containsKey('erro')) {
-                print('ERRO CRÍTICO: ${result['erro']}');
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(content: Text('Erro: ${result['erro']}')),
-                );
-              } else {
-                // Imprime os logs detalhados no console para o desenvolvedor
-                for (var log in result['logs']) {
-                  print(log);
-                }
-
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Concluído: ${result['sucessos']} sucessos, ${result['erros']} erros. Veja o console!',
-                    ),
-                    backgroundColor: result['erros'] > 0 ? Colors.orange : Colors.green,
-                  ),
-                );
-              }
-            },
           ),
           IconButton(
             icon: Stack(

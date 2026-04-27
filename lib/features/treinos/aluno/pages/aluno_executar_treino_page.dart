@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/treino_service.dart';
 import '../../shared/models/rotina_model.dart';
@@ -17,7 +16,6 @@ class AlunoExecutarTreinoPage extends StatefulWidget {
   final SessaoTreinoModel sessao;
   final String rotinaId;
   final String alunoId;
-  final FirebaseFirestore? firestore;
   final TreinoService? treinoService;
 
   const AlunoExecutarTreinoPage({
@@ -25,7 +23,6 @@ class AlunoExecutarTreinoPage extends StatefulWidget {
     required this.sessao,
     required this.rotinaId,
     required this.alunoId,
-    this.firestore,
     this.treinoService,
   });
 
@@ -66,7 +63,6 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
       sessao: widget.sessao,
       rotinaId: widget.rotinaId,
       alunoId: widget.alunoId,
-      firestore: widget.firestore,
       treinoService: widget.treinoService,
     );
     _startedAt = DateTime.now();

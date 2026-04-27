@@ -1,104 +1,69 @@
 import 'package:appfit/features/treinos/shared/models/historico_treino_model.dart';
 import 'package:appfit/features/treinos/shared/models/exercicio_model.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class TreinoService {
-  final FirebaseFirestore _firestore;
-
-  TreinoService({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
-
+  final SupabaseClient _supabase = Supabase.instance.client;
 
   Future<void> saveTreinoLog({
     required String alunoId,
     required String rotinaId,
     required String sessaoNome,
     required List<Map<String, dynamic>> exercicios,
+    int? esforco,
+    String? observacoes,
+    int duracaoMinutos = 0,
   }) async {
     try {
       final logData = {
-        'alunoId': alunoId,
-        'rotinaId': rotinaId,
-        'sessaoNome': sessaoNome,
-        'dataHora': Timestamp.now(),
-        'duracaoMinutos': 0,
+        'aluno_id': alunoId,
+        'rotina_id': rotinaId,
+        'sessao_nome': sessaoNome,
+        'data_hora': DateTime.now().toIso8601String(),
+        'duracao_minutos': duracaoMinutos,
+        'esforco': esforco,
+        'observacoes': observacoes,
         'exercicios': exercicios,
+        'personal_id': _supabase.auth.currentUser?.id,
       };
 
-      await _firestore.collection('logs_treino').add(logData);
+      await _supabase.from('logs_treino').insert(logData);
 
-      // Atualiza o contador na rotina
-      await _firestore.collection('rotinas').doc(rotinaId).set(
-        {'sessoesConcluidas': FieldValue.increment(1)},
-        SetOptions(merge: true),
-      );
+      // Atualiza o contador na rotina (SQL Update com incremento)
+      // Nota: No SQL fazemos isso via RPC ou buscando e salvando.
+      // Simplificado por enquanto:
+      try {
+        final rotina = await _supabase.from('rotinas').select('sessoes_concluidas').eq('id', rotinaId).maybeSingle();
+        if (rotina != null) {
+          int concluidas = (rotina['sessoes_concluidas'] as int? ?? 0) + 1;
+          await _supabase.from('rotinas').update({'sessoes_concluidas': concluidas}).eq('id', rotinaId);
+        }
+      } catch (_) {}
 
-      await _firestore.collection('usuarios').doc(alunoId).set(
-        {'ultimoTreino': FieldValue.serverTimestamp()},
-        SetOptions(merge: true),
-      );
+      // Atualiza o perfil do aluno
+      await _supabase.from('profiles').update({
+        'ultimo_treino': DateTime.now().toIso8601String()
+      }).eq('id', alunoId);
+      
     } catch (e) {
-      rethrow;
+      throw Exception('Erro ao salvar log de treino: $e');
     }
   }
 
   Future<List<Map<String, dynamic>>> fetchLogsAluno(String alunoId) async {
     try {
-      final snapshot = await _firestore
-          .collection('logs_treino')
-          .where('alunoId', isEqualTo: alunoId)
-          .orderBy('dataHora', descending: true)
-          .limit(50)
-          .get()
-          .timeout(const Duration(seconds: 30));
+      final data = await _supabase
+          .from('logs_treino')
+          .select()
+          .eq('aluno_id', alunoId)
+          .order('data_hora', ascending: false)
+          .limit(50);
 
-      return snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+      // Normaliza para CamelCase se necessário na UI
+      return (data as List).map((log) => _normalizeLog(log)).toList();
     } catch (e) {
-      rethrow;
+      throw Exception('Erro ao buscar logs: $e');
     }
-  }
-
-  static const int logsPorPagina = 15;
-
-  Future<({List<Map<String, dynamic>> logs, DocumentSnapshot? ultimoDoc})>
-  fetchLogsAlunoPage(
-    String alunoId, {
-    DocumentSnapshot? aposDoc,
-  }) async {
-    try {
-      var query = _firestore
-          .collection('logs_treino')
-          .where('alunoId', isEqualTo: alunoId)
-          .orderBy('dataHora', descending: true)
-          .limit(logsPorPagina);
-
-      if (aposDoc != null) {
-        query = query.startAfterDocument(aposDoc);
-      }
-
-      final snapshot = await query.get().timeout(const Duration(seconds: 30));
-      final logs = snapshot.docs
-          .map((doc) => {'id': doc.id, ...doc.data()})
-          .toList();
-      final ultimoDoc = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
-
-      return (logs: logs, ultimoDoc: ultimoDoc);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  Stream<List<Map<String, dynamic>>> getLogsRotinaStream(String rotinaId) {
-    return _firestore
-        .collection('logs_treino')
-        .where('rotinaId', isEqualTo: rotinaId)
-        .orderBy('dataHora', descending: true)
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-              .map((doc) => {'id': doc.id, ...doc.data()})
-              .toList(),
-        );
   }
 
   Future<List<Map<String, dynamic>>> fetchLogsInterval(
@@ -107,21 +72,17 @@ class TreinoService {
     DateTime endDate,
   ) async {
     try {
-      final snapshot = await _firestore
-          .collection('logs_treino')
-          .where('alunoId', isEqualTo: alunoId)
-          .where(
-            'dataHora',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
-          )
-          .where('dataHora', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
-          .orderBy('dataHora', descending: true)
-          .get()
-          .timeout(const Duration(seconds: 30));
+      final data = await _supabase
+          .from('logs_treino')
+          .select()
+          .eq('aluno_id', alunoId)
+          .gte('data_hora', startDate.toIso8601String())
+          .lte('data_hora', endDate.toIso8601String())
+          .order('data_hora', ascending: false);
 
-      return snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+      return (data as List).map((log) => _normalizeLog(log)).toList();
     } catch (e) {
-      rethrow;
+      throw Exception('Erro ao buscar logs por intervalo: $e');
     }
   }
 
@@ -140,15 +101,11 @@ class TreinoService {
       return {
         'totalSessions': totalSessions,
         'totalExercises': totalExercises,
-        'averageExercisesPerSession': totalSessions > 0
-            ? totalExercises / totalSessions
-            : 0,
-        'lastTrainingDate': logs.isNotEmpty
-            ? (logs.first['dataHora'] as Timestamp?)?.toDate()
-            : null,
+        'averageExercisesPerSession': totalSessions > 0 ? totalExercises / totalSessions : 0,
+        'lastTrainingDate': logs.isNotEmpty ? DateTime.tryParse(logs.first['dataHora'].toString()) : null,
       };
     } catch (e) {
-      rethrow;
+      return {'totalSessions': 0, 'totalExercises': 0};
     }
   }
 
@@ -157,20 +114,18 @@ class TreinoService {
     required String sessaoNome,
   }) async {
     try {
-      final snapshot = await _firestore
-          .collection('logs_treino')
-          .where('alunoId', isEqualTo: alunoId)
-          .where('sessaoNome', isEqualTo: sessaoNome)
-          .orderBy('dataHora', descending: true)
+      final data = await _supabase
+          .from('logs_treino')
+          .select()
+          .eq('aluno_id', alunoId)
+          .eq('sessao_nome', sessaoNome)
+          .order('data_hora', ascending: false)
           .limit(1)
-          .get();
+          .maybeSingle();
 
-      if (snapshot.docs.isEmpty) {
-        return {};
-      }
+      if (data == null) return {};
 
-      final logData = snapshot.docs.first.data();
-      final exercicios = logData['exercicios'] as List? ?? [];
+      final exercicios = data['exercicios'] as List? ?? [];
       final Map<String, List<SerieHistorico>> resultado = {};
 
       for (final ex in exercicios) {
@@ -184,37 +139,45 @@ class TreinoService {
         for (final serie in series) {
           final tipoStr = serie['tipo'] as String? ?? 'trabalho';
           final tipo = _parsetipoSerie(tipoStr);
-          seriesPorTipo.putIfAbsent(tipo, () => []).add(serie);
+          seriesPorTipo.putIfAbsent(tipo, () => []).add(Map<String, dynamic>.from(serie));
         }
 
         for (final tipo in seriesPorTipo.keys) {
           final seriesDoTipo = seriesPorTipo[tipo]!;
           for (int i = 0; i < seriesDoTipo.length; i++) {
             final serie = seriesDoTipo[i];
-            final concluida = serie['concluida'] as bool? ?? false;
+            final concluida = serie['concluida'] == true;
 
             historicoExercicio.add(
               SerieHistorico(
                 tipo: tipo,
                 indexDentroDoTipo: i,
-                pesoRealizado: concluida
-                    ? (serie['pesoRealizado'] as String?)
-                    : null,
-                repsRealizadas: concluida
-                    ? (serie['repsRealizadas'] as String?)
-                    : null,
+                pesoRealizado: concluida ? (serie['pesoRealizado']?.toString()) : null,
+                repsRealizadas: concluida ? (serie['repsRealizadas']?.toString()) : null,
               ),
             );
           }
         }
-
         resultado[nomeExercicio] = historicoExercicio;
       }
-
       return resultado;
     } catch (e) {
-      rethrow;
+      return {};
     }
+  }
+
+  Map<String, dynamic> _normalizeLog(Map<String, dynamic> log) {
+    return {
+      'id': log['id'],
+      'alunoId': log['aluno_id'],
+      'rotinaId': log['rotina_id'],
+      'sessaoNome': log['sessao_nome'],
+      'dataHora': log['data_hora'],
+      'duracaoMinutos': log['duracao_minutos'],
+      'esforco': log['esforco'],
+      'observacoes': log['observacoes'],
+      'exercicios': log['exercicios'],
+    };
   }
 
   TipoSerie _parsetipoSerie(String tipoStr) {

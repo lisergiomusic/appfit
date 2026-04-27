@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class FaturaModel {
   final String id;
@@ -19,57 +19,68 @@ class FaturaModel {
     required this.descricao,
   });
 
-  factory FaturaModel.fromFirestore(DocumentSnapshot doc) {
-    Map data = doc.data() as Map<String, dynamic>;
+  factory FaturaModel.fromSupabase(Map<String, dynamic> data) {
     return FaturaModel(
-      id: doc.id,
-      alunoId: data['alunoId'] ?? '',
+      id: data['id'].toString(),
+      alunoId: data['aluno_id'] ?? '',
       valor: (data['valor'] ?? 0.0).toDouble(),
-      dataVencimento: (data['dataVencimento'] as Timestamp).toDate(),
-      dataPagamento: (data['dataPagamento'] as Timestamp?)?.toDate(),
+      dataVencimento: DateTime.tryParse(data['data_vencimento'].toString()) ?? DateTime.now(),
+      dataPagamento: data['data_pagamento'] != null 
+          ? DateTime.tryParse(data['data_pagamento'].toString()) 
+          : null,
       status: data['status'] ?? 'pendente',
       descricao: data['descricao'] ?? '',
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toSupabase() {
     return {
-      'alunoId': alunoId,
+      'aluno_id': alunoId,
       'valor': valor,
-      'dataVencimento': Timestamp.fromDate(dataVencimento),
-      'dataPagamento': dataPagamento != null ? Timestamp.fromDate(dataPagamento!) : null,
+      'data_vencimento': dataVencimento.toIso8601String(),
+      'data_pagamento': dataPagamento?.toIso8601String(),
       'status': status,
       'descricao': descricao,
-      'dataCriacao': FieldValue.serverTimestamp(),
     };
   }
 }
 
 class FinanceiroService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final SupabaseClient _supabase = Supabase.instance.client;
 
   Stream<List<FaturaModel>> getFaturasStream(String alunoId) {
-    return _db
-        .collection('faturas')
-        .where('alunoId', isEqualTo: alunoId)
-        .orderBy('dataVencimento', descending: true)
-        .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => FaturaModel.fromFirestore(doc)).toList());
+    return _supabase
+        .from('faturas')
+        .stream(primaryKey: ['id'])
+        .eq('aluno_id', alunoId)
+        .order('data_vencimento', ascending: false)
+        .map((data) => data.map((json) => FaturaModel.fromSupabase(json)).toList());
   }
 
   Future<void> criarFatura(FaturaModel fatura) async {
-    await _db.collection('faturas').add(fatura.toMap());
+    try {
+      await _supabase.from('faturas').insert(fatura.toSupabase());
+    } catch (e) {
+      throw Exception('Erro ao criar fatura: $e');
+    }
   }
 
   Future<void> marcarComoPaga(String faturaId) async {
-    await _db.collection('faturas').doc(faturaId).set({
-      'status': 'pago',
-      'dataPagamento': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    try {
+      await _supabase.from('faturas').update({
+        'status': 'pago',
+        'data_pagamento': DateTime.now().toIso8601String(),
+      }).eq('id', faturaId);
+    } catch (e) {
+      throw Exception('Erro ao pagar fatura: $e');
+    }
   }
 
   Future<void> excluirFatura(String faturaId) async {
-    await _db.collection('faturas').doc(faturaId).delete();
+    try {
+      await _supabase.from('faturas').delete().eq('id', faturaId);
+    } catch (e) {
+      throw Exception('Erro ao excluir fatura: $e');
+    }
   }
 }

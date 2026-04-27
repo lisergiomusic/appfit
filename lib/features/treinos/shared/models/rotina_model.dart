@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'exercicio_model.dart';
 
 class SessaoTreinoModel {
@@ -14,7 +13,7 @@ class SessaoTreinoModel {
     List<ExercicioItem>? exercicios,
   }) : exercicios = exercicios ?? [];
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toMap() {
     return {
       'nome': nome,
       'diaSemana': diaSemana ?? '',
@@ -22,13 +21,13 @@ class SessaoTreinoModel {
       'exercicios': exercicios.map((ex) {
         return {
           'nome': ex.nome,
-          'grupoMuscular': ex.grupoMuscular,
-          'imagemUrl': ex.imagemUrl,
-          'mediaUrl': ex.mediaUrl,
-          'tipoAlvo': ex.tipoAlvo,
-          'personalId': ex.personalId,
+          'grupo_muscular': ex.grupoMuscular,
+          'imagem_url': ex.imagemUrl,
+          'media_url': ex.mediaUrl,
+          'tipo_alvo': ex.tipoAlvo,
+          'personal_id': ex.personalId,
           'instrucoes': ex.instrucoes,
-          'instrucoesPersonalizadas': ex.instrucoesPersonalizadas,
+          'instrucoes_personalizadas': ex.instrucoesPersonalizadas,
           'series': ex.series.map((s) {
             return {
               'tipo': s.tipo.name,
@@ -42,7 +41,7 @@ class SessaoTreinoModel {
     };
   }
 
-  factory SessaoTreinoModel.fromFirestore(Map<String, dynamic> data) {
+  factory SessaoTreinoModel.fromMap(Map<String, dynamic> data) {
     List<ExercicioItem> exerciciosList = [];
     for (var ex in (data['exercicios'] ?? [])) {
       List<SerieItem> seriesList = [];
@@ -58,7 +57,7 @@ class SessaoTreinoModel {
       }
 
       List<String> grupos = ['Geral'];
-      final rawGrupo = ex['grupoMuscular'];
+      final rawGrupo = ex['grupo_muscular'] ?? ex['grupoMuscular'];
       if (rawGrupo is String) {
         grupos = rawGrupo.split(',').map((e) => e.trim()).toList();
       } else if (rawGrupo is List) {
@@ -69,12 +68,12 @@ class SessaoTreinoModel {
         ExercicioItem(
           nome: ex['nome'] ?? 'Exercício',
           grupoMuscular: grupos,
-          imagemUrl: ex['imagemUrl'],
-          mediaUrl: ex['mediaUrl'],
-          tipoAlvo: ex['tipoAlvo'] ?? 'Reps',
-          personalId: ex['personalId'],
+          imagemUrl: ex['imagem_url'] ?? ex['imagemUrl'],
+          mediaUrl: ex['media_url'] ?? ex['mediaUrl'],
+          tipoAlvo: ex['tipo_alvo'] ?? ex['tipoAlvo'] ?? 'Reps',
+          personalId: ex['personal_id'] ?? ex['personalId'],
           instrucoes: ex['instrucoes'],
-          instrucoesPersonalizadas: ex['instrucoesPersonalizadas'],
+          instrucoesPersonalizadas: ex['instrucoes_personalizadas'] ?? ex['instrucoesPersonalizadas'],
           series: seriesList,
         ),
       );
@@ -115,20 +114,18 @@ class RotinaModel {
     required this.sessoes,
   });
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toMap() {
     return {
       'nome': nome,
       'objetivo': objetivo,
-      'tipoVencimento': tipoVencimento,
-      'vencimentoSessoes': vencimentoSessoes,
-      'dataVencimento': dataVencimento != null
-          ? Timestamp.fromDate(dataVencimento!)
-          : null,
-      'sessoes': sessoes.map((s) => s.toFirestore()).toList(),
+      'tipo_vencimento': tipoVencimento,
+      'vencimento_sessoes': vencimentoSessoes,
+      'data_vencimento': dataVencimento?.toIso8601String(),
+      'sessoes': sessoes.map((s) => s.toMap()).toList(),
     };
   }
 
-  factory RotinaModel.fromFirestore(
+  factory RotinaModel.fromMap(
     Map<String, dynamic> data, [
     String? docId,
   ]) {
@@ -136,14 +133,15 @@ class RotinaModel {
     if (data['sessoes'] != null) {
       sessoesList = (data['sessoes'] as List)
           .map(
-            (s) => SessaoTreinoModel.fromFirestore(s as Map<String, dynamic>),
+            (s) => SessaoTreinoModel.fromMap(s as Map<String, dynamic>),
           )
           .toList();
     }
 
     DateTime? dataVenc;
-    if (data['dataVencimento'] != null) {
-      dataVenc = (data['dataVencimento'] as Timestamp).toDate();
+    final dataVencRaw = data['data_vencimento'] ?? data['dataVencimento'];
+    if (dataVencRaw != null) {
+      dataVenc = DateTime.tryParse(dataVencRaw.toString());
     }
 
     return RotinaModel(

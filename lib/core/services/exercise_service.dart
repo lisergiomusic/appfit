@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/treinos/shared/models/exercicio_model.dart';
 
@@ -31,7 +32,7 @@ class ExerciseService {
       if (data == null) return null;
       return ExercicioItem.fromSupabase(data);
     } catch (e) {
-      print('Erro ao buscar exercício por nome: $e');
+      debugPrint('Erro ao buscar exercício por nome: $e');
       return null;
     }
   }
