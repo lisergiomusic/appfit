@@ -16,28 +16,9 @@ class SessaoTreinoModel {
   Map<String, dynamic> toMap() {
     return {
       'nome': nome,
-      'diaSemana': diaSemana ?? '',
+      'dia_semana': diaSemana ?? '',
       'orientacoes': orientacoes ?? '',
-      'exercicios': exercicios.map((ex) {
-        return {
-          'nome': ex.nome,
-          'grupo_muscular': ex.grupoMuscular,
-          'imagem_url': ex.imagemUrl,
-          'media_url': ex.mediaUrl,
-          'tipo_alvo': ex.tipoAlvo,
-          'personal_id': ex.personalId,
-          'instrucoes': ex.instrucoes,
-          'instrucoes_personalizadas': ex.instrucoesPersonalizadas,
-          'series': ex.series.map((s) {
-            return {
-              'tipo': s.tipo.name,
-              'alvo': s.alvo,
-              'carga': s.carga,
-              'descanso': s.descanso,
-            };
-          }).toList(),
-        };
-      }).toList(),
+      'exercicios': exercicios.map((ex) => ex.toMap()).toList(),
     };
   }
 
@@ -48,6 +29,7 @@ class SessaoTreinoModel {
       for (var s in (ex['series'] ?? [])) {
         seriesList.add(
           SerieItem(
+            id: s['id']?.toString(),
             tipo: _parseTipoSerie(s['tipo']),
             alvo: s['alvo'] ?? '10',
             carga: s['carga'] ?? '',
@@ -80,7 +62,7 @@ class SessaoTreinoModel {
     }
     return SessaoTreinoModel(
       nome: data['nome'] ?? '',
-      diaSemana: data['diaSemana'],
+      diaSemana: data['dia_semana'] ?? data['diaSemana'],
       orientacoes: data['orientacoes'],
       exercicios: exerciciosList,
     );
@@ -148,8 +130,8 @@ class RotinaModel {
       id: docId,
       nome: data['nome'] ?? '',
       objetivo: data['objetivo'] ?? '',
-      tipoVencimento: data['tipoVencimento'] ?? 'data',
-      vencimentoSessoes: data['vencimentoSessoes'],
+      tipoVencimento: data['tipo_vencimento'] ?? data['tipoVencimento'] ?? 'data',
+      vencimentoSessoes: data['vencimento_sessoes'] ?? data['vencimentoSessoes'],
       dataVencimento: dataVenc,
       sessoes: sessoesList,
     );

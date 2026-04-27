@@ -174,9 +174,9 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
 
     return ValueListenableBuilder<VideoPlayerValue>(
       valueListenable: ctrl,
-      builder: (_, value, __) {
+      builder: (_, value, _) {
         final isPlaying = value.isPlaying;
-        // Mostra controles se pausado, se o usuário ainda não começou, 
+        // Mostra controles se pausado, se o usuário ainda não começou,
         // ou se explicitamente visível por tap ou buffering
         final show =
             _controlsVisible || !isPlaying || !_userStarted || value.isBuffering;
@@ -247,8 +247,8 @@ class _ExerciseVideoCardState extends State<ExerciseVideoCard> {
       return CachedNetworkImage(
         imageUrl: Cloudinary.thumbnail(media),
         fit: BoxFit.cover,
-        placeholder: (_, __) => Container(color: AppColors.surfaceDark),
-        errorWidget: (_, __, ___) => _emptyState(),
+        placeholder: (_, _) => Container(color: AppColors.surfaceDark),
+        errorWidget: (_, _, _) => _emptyState(),
       );
     }
     return _emptyState();

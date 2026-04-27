@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/aluno_service.dart';
 import '../../../core/services/rotina_service.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../alunos/shared/models/aluno_perfil_data.dart';
 
 class StressTestPage extends StatefulWidget {
   const StressTestPage({super.key});

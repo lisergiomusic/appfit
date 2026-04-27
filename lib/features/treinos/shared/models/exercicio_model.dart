@@ -81,14 +81,22 @@ class ExercicioItem {
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'nome': nome,
-      'grupoMuscular': grupoMuscular,
-      'imagemUrl': imagemUrl,
-      'mediaUrl': mediaUrl,
-      'tipoAlvo': tipoAlvo,
-      'personalId': personalId,
+      'grupo_muscular': grupoMuscular,
+      'imagem_url': imagemUrl,
+      'media_url': mediaUrl,
+      'tipo_alvo': tipoAlvo,
+      'personal_id': personalId,
       'instrucoes': instrucoes,
-      'instrucoesPersonalizadas': instrucoesPersonalizadas,
+      'instrucoes_personalizadas': instrucoesPersonalizadas,
+      'series': series.map((s) => {
+        'id': s.id,
+        'tipo': s.tipo.name,
+        'alvo': s.alvo,
+        'carga': s.carga,
+        'descanso': s.descanso,
+      }).toList(),
     };
   }
 
@@ -97,7 +105,7 @@ class ExercicioItem {
     String? docId,
   ]) {
     List<String> grupos = ['Geral'];
-    final rawGrupo = data['grupoMuscular'];
+    final rawGrupo = data['grupo_muscular'] ?? data['grupoMuscular'];
 
     if (rawGrupo is String) {
       grupos = rawGrupo.split(',').map((e) => e.trim()).toList();
@@ -105,18 +113,40 @@ class ExercicioItem {
       grupos = List<String>.from(rawGrupo);
     }
 
+    final List<SerieItem> seriesList = [];
+    if (data['series'] != null) {
+      for (var s in (data['series'] as List)) {
+        seriesList.add(
+          SerieItem(
+            tipo: _parseTipoSerie(s['tipo']),
+            alvo: s['alvo'] ?? '10',
+            carga: s['carga'] ?? '',
+            descanso: s['descanso'] ?? '60s',
+          ),
+        );
+      }
+    }
+
     return ExercicioItem(
-      id: docId,
+      id: docId ?? data['id']?.toString(),
       nome: data['nome'] ?? '',
       grupoMuscular: grupos,
-      imagemUrl: data['imagemUrl'],
-      mediaUrl: data['mediaUrl'],
-      tipoAlvo: data['tipoAlvo'] ?? 'Reps',
-      personalId: data['personalId'],
+      imagemUrl: data['imagem_url'] ?? data['imagemUrl'],
+      mediaUrl: data['media_url'] ?? data['mediaUrl'],
+      tipoAlvo: data['tipo_alvo'] ?? data['tipoAlvo'] ?? 'Reps',
+      personalId: data['personal_id'] ?? data['personalId'],
       instrucoes: data['instrucoes'],
-      instrucoesPersonalizadas: data['instrucoesPersonalizadas'],
-      series: [],
+      instrucoesPersonalizadas: data['instrucoes_personalizadas'] ?? data['instrucoesPersonalizadas'],
+      series: seriesList,
     );
+  }
+
+  static TipoSerie _parseTipoSerie(String? tipo) {
+    if (tipo == 'aquecimento' || tipo == 'TipoSerie.aquecimento') {
+      return TipoSerie.aquecimento;
+    }
+    if (tipo == 'feeder' || tipo == 'TipoSerie.feeder') return TipoSerie.feeder;
+    return TipoSerie.trabalho;
   }
 
   /// Novo: Factory para criar o objeto a partir do Supabase (SQL)

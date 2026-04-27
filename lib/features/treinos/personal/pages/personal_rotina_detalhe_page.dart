@@ -62,6 +62,14 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
   }
 
   @override
+  void didUpdateWidget(PersonalRotinaDetalhePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.rotinaData != oldWidget.rotinaData && widget.rotinaData != null) {
+      _controller.recarregarDados(widget.rotinaData!);
+    }
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();

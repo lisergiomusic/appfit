@@ -94,13 +94,13 @@ class _ExercicioOverviewCardState extends State<ExercicioOverviewCard> {
                         return CachedNetworkImage(
                           imageUrl: url,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => Center(
+                          placeholder: (_, _) => Center(
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               color: AppColors.primary.withAlpha(100),
                             ),
                           ),
-                          errorWidget: (_, __, ___) => Center(
+                          errorWidget: (_, _, _) => Center(
                             child: Icon(
                               Icons.fitness_center,
                               color: AppColors.labelSecondary,

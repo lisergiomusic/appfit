@@ -132,7 +132,7 @@ class _PersonalExerciciosLibraryPageState
               try {
                 final List<dynamic> decoded = jsonDecode(controller.text);
                 final exercicios = decoded.map((item) => ExercicioItem.fromSupabase(item)).toList();
-                
+
                 await _exerciseService.cadastrarExerciciosEmMassa(
                   exercicios,
                   asSystemExercises: true, // Garante que fiquem sem estrela
@@ -936,11 +936,11 @@ class _PersonalExerciciosLibraryPageState
                                                 fit: BoxFit.cover,
                                                 width: 56,
                                                 height: 56,
-                                                placeholder: (_, __) =>
+                                                placeholder: (_, _) =>
                                                     Container(
                                                       color: AppColors.surfaceLight,
                                                     ),
-                                                errorWidget: (_, __, ___) =>
+                                                errorWidget: (_, _, _) =>
                                                     const Center(
                                                       child: Icon(
                                                         Icons.fitness_center,
