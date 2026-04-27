@@ -195,44 +195,45 @@ class AlunoService {
   }
 
   /// Stream reativa e otimizada para o perfil do aluno.
-  /// Agora que os índices estão criados, podemos usar a combinação de streams
-  /// para garantir que mudanças na rotina reflitam instantaneamente na UI.
+  /// Implementa tolerância a falhas para evitar o "Shimmer Eterno".
   Stream<AlunoPerfilData> getAlunoPerfilCompletoStream(String alunoId) {
     return _firestore
         .collection('usuarios')
         .doc(alunoId)
         .snapshots()
         .switchMap((alunoSnap) {
+      if (!alunoSnap.exists) {
+        return Stream.value(AlunoPerfilData(aluno: {}, rotinaAtiva: null));
+      }
+
       final alunoMap = alunoSnap.data() as Map<String, dynamic>? ?? {};
       final personalId = alunoMap['personalId'] as String?;
 
-      // Stream da Rotina Ativa
+      // 1. Stream da Rotina Ativa (Com timeout para não travar o perfil)
       final rotinaStream = _firestore
           .collection('rotinas')
           .where('alunoId', isEqualTo: alunoId)
           .where('ativa', isEqualTo: true)
           .limit(1)
-          .snapshots();
+          .snapshots()
+          .map((snap) => snap.docs.isNotEmpty ? snap.docs.first : null)
+          .onErrorReturn(null); // Se falhar (falta de índice), retorna nulo mas não trava
 
-      // Stream do Personal (ou valor nulo se não houver)
+      // 2. Stream do Personal
       final personalStream = personalId != null
           ? _firestore
               .collection('usuarios')
               .doc(personalId)
               .snapshots()
-              .map((doc) => doc as DocumentSnapshot?)
-              .startWith(null)
+              .map((doc) => doc.exists ? doc : null)
+              .onErrorReturn(null)
           : Stream<DocumentSnapshot?>.value(null);
 
-      return Rx.combineLatest2<QuerySnapshot, DocumentSnapshot?,
-          AlunoPerfilData>(
+      return Rx.combineLatest2<DocumentSnapshot?, DocumentSnapshot?, AlunoPerfilData>(
         rotinaStream,
         personalStream,
-        (rotinaSnap, personalSnap) {
-          final rotinaDoc =
-              rotinaSnap.docs.isNotEmpty ? rotinaSnap.docs.first : null;
-          final personalMap =
-              personalSnap?.data() as Map<String, dynamic>? ?? {};
+        (rotinaDoc, personalDoc) {
+          final personalMap = personalDoc?.data() as Map<String, dynamic>? ?? {};
           
           final pNome = personalMap['nome']?.toString() ?? '';
           final pSobrenome = personalMap['sobrenome']?.toString() ?? '';
@@ -240,7 +241,7 @@ class AlunoService {
 
           return AlunoPerfilData(
             aluno: alunoMap,
-            rotinaAtiva: rotinaDoc?.data(),
+            rotinaAtiva: rotinaDoc?.data() as Map<String, dynamic>?,
             rotinaId: rotinaDoc?.id,
             nomePersonal: pNomeCompleto.isNotEmpty ? pNomeCompleto : null,
             especialidadePersonal: personalMap['especialidade']?.toString(),
@@ -248,7 +249,7 @@ class AlunoService {
             telefonePersonal: personalMap['telefone']?.toString(),
           );
         },
-      );
+      ).startWith(AlunoPerfilData(aluno: alunoMap, rotinaAtiva: null));
     });
   }
 

@@ -57,7 +57,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCJWK6XJ9d4sRjUDlv6Qs3nctfXhmK_yPs',
-    appId: '1:589594654448:android:9e9546bd28a6c279a27435',
+    appId: '1:589594654448:android:79378e72f1b57470a27435',
     messagingSenderId: '589594654448',
     projectId: 'appfit-43178',
     storageBucket: 'appfit-43178.firebasestorage.app',
@@ -69,6 +69,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '589594654448',
     projectId: 'appfit-43178',
     storageBucket: 'appfit-43178.firebasestorage.app',
-    iosBundleId: 'com.example.appfit',
+    iosBundleId: 'com.appfit.pro',
   );
 }

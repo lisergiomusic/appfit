@@ -14,14 +14,14 @@ class RotinaService {
   final FirebaseAuth _auth;
 
   // Fila de serialização por rotinaId → garante no máximo 1 write simultâneo
-  // por documento.
+  // por documento, evitando deadlock no canal gRPC do Android.
   final Map<String, Future<void>> _writeQueue = {};
 
   RotinaService({FirebaseFirestore? firestore, FirebaseAuth? auth})
     : _db = firestore ?? FirebaseFirestore.instance,
       _auth = auth ?? FirebaseAuth.instance;
 
-  Future<void> criarRotina({
+  Future<String> criarRotina({
     String? alunoId,
     required String nome,
     required String objetivo,
@@ -71,6 +71,7 @@ class RotinaService {
 
     final novaRotinaRef = _db.collection('rotinas').doc();
     await novaRotinaRef.set(payload);
+    return novaRotinaRef.id;
   }
 
   /// Atualiza uma rotina existente, serializando writes para evitar deadlock
@@ -100,32 +101,39 @@ class RotinaService {
       }
     }
 
-    // Encadeia na fila do rotinaId: espera o write anterior terminar antes
-    // de iniciar este. Ignora erros do anterior para não bloquear a fila.
-    final previous = _writeQueue[rotinaId] ?? Future.value();
-    final current = previous.catchError((_) {}).then((_) async {
-      try {
-        // O Firestore registra o write localmente (offline persistence)
-        // e sincroniza quando houver conexão.
-        await _db
-            .collection('rotinas')
-            .doc(rotinaId)
-            .set(updateData, SetOptions(merge: true));
-      } catch (e) {
-        rethrow;
-      }
-    });
+    // Padrão staff: Serialização de escrita.
+    // Garante que o write anterior para ESTE rotinaId terminou antes de iniciar o próximo.
+    final Completer<void> writeCompleter = Completer<void>();
+    final Future<void>? previousWrite = _writeQueue[rotinaId];
+    _writeQueue[rotinaId] = writeCompleter.future;
 
-    _writeQueue[rotinaId] = current;
+    if (previousWrite != null) {
+      debugPrint('[RotinaService] Aguardando write anterior de $rotinaId...');
+      await previousWrite.catchError((_) {}); // Ignora erro do anterior
+    }
 
-    // Limpa a entrada do map quando terminar para não acumular memória.
-    current.whenComplete(() {
-      if (_writeQueue[rotinaId] == current) {
+    try {
+      debugPrint('[RotinaService] Iniciando write de $rotinaId...');
+      // Safety Timeout de 20s: impede que o gRPC trave a fila para sempre se a identidade falhar.
+      // O Firestore continuará tentando em background, mas a fila do app é liberada.
+      await _db
+          .collection('rotinas')
+          .doc(rotinaId)
+          .set(updateData, SetOptions(merge: true))
+          .timeout(const Duration(seconds: 20));
+      debugPrint('[RotinaService] Write de $rotinaId finalizado com sucesso.');
+    } catch (e) {
+      debugPrint('[RotinaService] Alerta no write de $rotinaId (Pode ser latência ou gRPC): $e');
+      // Não damos rethrow em caso de timeout para não quebrar o fluxo da UI,
+      // pois o dado já está no cache local do Firestore e subirá assim que gRPC estabilizar.
+      if (e is! TimeoutException) rethrow;
+    } finally {
+      writeCompleter.complete();
+      // Limpa a fila se formos o último
+      if (_writeQueue[rotinaId] == writeCompleter.future) {
         _writeQueue.remove(rotinaId);
       }
-    });
-
-    await current;
+    }
   }
 
   Future<void> renomearRotina(String rotinaId, String novoNome) async {

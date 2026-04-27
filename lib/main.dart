@@ -15,16 +15,14 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Habilita logging detalhado para diagnosticar problemas de conexão na raiz
   if (kDebugMode) {
     FirebaseFirestore.setLoggingEnabled(true);
   }
 
-  // CONFIGURAÇÃO DE ESTABILIZAÇÃO:
-  // 1. Desativamos persistência temporariamente para limpar filas travadas
-  // 2. Removemos links de índices manuais pois já foram criados no console
+  // CONFIGURAÇÃO DE ALTA PERFORMANCE
   FirebaseFirestore.instance.settings = const Settings(
-    persistenceEnabled: false, 
+    persistenceEnabled: true,
+    cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
   );
 
   await initializeDateFormatting('pt_BR', null);

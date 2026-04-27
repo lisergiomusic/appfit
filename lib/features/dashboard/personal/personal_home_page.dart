@@ -7,6 +7,7 @@ import '../../../core/widgets/app_bar_divider.dart';
 import '../../../core/widgets/app_section_link_button.dart';
 import '../../alunos/shared/widgets/aluno_avatar.dart';
 import '../../alunos/personal/pages/personal_log_detalhe_page.dart';
+import '../shared/stress_test_page.dart';
 import 'personal_atividade_recente_page.dart';
 
 class PersonalHomePage extends StatefulWidget {
@@ -52,6 +53,13 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
           child: const Text('Painel de Controle'),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.speed_rounded, color: AppColors.primary),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const StressTestPage()),
+            ),
+          ),
           IconButton(
             icon: Stack(
               children: [

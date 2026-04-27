@@ -11,7 +11,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.appfit"
+    namespace = "com.appfit.pro"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -43,9 +43,9 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.appfit"
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        applicationId = "com.appfit.pro"
+        minSdk = 24
+        targetSdk = 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -62,7 +62,7 @@ flutter {
 }
 
 dependencies {
-    implementation(platform("com.google.firebase:firebase-bom:33.1.1"))
+    implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
 }

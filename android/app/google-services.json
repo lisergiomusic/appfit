@@ -7,6 +7,58 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:589594654448:android:79378e72f1b57470a27435",
+        "android_client_info": {
+          "package_name": "com.appfit.pro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "589594654448-k3rd2jb8hcau46voqdtp8qm5sbgajduc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.appfit.pro",
+            "certificate_hash": "b06c33686e016e8a969404cdb423a10fb05ceba7"
+          }
+        },
+        {
+          "client_id": "589594654448-s63q4rhlspi82kon50ejn3ekvt60igjj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.appfit.pro",
+            "certificate_hash": "b99f608bdd9ce0a260fa66a74fbdf841d3fd8be1"
+          }
+        },
+        {
+          "client_id": "589594654448-i066301ji8ne8u4l87nnregdsj053apt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJWK6XJ9d4sRjUDlv6Qs3nctfXhmK_yPs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "589594654448-i066301ji8ne8u4l87nnregdsj053apt.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "589594654448-77nfo2vi8g8b63de123hjs940ck0bck9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.appfit"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:589594654448:android:9e9546bd28a6c279a27435",
         "android_client_info": {
           "package_name": "com.example.appfit"
