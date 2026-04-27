@@ -119,6 +119,29 @@ class ExercicioItem {
     );
   }
 
+  /// Novo: Factory para criar o objeto a partir do Supabase (SQL)
+  factory ExercicioItem.fromSupabase(Map<String, dynamic> data) {
+    // No SQL, o array vem como List<dynamic> ou List<String>
+    final rawGrupo = data['grupo_muscular'];
+    List<String> grupos = ['Geral'];
+    
+    if (rawGrupo is List) {
+      grupos = List<String>.from(rawGrupo);
+    }
+
+    return ExercicioItem(
+      id: data['id'].toString(), // UUID do Supabase
+      nome: data['nome'] ?? '',
+      grupoMuscular: grupos,
+      imagemUrl: data['imagem_url'],
+      mediaUrl: data['media_url'],
+      tipoAlvo: data['tipo_alvo'] ?? 'Reps',
+      personalId: data['personal_id']?.toString(),
+      instrucoes: data['instrucoes'],
+      series: [],
+    );
+  }
+
   ExercicioItem clone() {
     return ExercicioItem(
       id: id,

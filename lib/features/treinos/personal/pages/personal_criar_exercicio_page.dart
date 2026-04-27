@@ -1,5 +1,4 @@
 import 'package:appfit/core/widgets/app_nav_back_button.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/exercise_service.dart';
