@@ -16,8 +16,14 @@ class SupabaseAuthService {
         email: email,
         password: password,
       );
+    } on AuthException catch (e) {
+      // Erro específico do Supabase (ex: credenciais erradas, usuário não existe)
+      if (e.message.contains('Invalid login credentials')) {
+        throw Exception('E-mail ou senha incorretos.');
+      }
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao entrar: $e');
+      throw Exception('Erro inesperado ao entrar: $e');
     }
   }
 
@@ -66,10 +72,46 @@ class SupabaseAuthService {
           .from('profiles')
           .select('tipo_usuario')
           .eq('id', uid)
-          .single();
-      return data['tipo_usuario'] as String?;
+          .maybeSingle();
+      return data?['tipo_usuario'] as String?;
     } catch (e) {
       print('Erro ao buscar tipo de usuário no Supabase: $e');
+      return null;
+    }
+  }
+
+  /// Verifica se o usuário atual é administrador
+  Future<bool> isAdmin() async {
+    try {
+      final user = currentUser;
+      if (user == null) return false;
+      
+      final data = await _supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', user.id)
+          .maybeSingle();
+          
+      return data?['is_admin'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Recupera todos os dados do perfil do usuário logado
+  Future<Map<String, dynamic>?> getCurrentUserData() async {
+    try {
+      final user = currentUser;
+      if (user == null) return null;
+      
+      final data = await _supabase
+          .from('profiles')
+          .select()
+          .eq('id', user.id)
+          .single();
+          
+      return data;
+    } catch (e) {
       return null;
     }
   }

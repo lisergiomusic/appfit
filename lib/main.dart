@@ -8,7 +8,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'core/config/firebase_options.dart';
 import 'core/config/supabase_config.dart';
 import 'core/theme/app_theme.dart';
-import 'core/services/auth_service.dart';
+import 'core/services/supabase_auth_service.dart';
 import 'features/auth/login_page.dart';
 import 'features/dashboard/shared/dashboard_page.dart';
 
@@ -59,14 +59,14 @@ class ChecagemPagina extends StatefulWidget {
 }
 
 class _ChecagemPaginaState extends State<ChecagemPagina> {
-  final AuthService _authService = AuthService();
+  final SupabaseAuthService _authService = SupabaseAuthService();
   // Guarda o widget uma vez construído para não recriar em rebuilds do auth.
   Widget? _cachedHome;
   String? _cachedUid;
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
+    return StreamBuilder<sb.AuthState>(
       stream: _authService.authStateChanges,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -79,8 +79,10 @@ class _ChecagemPaginaState extends State<ChecagemPagina> {
           );
         }
 
-        if (snapshot.hasData && snapshot.data != null) {
-          final uid = snapshot.data!.uid;
+        final user = snapshot.data?.session?.user;
+
+        if (user != null) {
+          final uid = user.id;
           // Só reconstrói se o uid mudou (login de outro usuário).
           if (_cachedUid != uid) {
             _cachedUid = uid;
@@ -103,7 +105,7 @@ class _ChecagemPaginaState extends State<ChecagemPagina> {
 
 class _UserTypeLoader extends StatefulWidget {
   final String uid;
-  final AuthService authService;
+  final SupabaseAuthService authService;
 
   const _UserTypeLoader({
     required this.uid,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/services/auth_service.dart';
+import '../../core/services/supabase_auth_service.dart';
 import '../dashboard/shared/dashboard_page.dart';
 
 class CadastroPage extends StatefulWidget {
@@ -17,7 +17,7 @@ class _CadastroPageState extends State<CadastroPage> {
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
   final _confirmarSenhaController = TextEditingController();
-  final AuthService _authService = AuthService();
+  final SupabaseAuthService _authService = SupabaseAuthService();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -26,14 +26,14 @@ class _CadastroPageState extends State<CadastroPage> {
   Future<void> _cadastrarUsuario() async {
     if (_senhaController.text != _confirmarSenhaController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('As palavras-passe não coincidem!')),
+        const SnackBar(content: Text('As senhas não coincidem!')),
       );
       return;
     }
 
     if (_nomeController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, introduza o seu nome.')),
+        const SnackBar(content: Text('Por favor, informe seu nome.')),
       );
       return;
     }
@@ -51,11 +51,14 @@ class _CadastroPageState extends State<CadastroPage> {
       );
 
       if (mounted) {
-        Navigator.pushReplacement(
+        // Ao cadastrar no Supabase, já navegamos para o Dashboard.
+        // O SupabaseAuthService já inseriu os dados na tabela 'profiles'.
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
             builder: (context) => DashboardPage(userType: widget.userType),
           ),
+          (route) => false, // Limpa a pilha de navegação
         );
       }
     } catch (e) {

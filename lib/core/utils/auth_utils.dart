@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
+import '../services/supabase_auth_service.dart';
 import '../../main.dart';
 import '../theme/app_theme.dart';
 
@@ -8,12 +8,13 @@ class AuthUtils {
     final confirma = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sair'),
-        content: const Text('Tem certeza que deseja sair?'),
+        backgroundColor: AppColors.surfaceDark,
+        title: const Text('Sair', style: TextStyle(color: Colors.white)),
+        content: const Text('Tem certeza que deseja sair?', style: TextStyle(color: AppColors.labelSecondary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: const Text('Cancelar', style: TextStyle(color: Colors.white70)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
@@ -25,7 +26,7 @@ class AuthUtils {
     );
 
     if (confirma ?? false) {
-      await AuthService().signOut();
+      await SupabaseAuthService().signOut();
       if (context.mounted) {
         Navigator.pushAndRemoveUntil(
           context,

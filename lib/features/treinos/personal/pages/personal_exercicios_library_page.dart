@@ -7,7 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/exercise_service.dart';
-import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/supabase_auth_service.dart';
 import '../../shared/models/exercicio_model.dart';
 import '../../../../core/utils/cloudinary.dart';
 import 'personal_criar_exercicio_page.dart';
@@ -23,7 +23,7 @@ class PersonalExerciciosLibraryPage extends StatefulWidget {
 class _PersonalExerciciosLibraryPageState
     extends State<PersonalExerciciosLibraryPage> {
   final ExerciseService _exerciseService = ExerciseService();
-  final AuthService _authService = AuthService();
+  final SupabaseAuthService _authService = SupabaseAuthService();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
@@ -1143,4 +1143,3 @@ class _PersonalExerciciosLibraryPageState
     );
   }
 }
-

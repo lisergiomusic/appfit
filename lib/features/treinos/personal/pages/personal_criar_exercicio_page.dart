@@ -2,7 +2,7 @@ import 'package:appfit/core/widgets/app_nav_back_button.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/exercise_service.dart';
-import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/supabase_auth_service.dart';
 import '../../shared/models/exercicio_model.dart';
 
 class PersonalCriarExercicioPage extends StatefulWidget {
@@ -17,7 +17,7 @@ class PersonalCriarExercicioPage extends StatefulWidget {
 class _PersonalCriarExercicioPageState
     extends State<PersonalCriarExercicioPage> {
   final ExerciseService _exerciseService = ExerciseService();
-  final AuthService _authService = AuthService();
+  final SupabaseAuthService _authService = SupabaseAuthService();
 
   final TextEditingController _nomeCtrl = TextEditingController();
   final TextEditingController _mediaUrlCtrl = TextEditingController();

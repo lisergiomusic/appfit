@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/services/auth_service.dart';
+import '../../../core/services/supabase_auth_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/auth_utils.dart';
 import '../aluno/aluno_home_page.dart';
@@ -19,14 +19,14 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   int _indiceAtual = 0;
-  final AuthService _authService = AuthService();
+  final SupabaseAuthService _authService = SupabaseAuthService();
 
   late final List<Widget> _paginas;
 
   @override
   void initState() {
     super.initState();
-    final uid = _authService.currentUser?.uid ?? '';
+    final uid = _authService.currentUser?.id ?? '';
     final isAluno = widget.userType == 'aluno';
 
     _paginas = isAluno

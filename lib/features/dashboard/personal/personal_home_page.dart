@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/aluno_service.dart';
-import '../../../core/services/auth_service.dart';
+import '../../../core/services/supabase_auth_service.dart';
 import '../../../core/services/migration_service.dart';
 import '../../../core/widgets/app_bar_divider.dart';
 import '../../../core/widgets/app_section_link_button.dart';
@@ -26,7 +26,7 @@ class PersonalHomePage extends StatefulWidget {
 }
 
 class _PersonalHomePageState extends State<PersonalHomePage> {
-  final AuthService _authService = AuthService();
+  final SupabaseAuthService _authService = SupabaseAuthService();
   final AlunoService _alunoService = AlunoService();
   late final Future<ContagemAlunos> _contagensFuture;
 

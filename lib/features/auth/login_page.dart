@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/services/auth_service.dart';
+import '../../core/services/supabase_auth_service.dart';
 import 'cadastro_page.dart';
 import 'primeiro_acesso_page.dart';
 import '../dashboard/shared/dashboard_page.dart';
@@ -17,7 +17,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
-  final AuthService _authService = AuthService();
+  final SupabaseAuthService _authService = SupabaseAuthService();
 
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -38,17 +38,19 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      await _authService.signIn(
+      // Tentativa de login via Supabase
+      final response = await _authService.signIn(
         _emailController.text.trim(),
         _senhaController.text.trim(),
       );
 
-      if (mounted) {
-        Navigator.pushReplacement(
+      if (mounted && response.user != null) {
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
             builder: (context) => DashboardPage(userType: widget.userType),
           ),
+          (route) => false,
         );
       }
     } catch (e) {
