@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:rxdart/rxdart.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_bar_divider.dart';
@@ -38,20 +39,32 @@ class PersonalAlunoPerfilPage extends StatefulWidget {
 class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
   late final AlunoService _alunoService;
 
-  late final Stream<AlunoPerfilData> _perfilStream;
-  late final Stream<dynamic> _logsSemanaStream;
+  late Stream<AlunoPerfilData> _perfilStream;
+  late Stream<dynamic> _logsSemanaStream;
 
-  // Último dado recebido — exibido enquanto o stream reemite, evitando shimmer
-  // desnecessário quando o cache local já tem os dados.
-  AlunoPerfilData? _ultimoPerfil;
-  List<DateTime>? _ultimosDiasTreinados;
+  bool _isManualLoading = false;
 
   @override
   void initState() {
     super.initState();
     _alunoService = AlunoService();
-    _perfilStream = _alunoService.getAlunoPerfilCompletoStream(widget.alunoId);
-    _logsSemanaStream = _alunoService.getLogsDaSemanaStream(widget.alunoId);
+    _carregarDados();
+  }
+
+  void _carregarDados() {
+    setState(() {
+      _perfilStream = _alunoService.getAlunoPerfilCompletoStream(widget.alunoId);
+      _logsSemanaStream = _alunoService.getLogsDaSemanaStream(widget.alunoId);
+    });
+  }
+
+  /// Força o recarregamento dos dados (Trigger manual)
+  Future<void> _refresh() async {
+    setState(() => _isManualLoading = true);
+    _carregarDados();
+    // Pequeno delay para garantir que o spinner seja percebido e o banco processado
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (mounted) setState(() => _isManualLoading = false);
   }
 
   Future<void> _abrirWhatsApp(BuildContext context, String? telefone) async {
@@ -84,10 +97,6 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Mapa de seções da interface desta página:
-    // 1) Estrutura superior: AppBar, título e ações de navegação.
-    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
-    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -95,156 +104,142 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
         title: const Text('Perfil do Aluno'),
         bottom: const AppBarDivider(),
       ),
-      body: StreamBuilder<AlunoPerfilData>(
-        stream: _perfilStream,
-        builder: (context, snapshot) {
-          // Usa dado em cache se o stream está recomeçando — evita shimmer
-          // desnecessário quando voltamos de uma página filha.
-          final perfilAtual = snapshot.data ?? _ultimoPerfil;
+      body: Stack(
+        children: [
+          StreamBuilder<AlunoPerfilData>(
+            stream: _perfilStream,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting && !_isManualLoading) {
+                return _buildShimmerLoading();
+              }
 
-          if (snapshot.connectionState == ConnectionState.waiting &&
-              perfilAtual == null) {
-            return _buildShimmerLoading();
-          }
+              if (snapshot.hasError) {
+                final error = snapshot.error;
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.error_outline,
+                            color: AppColors.systemRed, size: 48),
+                        const SizedBox(height: 16),
+                        const Text(
+                          "Erro ao carregar perfil.",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 24),
+                        AppPrimaryButton(
+                          label: "Tentar Novamente",
+                          onPressed: _carregarDados,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
 
-          if (snapshot.hasError) {
-            final error = snapshot.error;
-            final stack = snapshot.stackTrace;
-            debugPrint('[PERFIL_ERROR] Error: $error\nStack: $stack');
+              final data = snapshot.data;
+              if (data == null) return const SizedBox.shrink();
 
-            // Se já temos um perfil (cache), não mostra erro de tela cheia,
-            // apenas loga. Isso evita que falhas em streams secundários
-            // quebrem a visualização principal.
-            if (perfilAtual == null) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32.0),
+              final alunoData = data.aluno;
+              final String nomeFirestore =
+                  '${alunoData['nome'] ?? ''} ${alunoData['sobrenome'] ?? ''}'
+                      .trim();
+              final String nomeExibicao = nomeFirestore.isNotEmpty
+                  ? nomeFirestore
+                  : widget.alunoNome;
+
+              final photoUrl = alunoData['photoUrl'] as String?;
+              final telefone = alunoData['telefone'] as String?;
+              final dataNascimentoRaw = alunoData['data_nascimento'] ?? alunoData['dataNascimento'];
+              final DateTime? dataNascimento = dataNascimentoRaw != null ? DateTime.tryParse(dataNascimentoRaw.toString()) : null;
+              final peso = alunoData['peso_atual'] ?? alunoData['pesoAtual'] ?? '--';
+              final idade = dataNascimento != null
+                  ? _calcularIdade(dataNascimento).toString()
+                  : '--';
+
+              return RefreshIndicator(
+                onRefresh: _refresh,
+                color: AppColors.primary,
+                backgroundColor: AppColors.surfaceDark,
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: SpacingTokens.screenHorizontalPadding,
+                    vertical: SpacingTokens.screenTopPadding,
+                  ),
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline,
-                          color: AppColors.systemRed, size: 48),
+                      AlunoHeaderSection(
+                        alunoId: widget.alunoId,
+                        alunoNome: nomeExibicao,
+                        photoUrl: widget.photoUrl ?? photoUrl,
+                        idade: idade,
+                        peso: peso.toString(),
+                      ),
                       const SizedBox(height: 16),
-                      const Text(
-                        "Erro ao carregar perfil completo.",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        "$error",
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: AppColors.labelSecondary),
-                      ),
-                      const SizedBox(height: 24),
-                      AppPrimaryButton(
-                        label: "Tentar Novamente",
-                        onPressed: () {
-                          setState(() {
-                            _perfilStream = _alunoService
-                                .getAlunoPerfilCompletoStream(widget.alunoId);
-                          });
+                      _buildActions(context, telefone),
+                      const SizedBox(height: SpacingTokens.sectionGap),
+                      StreamBuilder<dynamic>(
+                        stream: _logsSemanaStream,
+                        builder: (context, logsSnapshot) {
+                          List<DateTime>? treinados;
+                          if (logsSnapshot.hasData && logsSnapshot.data is List) {
+                            final list = logsSnapshot.data as List;
+                            treinados = list.map((d) {
+                              final tsRaw = d['dataHora'];
+                              return DateTime.tryParse(tsRaw.toString()) ?? DateTime.now();
+                            }).toList();
+                          }
+                          return RitmoDaSemanaCard(
+                            alunoNome: nomeExibicao,
+                            diasTreinados: treinados,
+                          );
                         },
                       ),
+                      const SizedBox(height: SpacingTokens.xxl),
+                      FichaAtivaHeroCard(
+                        alunoId: widget.alunoId,
+                        alunoNome: nomeExibicao,
+                        photoUrl: widget.photoUrl ?? photoUrl,
+                        peso: peso.toString(),
+                        idade: idade,
+                        rotinaAtiva: data.rotinaAtiva,
+                        rotinaId: data.rotinaId,
+                        onPrescreverTreino: () async {
+                          await _exibirOpcoesVincularTreino(context);
+                          _refresh();
+                        },
+                      ),
+                      const SizedBox(height: SpacingTokens.xxl),
+                      GestaoSection(
+                        alunoId: widget.alunoId,
+                        alunoNome: nomeExibicao,
+                        photoUrl: photoUrl,
+                        peso: peso.toString(),
+                        idade: idade,
+                      ),
+                      const SizedBox(height: 48),
                     ],
                   ),
                 ),
               );
-            }
-          }
-
-          if (perfilAtual == null) {
-            return const Center(
-              child: Text(
-                "Nenhum dado encontrado para este aluno.",
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.labelSecondary),
+            },
+          ),
+          if (_isManualLoading)
+            Container(
+              color: Colors.black.withAlpha(150),
+              child: const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
               ),
-            );
-          }
-
-          // Atualiza o cache local sempre que chega dado novo.
-          if (snapshot.hasData) _ultimoPerfil = snapshot.data;
-
-          final data = perfilAtual;
-          final alunoData = data.aluno;
-          final String nomeFirestore =
-              '${alunoData['nome'] ?? ''} ${alunoData['sobrenome'] ?? ''}'
-                  .trim();
-          final String nomeExibicao = nomeFirestore.isNotEmpty
-              ? nomeFirestore
-              : widget.alunoNome;
-
-          final photoUrl = alunoData['photoUrl'] as String?;
-          final telefone = alunoData['telefone'] as String?;
-          final dataNascimentoRaw = alunoData['dataNascimento'];
-          final DateTime? dataNascimento = dataNascimentoRaw != null ? DateTime.tryParse(dataNascimentoRaw.toString()) : null;
-          final peso = alunoData['pesoAtual']?.toString() ?? '--';
-          final idade = dataNascimento != null
-              ? _calcularIdade(dataNascimento).toString()
-              : '--';
-
-          return SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: SpacingTokens.screenHorizontalPadding,
-              vertical: SpacingTokens.screenTopPadding,
             ),
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              children: [
-                AlunoHeaderSection(
-                  alunoId: widget.alunoId,
-                  alunoNome: nomeExibicao,
-                  photoUrl: widget.photoUrl ?? photoUrl,
-                  idade: idade,
-                  peso: peso,
-                ),
-                const SizedBox(height: 16),
-                _buildActions(context, telefone),
-                const SizedBox(height: SpacingTokens.sectionGap),
-                StreamBuilder<dynamic>(
-                  stream: _logsSemanaStream,
-                  builder: (context, logsSnapshot) {
-                    if (logsSnapshot.hasData && logsSnapshot.data is List) {
-                      final list = logsSnapshot.data as List;
-                      _ultimosDiasTreinados = list.map((d) {
-                        final tsRaw = d['dataHora'];
-                        return DateTime.tryParse(tsRaw.toString()) ?? DateTime.now();
-                      }).toList();
-                    }
-                    return RitmoDaSemanaCard(
-                      alunoNome: nomeExibicao,
-                      diasTreinados: _ultimosDiasTreinados,
-                    );
-                  },
-                ),
-                const SizedBox(height: SpacingTokens.xxl),
-                FichaAtivaHeroCard(
-                  alunoId: widget.alunoId,
-                  alunoNome: nomeExibicao,
-                  photoUrl: widget.photoUrl ?? photoUrl,
-                  peso: peso,
-                  idade: idade,
-                  rotinaAtiva: data.rotinaAtiva,
-                  rotinaId: data.rotinaId,
-                  onPrescreverTreino: () =>
-                      _exibirOpcoesVincularTreino(context),
-                ),
-                const SizedBox(height: SpacingTokens.xxl),
-                GestaoSection(
-                  alunoId: widget.alunoId,
-                  alunoNome: nomeExibicao,
-                  photoUrl: photoUrl,
-                  peso: peso,
-                  idade: idade,
-                ),
-                const SizedBox(height: 48),
-              ],
-            ),
-          );
-        },
+        ],
       ),
     );
   }
@@ -422,8 +417,8 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
     );
   }
 
-  void _exibirOpcoesVincularTreino(BuildContext context) {
-    showModalBottomSheet(
+  Future<void> _exibirOpcoesVincularTreino(BuildContext context) async {
+    await showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surfaceDark,
       isScrollControlled: true,
