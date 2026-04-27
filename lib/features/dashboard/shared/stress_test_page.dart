@@ -18,9 +18,8 @@ class _StressTestPageState extends State<StressTestPage> {
   final RotinaService _rotinaService = RotinaService();
   final List<String> _logs = [];
   bool _isRunning = false;
-  
+
   StreamSubscription? _profileSub;
-  AlunoPerfilData? _lastProfileData;
 
   void _addLog(String msg) {
     final time = DateTime.now().toString().split(' ').last.substring(0, 8);
@@ -45,7 +44,7 @@ class _StressTestPageState extends State<StressTestPage> {
       final email = 'stress_${DateTime.now().millisecondsSinceEpoch}@test.com';
       _addLog('Passo 1: Criando aluno ($email)...');
       await _alunoService.salvarAluno('Stress', 'Test', email);
-      
+
       final alunoRes = await Supabase.instance.client
           .from('profiles')
           .select()
@@ -57,7 +56,6 @@ class _StressTestPageState extends State<StressTestPage> {
       // 2. ABRIR STREAM
       _addLog('Passo 2: Abrindo Stream Reativa...');
       _profileSub = _alunoService.getAlunoPerfilCompletoStream(alunoId).listen((data) {
-        _lastProfileData = data;
         _addLog('📺 [STREAM UPDATE] Rotina: ${data.rotinaAtiva?['nome'] ?? 'Nenhuma'}');
       });
 

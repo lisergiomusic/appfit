@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:rxdart/rxdart.dart';
 import '../../features/alunos/shared/models/aluno_perfil_data.dart';
 
 class PaginatedAlunos {
@@ -43,7 +44,7 @@ class AlunoService {
       await _supabase.from('profiles').insert({
         'nome': nome,
         'email': email,
-        'sobrenome': sobrenome, // Adicionado campo sobrenome que faltava
+        'sobrenome': sobrenome,
         'tipo_usuario': 'aluno',
         'personal_id': personalId,
         'telefone': whatsapp,
@@ -144,7 +145,67 @@ class AlunoService {
   }
 
   Stream<List<AtividadeRecenteItem>> getAtividadeRecenteStream({int limit = 10}) => Stream.value([]);
-  Stream<AlunoPerfilData> getAlunoPerfilCompletoStream(String alunoId) => Stream.value(AlunoPerfilData(aluno: {}, rotinaAtiva: null));
+  
+  /// Stream reativa e completa do perfil do aluno (Perfil + Rotina Ativa + Dados do Personal)
+  Stream<AlunoPerfilData> getAlunoPerfilCompletoStream(String alunoId) {
+    // 1. Ouvir mudanças no perfil do aluno
+    return _supabase
+        .from('profiles')
+        .stream(primaryKey: ['id'])
+        .eq('id', alunoId)
+        .switchMap((alunoList) {
+          if (alunoList.isEmpty) {
+            return Stream.value(AlunoPerfilData(aluno: {}, rotinaAtiva: null));
+          }
+
+          final alunoMap = alunoList.first;
+          final personalId = alunoMap['personal_id'];
+
+          // 2. Criar Stream para as Rotinas do Aluno
+          // Filtramos apenas por aluno_id no servidor (limitação de 1 filtro por stream)
+          // e filtramos a 'ativa' manualmente no map.
+          final rotinaStream = _supabase
+              .from('rotinas')
+              .stream(primaryKey: ['id'])
+              .eq('aluno_id', alunoId)
+              .map((list) {
+                try {
+                  return list.firstWhere((r) => r['ativa'] == true);
+                } catch (_) {
+                  return null;
+                }
+              });
+
+          // 3. Criar Stream para os dados do Personal (opcional)
+          final personalStream = personalId != null
+              ? _supabase
+                  .from('profiles')
+                  .stream(primaryKey: ['id'])
+                  .eq('id', personalId)
+                  .map((list) => list.isNotEmpty ? list.first : null)
+              : Stream<Map<String, dynamic>?>.value(null);
+
+          // 4. Combinar tudo no nosso modelo AlunoPerfilData
+          return Rx.combineLatest2<Map<String, dynamic>?, Map<String, dynamic>?, AlunoPerfilData>(
+            rotinaStream,
+            personalStream,
+            (rotina, personal) {
+              return AlunoPerfilData(
+                aluno: alunoMap,
+                rotinaAtiva: rotina,
+                rotinaId: rotina?['id']?.toString(),
+                nomePersonal: personal != null 
+                    ? '${personal['nome']} ${personal['sobrenome'] ?? ''}'.trim() 
+                    : null,
+                especialidadePersonal: personal?['especialidade'],
+                photoUrlPersonal: personal?['photoUrl'],
+                telefonePersonal: personal?['telefone'],
+              );
+            },
+          );
+        });
+  }
+
   Stream<List<Map<String, dynamic>>> getLogsDaSemanaStream(String alunoId) => Stream.value([]);
   Stream<List<Map<String, dynamic>>> getUltimoLogStream(String alunoId) => Stream.value([]);
   Stream<List<Map<String, dynamic>>> getRotinasTemplates() => Stream.value([]);
@@ -153,7 +214,6 @@ class AlunoService {
   
   Future<void> registrarPeso({required String alunoId, required double peso}) async {}
   
-  // Corrigido o nome do parâmetro para bater com a UI
   Future<void> atribuirTreinoAoAluno({
     required String alunoId, 
     required String templateId, 
