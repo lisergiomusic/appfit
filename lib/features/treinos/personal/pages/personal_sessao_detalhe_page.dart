@@ -198,7 +198,7 @@ class _SessaoDetalhePersonalViewState
     final shouldShowFab = !controller.isEditingTitle && !isKeyboardVisible;
 
     return PopScope(
-      canPop: _canPopNow,
+      canPop: !controller.hasChanges || _canPopNow,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         _concluirESalvar(context);
@@ -224,7 +224,7 @@ class _SessaoDetalhePersonalViewState
                   AppBarTextButton(
                     label: 'Salvar',
                     isLoading: _isSaving,
-                    onPressed: _isSaving
+                    onPressed: (_isSaving || !controller.hasChanges)
                         ? null
                         : () => _concluirESalvar(context),
                   ),

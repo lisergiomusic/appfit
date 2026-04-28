@@ -1,80 +1,56 @@
-This is a Flutter project named `appfit`. It's a mobile application for personal trainers to manage their clients' workouts. The app uses Firebase for authentication and Firestore as its database.
+This is a Flutter project named `appfit`. It's a high-performance mobile application for personal trainers to manage their clients' workouts, currently transitioned to a **Supabase-backed** architecture.
 
 ## Project Overview
 
-The application is structured with a clear separation of concerns, with features organized into directories like `auth`, `dashboard`, `alunos` (students), and `treinos` (workouts).
+The application follows a modular, feature-based structure with a focus on "Staff-level" UI/UX and a robust relational data model.
 
-The main user flow is as follows:
+### Main User Flow
+1.  **Authentication:** Powered by Supabase Auth (Email/Password, Google).
+2.  **Dashboard:** Centralized hub for trainers to manage multiple students.
+3.  **Treinos (Workouts):** 
+    *   **Rotinas:** Relational plans with specific objectives and durations.
+    *   **Sessões:** Specific workout days (e.g., "Push Day") with day-of-week assignments.
+    *   **Exercícios:** Relational library with a hierarchical instruction system (Global -> Personalized -> Session).
+    *   **Séries:** Complex structure supporting different types (Warm-up, Feeder, Work) with atomic persistence.
 
-1.  **Authentication:** Users can sign up and log in as either a "personal" (personal trainer) or "aluno" (student).
-2.  **Dashboard:** After logging in, users are taken to a dashboard with a bottom navigation bar.
-3.  **Features:** The dashboard provides access to the following features:
-    *   **Home:** A home screen (not fully implemented in the analyzed files).
-    *   **Alunos:** A section for personal trainers to manage their students (not fully implemented in the analyzed files).
-    *   **Treinos:** The core feature of the app, allowing personal trainers to create, manage, and assign workout routines to their students.
-    *   **Ajustes:** A settings screen (not fully implemented in the analyzed files).
+## Tech Stack & Dependencies
 
-The workout (`treino`) feature is well-developed and allows for a high degree of customization:
+*   **Core:** Flutter (Material 3 + Custom Premium Theme)
+*   **Backend:** Supabase (PostgreSQL, Auth, Storage, Edge Functions)
+*   **State Management:** `Provider` + `ChangeNotifier` for local/feature state.
+*   **UI Assets:** Google Fonts, Cupertino Icons, Custom "Glassmorphism" widgets.
 
-*   **Routines (`Rotinas`):** Personal trainers can create workout routines, which are essentially workout plans. Each routine has a name, an objective, and a duration.
-*   **Workout Sessions:** Each routine consists of one or more workout sessions. A session has a name (e.g., "Push Day", "Leg Day") and can be assigned to a specific day of the week.
-*   **Exercises:** Each workout session is made up of a list of exercises. The app provides a library of exercises to choose from, and personal trainers can add them to a session.
-*   **Exercise Details:** For each exercise, the personal trainer can specify the number of series, reps, weight, and rest time. There are different types of series: warm-up, feeder, and work.
+## Data & Security (Supabase)
 
-The project uses the following main dependencies:
-
-*   `flutter`
-*   `google_fonts`
-*   `cupertino_icons`
-*   `firebase_core`
-*   `firebase_auth`
-*   `cloud_firestore`
-
-## Building and Running
-
-To build and run this project, you will need to have Flutter installed and configured on your machine. You will also need to set up a Firebase project and add the `google-services.json` (for Android) and `GoogleService-Info.plist` (for iOS) files to the project.
-
-Once the project is set up, you can run it using the following command:
-
-```bash
-flutter run
-```
+The project utilizes PostgreSQL's relational power:
+- **RLS (Row Level Security):** Policies are strictly enforced. Trainers can only modify their own exercises or their `instrucoes_personalizadas` on global exercises.
+- **Atomic Persistence:** Each exercise session handles its own state updates to ensure data integrity during complex edits.
+- **Instruction Hierarchy:**
+    1. `instrucoes`: Global default from the exercise library.
+    2. `instrucoes_personalizadas`: Trainer's persistent override for that specific exercise across all clients.
+    3. `sessao_instrucoes`: Specific instruction for a single session instance.
 
 ## Developer Mindset and UI/UX Principles
 
-As the AI developer for this project, I must adhere to the following principles:
-
-*   **Senior Developer Mindset:** Always think and code like a senior developer. This means prioritizing maintainability, scalability, clean code architecture, and robust error handling.
-*   **UI/UX Expert:** Every change or new feature must be designed with a high level of UI/UX expertise. Interfaces should be intuitive, accessible, and follow modern design standards.
-*   **Professional Design:** Avoid designs that feel like "vibecoding" (amateurish or purely aesthetic without functional depth). Every design choice should be deliberate, professional, and consistent with the app's established theme.
+*   **Staff-level Engineering:** Prioritize maintainability, scalability, and type safety.
+*   **Premium UI/UX:** Every interface must feel professional. Use "glassmorphism" for action buttons, consistent spacing (SpacingTokens), and ergonomic touch targets (min 44px).
+*   **Dirty Check Pattern:** Always implement `hasChanges` logic in complex forms to disable "Save" buttons and optimize network calls.
+*   **Haptic Feedback:** Use `HapticFeedback.lightImpact()` for critical UI interactions (toggles, reorders, selections).
 
 ## Development Conventions
 
-The code follows the standard Flutter conventions and uses the `flutter_lints` package to enforce good coding practices. The code is well-structured and uses a feature-based organization. The UI is built using Material Design components, with a custom theme defined in `lib/core/theme/app_theme.dart`.
-
-The project makes good use of Flutter's state management capabilities, with `StatefulWidget`s being used to manage the state of the various screens. It also uses `StreamBuilder` and `FutureBuilder` to work with asynchronous data from Firebase.
-
-### Code Conventions
-- Feature-based folder organization
-- `StatefulWidget` for local UI state
-- `StreamBuilder` / `FutureBuilder` for Firebase async data
-- `flutter_lints` rules must always pass
-- No business logic inside widgets
-- Error handling is mandatory — never ignore exceptions silently
+### Code Structure
+- Feature-based folder organization (e.g., `lib/features/treinos/personal/`).
+- Separation of concerns: Controllers for logic, Widgets for UI.
+- No business logic inside widgets.
+- Mandatory error handling (never ignore exceptions).
 
 ### Git & Commits
-Quando o usuário disser **"gere um commit"**, siga rigorosamente este fluxo:
-1.  **Análise:** Execute `git diff --stat` para ver os arquivos e `git diff` para o conteúdo.
-2.  **Formato:**
-    - **Tipo:** feat/fix/refactor/style/docs/test (lowercase).
-    - **Escopo:** entre parênteses (ex: treinos, alunos, auth).
-    - **Descrição:** imperativo, conciso, em inglês ou português.
-    - **Corpo (opcional):** lista com bullets das mudanças.
-3.  **Exemplo:** `feat(treinos): apply AppFitSliverAppBar to student history page`
-4.  **Ação:** **Não execute o commit**. Apenas gere a mensagem e exiba para o usuário.
+When requested to **"gere um commit"**, follow this standard:
+- **Format:** `type(scope): description` (e.g., `feat(treinos): implement dirty check for session details`)
+- **Action:** Generate the message and display it. **Do not execute the commit.**
 
-### Mindset
-- Think and code as a **Staff-level Flutter engineer**
-- Every decision must be **deliberate, maintainable, and scalable**
-- No shortcuts, no "vibecoding", no amateurish patterns
-- If something feels wrong architecturally, say so and propose a better path
+### Quality Standards
+- `flutter_lints` rules must always pass.
+- Use `ChangeNotifier` for complex view states.
+- Follow the established `AppTheme` and `CardTokens` for visual consistency.

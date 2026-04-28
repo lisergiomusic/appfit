@@ -12,13 +12,31 @@ class ExercicioWrapper {
 
 class ConfigurarTreinoController extends ChangeNotifier {
 
-  late String initialNomeTreino;
+  late final String initialNomeTreino;
+  late final String _initialSessaoNote;
+  late final List<String> _initialExercicioIds;
 
   late List<ExercicioWrapper> _exercicios;
   List<ExercicioWrapper> get exercicios => _exercicios;
 
-  bool _hasChanges = false;
-  bool get hasChanges => _hasChanges;
+  bool get hasChanges {
+    final nomeChanged = nomeTreinoController.text.trim() != initialNomeTreino;
+    final noteChanged = _sessaoNote != _initialSessaoNote;
+    
+    // Compara estrutura da lista (Instâncias e Ordem)
+    final currentIds = _exercicios.map((e) => e.id).toList();
+    bool listChanged = currentIds.length != _initialExercicioIds.length;
+    if (!listChanged) {
+      for (int i = 0; i < currentIds.length; i++) {
+        if (currentIds[i] != _initialExercicioIds[i]) {
+          listChanged = true;
+          break;
+        }
+      }
+    }
+
+    return nomeChanged || noteChanged || listChanged;
+  }
 
   final TextEditingController nomeTreinoController;
 
@@ -44,8 +62,10 @@ class ConfigurarTreinoController extends ChangeNotifier {
     String sessaoNote = '',
   }) : nomeTreinoController = TextEditingController(text: nomeTreino) {
     initialNomeTreino = nomeTreino;
+    _initialSessaoNote = sessaoNote;
     _sessaoNote = sessaoNote;
     _exercicios = exercicios.map((ex) => ExercicioWrapper(ex.clone())).toList();
+    _initialExercicioIds = _exercicios.map((e) => e.id).toList();
 
     nomeTreinoController.addListener(_onNomeTreinoChanged);
     titleFocusNode.addListener(_onFocusChanged);
@@ -54,7 +74,6 @@ class ConfigurarTreinoController extends ChangeNotifier {
   void updateSessaoNote(String newNote) {
     if (_sessaoNote != newNote) {
       _sessaoNote = newNote;
-      _hasChanges = true;
       notifyListeners();
     }
   }
@@ -70,16 +89,7 @@ class ConfigurarTreinoController extends ChangeNotifier {
   }
 
   void _onNomeTreinoChanged() {
-    final text = nomeTreinoController.text.trim();
-    final hasChangedNow = text != initialNomeTreino;
-
-    if (hasChangedNow != _hasChanges) {
-      _hasChanges = hasChangedNow;
-      notifyListeners();
-    } else if (_hasChanges) {
-      // Notifica para atualizar o título na UI mesmo que _hasChanges já fosse true
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   void _onFocusChanged() {
@@ -146,7 +156,6 @@ class ConfigurarTreinoController extends ChangeNotifier {
     if (newIndex > oldIndex) newIndex -= 1;
     final item = _exercicios.removeAt(oldIndex);
     _exercicios.insert(newIndex, item);
-    _hasChanges = true;
     notifyListeners();
   }
 
@@ -156,12 +165,10 @@ class ConfigurarTreinoController extends ChangeNotifier {
       _exercicios.add(newWrapper);
       _newExercicios.add(newWrapper.id);
     }
-    _hasChanges = true;
     notifyListeners();
   }
 
   void onExercicioChanged() {
-    _hasChanges = true;
     notifyListeners();
   }
 
@@ -173,7 +180,6 @@ class ConfigurarTreinoController extends ChangeNotifier {
     _lastRemovedItem = _exercicios[index];
     _lastRemovedIndex = index;
     _exercicios.removeAt(index);
-    _hasChanges = true;
     notifyListeners();
   }
 
