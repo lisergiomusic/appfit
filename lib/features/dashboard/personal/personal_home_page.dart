@@ -94,77 +94,41 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
               builder: (context, snapshot) {
                 String nome = "...";
                 String? photoUrl;
-                String tipoUsuarioLabel = 'Usuario';
 
                 if (snapshot.hasData && snapshot.data != null) {
                   final data = snapshot.data!;
-                  nome = data['nome']?.toString().split(' ')[0] ?? "Usuário";
+                  nome = data['nome']?.toString().split(' ')[0] ?? "Personal";
                   photoUrl = data['photoUrl'] as String?;
-
-                  final tipoUsuario = data['tipoUsuario']
-                      ?.toString()
-                      .toLowerCase();
-                  if (tipoUsuario == 'personal') {
-                    tipoUsuarioLabel = 'Personal Trainer';
-                  } else if (tipoUsuario == 'aluno') {
-                    tipoUsuarioLabel = 'Aluno';
-                  }
                 }
 
                 return Padding(
                   padding: const EdgeInsets.only(
-                    left: AppTheme.paddingScreen,
-                    right: AppTheme.paddingScreen,
+                    left: SpacingTokens.screenHorizontalPadding,
+                    right: SpacingTokens.screenHorizontalPadding,
                     top: SpacingTokens.screenTopPadding,
                   ),
                   child: Row(
                     children: [
-                      Stack(
-                        alignment: Alignment.bottomRight,
-                        children: [
-                          CircleAvatar(
-                            radius: AvatarTokens.lg,
-                            backgroundColor: AppColors.surfaceLight,
-                            backgroundImage:
-                                photoUrl != null && photoUrl.isNotEmpty
-                                ? NetworkImage(photoUrl)
-                                : null,
-                            child: photoUrl == null || photoUrl.isEmpty
-                                ? const Icon(
-                                    Icons.person_rounded,
-                                    color: AppColors.labelSecondary,
-                                    size: 34,
-                                  )
-                                : null,
-                          ),
-                        ],
+                      AlunoAvatar(
+                        alunoNome: nome,
+                        photoUrl: photoUrl,
+                        radius: AvatarTokens.lg,
+                        showBorder: false,
                       ),
                       const SizedBox(width: 16),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 5),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${_getSaudacao()}, $nome',
-                                style: AppTheme.title1,
-                              ),
-                              const SizedBox(height: AppTheme.radiusXS),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 3,
-                                ),
-                                decoration: PillTokens.decoration,
-                                child: Text(
-                                  tipoUsuarioLabel,
-                                  style: PillTokens.text,
-                                ),
-                              ),
-                            ],
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${_getSaudacao()},',
+                            style: AppTheme.caption.copyWith(
+                              color: AppColors.labelSecondary,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: 2),
+                          Text(nome, style: AppTheme.title1),
+                        ],
                       ),
                     ],
                   ),
