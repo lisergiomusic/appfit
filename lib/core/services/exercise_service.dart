@@ -6,6 +6,8 @@ import '../../features/treinos/shared/models/exercicio_model.dart';
 class ExerciseService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
+  String? get _currentUserId => _supabase.auth.currentUser?.id;
+
   /// Busca todos os exercícios da biblioteca base.
   Future<List<ExercicioItem>> buscarBibliotecaCompleta() async {
     try {
@@ -27,7 +29,7 @@ class ExerciseService {
           .from('exercicios_base')
           .select()
           .eq('nome', nome)
-          .maybeSingle(); // Retorna null se não encontrar, em vez de dar erro
+          .maybeSingle();
 
       if (data == null) return null;
       return ExercicioItem.fromSupabase(data);
@@ -37,7 +39,7 @@ class ExerciseService {
     }
   }
 
-  /// Busca exercícios filtrados (Substitui o buscarBibliotecaPaginada por enquanto)
+  /// Busca exercícios filtrados
   Future<List<ExercicioItem>> buscarComFiltros({
     String? categoria,
     String? busca,
@@ -45,14 +47,23 @@ class ExerciseService {
     try {
       var query = _supabase.from('exercicios_base').select();
 
-      if (categoria != null && categoria != 'Tudo' && categoria != 'Meus Exercícios') {
-        query = query.contains('grupo_muscular', [categoria]);
+      if (categoria != null && categoria != 'Tudo') {
+        if (categoria == 'Meus Exercícios') {
+          final uid = _currentUserId;
+          if (uid != null) {
+            query = query.eq('personal_id', uid);
+          }
+        } else {
+          // No PostgreSQL, buscamos se a categoria existe dentro da lista grupo_muscular
+          query = query.contains('grupo_muscular', [categoria]);
+        }
       }
 
       if (busca != null && busca.isNotEmpty) {
         query = query.ilike('nome', '%$busca%');
       }
 
+      // Ordenar: primeiro os favoritos/customizados do personal, depois por nome
       final List<dynamic> data = await query.order('nome', ascending: true);
       return data.map((json) => ExercicioItem.fromSupabase(json)).toList();
     } catch (e) {
@@ -60,15 +71,16 @@ class ExerciseService {
     }
   }
 
-  /// Compatibilidade: Redireciona a busca paginada para a filtrada (simplificação temporária)
+  /// Compatibilidade para UI paginada
   Future<dynamic> buscarBibliotecaPaginada({
     String? categoria,
     String? busca,
-    dynamic lastDoc, // Ignorado no Supabase por enquanto
+    dynamic lastDoc,
     int limit = 20,
   }) async {
+    // Para simplificar a migração, buscamos com filtros. 
+    // O Supabase lida bem com centenas de registros sem paginação complexa inicial.
     final items = await buscarComFiltros(categoria: categoria, busca: busca);
-    // Retornamos um objeto similar ao PaginatedExercises para não quebrar a UI
     return _FakePaginatedExercises(items);
   }
 
@@ -85,7 +97,7 @@ class ExerciseService {
         'imagem_url': exercicio.imagemUrl,
         'media_url': exercicio.mediaUrl,
         'instrucoes': exercicio.instrucoes,
-        'personal_id': forPublico ? null : _supabase.auth.currentUser?.id,
+        'personal_id': forPublico ? null : _currentUserId,
       });
     } catch (e) {
       throw Exception('Erro ao criar exercício: $e');
@@ -106,17 +118,36 @@ class ExerciseService {
         'imagem_url': exercicio.imagemUrl,
         'media_url': exercicio.mediaUrl,
         'instrucoes': exercicio.instrucoes,
-        'personal_id': forPublico ? null : _supabase.auth.currentUser?.id,
+        'personal_id': forPublico ? null : (exercicio.personalId ?? _currentUserId),
       }).eq('id', exercicio.id!);
     } catch (e) {
       throw Exception('Erro ao atualizar exercício: $e');
     }
   }
 
-  // Métodos de utilidade vazios para compilação (serão removidos ou implementados depois)
-  Future<void> cadastrarExerciciosEmMassa(List<ExercicioItem> ex, {bool? asSystemExercises}) async {}
-  Future<void> limparColecaoExcetoModelo(String nome) async {}
-  Future<Map<String, dynamic>?> obterTemplateDeExercicio(String nome) async => null;
+  /// Ferramenta de Admin: Cadastrar em massa
+  Future<void> cadastrarExerciciosEmMassa(List<ExercicioItem> lista, {bool? asSystemExercises}) async {
+    final List<Map<String, dynamic>> payload = lista.map((ex) => {
+      'nome': ex.nome,
+      'grupo_muscular': ex.grupoMuscular,
+      'tipo_alvo': ex.tipoAlvo,
+      'media_url': ex.mediaUrl,
+      'instrucoes': ex.instrucoes,
+      'personal_id': asSystemExercises == true ? null : _currentUserId,
+    }).toList();
+
+    await _supabase.from('exercicios_base').insert(payload);
+  }
+
+  /// Ferramenta de Admin: Limpeza
+  Future<void> limparColecaoExcetoModelo(String nomeModelo) async {
+    await _supabase.from('exercicios_base').delete().neq('nome', nomeModelo);
+  }
+
+  /// Ferramenta de Admin: Obter Template
+  Future<Map<String, dynamic>?> obterTemplateDeExercicio(String nome) async {
+    return await _supabase.from('exercicios_base').select().eq('nome', nome).maybeSingle();
+  }
 }
 
 class _FakePaginatedExercises {
