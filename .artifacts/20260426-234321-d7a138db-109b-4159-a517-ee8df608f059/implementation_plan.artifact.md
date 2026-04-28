@@ -1,36 +1,33 @@
-# Correção de Fluxo: Modo Gestão vs Modo Seleção (Biblioteca)
+# Refinamento de Fluxo: Modo Visualização vs Seleção (Detalhes do Exercício)
 
-Garantir que a Biblioteca de Exercícios se comporte de forma adequada ao contexto de uso (Gestão nos Ajustes vs Seleção na Montagem de Treino).
+Garantir que a página de detalhes do exercício (`PersonalExercicioViewPage`) respeite o contexto de navegação, ocultando botões de ação de treino quando acessada via configurações.
 
-## Proposta de Solução (Staff UX)
+## Proposta de Solução (Staff UI/UX)
 
-Implementar uma flag `isSelectionMode` na `PersonalExerciciosLibraryPage` para alternar entre as duas experiências.
+Propagar a flag `isSelectionMode` da Biblioteca para a página de Detalhes.
 
 ### Comportamento no Modo Gestão (`isSelectionMode = false`):
-*   **Remover**: Checkboxes de seleção nos cards.
-*   **Remover**: Botão flutuante (FloatingActionButton) de "Ver lista / Salvar".
-*   **Ação**: O clique no card abre apenas a visualização/edição do exercício.
+*   **Ocultar**: O botão inferior "Adicionar ao Treino" / "Remover do Treino".
+*   **Layout**: A lista de detalhes ocupará todo o espaço vertical disponível, sem a barra de ação fixa no rodapé.
 
 ### Comportamento no Modo Seleção (`isSelectionMode = true`):
-*   **Manter**: Todo o fluxo atual de seleção múltipla e confirmação.
+*   **Manter**: O botão inferior para alternar a seleção do exercício para o treino atual.
 
 ## Proposed Changes
 
 ### [Workout Features]
 
-#### [personal_exercicios_library_page.dart](file:///C:/Dev/Projetos/appfit/lib/features/treinos/personal/pages/personal_exercicios_library_page.dart)
+#### [personal_exercicio_view_page.dart](file:///C:/Dev/Projetos/appfit/lib/features/treinos/personal/pages/personal_exercicio_view_page.dart)
 
 - Adicionar `final bool isSelectionMode;` ao construtor (padrão `false`).
-- Condicionalizar a exibição do `GestureDetector` (checkbox) nos cards.
-- Condicionalizar o `floatingActionButton`.
-- Ajustar o `onTap` do card para não alternar seleção se não estiver em modo de seleção.
+- Condicionalizar a exibição do `Container` inferior que contém o `ElevatedButton`.
 
-#### [personal_sessao_detalhe_page.dart](file:///C:/Dev/Projetos/appfit/lib/features/treinos/personal/pages/personal_sessao_detalhe_page.dart)
+#### [personal_exercicios_library_page.dart](file:///C:/Dev/Projetos/appfit/lib/features/treinos/personal/pages/personal_exercicios_library_page.dart)
 
-- Passar `isSelectionMode: true` ao abrir a biblioteca para montagem de treino.
+- Atualizar a chamada `_mostrarPreviewExercicio` para passar o valor de `widget.isSelectionMode`.
 
 ## Plano de Verificação
 
 ### Verificação Manual
-1.  **Ajustes**: Abrir via "Biblioteca" nos Ajustes e confirmar que NÃO aparecem círculos de seleção nem o botão de Salvar.
-2.  **Montagem de Treino**: Abrir via criação de treino e confirmar que o fluxo de seleção múltipla continua funcionando normalmente.
+1.  **Ajustes -> Biblioteca**: Abrir um exercício e confirmar que o botão "Adicionar ao Treino" no rodapé **não** aparece.
+2.  **Montagem de Treino**: Abrir um exercício e confirmar que o botão aparece e funciona normalmente para selecionar/remover.

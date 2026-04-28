@@ -131,24 +131,27 @@ class _PersonalExerciciosLibraryPageState
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () async {
+              setState(() => _isLoading = true);
               try {
                 final List<dynamic> decoded = jsonDecode(controller.text);
                 final exercicios = decoded.map((item) => ExercicioItem.fromSupabase(item)).toList();
 
                 await _exerciseService.cadastrarExerciciosEmMassa(
                   exercicios,
-                  asSystemExercises: true, // Garante que fiquem sem estrela
+                  asSystemExercises: true,
                 );
                 if (mounted) {
                   Navigator.pop(context);
                   _carregarDados(reset: true);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Upload concluído!')));
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Upload concluído com sucesso!')));
                 }
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro no JSON: $e')));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro no processamento: $e')));
+              } finally {
+                if (mounted) setState(() => _isLoading = false);
               }
             },
-            child: const Text('Enviar para Firebase'),
+            child: const Text('Enviar para o Servidor'),
           ),
         ],
       ),
@@ -435,6 +438,7 @@ class _PersonalExerciciosLibraryPageState
           exercicio: ex,
           isSelected: _selecionados.contains(ex),
           isAdmin: _isAdmin,
+          isSelectionMode: widget.isSelectionMode,
         ),
       ),
     );
@@ -713,13 +717,7 @@ class _PersonalExerciciosLibraryPageState
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: CardTokens.cardRadius,
-                              onTap: () {
-                                if (widget.isSelectionMode) {
-                                  _alternarSelecao(ex);
-                                } else {
-                                  _mostrarPreviewExercicio(ex);
-                                }
-                              },
+                              onTap: () => _mostrarPreviewExercicio(ex),
                               child: Padding(
                                 padding: const EdgeInsets.all(12),
                                 child: Row(
@@ -785,12 +783,17 @@ class _PersonalExerciciosLibraryPageState
                                     if (widget.isSelectionMode)
                                       GestureDetector(
                                         behavior: HitTestBehavior.opaque,
-                                        onTap: () => _alternarSelecao(ex),
+                                        onTap: () {
+                                          HapticFeedback.selectionClick();
+                                          _alternarSelecao(ex);
+                                        },
                                         child: Container(
-                                          padding: const EdgeInsets.all(4),
+                                          width: 44, // Aumenta a área de toque para ergonomia
+                                          height: 44,
+                                          alignment: Alignment.centerRight,
                                           child: Container(
-                                            width: 22,
-                                            height: 22,
+                                            width: 24,
+                                            height: 24,
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               border: Border.all(
@@ -804,7 +807,7 @@ class _PersonalExerciciosLibraryPageState
                                             child: isSelected
                                                 ? const Icon(
                                                     Icons.check,
-                                                    size: 14,
+                                                    size: 16,
                                                     color: Colors.black,
                                                   )
                                                 : null,

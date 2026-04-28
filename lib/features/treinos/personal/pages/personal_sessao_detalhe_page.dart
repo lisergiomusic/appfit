@@ -240,7 +240,7 @@ class _SessaoDetalhePersonalViewState
                     child: Row(
                       crossAxisAlignment: controller.isEditingTitle
                           ? CrossAxisAlignment.start
-                          : CrossAxisAlignment.end,
+                          : CrossAxisAlignment.center,
                       children: [
                         Expanded(
                           child: controller.isEditingTitle
@@ -366,23 +366,36 @@ class _SessaoDetalhePersonalViewState
                         const SizedBox(width: 8),
                         Container(
                           margin: controller.isEditingTitle
-                              ? EdgeInsets.only(top: 10)
+                              ? const EdgeInsets.only(top: 10)
                               : EdgeInsets.zero,
-                          child: IconButton(
-                            onPressed: () {
-                              HapticFeedback.lightImpact();
-                              controller.toggleEditTitle();
-                            },
-                            style: IconButton.styleFrom(
-                              backgroundColor: AppColors.buttonSurface,
-                            ),
-                            icon: Icon(
-                              controller.isEditingTitle
-                                  ? CupertinoIcons.check_mark
-                                  : CupertinoIcons.pencil,
-                              color: controller.isEditingTitle
-                                  ? AppColors.primary
-                                  : AppColors.labelPrimary,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                controller.toggleEditTitle();
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withAlpha(12),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.white.withAlpha(20),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Icon(
+                                  controller.isEditingTitle
+                                      ? CupertinoIcons.check_mark
+                                      : CupertinoIcons.pencil,
+                                  color: controller.isEditingTitle
+                                      ? AppColors.primary
+                                      : AppColors.labelPrimary,
+                                  size: 18,
+                                ),
+                              ),
                             ),
                           ),
                         ),

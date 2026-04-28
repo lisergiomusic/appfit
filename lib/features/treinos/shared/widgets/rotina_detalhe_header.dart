@@ -19,6 +19,7 @@ class RotinaDetalheHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center, // Centraliza verticalmente o ícone em relação ao texto
       children: [
         Expanded(
           child: Column(
@@ -48,12 +49,27 @@ class RotinaDetalheHeader extends StatelessWidget {
             ],
           ),
         ),
-        IconButton(
-          onPressed: onEdit,
-          style: IconButton.styleFrom(backgroundColor: AppColors.buttonSurface),
-          icon: const Icon(
-            CupertinoIcons.pencil,
-            color: AppColors.labelPrimary,
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onEdit,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(12), // Background sutil e translúcido
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withAlpha(20), // Borda ultra-fina "glassmorphism"
+                  width: 1,
+                ),
+              ),
+              child: const Icon(
+                CupertinoIcons.pencil,
+                color: AppColors.labelPrimary,
+                size: 18, // Ícone ligeiramente menor para maior elegância
+              ),
+            ),
           ),
         ),
       ],

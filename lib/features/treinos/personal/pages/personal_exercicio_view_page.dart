@@ -11,12 +11,14 @@ class PersonalExercicioViewPage extends StatefulWidget {
   final ExercicioItem exercicio;
   final bool isSelected;
   final bool isAdmin;
+  final bool isSelectionMode;
 
   const PersonalExercicioViewPage({
     super.key,
     required this.exercicio,
     required this.isSelected,
     required this.isAdmin,
+    this.isSelectionMode = false,
   });
 
   @override
@@ -26,6 +28,7 @@ class PersonalExercicioViewPage extends StatefulWidget {
 class _PersonalExercicioViewPageState extends State<PersonalExercicioViewPage> {
   final ExerciseService _exerciseService = ExerciseService();
   late bool _isSelected;
+  late ExercicioItem _exercicioAtual;
   late final Future<ExercicioItem?>? _exercicioBaseFuture;
   late final Future<ExercicioItem?> _exercicioBaseParaMidiaFuture;
 
@@ -33,17 +36,18 @@ class _PersonalExercicioViewPageState extends State<PersonalExercicioViewPage> {
   void initState() {
     super.initState();
     _isSelected = widget.isSelected;
+    _exercicioAtual = widget.exercicio;
 
-    _exercicioBaseFuture = widget.exercicio.hasInstrucoesPadrao
+    _exercicioBaseFuture = _exercicioAtual.hasInstrucoesPadrao
         ? null
-        : _exerciseService.buscarExercicioPorNome(widget.exercicio.nome);
+        : _exerciseService.buscarExercicioPorNome(_exercicioAtual.nome);
 
     final hasLocalMedia =
-        widget.exercicio.mediaUrl != null &&
-        widget.exercicio.mediaUrl!.isNotEmpty;
+        _exercicioAtual.mediaUrl != null &&
+        _exercicioAtual.mediaUrl!.isNotEmpty;
     _exercicioBaseParaMidiaFuture = hasLocalMedia
         ? Future.value(null)
-        : _exerciseService.buscarExercicioPorNome(widget.exercicio.nome);
+        : _exerciseService.buscarExercicioPorNome(_exercicioAtual.nome);
   }
 
   void _mostrarAvisoInstrucoes(BuildContext context) {
@@ -101,17 +105,146 @@ class _PersonalExercicioViewPageState extends State<PersonalExercicioViewPage> {
     );
   }
 
+  void _abrirEditorInstrucoes() {
+    final controller = TextEditingController(text: _exercicioAtual.instrucoesParaExibicao ?? _exercicioAtual.instrucoes ?? '');
+    final focusNode = FocusNode();
+    bool canSave = false;
+    final originalText = controller.text;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 24),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(30),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Ajustar Instrução Base',
+                        style: TextStyle(
+                          color: AppColors.labelPrimary,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (canSave)
+                        TextButton(
+                          onPressed: () async {
+                            try {
+                              if (_exercicioAtual.id == null) return;
+                              await _exerciseService.salvarInstrucaoBasePersonalizada(
+                                _exercicioAtual.id!,
+                                controller.text.trim(),
+                              );
+
+                              setState(() {
+                                _exercicioAtual.instrucoesPersonalizadas = controller.text.trim();
+                              });
+
+                              if (context.mounted) Navigator.pop(context);
+
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Instrução base atualizada!')),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Erro ao salvar: $e')),
+                                );
+                              }
+                            }
+                          },
+                          child: const Text(
+                            'Salvar',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Esta instrução será aplicada automaticamente em todos os treinos onde você usar este exercício.',
+                    style: AppTheme.caption.copyWith(height: 1.4),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceDark,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white.withAlpha(10)),
+                    ),
+                    child: TextField(
+                      controller: controller,
+                      focusNode: focusNode,
+                      maxLines: 8,
+                      minLines: 4,
+                      autofocus: true,
+                      style: AppTheme.bodyText,
+                      onChanged: (val) {
+                        setModalState(() {
+                          canSave = val.trim() != originalText.trim();
+                        });
+                      },
+                      decoration: const InputDecoration(
+                        hintText: 'Escreva suas instruções aqui...',
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        contentPadding: EdgeInsets.all(16),
+                        fillColor: Colors.transparent,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final temImagem =
-        widget.exercicio.mediaUrl != null &&
-        widget.exercicio.mediaUrl!.isNotEmpty;
-    final temMusculos = widget.exercicio.grupoMuscular.isNotEmpty;
+        _exercicioAtual.mediaUrl != null &&
+        _exercicioAtual.mediaUrl!.isNotEmpty;
+    final temMusculos = _exercicioAtual.grupoMuscular.isNotEmpty;
 
     final screenWidth = MediaQuery.of(context).size.width;
     final titleWidth = screenWidth - SpacingTokens.screenHorizontalPadding * 2;
     final titlePainter = TextPainter(
-      text: TextSpan(text: widget.exercicio.nome, style: AppTheme.bigTitle),
+      text: TextSpan(text: _exercicioAtual.nome, style: AppTheme.bigTitle),
       textDirection: TextDirection.ltr,
     )..layout();
     final quebra2Linhas = titlePainter.width > titleWidth;
@@ -128,7 +261,7 @@ class _PersonalExercicioViewPageState extends State<PersonalExercicioViewPage> {
             child: CustomScrollView(
               slivers: [
                 AppFitSliverAppBar(
-                  title: widget.exercicio.nome,
+                  title: _exercicioAtual.nome,
                   expandedHeight: expandedHeight,
                   background: Align(
                     alignment: Alignment.bottomLeft,
@@ -142,13 +275,13 @@ class _PersonalExercicioViewPageState extends State<PersonalExercicioViewPage> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(widget.exercicio.nome, style: AppTheme.bigTitle),
+                          Text(_exercicioAtual.nome, style: AppTheme.bigTitle),
                           if (temMusculos) ...[
                             const SizedBox(height: SpacingTokens.sm),
                             Wrap(
                               spacing: SpacingTokens.xs,
                               runSpacing: SpacingTokens.xs,
-                              children: widget.exercicio.grupoMuscular
+                              children: _exercicioAtual.grupoMuscular
                                   .map(
                                     (grupo) => Container(
                                       padding: const EdgeInsets.symmetric(
@@ -181,8 +314,8 @@ class _PersonalExercicioViewPageState extends State<PersonalExercicioViewPage> {
                           future: _exercicioBaseParaMidiaFuture,
                           builder: (context, snapshot) {
                             final hasLocalMedia =
-                                widget.exercicio.mediaUrl != null &&
-                                widget.exercicio.mediaUrl!.isNotEmpty;
+                                _exercicioAtual.mediaUrl != null &&
+                                _exercicioAtual.mediaUrl!.isNotEmpty;
 
                             if (!hasLocalMedia &&
                                 snapshot.connectionState == ConnectionState.waiting) {
@@ -190,12 +323,12 @@ class _PersonalExercicioViewPageState extends State<PersonalExercicioViewPage> {
                             }
 
                             final resolvedMedia = hasLocalMedia
-                                ? widget.exercicio.mediaUrl
+                                ? _exercicioAtual.mediaUrl
                                 : snapshot.data?.mediaUrl;
 
                             return ExerciseVideoCard(
                               mediaUrl: resolvedMedia,
-                              exerciseTitle: widget.exercicio.nome,
+                              exerciseTitle: _exercicioAtual.nome,
                             );
                           },
                         ),
@@ -203,28 +336,42 @@ class _PersonalExercicioViewPageState extends State<PersonalExercicioViewPage> {
                         const SizedBox(height: SpacingTokens.sectionGap),
 
                         Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Instruções', style: AppTheme.sectionHeader),
-                            GestureDetector(
-                              onTap: () => _mostrarAvisoInstrucoes(context),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 6),
-                                child: Icon(
-                                  Icons.info_outline_rounded,
-                                  size: 14,
-                                  color: AppColors.labelTertiary,
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text('Instruções', style: AppTheme.sectionHeader),
+                                GestureDetector(
+                                  onTap: () => _mostrarAvisoInstrucoes(context),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                                    child: Icon(
+                                      Icons.info_outline_rounded,
+                                      size: 14,
+                                      color: AppColors.labelTertiary,
+                                    ),
+                                  ),
                                 ),
+                              ],
+                            ),
+                            GestureDetector(
+                              onTap: _abrirEditorInstrucoes,
+                              child: Text(
+                                'Editar',
+                                style: AppTheme.sectionAction,
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: SpacingTokens.labelToField),
-                        FutureBuilder<ExercicioItem?>(
+                        _exercicioAtual.instrucoesParaExibicao != null
+                          ? _InstructionCard(text: _exercicioAtual.instrucoesParaExibicao!)
+                          : FutureBuilder<ExercicioItem?>(
                           future: _exercicioBaseFuture,
                           builder: (context, snapshot) {
                             final instrucoesPadrao =
-                                widget.exercicio.instrucoesPadraoTexto ??
+                                _exercicioAtual.instrucoesPadraoTexto ??
                                 snapshot.data?.instrucoesPadraoTexto;
 
                             if (instrucoesPadrao == null &&
@@ -282,7 +429,7 @@ class _PersonalExercicioViewPageState extends State<PersonalExercicioViewPage> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => PersonalCriarExercicioPage(
-                                      exercicioParaEditar: widget.exercicio,
+                                      exercicioParaEditar: _exercicioAtual,
                                     ),
                                   ),
                                 );
@@ -336,32 +483,33 @@ class _PersonalExercicioViewPageState extends State<PersonalExercicioViewPage> {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              border: Border(top: BorderSide(color: Colors.white.withAlpha(10))),
-            ),
-            child: ElevatedButton(
-              onPressed: () {
-                setState(() => _isSelected = !_isSelected);
-                Navigator.pop(context, _isSelected ? 'select' : 'unselect');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _isSelected ? AppColors.surfaceLight : AppColors.primary,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          if (widget.isSelectionMode)
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                border: Border(top: BorderSide(color: Colors.white.withAlpha(10))),
               ),
-              child: Text(
-                _isSelected ? 'Remover do Treino' : 'Adicionar ao Treino',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: _isSelected ? Colors.redAccent : Colors.black,
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() => _isSelected = !_isSelected);
+                  Navigator.pop(context, _isSelected ? 'select' : 'unselect');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _isSelected ? AppColors.surfaceLight : AppColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: Text(
+                  _isSelected ? 'Remover do Treino' : 'Adicionar ao Treino',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: _isSelected ? Colors.redAccent : Colors.black,
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
