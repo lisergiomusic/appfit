@@ -668,116 +668,140 @@ class _PersonalExercicioDetalheViewState
                   ),
                 )
               : null,
-          body: SafeArea(
-            child: CustomScrollView(
-              slivers: [
-                AppFitSliverAppBar(
-                  title: exerciseTitle,
-                  expandedHeight: 148,
-                  onBackPressed: () => Navigator.of(context).maybePop(),
-                  actions: [
-                    AppBarTextButton(
-                      label: 'Salvar',
-                      onPressed: controller.hasChanges
-                          ? () => Navigator.of(context).maybePop()
-                          : null,
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              // Cálculo de engenharia para altura do header
+              // 1. Medimos o título exatamente como ele será renderizado
+              final titlePainter = TextPainter(
+                text: TextSpan(text: exerciseTitle, style: AppTheme.bigTitle),
+                textDirection: TextDirection.ltr,
+                maxLines: 2,
+              )..layout(maxWidth: constraints.maxWidth - (SpacingTokens.screenHorizontalPadding * 2));
+
+              final int titleLines = titlePainter.computeLineMetrics().length;
+              
+              // 2. Definimos a altura baseada na realidade (não em estimativas de caracteres)
+              // 144px é o ideal para 1 linha + badges
+              // 178px é o ideal para 2 linhas + badges
+              final double dynamicHeight = titleLines > 1 ? 178.0 : 144.0;
+
+              return CustomScrollView(
+                slivers: [
+                  AppFitSliverAppBar(
+                    title: exerciseTitle,
+                    expandedHeight: dynamicHeight,
+                    onBackPressed: () => Navigator.of(context).maybePop(),
+                    actions: [
+                      AppBarTextButton(
+                        label: 'Salvar',
+                        onPressed: controller.hasChanges
+                            ? () => Navigator.of(context).maybePop()
+                            : null,
+                      ),
+                    ],
+                    background: Align(
+                      alignment: Alignment.bottomLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: SpacingTokens.screenHorizontalPadding,
+                          right: SpacingTokens.screenHorizontalPadding,
+                          bottom: SpacingTokens.sm,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              exerciseTitle,
+                              style: AppTheme.bigTitle,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (muscleGroups.isNotEmpty) ...[
+                              const SizedBox(height: SpacingTokens.sm),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 6,
+                                children: muscleGroups
+                                    .map((g) => _buildMuscleGroupBadge(g))
+                                    .toList(),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
                     ),
-                  ],
-                  background: Align(
-                    alignment: Alignment.bottomLeft,
+                  ),
+                  SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.only(
-                        left: SpacingTokens.screenHorizontalPadding,
-                        right: SpacingTokens.screenHorizontalPadding,
-                        bottom: SpacingTokens.sm,
+                      padding: const EdgeInsets.fromLTRB(
+                        SpacingTokens.screenHorizontalPadding,
+                        4,
+                        SpacingTokens.screenHorizontalPadding,
+                        0,
                       ),
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(exerciseTitle, style: AppTheme.bigTitle),
-                          const SizedBox(height: SpacingTokens.sm),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 6,
-                            children: muscleGroups
-                                .map((g) => _buildMuscleGroupBadge(g))
-                                .toList(),
+                          FutureBuilder<ExercicioItem?>(
+                            future: _exercicioBaseFuture,
+                            builder: (context, snapshot) {
+                              final hasLocalMedia =
+                                  ex.mediaUrl != null && ex.mediaUrl!.isNotEmpty;
+
+                              if (!hasLocalMedia &&
+                                  snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                return _buildVideoCardLoadingPlaceholder();
+                              }
+
+                              final resolvedMedia = hasLocalMedia
+                                  ? ex.mediaUrl
+                                  : snapshot.data?.mediaUrl;
+
+                              return ExerciseVideoCard(
+                                mediaUrl: resolvedMedia,
+                                exerciseTitle: exerciseTitle,
+                              );
+                            },
                           ),
+                          const SizedBox(height: SpacingTokens.sectionGap),
+                          NoteDisplayField(
+                            text: ex.instrucoesPersonalizadasTexto,
+                            label: 'Instruções gerais',
+                            addLabel: 'Adicionar instruções gerais',
+                            onTap: _showEditInstructionsSheet,
+                          ),
+                          const SizedBox(height: SpacingTokens.sectionGap),
+                          if (ex.series.isEmpty)
+                            _buildEmptyState()
+                          else ...[
+                            _buildSection(
+                              title: 'Aquecimento',
+                              entries: warmup,
+                              tipo: TipoSerie.aquecimento,
+                            ),
+                            _buildSection(
+                              title: 'Séries de aproximação',
+                              entries: feeder,
+                              tipo: TipoSerie.feeder,
+                            ),
+                            _buildSection(
+                              title: 'Séries de trabalho',
+                              entries: work,
+                              tipo: TipoSerie.trabalho,
+                            ),
+                            const SizedBox(
+                              height: SpacingTokens.screenBottomPadding,
+                            ),
+                          ],
                         ],
                       ),
                     ),
                   ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      SpacingTokens.screenHorizontalPadding,
-                      4,
-                      SpacingTokens.screenHorizontalPadding,
-                      0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        FutureBuilder<ExercicioItem?>(
-                          future: _exercicioBaseFuture,
-                          builder: (context, snapshot) {
-                            final hasLocalMedia =
-                                ex.mediaUrl != null && ex.mediaUrl!.isNotEmpty;
-
-                            if (!hasLocalMedia &&
-                                snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                              return _buildVideoCardLoadingPlaceholder();
-                            }
-
-                            final resolvedMedia = hasLocalMedia
-                                ? ex.mediaUrl
-                                : snapshot.data?.mediaUrl;
-
-                            return ExerciseVideoCard(
-                              mediaUrl: resolvedMedia,
-                              exerciseTitle: exerciseTitle,
-                            );
-                          },
-                        ),
-                        const SizedBox(height: SpacingTokens.sectionGap),
-                        NoteDisplayField(
-                          text: ex.instrucoesPersonalizadasTexto,
-                          label: 'Instruções gerais',
-                          addLabel: 'Adicionar instruções gerais',
-                          onTap: _showEditInstructionsSheet,
-                        ),
-                        const SizedBox(height: SpacingTokens.sectionGap),
-                        if (ex.series.isEmpty)
-                          _buildEmptyState()
-                        else ...[
-                          _buildSection(
-                            title: 'Aquecimento',
-                            entries: warmup,
-                            tipo: TipoSerie.aquecimento,
-                          ),
-                          _buildSection(
-                            title: 'Séries de aproximação',
-                            entries: feeder,
-                            tipo: TipoSerie.feeder,
-                          ),
-                          _buildSection(
-                            title: 'Séries de trabalho',
-                            entries: work,
-                            tipo: TipoSerie.trabalho,
-                          ),
-                          const SizedBox(
-                            height: SpacingTokens.screenBottomPadding,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+                ],
+              );
+            },
           ),
         ),
       ),
