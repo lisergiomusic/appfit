@@ -147,9 +147,7 @@ class AlunoService {
 
   Stream<List<AtividadeRecenteItem>> getAtividadeRecenteStream({int limit = 10}) => Stream.value([]);
   
-  /// Stream reativa e completa do perfil do aluno (Perfil + Rotina Ativa + Dados do Personal)
   Stream<AlunoPerfilData> getAlunoPerfilCompletoStream(String alunoId) {
-    // 1. Ouvir mudanças no perfil do aluno
     return _supabase
         .from('profiles')
         .stream(primaryKey: ['id'])
@@ -162,9 +160,6 @@ class AlunoService {
           final alunoMap = alunoList.first;
           final personalId = alunoMap['personal_id'];
 
-          // 2. Criar Stream para as Rotinas do Aluno
-          // Filtramos apenas por aluno_id no servidor (limitação de 1 filtro por stream)
-          // e filtramos a 'ativa' manualmente no map.
           final rotinaStream = _supabase
               .from('rotinas')
               .stream(primaryKey: ['id'])
@@ -177,7 +172,6 @@ class AlunoService {
                 }
               });
 
-          // 3. Criar Stream para os dados do Personal (opcional)
           final personalStream = personalId != null
               ? _supabase
                   .from('profiles')
@@ -186,7 +180,6 @@ class AlunoService {
                   .map((list) => list.isNotEmpty ? list.first : null)
               : Stream<Map<String, dynamic>?>.value(null);
 
-          // 4. Combinar tudo no nosso modelo AlunoPerfilData
           return Rx.combineLatest2<Map<String, dynamic>?, Map<String, dynamic>?, AlunoPerfilData>(
             rotinaStream,
             personalStream,
@@ -209,19 +202,68 @@ class AlunoService {
 
   Stream<List<Map<String, dynamic>>> getLogsDaSemanaStream(String alunoId) => Stream.value([]);
   Stream<List<Map<String, dynamic>>> getUltimoLogStream(String alunoId) => Stream.value([]);
-  Stream<List<Map<String, dynamic>>> getRotinasTemplates() => Stream.value([]);
+  
+  /// Busca rotinas que servem como modelos (não pertencem a nenhum aluno específico)
+  Stream<List<Map<String, dynamic>>> getRotinasTemplates() {
+    final personalId = _currentPersonalId;
+    if (personalId == null) return Stream.value([]);
+
+    return _supabase
+        .from('rotinas')
+        .stream(primaryKey: ['id'])
+        .eq('personal_id', personalId)
+        .map((list) => list.where((r) => r['aluno_id'] == null).toList());
+  }
+
   Stream<List<Map<String, dynamic>>> getPlanilhasStream(String alunoId) => Stream.value([]);
   Stream<List<Map<String, dynamic>>> getHistoricoPesoStream(String alunoId) => Stream.value([]);
   
   Future<void> registrarPeso({required String alunoId, required double peso}) async {}
   
+  /// Clona um modelo da biblioteca e atribui ao aluno
   Future<void> atribuirTreinoAoAluno({
     required String alunoId, 
     required String templateId, 
     String? tipoVencimento,
     int? sessoesAlvo,
     DateTime? dataVencimento,
-  }) async {}
+  }) async {
+    try {
+      // 1. Busca o template original
+      final template = await _supabase
+          .from('rotinas')
+          .select()
+          .eq('id', templateId)
+          .single();
+
+      // 2. Desativa rotinas anteriores do aluno
+      await _supabase
+          .from('rotinas')
+          .update({'ativa': false})
+          .eq('aluno_id', alunoId)
+          .eq('ativa', true);
+
+      // 3. Prepara a cópia para o aluno
+      final novaRotina = {
+        'aluno_id': alunoId,
+        'personal_id': _currentPersonalId,
+        'nome': template['nome'],
+        'objetivo': template['objetivo'],
+        'sessoes': template['sessoes'],
+        'ativa': true,
+        'tipo_vencimento': tipoVencimento ?? template['tipo_vencimento'] ?? 'data',
+        'vencimento_sessoes': sessoesAlvo ?? template['vencimento_sessoes'],
+        'data_vencimento': dataVencimento?.toIso8601String() ?? template['data_vencimento'],
+        'data_criacao': DateTime.now().toIso8601String(),
+      };
+
+      // 4. Insere a nova rotina
+      await _supabase.from('rotinas').insert(novaRotina);
+
+    } catch (e) {
+      throw Exception('Erro ao atribuir treino: $e');
+    }
+  }
 
   Future<dynamic> fetchAtividadePage({int limit = 20, dynamic startAfter}) async => (items: [], lastDoc: null);
 }
