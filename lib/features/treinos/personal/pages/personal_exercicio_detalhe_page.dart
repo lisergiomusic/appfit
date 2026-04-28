@@ -603,7 +603,7 @@ class _PersonalExercicioDetalheViewState
                 ? repsController
                 : (field == 'carga' ? cargaController : descansoController),
             value: val,
-            emptyFallback: field == 'reps' ? '0' : '',
+            emptyFallback: '',
             onSave: (s) {
               if (field == 'reps') serie.alvo = s;
               if (field == 'carga') serie.carga = s;
