@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../theme/app_theme.dart';
+import 'app_dismissible_background.dart';
 
 class AppSwipeToDelete extends StatelessWidget {
   final Key dismissibleKey;
@@ -26,32 +25,12 @@ class AppSwipeToDelete extends StatelessWidget {
       key: dismissibleKey,
       direction: direction,
       confirmDismiss: confirmDismiss,
-      background: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.transparent, AppColors.systemRed.withAlpha(220)],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
-        ),
+      background: const AppDismissibleBackground(
+        alignment: Alignment.centerLeft,
+      ),
+      secondaryBackground: AppDismissibleBackground(
+        label: label,
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 18),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.delete_rounded, color: Colors.white, size: 20),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.3,
-              ),
-            ),
-          ],
-        ),
       ),
       onDismissed: onDismissed,
       child: child,

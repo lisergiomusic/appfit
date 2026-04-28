@@ -70,6 +70,7 @@ class _PersonalExercicioDetalheViewState
   };
 
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+  final ScrollController _scrollController = ScrollController();
   final Map<String, TextEditingController> _controllers = {};
   final Set<String> _suppressNextOnChanged = {};
 
@@ -85,6 +86,7 @@ class _PersonalExercicioDetalheViewState
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _disposeControllers();
     super.dispose();
   }
@@ -222,7 +224,10 @@ class _PersonalExercicioDetalheViewState
 
   Future<void> _adicionarSerie() async {
     final controller = context.read<ExercicioDetalheController>();
-    FocusScope.of(context).unfocus();
+    
+    // Forçamos a perda de foco de qualquer campo antes de abrir o seletor ou adicionar
+    FocusManager.instance.primaryFocus?.unfocus();
+
     final tipoEscolhido = await _showSerieTypeSelector();
 
     if (tipoEscolhido != null) {
@@ -242,10 +247,36 @@ class _PersonalExercicioDetalheViewState
           insertSectionIndex,
           duration: ExercicioDetalheConstants.rowAnimationDuration,
         );
+        
+        // UX Senior: Rolar para a nova série se ela estiver fora de vista
+        _scrollToNewItem();
       });
 
       widget.onChanged();
     }
+  }
+
+  void _scrollToNewItem() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      
+      // Aguardamos um pouco para a animação de inserção começar
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (!mounted || !_scrollController.hasClients) return;
+        
+        final maxScroll = _scrollController.position.maxScrollExtent;
+        final currentScroll = _scrollController.offset;
+        
+        // Se já estamos perto do fim, ou se a lista cresceu
+        if (maxScroll > currentScroll) {
+          _scrollController.animateTo(
+            maxScroll,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      });
+    });
   }
 
   SerieItem _buildSerieFromSelection(TipoSerie tipoEscolhido) {
@@ -686,6 +717,7 @@ class _PersonalExercicioDetalheViewState
               final double dynamicHeight = titleLines > 1 ? 178.0 : 144.0;
 
               return CustomScrollView(
+                controller: _scrollController,
                 slivers: [
                   AppFitSliverAppBar(
                     title: exerciseTitle,

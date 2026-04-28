@@ -32,8 +32,9 @@ class _ExercicioEditableFieldState extends State<ExercicioEditableField> {
   @override
   void initState() {
     super.initState();
-    _focusNode = FocusNode();
+    _focusNode = FocusNode(debugLabel: 'ExercicioEditableField');
     _focusNode.addListener(() {
+      if (!mounted) return;
       if (_focusNode.hasFocus) {
         final text = widget.controller.text;
         widget.controller.selection = TextSelection.collapsed(
@@ -51,10 +52,11 @@ class _ExercicioEditableFieldState extends State<ExercicioEditableField> {
   }
 
   InputDecoration _buildDecoration() {
+    final bool hasFocus = _focusNode.hasFocus;
     return InputDecoration(
       isDense: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-      hintText: _focusNode.hasFocus ? null : widget.hintText,
+      hintText: hasFocus ? null : widget.hintText,
       hintStyle: TextStyle(
         color: AppColors.labelTertiary,
         letterSpacing: -0.41,
@@ -87,6 +89,7 @@ class _ExercicioEditableFieldState extends State<ExercicioEditableField> {
       focusNode: _focusNode,
       controller: widget.controller,
       onChanged: widget.onChanged,
+      canRequestFocus: true,
       inputFormatters: [
         LengthLimitingTextInputFormatter(widget.maxLength),
         ...?widget.inputFormatters,

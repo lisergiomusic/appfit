@@ -1,3 +1,4 @@
+import 'package:appfit/core/widgets/app_dismissible_background.dart';
 import 'package:flutter/material.dart';
 import '../../models/exercicio_model.dart';
 import '../../../../../core/theme/app_theme.dart';
@@ -101,33 +102,7 @@ class _SerieRowState extends State<SerieRow> with TickerProviderStateMixin {
         key: ValueKey(widget.serie.id),
         direction: DismissDirection.endToStart,
         onDismissed: (_) => widget.onDelete(),
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.transparent, AppColors.systemRed.withAlpha(220)],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-          ),
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 18),
-          child: const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.delete_rounded, color: Colors.white, size: 20),
-              SizedBox(height: 3),
-              Text(
-                'Remover',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ],
-          ),
-        ),
+        background: const AppDismissibleBackground(),
         child: card,
       ),
     );
