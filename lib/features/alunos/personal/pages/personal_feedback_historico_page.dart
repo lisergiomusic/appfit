@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/services/treino_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/appfit_sliver_app_bar.dart';
 
 class PersonalFeedbackHistoricoPage extends StatefulWidget {
   final String alunoId;
@@ -71,14 +72,6 @@ class _PersonalFeedbackHistoricoPageState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const Text(
-          'Histórico de Feedbacks',
-          style: TextStyle(fontSize: 16),
-        ),
-        centerTitle: true,
-      ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _future,
         builder: (context, snapshot) {
@@ -86,33 +79,108 @@ class _PersonalFeedbackHistoricoPageState
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return _buildErrorState();
+            return _buildErrorHeader();
           }
 
           final logs = (snapshot.data ?? [])
               .where((log) => (log['esforco'] as int? ?? 0) > 0)
               .toList();
 
-          if (logs.isEmpty) return _buildEmptyState();
+          if (logs.isEmpty) {
+            return _buildEmptyHeader();
+          }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: logs.length,
-            itemBuilder: (context, index) => _buildTimelineItem(
-              logs[index],
-              index == logs.length - 1,
-            ),
+          return CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              AppFitSliverAppBar(
+                title: 'Histórico de Feedbacks',
+                background: Container(
+                  padding: const EdgeInsets.only(left: 20, bottom: 20),
+                  alignment: Alignment.bottomLeft,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Histórico de',
+                        style: TextStyle(
+                          color: AppColors.labelSecondary,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        'Feedbacks',
+                        style: AppTheme.bigTitle,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => _buildTimelineItem(
+                      logs[index],
+                      index == logs.length - 1,
+                    ),
+                    childCount: logs.length,
+                  ),
+                ),
+              ),
+            ],
           );
         },
       ),
     );
   }
 
+  Widget _buildEmptyHeader() {
+    return CustomScrollView(
+      slivers: [
+        AppFitSliverAppBar(
+          title: 'Histórico',
+          background: Container(
+            padding: const EdgeInsets.only(left: 20, bottom: 20),
+            alignment: Alignment.bottomLeft,
+            child: Text('Histórico', style: AppTheme.bigTitle),
+          ),
+        ),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: _buildEmptyState(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorHeader() {
+    return CustomScrollView(
+      slivers: [
+        AppFitSliverAppBar(
+          title: 'Erro',
+          background: Container(
+            padding: const EdgeInsets.only(left: 20, bottom: 20),
+            alignment: Alignment.bottomLeft,
+            child: Text('Erro', style: AppTheme.bigTitle),
+          ),
+        ),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: _buildErrorState(),
+        ),
+      ],
+    );
+  }
+
   Widget _buildTimelineItem(Map<String, dynamic> log, bool isLast) {
-    final esforco = log['esforco'] as int;
+    final esforco = log['esforco'] as int? ?? 0;
     final sessaoNome = log['sessaoNome'] as String? ?? 'Treino';
     final observacoes = log['observacoes'] as String?;
     final dataFormatada = _formatarData(log['dataHora']);
+    final duracao = log['duracaoMinutos'] as int? ?? 0;
+    final qtdExercicios = (log['exercicios'] as List? ?? []).length;
 
     return IntrinsicHeight(
       child: Row(
@@ -169,6 +237,28 @@ class _PersonalFeedbackHistoricoPageState
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      if (duracao > 0) ...[
+                        const Icon(Icons.timer_outlined, size: 12, color: AppColors.labelSecondary),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${duracao}min',
+                          style: const TextStyle(color: AppColors.labelSecondary, fontSize: 12),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                      if (qtdExercicios > 0) ...[
+                        const Icon(Icons.fitness_center, size: 12, color: AppColors.labelSecondary),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$qtdExercicios exercícios',
+                          style: const TextStyle(color: AppColors.labelSecondary, fontSize: 12),
+                        ),
+                      ],
+                    ],
                   ),
                   if (observacoes != null && observacoes.isNotEmpty) ...[
                     const SizedBox(height: 12),
