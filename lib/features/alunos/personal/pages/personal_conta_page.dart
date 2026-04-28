@@ -91,7 +91,6 @@ class _PersonalContaPageState extends State<PersonalContaPage> {
           final sobrenome = personalData['sobrenome'] as String? ?? '';
           final nomeCompleto = '$nome $sobrenome'.trim();
           final photoUrl = personalData['photoUrl'] as String?;
-          final especialidade = personalData['especialidade'] as String? ?? 'Geral';
 
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -102,7 +101,7 @@ class _PersonalContaPageState extends State<PersonalContaPage> {
                 _buildHero(
                   nomeCompleto: nomeCompleto,
                   photoUrl: photoUrl,
-                  especialidade: especialidade,
+
                 ),
                 const SizedBox(height: SpacingTokens.sectionGap + 8),
 
@@ -196,7 +195,7 @@ class _PersonalContaPageState extends State<PersonalContaPage> {
   Widget _buildHero({
     required String nomeCompleto,
     required String? photoUrl,
-    required String especialidade,
+
   }) {
     return SizedBox(
       width: double.infinity,
@@ -221,15 +220,7 @@ class _PersonalContaPageState extends State<PersonalContaPage> {
               style: AppTheme.title1,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 4),
-            Text(
-              especialidade,
-              style: AppTheme.caption.copyWith(
-                color: AppColors.labelSecondary,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center,
-            ),
+
           ],
         ),
       ),

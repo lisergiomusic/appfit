@@ -4,6 +4,8 @@ import '../../../../core/services/user_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../../../core/widgets/app_bar_text_button.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:intl_phone_field/country_picker_dialog.dart';
 
 class AlunoEditarPerfilPage extends StatefulWidget {
   final String uid;
@@ -24,6 +26,7 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
   late TextEditingController _nomeController;
   late TextEditingController _sobrenomeController;
   late TextEditingController _telefoneController;
+  late final FocusNode _phoneFocusNode;
   DateTime? _dataNascimento;
   String? _generoSelecionado;
 
@@ -45,6 +48,7 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
     _nomeController = TextEditingController();
     _sobrenomeController = TextEditingController();
     _telefoneController = TextEditingController();
+    _phoneFocusNode = FocusNode()..addListener(() => setState(() {}));
     _carregarDados();
   }
 
@@ -53,6 +57,7 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
     _nomeController.dispose();
     _sobrenomeController.dispose();
     _telefoneController.dispose();
+    _phoneFocusNode.dispose();
     super.dispose();
   }
 
@@ -233,17 +238,90 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
               const SizedBox(height: 20),
               _buildGeneroDropdown(),
               const SizedBox(height: 20),
-              _buildTextField(
-                controller: _telefoneController,
-                label: 'WhatsApp / contato',
-                icon: Icons.phone_iphone_rounded,
-                keyboardType: TextInputType.phone,
-                hint: '(00) 00000-0000',
-              ),
+              _buildPhoneField(),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildPhoneField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('WhatsApp / contato', style: AppTheme.formLabel),
+        const SizedBox(height: SpacingTokens.labelToField),
+        IntlPhoneField(
+          controller: _telefoneController,
+          focusNode: _phoneFocusNode,
+          initialCountryCode: 'BR',
+          dropdownTextStyle: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+          showDropdownIcon: false,
+          flagsButtonPadding: const EdgeInsets.only(left: 12, right: 8),
+          textAlignVertical: TextAlignVertical.center,
+          style: AppTheme.inputText,
+          pickerDialogStyle: PickerDialogStyle(
+            backgroundColor: AppColors.surfaceDark,
+            countryCodeStyle: const TextStyle(color: Colors.white),
+            countryNameStyle: const TextStyle(color: Colors.white),
+            searchFieldInputDecoration: InputDecoration(
+              hintText: 'Buscar país',
+              hintStyle: AppTheme.inputPlaceHolder,
+              prefixIcon: const Icon(Icons.search, color: AppColors.labelSecondary),
+              filled: true,
+              fillColor: AppColors.background,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          decoration: InputDecoration(
+            counterText: _phoneFocusNode.hasFocus ? null : "",
+            hintText: '00 00000-0000',
+            hintStyle: AppTheme.inputPlaceHolder,
+            filled: true,
+            fillColor: AppColors.surfaceDark,
+            prefixIcon: Container(
+              margin: const EdgeInsets.only(right: 12),
+              width: 1,
+              height: 24,
+              color: Colors.white.withAlpha(30),
+            ),
+            prefixIconConstraints: const BoxConstraints(
+              minWidth: 42,
+              maxHeight: 24,
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderSide: const BorderSide(color: AppColors.primary, width: 1),
+            ),
+          ),
+          languageCode: "pt",
+          onChanged: (phone) {
+            // No AlunoEditarPerfilPage, usamos setState nos builds para detectar mudanças
+          },
+          invalidNumberMessage: 'Número inválido',
+        ),
+      ],
     );
   }
 

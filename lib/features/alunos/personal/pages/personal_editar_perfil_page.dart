@@ -3,6 +3,8 @@ import '../../../../core/services/user_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../../../core/widgets/app_bar_text_button.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:intl_phone_field/country_picker_dialog.dart';
 
 class PersonalEditarPerfilPage extends StatefulWidget {
   final String uid;
@@ -19,11 +21,14 @@ class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
 
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _canSave = false;
 
   late TextEditingController _nomeController;
   late TextEditingController _sobrenomeController;
   late TextEditingController _especialidadeController;
   late TextEditingController _telefoneController;
+  late final FocusNode _phoneFocusNode;
+  late final FocusNode _especialidadeFocusNode;
 
   String _emailAtual = '';
 
@@ -37,11 +42,20 @@ class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
   void initState() {
     super.initState();
     _service = UserService();
-    _nomeController = TextEditingController();
-    _sobrenomeController = TextEditingController();
-    _especialidadeController = TextEditingController();
-    _telefoneController = TextEditingController();
+    _nomeController = TextEditingController()..addListener(_onFieldChanged);
+    _sobrenomeController = TextEditingController()..addListener(_onFieldChanged);
+    _especialidadeController = TextEditingController()..addListener(_onFieldChanged);
+    _telefoneController = TextEditingController()..addListener(_onFieldChanged);
+    _phoneFocusNode = FocusNode()..addListener(() => setState(() {}));
+    _especialidadeFocusNode = FocusNode()..addListener(() => setState(() {}));
     _carregarDados();
+  }
+
+  void _onFieldChanged() {
+    final hasChanges = _houveAlteracao();
+    if (hasChanges != _canSave) {
+      setState(() => _canSave = hasChanges);
+    }
   }
 
   @override
@@ -50,6 +64,8 @@ class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
     _sobrenomeController.dispose();
     _especialidadeController.dispose();
     _telefoneController.dispose();
+    _phoneFocusNode.dispose();
+    _especialidadeFocusNode.dispose();
     super.dispose();
   }
 
@@ -72,7 +88,10 @@ class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
       _especialidadeController.text = _especialidadeOriginal;
       _telefoneController.text = _telefoneOriginal;
 
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+        _canSave = false;
+      });
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -84,11 +103,16 @@ class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
   }
 
   bool _houveAlteracao() {
-    if (_nomeController.text.trim() != _nomeOriginal) return true;
-    if (_sobrenomeController.text.trim() != _sobrenomeOriginal) return true;
-    if (_especialidadeController.text.trim() != _especialidadeOriginal) return true;
-    if (_telefoneController.text.trim() != _telefoneOriginal) return true;
-    return false;
+    if (_isLoading) return false;
+
+    String norm(String? v) => (v ?? '').trim();
+
+    final nomeMudou = norm(_nomeController.text) != norm(_nomeOriginal);
+    final sobrenomeMudou = norm(_sobrenomeController.text) != norm(_sobrenomeOriginal);
+    final especialidadeMudou = norm(_especialidadeController.text) != norm(_especialidadeOriginal);
+    final telefoneMudou = norm(_telefoneController.text) != norm(_telefoneOriginal);
+
+    return nomeMudou || sobrenomeMudou || especialidadeMudou || telefoneMudou;
   }
 
   Future<void> _salvar() async {
@@ -172,7 +196,7 @@ class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
           child: AppBarTextButton(
             label: 'Salvar',
             isLoading: _isSaving,
-            onPressed: _salvar,
+            onPressed: _canSave ? _salvar : null,
           ),
         ),
       ],
@@ -201,7 +225,6 @@ class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
                 icon: Icons.person_rounded,
                 textCapitalization: TextCapitalization.words,
                 hint: 'Ex: João',
-                onChanged: (_) => setState(() {}),
                 validator: (v) => v!.trim().isEmpty ? 'O nome é obrigatório' : null,
               ),
               const SizedBox(height: 20),
@@ -211,32 +234,106 @@ class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
                 icon: Icons.badge_rounded,
                 textCapitalization: TextCapitalization.words,
                 hint: 'Ex: Silva',
-                onChanged: (_) => setState(() {}),
                 validator: (v) => v!.trim().isEmpty ? 'O sobrenome é obrigatório' : null,
               ),
               const SizedBox(height: 20),
               _buildTextField(
                 controller: _especialidadeController,
+                focusNode: _especialidadeFocusNode,
                 label: 'Especialidade / Bio curta',
                 icon: Icons.workspace_premium_rounded,
                 textCapitalization: TextCapitalization.sentences,
                 hint: 'Ex: Especialista em Hipertrofia',
-                onChanged: (_) => setState(() {}),
+                maxLength: 120,
+                maxLines: 3,
+                minLines: 1,
                 validator: (v) => v!.trim().isEmpty ? 'A especialidade é obrigatória' : null,
               ),
               const SizedBox(height: 20),
-              _buildTextField(
-                controller: _telefoneController,
-                label: 'WhatsApp / contato',
-                icon: Icons.phone_iphone_rounded,
-                keyboardType: TextInputType.phone,
-                onChanged: (_) => setState(() {}),
-                hint: '(00) 00000-0000',
-              ),
+              _buildPhoneField(),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildPhoneField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('WhatsApp / contato', style: AppTheme.formLabel),
+        const SizedBox(height: SpacingTokens.labelToField),
+        IntlPhoneField(
+          controller: _telefoneController,
+          focusNode: _phoneFocusNode,
+          initialCountryCode: 'BR',
+          dropdownTextStyle: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+          showDropdownIcon: false,
+          flagsButtonPadding: const EdgeInsets.only(left: 12, right: 8),
+          textAlignVertical: TextAlignVertical.center,
+          style: AppTheme.inputText,
+          pickerDialogStyle: PickerDialogStyle(
+            backgroundColor: AppColors.surfaceDark,
+            countryCodeStyle: const TextStyle(color: Colors.white),
+            countryNameStyle: const TextStyle(color: Colors.white),
+            searchFieldInputDecoration: InputDecoration(
+              hintText: 'Buscar país',
+              hintStyle: AppTheme.inputPlaceHolder,
+              prefixIcon: const Icon(Icons.search, color: AppColors.labelSecondary),
+              filled: true,
+              fillColor: AppColors.background,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          decoration: InputDecoration(
+            counterText: _phoneFocusNode.hasFocus ? null : "",
+            hintText: '00 00000-0000',
+            hintStyle: AppTheme.inputPlaceHolder,
+            filled: true,
+            fillColor: AppColors.surfaceDark,
+            prefixIcon: Container(
+              margin: const EdgeInsets.only(right: 12),
+              width: 1,
+              height: 24,
+              color: Colors.white.withAlpha(30),
+            ),
+            prefixIconConstraints: const BoxConstraints(
+              minWidth: 42,
+              maxHeight: 24,
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderSide: const BorderSide(color: AppColors.primary, width: 1),
+            ),
+          ),
+          languageCode: "pt",
+          onChanged: (phone) {
+            // O listener de _telefoneController já dispara _onFieldChanged
+          },
+          invalidNumberMessage: 'Número inválido',
+        ),
+      ],
     );
   }
 
@@ -249,29 +346,70 @@ class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
     String? Function(String?)? validator,
     String? hint,
     void Function(String)? onChanged,
+    FocusNode? focusNode,
+    int? maxLength,
+    int? maxLines = 1,
+    int? minLines,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTheme.formLabel),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: AppTheme.formLabel),
+            if (focusNode != null && focusNode.hasFocus)
+              GestureDetector(
+                onTap: () => focusNode.unfocus(),
+                child: const Padding(
+                  padding: EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    'Concluir',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
         const SizedBox(height: SpacingTokens.labelToField),
         TextFormField(
           controller: controller,
+          focusNode: focusNode,
           keyboardType: keyboardType,
           textCapitalization: textCapitalization,
           validator: validator,
           onChanged: onChanged,
+          maxLength: maxLength,
+          maxLines: maxLines,
+          minLines: minLines,
           style: AppTheme.inputText,
           decoration: InputDecoration(
+            counterText: focusNode != null
+                ? (focusNode.hasFocus ? null : "")
+                : (maxLength != null ? "" : null),
             hintText: hint,
             hintStyle: AppTheme.inputPlaceHolder,
-            prefixIcon: Icon(
-              icon,
-              color: AppColors.labelSecondary.withAlpha(120),
-              size: 20,
+            prefixIcon: Container(
+              margin: EdgeInsets.only(
+                bottom: (maxLines ?? 1) > 1 ? 44 : 0, // Compensa a altura extra das linhas
+              ),
+              child: Icon(
+                icon,
+                color: AppColors.labelSecondary.withAlpha(120),
+                size: 20,
+              ),
             ),
             filled: true,
             fillColor: AppColors.surfaceDark,
+            prefixIconConstraints: const BoxConstraints(
+              minWidth: 42,
+              maxHeight: 24,
+            ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 12,
