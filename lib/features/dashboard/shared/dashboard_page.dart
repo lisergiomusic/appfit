@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/supabase_auth_service.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/auth_utils.dart';
 import '../aluno/aluno_home_page.dart';
 import '../personal/personal_home_page.dart';
 import '../../alunos/aluno/pages/aluno_conta_page.dart';
