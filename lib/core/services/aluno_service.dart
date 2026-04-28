@@ -200,6 +200,14 @@ class AlunoService {
         });
   }
 
+  Stream<Map<String, dynamic>> getPersonalPerfilStream(String personalId) {
+    return _supabase
+        .from('profiles')
+        .stream(primaryKey: ['id'])
+        .eq('id', personalId)
+        .map((list) => list.isNotEmpty ? list.first : {});
+  }
+
   Stream<List<Map<String, dynamic>>> getLogsDaSemanaStream(String alunoId) => Stream.value([]);
   Stream<List<Map<String, dynamic>>> getUltimoLogStream(String alunoId) => Stream.value([]);
   

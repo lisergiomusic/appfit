@@ -8,6 +8,7 @@ import '../../alunos/aluno/pages/aluno_conta_page.dart';
 import '../../alunos/personal/pages/personal_alunos_page.dart';
 import '../../treinos/personal/pages/personal_treinos_page.dart';
 import '../../treinos/aluno/pages/aluno_historico_page.dart';
+import '../../alunos/personal/pages/personal_conta_page.dart';
 
 class DashboardPage extends StatefulWidget {
   final String userType;
@@ -48,7 +49,7 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
             const PersonalAlunosPage(openCadastroOnLoad: false),
             const PersonalTreinosPage(openCriarRotinaOnLoad: false),
-            _buildAjustes(),
+            PersonalContaPage(uid: uid),
           ];
   }
 
@@ -89,38 +90,6 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  Widget _buildAjustes() {
-    return Builder(
-      builder: (context) => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.settings, size: 64, color: AppColors.labelSecondary),
-            const SizedBox(height: AppTheme.space16),
-            const Text(
-              'Ajustes',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: AppTheme.space32),
-            ElevatedButton.icon(
-              onPressed: () => AuthUtils.confirmarESair(context),
-              icon: const Icon(Icons.logout),
-              label: const Text('Sair do AppFit'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.systemRed.withAlpha(25),
-                foregroundColor: AppColors.systemRed,
-                elevation: 0,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
