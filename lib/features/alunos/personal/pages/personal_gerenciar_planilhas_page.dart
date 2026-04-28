@@ -242,12 +242,17 @@ class _PersonalGerenciarPlanilhasPageState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: SpacingTokens.screenTopPadding),
-                AlunoHeaderSection(
-                  alunoId: widget.alunoId,
-                  alunoNome: widget.alunoNome,
-                  photoUrl: widget.photoUrl,
-                  idade: widget.idade,
-                  peso: widget.peso,
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: SpacingTokens.screenHorizontalPadding,
+                  ),
+                  child: AlunoHeaderSection(
+                    alunoId: widget.alunoId,
+                    alunoNome: widget.alunoNome,
+                    photoUrl: widget.photoUrl,
+                    idade: widget.idade,
+                    peso: widget.peso,
+                  ),
                 ),
                 const SizedBox(height: SpacingTokens.sectionGap),
 

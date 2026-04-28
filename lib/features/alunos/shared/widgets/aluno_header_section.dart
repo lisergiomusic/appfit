@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'aluno_avatar.dart';
+import 'app_avatar.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class AlunoHeaderSection extends StatelessWidget {
@@ -25,8 +25,8 @@ class AlunoHeaderSection extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        AlunoAvatar(
-          alunoNome: alunoNome,
+        AppAvatar(
+          name: alunoNome,
           photoUrl: photoUrl,
           radius: AvatarTokens.lg,
         ),

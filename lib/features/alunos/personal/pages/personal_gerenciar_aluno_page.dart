@@ -4,7 +4,7 @@ import '../../../../core/widgets/app_bar_divider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
-import '../../shared/widgets/aluno_avatar.dart';
+import '../../shared/widgets/app_avatar.dart';
 import 'personal_editar_aluno_page.dart';
 import 'personal_financeiro_aluno_page.dart';
 
@@ -245,8 +245,8 @@ class _PersonalGerenciarAlunoPageState
   Widget _buildProfileCard() {
     return Row(
       children: [
-        AlunoAvatar(
-          alunoNome: _alunoNome,
+        AppAvatar(
+          name: _alunoNome,
           photoUrl: _fotoUrl,
           radius: AvatarTokens.lg,
         ),

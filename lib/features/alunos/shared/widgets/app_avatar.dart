@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_theme.dart';
 
-class AlunoAvatar extends StatelessWidget {
-  final String alunoNome;
+class AppAvatar extends StatelessWidget {
+  final String name;
   final String? photoUrl;
   final double radius;
   final bool showBorder;
   final Color? borderColor;
 
-  const AlunoAvatar({
+  const AppAvatar({
     super.key,
-    required this.alunoNome,
+    required this.name,
     this.photoUrl,
     this.radius = 40,
     this.showBorder = true,
@@ -33,7 +33,7 @@ class AlunoAvatar extends StatelessWidget {
             : null,
         child: photoUrl == null || photoUrl!.isEmpty
             ? Text(
-                alunoNome.isNotEmpty ? alunoNome[0].toUpperCase() : '?',
+                name.isNotEmpty ? name[0].toUpperCase() : '?',
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,

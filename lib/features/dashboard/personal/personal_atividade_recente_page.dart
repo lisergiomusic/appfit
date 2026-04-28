@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import '../../../core/services/aluno_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_bar_divider.dart';
-import '../../alunos/shared/widgets/aluno_avatar.dart';
+import '../../alunos/shared/widgets/app_avatar.dart';
 import '../../alunos/personal/pages/personal_log_detalhe_page.dart';
 
 class PersonalAtividadeRecentePage extends StatefulWidget {
@@ -198,8 +198,8 @@ class _AtividadeCard extends StatelessWidget {
               padding: CardTokens.padding,
               child: Row(
                 children: [
-                  AlunoAvatar(
-                    alunoNome: item.alunoNome,
+                  AppAvatar(
+                    name: item.alunoNome,
                     photoUrl: item.alunoPhotoUrl,
                     radius: AvatarTokens.md,
                     showBorder: false,

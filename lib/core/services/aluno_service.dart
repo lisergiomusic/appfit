@@ -215,7 +215,26 @@ class AlunoService {
         .map((list) => list.where((r) => r['aluno_id'] == null).toList());
   }
 
-  Stream<List<Map<String, dynamic>>> getPlanilhasStream(String alunoId) => Stream.value([]);
+  /// Busca todas as planilhas de um aluno específico
+  Stream<List<Map<String, dynamic>>> getPlanilhasStream(String alunoId) {
+    return _supabase
+        .from('rotinas')
+        .stream(primaryKey: ['id'])
+        .eq('aluno_id', alunoId)
+        .map((list) => list.map((r) => _normalizeRotina(r)).toList());
+  }
+
+  Map<String, dynamic> _normalizeRotina(Map<String, dynamic> r) {
+    return {
+      ...r,
+      'dataCriacao': r['data_criacao'],
+      'dataVencimento': r['data_vencimento'],
+      'tipoVencimento': r['tipo_vencimento'],
+      'vencimentoSessoes': r['vencimento_sessoes'],
+      'sessoesConcluidas': r['sessoes_concluidas'],
+    };
+  }
+
   Stream<List<Map<String, dynamic>>> getHistoricoPesoStream(String alunoId) => Stream.value([]);
   
   Future<void> registrarPeso({required String alunoId, required double peso}) async {}

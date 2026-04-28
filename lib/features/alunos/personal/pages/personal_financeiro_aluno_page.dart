@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/financeiro_service.dart';
-import '../../shared/widgets/aluno_avatar.dart';
+import '../../shared/widgets/app_avatar.dart';
 import 'personal_historico_financeiro_page.dart';
 
 class PersonalFinanceiroAlunoPage extends StatefulWidget {
@@ -124,8 +124,8 @@ class _PersonalFinanceiroAlunoPageState
 
     return Row(
       children: [
-        AlunoAvatar(
-          alunoNome: widget.alunoNome,
+        AppAvatar(
+          name: widget.alunoNome,
           photoUrl: widget.photoUrl,
           radius: 28,
         ),

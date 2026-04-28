@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_theme.dart';
-import 'aluno_avatar.dart';
+import 'app_avatar.dart';
 
 class PersonalCard extends StatelessWidget {
   final String nome;
@@ -64,8 +64,8 @@ class PersonalCard extends StatelessWidget {
             // Avatar
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 14),
-              child: AlunoAvatar(
-                alunoNome: nome,
+              child: AppAvatar(
+                name: nome,
                 photoUrl: photoUrl,
                 radius: AvatarTokens.md,
                 showBorder: false,

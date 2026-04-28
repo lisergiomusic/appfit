@@ -5,7 +5,7 @@ import '../../../../core/services/aluno_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/settings/settings_group.dart';
 import '../../shared/models/aluno_perfil_data.dart';
-import '../../shared/widgets/aluno_avatar.dart';
+import '../../shared/widgets/app_avatar.dart';
 import '../../shared/widgets/personal_card.dart';
 import 'aluno_dados_fisicos_page.dart';
 import 'aluno_editar_perfil_page.dart';
@@ -235,8 +235,8 @@ class _AlunoContaPageState extends State<AlunoContaPage> {
         ),
         child: Column(
           children: [
-            AlunoAvatar(
-              alunoNome: nomeCompleto,
+            AppAvatar(
+              name: nomeCompleto,
               photoUrl: photoUrl,
               radius: AvatarTokens.lg,
               showBorder: false,

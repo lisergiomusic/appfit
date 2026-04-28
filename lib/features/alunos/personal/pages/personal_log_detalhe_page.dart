@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../alunos/shared/widgets/aluno_avatar.dart';
+import '../../../alunos/shared/widgets/app_avatar.dart';
 
 class PersonalLogDetalhePage extends StatelessWidget {
   final AtividadeRecenteItem item;
@@ -65,8 +65,8 @@ class _CabecalhoCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              AlunoAvatar(
-                alunoNome: item.alunoNome,
+              AppAvatar(
+                name: item.alunoNome,
                 photoUrl: item.alunoPhotoUrl,
                 radius: AvatarTokens.md,
                 showBorder: false,

@@ -9,7 +9,7 @@ import '../../treinos/shared/models/rotina_model.dart';
 import '../../treinos/aluno/pages/aluno_executar_treino_page.dart';
 import '../../alunos/shared/widgets/ritmo_da_semana_card.dart';
 import '../../treinos/aluno/pages/aluno_sessao_detalhe_page.dart';
-import '../../alunos/shared/widgets/aluno_avatar.dart';
+import '../../alunos/shared/widgets/app_avatar.dart';
 
 class AlunoHomePage extends StatefulWidget {
   final String uid;
@@ -206,8 +206,8 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
   Widget _buildHeader(String nome, String? photoUrl, String? nomePersonal) {
     return Row(
       children: [
-        AlunoAvatar(
-          alunoNome: nome,
+        AppAvatar(
+          name: nome,
           photoUrl: photoUrl,
           radius: AvatarTokens.lg,
           showBorder: false,

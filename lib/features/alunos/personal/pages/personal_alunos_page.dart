@@ -4,7 +4,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/widgets/app_swipe_to_delete.dart';
 import '../../../../core/widgets/app_bar_icon_button.dart';
-import '../../shared/widgets/aluno_avatar.dart';
+import '../../shared/widgets/app_avatar.dart';
 import '../../shared/widgets/cadastro_aluno_modal.dart';
 import 'personal_aluno_perfil_page.dart';
 
@@ -552,8 +552,8 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
               Stack(
                 alignment: Alignment.bottomRight,
                 children: [
-                  AlunoAvatar(
-                    alunoNome: nome,
+                  AppAvatar(
+                    name: nome,
                     photoUrl: photoUrl,
                     radius: 20,
                     borderColor: statusColor,

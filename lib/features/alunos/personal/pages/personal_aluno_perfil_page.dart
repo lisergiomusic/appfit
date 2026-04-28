@@ -102,7 +102,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
       appBar: AppBar(
         leading: const AppNavBackButton(),
         title: const Text('Perfil do Aluno'),
-        bottom: const AppBarDivider(),
+
       ),
       body: Stack(
         children: [

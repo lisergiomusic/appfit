@@ -5,7 +5,7 @@ import '../../../core/services/aluno_service.dart';
 import '../../../core/services/supabase_auth_service.dart';
 import '../../../core/widgets/app_bar_divider.dart';
 import '../../../core/widgets/app_section_link_button.dart';
-import '../../alunos/shared/widgets/aluno_avatar.dart';
+import '../../alunos/shared/widgets/app_avatar.dart';
 import '../../alunos/personal/pages/personal_log_detalhe_page.dart';
 import 'personal_atividade_recente_page.dart';
 
@@ -109,8 +109,8 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                   ),
                   child: Row(
                     children: [
-                      AlunoAvatar(
-                        alunoNome: nome,
+                      AppAvatar(
+                        name: nome,
                         photoUrl: photoUrl,
                         radius: AvatarTokens.lg,
                         showBorder: false,
@@ -404,8 +404,8 @@ class _AtividadeItem extends StatelessWidget {
             padding: CardTokens.padding,
             child: Row(
               children: [
-                AlunoAvatar(
-                  alunoNome: item.alunoNome,
+                AppAvatar(
+                  name: item.alunoNome,
                   photoUrl: item.alunoPhotoUrl,
                   radius: AvatarTokens.md,
                   showBorder: false,
