@@ -27,6 +27,8 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
 
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _canSave = false;
+  Map<String, dynamic>? _dadosIniciais;
 
   late TextEditingController _nomeController;
   late TextEditingController _sobrenomeController;
@@ -43,12 +45,19 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
   void initState() {
     super.initState();
     _alunoService = widget.alunoService ?? AlunoService();
-    _nomeController = TextEditingController();
-    _sobrenomeController = TextEditingController();
-    _emailController = TextEditingController();
-    _telefoneController = TextEditingController();
-    _pesoController = TextEditingController();
+    _nomeController = TextEditingController()..addListener(_onFieldChanged);
+    _sobrenomeController = TextEditingController()..addListener(_onFieldChanged);
+    _emailController = TextEditingController()..addListener(_onFieldChanged);
+    _telefoneController = TextEditingController()..addListener(_onFieldChanged);
+    _pesoController = TextEditingController()..addListener(_onFieldChanged);
     _carregarDados();
+  }
+
+  void _onFieldChanged() {
+    final hasChanges = _temAlteracoes();
+    if (hasChanges != _canSave) {
+      setState(() => _canSave = hasChanges);
+    }
   }
 
   Future<void> _carregarDados() async {
@@ -74,7 +83,11 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
         _generoSelecionado = data['genero'];
       }
 
-      setState(() => _isLoading = false);
+      _dadosIniciais = Map.from(data);
+      setState(() {
+        _isLoading = false;
+        _canSave = false; // Começa desabilitado
+      });
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -95,8 +108,54 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
     super.dispose();
   }
 
+  bool _temAlteracoes() {
+    print('>>> [CHECK] _isLoading: $_isLoading, _dadosIniciais: ${_dadosIniciais != null}');
+    if (_isLoading || _dadosIniciais == null) return false;
+
+    // Função auxiliar para normalizar strings
+    String norm(dynamic v) => (v?.toString() ?? '').trim();
+
+    final nomeMudou = norm(_nomeController.text) != norm(_dadosIniciais!['nome']);
+    final sobrenomeMudou = norm(_sobrenomeController.text) != norm(_dadosIniciais!['sobrenome']);
+    final emailMudou = norm(_emailController.text) != norm(_dadosIniciais!['email']);
+    final telefoneMudou = norm(_telefoneController.text) != norm(_dadosIniciais!['telefone']);
+
+    // Peso (Comparação numérica com tolerância)
+    final pesoIni = double.tryParse(norm(_dadosIniciais!['peso_atual'] ?? _dadosIniciais!['pesoAtual'])) ?? 0.0;
+    final pesoAtu = double.tryParse(_pesoController.text.replaceAll(',', '.')) ?? 0.0;
+    final pesoMudou = (pesoIni - pesoAtu).abs() > 0.01;
+
+    // Data
+    final dIniRaw = _dadosIniciais!['data_nascimento'] ?? _dadosIniciais!['dataNascimento'];
+    final dIni = dIniRaw != null ? DateTime.tryParse(dIniRaw.toString()) : null;
+    final dataMudou = dIni?.millisecondsSinceEpoch != _dataNascimento?.millisecondsSinceEpoch;
+
+    // Gênero
+    final gIni = norm(_dadosIniciais!['genero']);
+    final gAtu = norm(_generoSelecionado);
+    final generoMudou = gAtu != gIni && (gAtu.isNotEmpty || gIni.isNotEmpty);
+
+    final temMudanca = nomeMudou || sobrenomeMudou || emailMudou || telefoneMudou || pesoMudou || dataMudou || generoMudou;
+
+    if (temMudanca) {
+      print('>>> [!] ALTERAÇÃO DETECTADA:');
+      if (nomeMudou) print('>>> Nome: "${norm(_dadosIniciais!['nome'])}" -> "${norm(_nomeController.text)}"');
+      if (sobrenomeMudou) print('>>> Sobrenome: "${norm(_dadosIniciais!['sobrenome'])}" -> "${norm(_sobrenomeController.text)}"');
+      if (pesoMudou) print('>>> Peso: $pesoIni -> $pesoAtu');
+      if (dataMudou) print('>>> Data: $dIni -> $_dataNascimento');
+      if (generoMudou) print('>>> Gênero: "$gIni" -> "$gAtu"');
+    }
+
+    return temMudanca;
+  }
+
   Future<void> _salvar() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (!_temAlteracoes()) {
+      Navigator.pop(context);
+      return;
+    }
 
     setState(() => _isSaving = true);
     try {
@@ -178,7 +237,7 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
           child: AppBarTextButton(
             label: 'Salvar',
             isLoading: _isSaving,
-            onPressed: _salvar,
+            onPressed: _canSave ? _salvar : null,
           ),
         ),
       ],

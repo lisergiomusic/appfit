@@ -16,10 +16,12 @@ class AppBarTextButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isEnabled = onPressed != null && !isLoading;
+
     return CupertinoButton(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       minimumSize: const Size(0, 0),
-      onPressed: isLoading ? null : onPressed,
+      onPressed: isEnabled ? onPressed : null,
       child: isLoading
           ? const SizedBox(
               width: 18,
@@ -29,7 +31,12 @@ class AppBarTextButton extends StatelessWidget {
                 strokeWidth: 2.2,
               ),
             )
-          : Text(label, style: AppBarTokens.actionButton),
+          : Text(
+              label,
+              style: AppBarTokens.actionButton.copyWith(
+                color: isEnabled ? AppColors.primary : AppColors.labelTertiary,
+              ),
+            ),
     );
   }
 }
