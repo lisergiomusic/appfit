@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/personal_service.dart';
-import '../../../../core/services/aluno_service.dart';
 import '../../../../core/widgets/app_swipe_to_delete.dart';
 import '../../../../core/widgets/app_bar_icon_button.dart';
 import '../../shared/widgets/app_avatar.dart';
@@ -21,7 +20,6 @@ class PersonalAlunosPage extends StatefulWidget {
 class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final AlunoService _alunoService = AlunoService();
   final PersonalService _personalService = PersonalService();
 
   String _searchQuery = "";
@@ -196,7 +194,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
     );
 
     if (confirmar == true) {
-      await _alunoService.deletarAluno(id);
+      await _personalService.deletarAluno(id);
       _fetchInitialData();
     }
   }
@@ -213,7 +211,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
     if (nome.isEmpty) return;
 
     try {
-      await _alunoService.salvarAluno(
+      await _personalService.salvarAluno(
         nome,
         sobrenome,
         email,

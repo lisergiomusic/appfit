@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/widgets/app_bar_divider.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/services/aluno_service.dart';
+import '../../../../core/services/personal_service.dart';
+import '../../../../core/services/user_service.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../shared/widgets/app_avatar.dart';
 import 'personal_editar_aluno_page.dart';
@@ -25,7 +26,8 @@ class PersonalGerenciarAlunoPage extends StatefulWidget {
 
 class _PersonalGerenciarAlunoPageState
     extends State<PersonalGerenciarAlunoPage> {
-  final AlunoService _alunoService = AlunoService();
+  final PersonalService _personalService = PersonalService();
+  final UserService _userService = UserService();
   late String _alunoNome;
   String? _fotoUrl;
   DateTime? _dataCriacao;
@@ -39,7 +41,7 @@ class _PersonalGerenciarAlunoPageState
 
   Future<void> _buscarDadosAluno() async {
     try {
-      final data = await _alunoService.getAluno(widget.alunoId);
+      final data = await _userService.getProfile(widget.alunoId);
       if (data.isNotEmpty && mounted) {
         setState(() {
           _alunoNome = '${data['nome'] ?? ''} ${data['sobrenome'] ?? ''}'.trim();
@@ -145,7 +147,7 @@ class _PersonalGerenciarAlunoPageState
 
     if (confirmar == true) {
       try {
-        await _alunoService.deletarAluno(widget.alunoId);
+        await _personalService.deletarAluno(widget.alunoId);
         if (context.mounted) {
           Navigator.popUntil(context, (route) => route.isFirst);
           ScaffoldMessenger.of(context).showSnackBar(

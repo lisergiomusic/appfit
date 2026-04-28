@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/services/aluno_service.dart';
+import '../../../../core/services/personal_service.dart';
+import '../../../../core/services/user_service.dart';
 import '../../../../core/widgets/app_bar_divider.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../../../core/widgets/app_bar_text_button.dart';
 
 class PersonalEditarAlunoPage extends StatefulWidget {
   final String alunoId;
-  final AlunoService? alunoService;
+  final PersonalService? personalService;
+  final UserService? userService;
 
   const PersonalEditarAlunoPage({
     super.key,
     required this.alunoId,
-    this.alunoService,
+    this.personalService,
+    this.userService,
   });
 
   @override
@@ -22,7 +25,8 @@ class PersonalEditarAlunoPage extends StatefulWidget {
 }
 
 class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
-  late final AlunoService _alunoService;
+  late final PersonalService _personalService;
+  late final UserService _userService;
   final _formKey = GlobalKey<FormState>();
 
   bool _isLoading = true;
@@ -44,7 +48,8 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
   @override
   void initState() {
     super.initState();
-    _alunoService = widget.alunoService ?? AlunoService();
+    _personalService = widget.personalService ?? PersonalService();
+    _userService = widget.userService ?? UserService();
     _nomeController = TextEditingController()..addListener(_onFieldChanged);
     _sobrenomeController = TextEditingController()..addListener(_onFieldChanged);
     _emailController = TextEditingController()..addListener(_onFieldChanged);
@@ -62,8 +67,8 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
 
   Future<void> _carregarDados() async {
     try {
-      final data = await _alunoService
-          .getAluno(widget.alunoId)
+      final data = await _userService
+          .getProfile(widget.alunoId)
           .timeout(const Duration(seconds: 12));
       
       if (data.isEmpty) throw Exception("Aluno não encontrado");
@@ -159,8 +164,8 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
 
     setState(() => _isSaving = true);
     try {
-      await _alunoService
-          .atualizarAluno(
+      await _personalService
+          .atualizarDadosAluno(
             alunoId: widget.alunoId,
             nome: _nomeController.text.trim(),
             sobrenome: _sobrenomeController.text.trim(),

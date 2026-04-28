@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/services/aluno_service.dart';
+import '../../../../core/services/user_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_bar_divider.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
@@ -15,7 +16,8 @@ class AlunoDadosFisicosPage extends StatefulWidget {
 }
 
 class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
-  late final AlunoService _service;
+  late final AlunoService _alunoService;
+  late final UserService _userService;
   final _formKey = GlobalKey<FormState>();
 
   bool _isLoading = true;
@@ -36,7 +38,8 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
   @override
   void initState() {
     super.initState();
-    _service = AlunoService();
+    _alunoService = AlunoService();
+    _userService = UserService();
     _pesoController = TextEditingController();
     _alturaController = TextEditingController();
     _carregarDados();
@@ -51,8 +54,8 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
 
   Future<void> _carregarDados() async {
     try {
-      final data = await _service
-          .getAluno(widget.uid)
+      final data = await _userService
+          .getProfile(widget.uid)
           .timeout(const Duration(seconds: 12));
       
       if (data.isEmpty) throw Exception('Dados não encontrados');
@@ -106,17 +109,16 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
       final novaAltura = double.tryParse(_alturaController.text.trim());
 
       if (novoPeso != null && novoPeso != _pesoOriginal) {
-        await _service.registrarPeso(alunoId: widget.uid, peso: novoPeso);
+        await _alunoService.registrarPeso(alunoId: widget.uid, peso: novoPeso);
       }
 
-      await _service
-          .atualizarAluno(
-            alunoId: widget.uid,
-            nome: _nomeAtual,
-            sobrenome: _sobrenomeAtual,
-            email: _emailAtual,
-            peso: novoPeso,
-            altura: novaAltura,
+      await _userService
+          .updateProfile(
+            uid: widget.uid,
+            data: {
+              'peso_atual': novoPeso,
+              'altura_atual': novaAltura,
+            },
           )
           .timeout(const Duration(seconds: 12));
 

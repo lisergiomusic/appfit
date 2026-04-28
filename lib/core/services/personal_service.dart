@@ -139,6 +139,70 @@ class PersonalService {
     }
   }
 
+  /// Cadastro de novo aluno pelo personal
+  Future<void> salvarAluno(
+    String nome,
+    String sobrenome,
+    String email, {
+    String? whatsapp,
+    String? genero,
+    DateTime? dataNascimento,
+  }) async {
+    final personalId = _currentPersonalId;
+    if (personalId == null) throw Exception('Personal não autenticado');
+
+    try {
+      await _supabase.from('profiles').insert({
+        'nome': nome,
+        'email': email,
+        'sobrenome': sobrenome,
+        'tipo_usuario': 'aluno',
+        'personal_id': personalId,
+        'telefone': whatsapp,
+        'genero': genero,
+        'data_nascimento': dataNascimento?.toIso8601String(),
+        'status': 'ativo',
+      });
+    } catch (e) {
+      throw Exception('Erro ao salvar aluno: $e');
+    }
+  }
+
+  /// Remove um aluno definitivamente
+  Future<void> deletarAluno(String alunoId) async {
+    try {
+      await _supabase.from('profiles').delete().eq('id', alunoId);
+    } catch (e) {
+      throw Exception('Erro ao deletar aluno: $e');
+    }
+  }
+
+  /// Atualiza os dados de um aluno (Visão do Personal)
+  Future<void> atualizarDadosAluno({
+    required String alunoId,
+    required String nome,
+    required String sobrenome,
+    required String email,
+    String? telefone,
+    double? peso,
+    DateTime? dataNascimento,
+    String? genero,
+  }) async {
+    try {
+      await _supabase.from('profiles').update({
+        'nome': nome,
+        'sobrenome': sobrenome,
+        'email': email,
+        'telefone': telefone,
+        'peso_atual': peso,
+        'data_nascimento': dataNascimento?.toIso8601String(),
+        'genero': genero,
+      }).eq('id', alunoId);
+    } catch (e) {
+      throw Exception('Erro ao atualizar aluno: $e');
+    }
+  }
+
   /// Busca o feed de atividade recente (logs de treino)
   Stream<List<AtividadeRecenteItem>> getAtividadeRecenteStream({int limit = 10}) {
     // TODO: Implementar stream real da tabela logs_treino

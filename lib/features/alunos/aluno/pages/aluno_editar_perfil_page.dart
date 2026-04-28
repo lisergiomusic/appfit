@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/services/aluno_service.dart';
+import '../../../../core/services/user_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../../../core/widgets/app_bar_text_button.dart';
@@ -15,7 +15,7 @@ class AlunoEditarPerfilPage extends StatefulWidget {
 }
 
 class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
-  late final AlunoService _service;
+  late final UserService _service;
   final _formKey = GlobalKey<FormState>();
 
   bool _isLoading = true;
@@ -41,7 +41,7 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
   @override
   void initState() {
     super.initState();
-    _service = AlunoService();
+    _service = UserService();
     _nomeController = TextEditingController();
     _sobrenomeController = TextEditingController();
     _telefoneController = TextEditingController();
@@ -59,7 +59,7 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
   Future<void> _carregarDados() async {
     try {
       final data = await _service
-          .getAluno(widget.uid)
+          .getProfile(widget.uid)
           .timeout(const Duration(seconds: 12));
       
       if (data.isEmpty) throw Exception('Dados não encontrados');
@@ -115,14 +115,16 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
     setState(() => _isSaving = true);
     try {
       await _service
-          .atualizarAluno(
-            alunoId: widget.uid,
-            nome: _nomeController.text.trim(),
-            sobrenome: _sobrenomeController.text.trim(),
-            email: _emailAtual,
-            telefone: _telefoneController.text.trim(),
-            dataNascimento: _dataNascimento,
-            genero: _generoSelecionado,
+          .updateProfile(
+            uid: widget.uid,
+            data: {
+              'nome': _nomeController.text.trim(),
+              'sobrenome': _sobrenomeController.text.trim(),
+              'email': _emailAtual,
+              'telefone': _telefoneController.text.trim(),
+              'data_nascimento': _dataNascimento?.toIso8601String(),
+              'genero': _generoSelecionado,
+            },
           )
           .timeout(const Duration(seconds: 12));
 
