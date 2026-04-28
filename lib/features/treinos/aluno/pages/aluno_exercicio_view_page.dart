@@ -101,71 +101,71 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Mapa de seções da interface desta página:
-    // 1) Estrutura superior: AppBar, título e ações de navegação.
-    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
-    // 3) Ações finais: botões primários, confirmadores e feedbacks.
-    final temImagem =
-        widget.exercicio.mediaUrl != null &&
-        widget.exercicio.mediaUrl!.isNotEmpty;
     final temMusculos = widget.exercicio.grupoMuscular.isNotEmpty;
-
-    final screenWidth = MediaQuery.of(context).size.width;
-    final titleWidth = screenWidth - SpacingTokens.screenHorizontalPadding * 2;
-    final titlePainter = TextPainter(
-      text: TextSpan(text: widget.exercicio.nome, style: AppTheme.bigTitle),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    final quebra2Linhas = titlePainter.width > titleWidth;
-
-    final expandedHeight = quebra2Linhas
-        ? (temMusculos ? 188.0 : 160.0)
-        : (temMusculos ? 148.0 : 120.0);
+    final temImagem = widget.exercicio.mediaUrl != null && widget.exercicio.mediaUrl!.isNotEmpty;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: CustomScrollView(
-        slivers: [
-          AppFitSliverAppBar(
-            title: widget.exercicio.nome,
-            expandedHeight: expandedHeight,
-            background: Align(
-              alignment: Alignment.bottomLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  left: SpacingTokens.screenHorizontalPadding,
-                  right: SpacingTokens.screenHorizontalPadding,
-                  bottom: SpacingTokens.sm,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(widget.exercicio.nome, style: AppTheme.bigTitle),
-                    if (temMusculos) ...[
-                      const SizedBox(height: SpacingTokens.sm),
-                      Wrap(
-                        spacing: SpacingTokens.xs,
-                        runSpacing: SpacingTokens.xs,
-                        children: widget.exercicio.grupoMuscular
-                            .map(
-                              (grupo) => Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: SpacingTokens.sm,
-                                  vertical: SpacingTokens.xs,
-                                ),
-                                decoration: PillTokens.decoration,
-                                child: Text(grupo, style: PillTokens.text),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    ],
-                  ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final titlePainter = TextPainter(
+            text: TextSpan(text: widget.exercicio.nome, style: AppTheme.bigTitle),
+            textDirection: TextDirection.ltr,
+            maxLines: 2,
+          )..layout(maxWidth: constraints.maxWidth - (SpacingTokens.screenHorizontalPadding * 2));
+
+          final int titleLines = titlePainter.computeLineMetrics().length;
+          final double dynamicHeight = titleLines > 1 
+              ? (temMusculos ? 178.0 : 144.0) 
+              : (temMusculos ? 144.0 : 120.0);
+
+          return CustomScrollView(
+            slivers: [
+              AppFitSliverAppBar(
+                title: widget.exercicio.nome,
+                expandedHeight: dynamicHeight,
+                background: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: SpacingTokens.screenHorizontalPadding,
+                      right: SpacingTokens.screenHorizontalPadding,
+                      bottom: SpacingTokens.sm,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.exercicio.nome,
+                          style: AppTheme.bigTitle,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (temMusculos) ...[
+                          const SizedBox(height: SpacingTokens.sm),
+                          Wrap(
+                            spacing: SpacingTokens.xs,
+                            runSpacing: SpacingTokens.xs,
+                            children: widget.exercicio.grupoMuscular
+                                .map(
+                                  (grupo) => Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: SpacingTokens.sm,
+                                      vertical: SpacingTokens.xs,
+                                    ),
+                                    decoration: PillTokens.decoration,
+                                    child: Text(grupo, style: PillTokens.text),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -301,8 +301,10 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
             ),
           ),
         ],
-      ),
-    );
+      );
+    },
+  ),
+);
   }
 }
 

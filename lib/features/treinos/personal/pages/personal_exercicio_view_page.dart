@@ -236,70 +236,74 @@ class _PersonalExercicioViewPageState extends State<PersonalExercicioViewPage> {
 
   @override
   Widget build(BuildContext context) {
-    final temImagem =
-        _exercicioAtual.mediaUrl != null &&
-        _exercicioAtual.mediaUrl!.isNotEmpty;
     final temMusculos = _exercicioAtual.grupoMuscular.isNotEmpty;
-
-    final screenWidth = MediaQuery.of(context).size.width;
-    final titleWidth = screenWidth - SpacingTokens.screenHorizontalPadding * 2;
-    final titlePainter = TextPainter(
-      text: TextSpan(text: _exercicioAtual.nome, style: AppTheme.bigTitle),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    final quebra2Linhas = titlePainter.width > titleWidth;
-
-    final expandedHeight = quebra2Linhas
-        ? (temMusculos ? 188.0 : 160.0)
-        : (temMusculos ? 148.0 : 120.0);
+    final temImagem = _exercicioAtual.mediaUrl != null && _exercicioAtual.mediaUrl!.isNotEmpty;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          Expanded(
-            child: CustomScrollView(
-              slivers: [
-                AppFitSliverAppBar(
-                  title: _exercicioAtual.nome,
-                  expandedHeight: expandedHeight,
-                  background: Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        left: SpacingTokens.screenHorizontalPadding,
-                        right: SpacingTokens.screenHorizontalPadding,
-                        bottom: SpacingTokens.sm,
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(_exercicioAtual.nome, style: AppTheme.bigTitle),
-                          if (temMusculos) ...[
-                            const SizedBox(height: SpacingTokens.sm),
-                            Wrap(
-                              spacing: SpacingTokens.xs,
-                              runSpacing: SpacingTokens.xs,
-                              children: _exercicioAtual.grupoMuscular
-                                  .map(
-                                    (grupo) => Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: SpacingTokens.sm,
-                                        vertical: SpacingTokens.xs,
-                                      ),
-                                      decoration: PillTokens.decoration,
-                                      child: Text(grupo, style: PillTokens.text),
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                          ],
-                        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final titlePainter = TextPainter(
+            text: TextSpan(text: _exercicioAtual.nome, style: AppTheme.bigTitle),
+            textDirection: TextDirection.ltr,
+            maxLines: 2,
+          )..layout(maxWidth: constraints.maxWidth - (SpacingTokens.screenHorizontalPadding * 2));
+
+          final int titleLines = titlePainter.computeLineMetrics().length;
+          final double dynamicHeight = titleLines > 1 
+              ? (temMusculos ? 178.0 : 144.0) 
+              : (temMusculos ? 144.0 : 120.0);
+
+          return Column(
+            children: [
+              Expanded(
+                child: CustomScrollView(
+                  slivers: [
+                    AppFitSliverAppBar(
+                      title: _exercicioAtual.nome,
+                      expandedHeight: dynamicHeight,
+                      background: Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            left: SpacingTokens.screenHorizontalPadding,
+                            right: SpacingTokens.screenHorizontalPadding,
+                            bottom: SpacingTokens.sm,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _exercicioAtual.nome,
+                                style: AppTheme.bigTitle,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (temMusculos) ...[
+                                const SizedBox(height: SpacingTokens.sm),
+                                Wrap(
+                                  spacing: SpacingTokens.xs,
+                                  runSpacing: SpacingTokens.xs,
+                                  children: _exercicioAtual.grupoMuscular
+                                      .map(
+                                        (grupo) => Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: SpacingTokens.sm,
+                                            vertical: SpacingTokens.xs,
+                                          ),
+                                          decoration: PillTokens.decoration,
+                                          child: Text(grupo, style: PillTokens.text),
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -511,8 +515,10 @@ class _PersonalExercicioViewPageState extends State<PersonalExercicioViewPage> {
               ),
             ),
         ],
-      ),
-    );
+      );
+    },
+  ),
+);
   }
 }
 
