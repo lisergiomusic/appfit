@@ -502,7 +502,9 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
                     actions: [
                       AppBarTextButton(
                         label: 'Salvar',
-                        onPressed: _executarSalvamentoManual,
+                        onPressed: _controller.verificarAlteracoes() 
+                            ? _executarSalvamentoManual 
+                            : null,
                       ),
                     ],
                     background: Align(
