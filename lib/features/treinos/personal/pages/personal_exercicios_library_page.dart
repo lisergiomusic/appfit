@@ -10,6 +10,7 @@ import '../../../../core/services/supabase_auth_service.dart';
 import '../../shared/models/exercicio_model.dart';
 import '../../../../core/utils/cloudinary.dart';
 import 'personal_criar_exercicio_page.dart';
+import 'personal_exercicio_view_page.dart';
 
 class PersonalExerciciosLibraryPage extends StatefulWidget {
   const PersonalExerciciosLibraryPage({super.key});
@@ -426,209 +427,30 @@ class _PersonalExerciciosLibraryPageState
   }
 
   void _mostrarPreviewExercicio(ExercicioItem ex) async {
-    await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surfaceDark,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) {
-          final isSelected = _selecionados.contains(ex);
-
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 24),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(30),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: Container(
-                      color: AppColors.surfaceLight,
-                      child: ex.mediaUrl != null && ex.mediaUrl!.isNotEmpty
-                          ? _buildMediaPreview(Cloudinary.thumbnail(ex.mediaUrl!))
-                          : const Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.videocam_off,
-                                    color: AppColors.labelSecondary,
-                                    size: 40,
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    'Mídia indisponível',
-                                    style: TextStyle(
-                                      color: AppColors.labelSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(ex.nome, style: AppTheme.title1),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: ex.grupoMuscular.map((grupo) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
-                        borderRadius: PillTokens.radius,
-                      ),
-                      child: Text(
-                        grupo,
-                        style: PillTokens.text.copyWith(
-                          color: AppColors.labelSecondary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                if (ex.instrucoes != null && ex.instrucoes!.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Instruções',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.3,
-                    ),
-                    child: SingleChildScrollView(
-                      child: Text(
-                        ex.instrucoes!,
-                        style: const TextStyle(
-                          color: AppColors.textLabel,
-                          fontSize: 14,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 32),
-                if (_isAdmin) ...[
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PersonalCriarExercicioPage(
-                              exercicioParaEditar: ex,
-                            ),
-                          ),
-                        );
-                        if (result != null && mounted) {
-                          Navigator.pop(context); // Fecha o modal
-                          _carregarDados(reset: true); // Recarrega a lista
-                        }
-                      },
-                      icon: const Icon(Icons.edit, size: 18),
-                      label: const Text('Editar Exercício (Admin)'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                        side: const BorderSide(color: AppColors.primary),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-                ElevatedButton(
-                  onPressed: () {
-                    _alternarSelecao(ex);
-                    if (!isSelected) {
-                      Navigator.of(context).pop(true);
-                    } else {
-                      setModalState(() {});
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isSelected
-                        ? AppColors.surfaceLight
-                        : AppColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: Text(
-                    isSelected ? 'Remover do Treino' : 'Adicionar ao Treino',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: isSelected ? Colors.redAccent : Colors.black,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildMediaPreview(String url) {
-    return CachedNetworkImage(
-      imageUrl: url,
-      fit: BoxFit.cover,
-      placeholder: (context, url) => Container(
-        color: AppColors.surfaceLight,
-        child: const Center(
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: AppColors.primary,
-          ),
-        ),
-      ),
-      errorWidget: (context, url, error) => Container(
-        color: AppColors.surfaceLight,
-        child: const Center(
-          child: Icon(
-            Icons.image_not_supported_outlined,
-            color: AppColors.labelSecondary,
-            size: 40,
-          ),
+    final result = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PersonalExercicioViewPage(
+          exercicio: ex,
+          isSelected: _selecionados.contains(ex),
+          isAdmin: _isAdmin,
         ),
       ),
     );
+
+    if (result != null) {
+      if (result == 'select') {
+        setState(() {
+          _selecionados.add(ex);
+        });
+      } else if (result == 'unselect') {
+        setState(() {
+          _selecionados.remove(ex);
+        });
+      } else if (result == 'reload') {
+        _carregarDados(reset: true);
+      }
+    }
   }
 
   @override
