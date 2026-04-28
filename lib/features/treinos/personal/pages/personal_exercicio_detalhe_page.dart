@@ -864,51 +864,71 @@ class _PersonalExercicioDetalheViewState
 
   Widget _buildEmptyState() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppTheme.space48),
-      child: Column(
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withAlpha(25),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.fitness_center_rounded,
-              size: 36,
-              color: AppColors.primary,
-            ),
+      padding: const EdgeInsets.symmetric(vertical: SpacingTokens.sectionGap),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceDark,
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+          border: Border.all(
+            color: AppColors.primary.withAlpha(40),
+            width: 1,
           ),
-          const SizedBox(height: AppTheme.space24),
-          const Text(
-            'Prescreva o exercício',
-            style: TextStyle(
-              color: AppColors.labelPrimary,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.3,
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withAlpha(20),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.fitness_center_rounded,
+                    size: 28,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Prescreva o exercício',
+                        style: TextStyle(
+                          color: AppColors.labelPrimary,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Adicione séries de aquecimento,\naproximação ou trabalho.',
+                        style: TextStyle(
+                          color: AppColors.labelTertiary,
+                          fontSize: 13,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: AppTheme.space8),
-          const Text(
-            'Adicione séries de aquecimento,\naproximação ou trabalho.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.labelTertiary,
-              fontSize: 15,
-              height: 1.4,
-              letterSpacing: -0.2,
+            const SizedBox(height: 24),
+            OrangeGlassActionButton(
+              label: 'Adicionar Primeira Série',
+              onTap: _adicionarSerie,
+              bottomMargin: 0,
+              showGlow: true,
             ),
-          ),
-          const SizedBox(height: AppTheme.space32),
-          OrangeGlassActionButton(
-            label: 'Adicionar Série',
-            onTap: _adicionarSerie,
-            bottomMargin: 0,
-            showGlow: false,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
