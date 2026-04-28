@@ -772,33 +772,27 @@ class _PersonalExercicioDetalheViewState
                             addLabel: 'Adicionar instruções gerais',
                             onTap: _showEditInstructionsSheet,
                           ),
-                          const SizedBox(height: SpacingTokens.sectionGap),
-                          if (ex.series.isEmpty)
-                            _buildEmptyState()
-                          else ...[
-                            _buildSection(
-                              title: 'Aquecimento',
-                              entries: warmup,
-                              tipo: TipoSerie.aquecimento,
-                            ),
-                            _buildSection(
-                              title: 'Séries de aproximação',
-                              entries: feeder,
-                              tipo: TipoSerie.feeder,
-                            ),
-                            _buildSection(
-                              title: 'Séries de trabalho',
-                              entries: work,
-                              tipo: TipoSerie.trabalho,
-                            ),
-                            const SizedBox(
-                              height: SpacingTokens.screenBottomPadding,
-                            ),
-                          ],
                         ],
                       ),
                     ),
                   ),
+                  if (ex.series.isEmpty)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: SpacingTokens.screenHorizontalPadding,
+                        ),
+                        child: _buildEmptyState(),
+                      ),
+                    )
+                  else ...[
+                    _buildSliverSeries(context, warmup, TipoSerie.aquecimento),
+                    _buildSliverSeries(context, feeder, TipoSerie.feeder),
+                    _buildSliverSeries(context, work, TipoSerie.trabalho),
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: SpacingTokens.screenBottomPadding),
+                    ),
+                  ],
                 ],
               );
             },
@@ -883,6 +877,36 @@ class _PersonalExercicioDetalheViewState
             showGlow: false,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSliverSeries(
+    BuildContext context,
+    List<MapEntry<int, SerieItem>> entries,
+    TipoSerie tipo,
+  ) {
+    if (entries.isEmpty) return const SliverToBoxAdapter();
+
+    final title = tipo == TipoSerie.aquecimento
+        ? 'Aquecimento'
+        : tipo == TipoSerie.feeder
+            ? 'Séries de aproximação'
+            : 'Séries de trabalho';
+
+    return SliverPadding(
+      padding: const EdgeInsets.only(top: SpacingTokens.sectionGap),
+      sliver: SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: SpacingTokens.screenHorizontalPadding,
+          ),
+          child: _buildSection(
+            title: title,
+            entries: entries,
+            tipo: tipo,
+          ),
+        ),
       ),
     );
   }

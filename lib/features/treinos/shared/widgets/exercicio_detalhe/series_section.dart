@@ -156,6 +156,7 @@ class SeriesSection extends StatelessWidget {
                     key: animatedListKey,
                     initialItemCount: entries.length,
                     shrinkWrap: true,
+                    padding: EdgeInsets.zero,
                     physics: const NeverScrollableScrollPhysics(),
                     itemBuilder: (context, index, animation) {
                       return itemBuilder(
