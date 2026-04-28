@@ -13,7 +13,8 @@ import 'personal_criar_exercicio_page.dart';
 import 'personal_exercicio_view_page.dart';
 
 class PersonalExerciciosLibraryPage extends StatefulWidget {
-  const PersonalExerciciosLibraryPage({super.key});
+  final bool isSelectionMode;
+  const PersonalExerciciosLibraryPage({super.key, this.isSelectionMode = false});
 
   @override
   State<PersonalExerciciosLibraryPage> createState() =>
@@ -528,25 +529,22 @@ class _PersonalExerciciosLibraryPageState
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Row(
                 children: [
                   Expanded(
                     child: TextField(
                       controller: _searchController,
                       focusNode: _searchFocusNode,
-                      style: const TextStyle(
-                        color: AppColors.labelPrimary,
-                        fontSize: 15,
-                      ),
+                      style: AppTheme.inputText,
                       decoration: InputDecoration(
                         hintText: 'Buscar exercícios...',
+                        hintStyle: AppTheme.inputPlaceHolder.copyWith(fontSize: 15),
                         prefixIcon: const Icon(
                           Icons.search,
                           color: AppColors.labelSecondary,
                           size: 20,
                         ),
-
                         suffixIcon: ValueListenableBuilder<TextEditingValue>(
                           valueListenable: _searchController,
                           builder: (context, value, _) {
@@ -570,7 +568,7 @@ class _PersonalExerciciosLibraryPageState
                         fillColor: AppColors.surfaceDark,
                         contentPadding: const EdgeInsets.symmetric(vertical: 0),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLG),
                           borderSide: BorderSide.none,
                         ),
                       ),
@@ -607,7 +605,7 @@ class _PersonalExerciciosLibraryPageState
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontSize: 15,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
@@ -706,141 +704,113 @@ class _PersonalExerciciosLibraryPageState
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.transparent,
-                            borderRadius: BorderRadius.circular(16),
+                          decoration: AppTheme.cardDecoration.copyWith(
+                            border: isSelected
+                                ? Border.all(color: AppColors.primary, width: 1.5)
+                                : Border.all(color: Colors.white.withAlpha(10), width: 1),
                           ),
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              borderRadius: BorderRadius.circular(
-                                AppTheme.radiusXL,
-                              ),
-                              onTap: () => _mostrarPreviewExercicio(ex),
+                              borderRadius: CardTokens.cardRadius,
+                              onTap: () {
+                                if (widget.isSelectionMode) {
+                                  _alternarSelecao(ex);
+                                } else {
+                                  _mostrarPreviewExercicio(ex);
+                                }
+                              },
                               child: Padding(
-                                padding: const EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(12),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Container(
-                                      width: 56,
-                                      height: 56,
+                                      width: 52,
+                                      height: 52,
                                       decoration: BoxDecoration(
-                                        color: AppColors.surfaceDark,
-                                        borderRadius: BorderRadius.circular(
-                                          AppTheme.radiusLG,
-                                        ),
-                                        border: ex.personalId != null
-                                            ? Border.all(
-                                                color: AppColors.accentMetrics
-                                                    .withAlpha(100),
-                                                width: 2,
-                                              )
-                                            : null,
+                                        color: AppColors.background,
+                                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
                                       ),
-                                      child: ex.personalId != null
-                                          ? const Center(
-                                              child: Icon(
-                                                Icons.star_rounded,
-                                                color: AppColors.accentMetrics,
-                                                size: 28,
-                                              ),
-                                            )
-                                          : (ex.mediaUrl != null &&
-                                                ex.mediaUrl!.isNotEmpty)
+                                      child: (ex.mediaUrl != null && ex.mediaUrl!.isNotEmpty)
                                           ? ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                    AppTheme.radiusLG,
-                                                  ),
+                                              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
                                               child: CachedNetworkImage(
                                                 imageUrl: Cloudinary.thumbnail(ex.mediaUrl!),
                                                 fit: BoxFit.cover,
-                                                width: 56,
-                                                height: 56,
-                                                placeholder: (_, _) =>
-                                                    Container(
-                                                      color: AppColors.surfaceLight,
-                                                    ),
-                                                errorWidget: (_, _, _) =>
-                                                    const Center(
-                                                      child: Icon(
-                                                        Icons.fitness_center,
-                                                        color: AppColors.labelSecondary,
-                                                      ),
-                                                    ),
+                                                placeholder: (_, _) => const Center(
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                    color: AppColors.surfaceLight,
+                                                  ),
+                                                ),
+                                                errorWidget: (_, _, _) => const Icon(
+                                                  Icons.fitness_center,
+                                                  color: AppColors.labelSecondary,
+                                                ),
                                               ),
                                             )
-                                          : const Center(
-                                              child: Icon(
-                                                Icons.fitness_center,
-                                                color: AppColors.primary,
-                                              ),
+                                          : const Icon(
+                                              Icons.fitness_center,
+                                              color: AppColors.primary,
+                                              size: 24,
                                             ),
                                     ),
                                     const SizedBox(width: 16),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             ex.nome,
-                                            style: const TextStyle(
-                                              color: AppColors.labelPrimary,
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 17,
-                                              letterSpacing: -0.1,
-                                            ),
+                                            style: CardTokens.cardTitle,
                                           ),
-
+                                          const SizedBox(height: 4),
                                           Text(
                                             ex.grupoMuscular.join(' • '),
-                                            style: const TextStyle(
-                                              color: AppColors.labelSecondary,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
-                                              letterSpacing: 0.0,
-                                            ),
+                                            style: CardTokens.cardSubtitle.copyWith(fontSize: 13),
                                           ),
                                         ],
                                       ),
                                     ),
-                                    GestureDetector(
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: () => _alternarSelecao(ex),
-                                      child: Container(
-                                        padding: const EdgeInsets.only(
-                                          left: 16,
-                                          top: 8,
-                                          bottom: 8,
-                                        ),
-                                        child: Container(
-                                          width: 24,
-                                          height: 24,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: isSelected
-                                                  ? AppColors.primary
-                                                  : AppColors.labelSecondary
-                                                        .withAlpha(50),
-                                              width: 2,
-                                            ),
-                                            color: isSelected
-                                                ? AppColors.primary
-                                                : Colors.transparent,
-                                          ),
-                                          child: isSelected
-                                              ? const Icon(
-                                                  Icons.check,
-                                                  size: 16,
-                                                  color: Colors.black,
-                                                )
-                                              : null,
+                                    if (ex.personalId != null)
+                                      const Padding(
+                                        padding: EdgeInsets.only(right: 8),
+                                        child: Icon(
+                                          Icons.star_rounded,
+                                          color: AppColors.accentMetrics,
+                                          size: 20,
                                         ),
                                       ),
-                                    ),
+                                    if (widget.isSelectionMode)
+                                      GestureDetector(
+                                        behavior: HitTestBehavior.opaque,
+                                        onTap: () => _alternarSelecao(ex),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Container(
+                                            width: 22,
+                                            height: 22,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: isSelected
+                                                    ? AppColors.primary
+                                                    : AppColors.labelSecondary.withAlpha(60),
+                                                width: 2,
+                                              ),
+                                              color: isSelected ? AppColors.primary : Colors.transparent,
+                                            ),
+                                            child: isSelected
+                                                ? const Icon(
+                                                    Icons.check,
+                                                    size: 14,
+                                                    color: Colors.black,
+                                                  )
+                                                : null,
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),
@@ -854,7 +824,7 @@ class _PersonalExerciciosLibraryPageState
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: _selecionados.isNotEmpty
+      floatingActionButton: widget.isSelectionMode && _selecionados.isNotEmpty
           ? Container(
               height: 64,
               margin: const EdgeInsets.symmetric(horizontal: AppTheme.space16),

@@ -7,6 +7,7 @@ import '../../../../core/widgets/settings/settings_group.dart';
 import '../../shared/widgets/app_avatar.dart';
 import '../../aluno/pages/aluno_seguranca_page.dart';
 import 'personal_editar_perfil_page.dart';
+import '../../../treinos/personal/pages/personal_exercicios_library_page.dart';
 
 class PersonalContaPage extends StatefulWidget {
   final String uid;
@@ -138,7 +139,12 @@ class _PersonalContaPageState extends State<PersonalContaPage> {
                           iconColor: AppColors.labelSecondary,
                           label: 'Biblioteca de exercícios',
                           subtitle: 'Gerenciar exercícios base',
-                          onTap: () => AppUIUtils.showFutureFeatureWarning(context),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const PersonalExerciciosLibraryPage(),
+                            ),
+                          ),
                         ),
                         SettingsItem(
                           icon: Icons.receipt_long_rounded,

@@ -1,52 +1,36 @@
-# Redesign de UI: Botão "Concluir" Contextual (Header Action)
+# Correção de Fluxo: Modo Gestão vs Modo Seleção (Biblioteca)
 
-Substituir o ícone interno de "check" por uma ação de cabeçalho mais elegante e limpa, inspirada em apps premium que gerenciam formulários complexos.
+Garantir que a Biblioteca de Exercícios se comporte de forma adequada ao contexto de uso (Gestão nos Ajustes vs Seleção na Montagem de Treino).
 
-## Proposta de Design (Staff UI/UX)
+## Proposta de Solução (Staff UX)
 
-O ícone dentro do campo (suffixIcon) pode poluir o visual, especialmente em campos multi-linha.
+Implementar uma flag `isSelectionMode` na `PersonalExerciciosLibraryPage` para alternar entre as duas experiências.
 
-### Nova Abordagem: Header Action
-Em vez de colocar o botão *dentro* da caixa de texto, vamos colocá-lo **ao lado do rótulo (label)** do campo.
+### Comportamento no Modo Gestão (`isSelectionMode = false`):
+*   **Remover**: Checkboxes de seleção nos cards.
+*   **Remover**: Botão flutuante (FloatingActionButton) de "Ver lista / Salvar".
+*   **Ação**: O clique no card abre apenas a visualização/edição do exercício.
 
-1.  **Estética**: O campo de texto permanece limpo e minimalista.
-2.  **Visibilidade**: O botão "Concluir" (ou um ícone de check elegante) aparece no topo direito do campo apenas quando ele ganha o foco.
-3.  **Hierarquia**: Mantém a hierarquia visual clara: Rótulo à esquerda, Ação à direita.
+### Comportamento no Modo Seleção (`isSelectionMode = true`):
+*   **Manter**: Todo o fluxo atual de seleção múltipla e confirmação.
 
 ## Proposed Changes
 
-### [Personal Feature]
+### [Workout Features]
 
-#### [personal_editar_perfil_page.dart](file:///C:/Dev/Projetos/appfit/lib/features/alunos/personal/pages/personal_editar_perfil_page.dart)
+#### [personal_exercicios_library_page.dart](file:///C:/Dev/Projetos/appfit/lib/features/treinos/personal/pages/personal_exercicios_library_page.dart)
 
-- **Remover** o `suffixIcon` do `TextFormField` no método `_buildTextField`.
-- **Adicionar** uma `Row` no topo do campo para conter o `Text(label)` e um `TextButton`/`IconButton` de conclusão.
-- O botão de conclusão será animado ou aparecerá apenas via `Visibility` baseado no `focusNode.hasFocus`.
+- Adicionar `final bool isSelectionMode;` ao construtor (padrão `false`).
+- Condicionalizar a exibição do `GestureDetector` (checkbox) nos cards.
+- Condicionalizar o `floatingActionButton`.
+- Ajustar o `onTap` do card para não alternar seleção se não estiver em modo de seleção.
 
-```dart
-Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
-    Text(label, style: AppTheme.formLabel),
-    if (focusNode != null && focusNode.hasFocus)
-      GestureDetector(
-        onTap: () => focusNode.unfocus(),
-        child: const Text(
-          'Concluir',
-          style: TextStyle(
-            color: AppColors.primary,
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-          ),
-        ),
-      ),
-  ],
-),
-```
+#### [personal_sessao_detalhe_page.dart](file:///C:/Dev/Projetos/appfit/lib/features/treinos/personal/pages/personal_sessao_detalhe_page.dart)
+
+- Passar `isSelectionMode: true` ao abrir a biblioteca para montagem de treino.
 
 ## Plano de Verificação
 
 ### Verificação Manual
-1.  **Foco**: Ao clicar no campo de Bio, o texto azul "Concluir" deve aparecer discretamente acima do campo, ao lado do nome "Especialidade".
-2.  **Limpeza**: Confirmar que o interior do campo de texto não possui mais ícones de check.
-3.  **Ação**: Clicar em "Concluir" e verificar se o teclado fecha corretamente.
+1.  **Ajustes**: Abrir via "Biblioteca" nos Ajustes e confirmar que NÃO aparecem círculos de seleção nem o botão de Salvar.
+2.  **Montagem de Treino**: Abrir via criação de treino e confirmar que o fluxo de seleção múltipla continua funcionando normalmente.

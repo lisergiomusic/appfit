@@ -160,7 +160,7 @@ class _SessaoDetalhePersonalViewState
 
     final List<ExercicioItem>? selecionados = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const PersonalExerciciosLibraryPage()),
+      MaterialPageRoute(builder: (_) => const PersonalExerciciosLibraryPage(isSelectionMode: true)),
     );
 
     if (selecionados != null && selecionados.isNotEmpty) {
