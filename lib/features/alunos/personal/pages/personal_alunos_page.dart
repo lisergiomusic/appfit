@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/services/personal_service.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/widgets/app_swipe_to_delete.dart';
 import '../../../../core/widgets/app_bar_icon_button.dart';
@@ -21,6 +22,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final AlunoService _alunoService = AlunoService();
+  final PersonalService _personalService = PersonalService();
 
   String _searchQuery = "";
   String _statusFilter = "todos";
@@ -101,7 +103,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
   Future<void> _updateSummaryCounts() async {
     try {
       // Tenta buscar as contagens com um timeout generoso, mas sem travar o resto
-      final contagens = await _alunoService.fetchContagens().timeout(
+      final contagens = await _personalService.fetchContagens().timeout(
         const Duration(seconds: 10),
       );
       if (mounted) {
@@ -125,7 +127,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
     if (!isInitial) setState(() => _isLoadingMore = true);
 
     try {
-      final result = await _alunoService
+      final result = await _personalService
           .fetchAlunosPaginado(
             statusFilter: _statusFilter,
             searchQuery: _searchQuery,

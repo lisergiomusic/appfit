@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/aluno_service.dart';
+import '../../../core/services/personal_service.dart';
 import '../../../core/services/supabase_auth_service.dart';
+import '../../../core/services/user_service.dart';
 import '../../../core/widgets/app_bar_divider.dart';
 import '../../../core/widgets/app_section_link_button.dart';
 import '../../alunos/shared/widgets/app_avatar.dart';
@@ -25,13 +27,14 @@ class PersonalHomePage extends StatefulWidget {
 
 class _PersonalHomePageState extends State<PersonalHomePage> {
   final SupabaseAuthService _authService = SupabaseAuthService();
-  final AlunoService _alunoService = AlunoService();
+  final UserService _userService = UserService();
+  final PersonalService _personalService = PersonalService();
   late final Future<ContagemAlunos> _contagensFuture;
 
   @override
   void initState() {
     super.initState();
-    _contagensFuture = _alunoService.fetchContagens();
+    _contagensFuture = _personalService.fetchContagens();
   }
 
   @override
@@ -89,8 +92,8 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            FutureBuilder<Map<String, dynamic>?>(
-              future: _authService.getCurrentUserData(),
+            FutureBuilder<Map<String, dynamic>>(
+              future: _userService.getProfile(_authService.currentUser?.id ?? ''),
               builder: (context, snapshot) {
                 String nome = "...";
                 String? photoUrl;
@@ -209,7 +212,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => PersonalAtividadeRecentePage(
-                          alunoService: _alunoService,
+                          personalService: _personalService,
                         ),
                       ),
                     ),
@@ -222,7 +225,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
               padding: const EdgeInsets.symmetric(
                 horizontal: AppTheme.paddingScreen,
               ),
-              child: _AtividadeRecenteSection(alunoService: _alunoService),
+              child: _AtividadeRecenteSection(personalService: _personalService),
             ),
             const SizedBox(height: 48),
           ],
@@ -304,13 +307,13 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
 }
 
 class _AtividadeRecenteSection extends StatelessWidget {
-  final AlunoService alunoService;
-  const _AtividadeRecenteSection({required this.alunoService});
+  final PersonalService personalService;
+  const _AtividadeRecenteSection({required this.personalService});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<AtividadeRecenteItem>>(
-      stream: alunoService.getAtividadeRecenteStream(),
+      stream: personalService.getAtividadeRecenteStream(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildShimmer();

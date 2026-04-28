@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/services/aluno_service.dart';
+import '../../../../core/services/personal_service.dart';
 import '../../../../core/services/rotina_service.dart';
 import '../../../../core/widgets/app_swipe_to_delete.dart';
 import '../../../../core/widgets/app_bar_icon_button.dart';
@@ -10,7 +10,7 @@ import 'personal_rotina_detalhe_page.dart';
 class PersonalTreinosPage extends StatefulWidget {
   final String? alunoId;
   final String? alunoNome;
-  final AlunoService? alunoService;
+  final PersonalService? personalService;
   final RotinaService? rotinaService;
   final bool openCriarRotinaOnLoad;
 
@@ -18,7 +18,7 @@ class PersonalTreinosPage extends StatefulWidget {
     super.key,
     this.alunoId,
     this.alunoNome,
-    this.alunoService,
+    this.personalService,
     this.rotinaService,
     this.openCriarRotinaOnLoad = false,
   });
@@ -32,16 +32,16 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
   final ScrollController _scrollController = ScrollController();
   String _searchQuery = "";
 
-  late final AlunoService _alunoService;
+  late final PersonalService _personalService;
   late final RotinaService _rotinaService;
   late final Stream<dynamic> _rotinasStream;
 
   @override
   void initState() {
     super.initState();
-    _alunoService = widget.alunoService ?? AlunoService();
+    _personalService = widget.personalService ?? PersonalService();
     _rotinaService = widget.rotinaService ?? RotinaService();
-    _rotinasStream = _alunoService.getRotinasTemplates();
+    _rotinasStream = _personalService.getRotinasTemplates();
 
     if (widget.openCriarRotinaOnLoad && widget.alunoId == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {

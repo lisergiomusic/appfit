@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../../core/utils/app_ui_utils.dart';
 import '../../../../core/utils/auth_utils.dart';
-import '../../../../core/services/aluno_service.dart';
+import '../../../../core/services/user_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/settings/settings_group.dart';
 import '../../shared/widgets/app_avatar.dart';
 import '../../aluno/pages/aluno_seguranca_page.dart';
+import 'personal_editar_perfil_page.dart';
 
 class PersonalContaPage extends StatefulWidget {
   final String uid;
@@ -17,12 +18,12 @@ class PersonalContaPage extends StatefulWidget {
 }
 
 class _PersonalContaPageState extends State<PersonalContaPage> {
-  late final AlunoService _service;
+  late final UserService _service;
 
   @override
   void initState() {
     super.initState();
-    _service = AlunoService();
+    _service = UserService();
   }
 
   @override
@@ -68,7 +69,7 @@ class _PersonalContaPageState extends State<PersonalContaPage> {
         ],
       ),
       body: StreamBuilder<Map<String, dynamic>>(
-        stream: _service.getPersonalPerfilStream(widget.uid),
+        stream: _service.getProfileStream(widget.uid),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -90,6 +91,7 @@ class _PersonalContaPageState extends State<PersonalContaPage> {
           final sobrenome = personalData['sobrenome'] as String? ?? '';
           final nomeCompleto = '$nome $sobrenome'.trim();
           final photoUrl = personalData['photoUrl'] as String?;
+          final especialidade = personalData['especialidade'] as String? ?? 'Geral';
 
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -100,7 +102,7 @@ class _PersonalContaPageState extends State<PersonalContaPage> {
                 _buildHero(
                   nomeCompleto: nomeCompleto,
                   photoUrl: photoUrl,
-
+                  especialidade: especialidade,
                 ),
                 const SizedBox(height: SpacingTokens.sectionGap + 8),
 
@@ -125,7 +127,12 @@ class _PersonalContaPageState extends State<PersonalContaPage> {
                           iconColor: AppColors.labelSecondary,
                           label: 'Editar perfil',
                           subtitle: 'Nome, especialidade e contato',
-                          onTap: () => AppUIUtils.showFutureFeatureWarning(context),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PersonalEditarPerfilPage(uid: widget.uid),
+                            ),
+                          ),
                         ),
                         SettingsItem(
                           icon: Icons.library_books_rounded,
@@ -189,7 +196,7 @@ class _PersonalContaPageState extends State<PersonalContaPage> {
   Widget _buildHero({
     required String nomeCompleto,
     required String? photoUrl,
-
+    required String especialidade,
   }) {
     return SizedBox(
       width: double.infinity,
@@ -214,7 +221,15 @@ class _PersonalContaPageState extends State<PersonalContaPage> {
               style: AppTheme.title1,
               textAlign: TextAlign.center,
             ),
-
+            const SizedBox(height: 4),
+            Text(
+              especialidade,
+              style: AppTheme.caption.copyWith(
+                color: AppColors.labelSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),

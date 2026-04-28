@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../../core/services/aluno_service.dart';
+import '../../../../core/services/personal_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../../../core/widgets/app_primary_button.dart';
@@ -26,7 +26,7 @@ class PersonalAtivarTemplatePage extends StatefulWidget {
 
 class _PersonalAtivarTemplatePageState
     extends State<PersonalAtivarTemplatePage> {
-  final AlunoService _alunoService = AlunoService();
+  final PersonalService _personalService = PersonalService();
 
   String _tipoVencimento = 'sessoes';
   final TextEditingController _sessoesCtrl = TextEditingController();
@@ -51,7 +51,7 @@ class _PersonalAtivarTemplatePageState
 
     setState(() => _salvando = true);
     try {
-      await _alunoService.atribuirTreinoAoAluno(
+      await _personalService.atribuirTreinoAoAluno(
         alunoId: widget.alunoId,
         templateId: widget.templateId,
         tipoVencimento: _tipoVencimento,

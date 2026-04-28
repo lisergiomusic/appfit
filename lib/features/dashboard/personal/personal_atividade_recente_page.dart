@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/aluno_service.dart';
+import '../../../core/services/personal_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_bar_divider.dart';
 import '../../alunos/shared/widgets/app_avatar.dart';
 import '../../alunos/personal/pages/personal_log_detalhe_page.dart';
 
 class PersonalAtividadeRecentePage extends StatefulWidget {
-  final AlunoService alunoService;
+  final PersonalService personalService;
 
-  const PersonalAtividadeRecentePage({super.key, required this.alunoService});
+  const PersonalAtividadeRecentePage({super.key, required this.personalService});
 
   @override
   State<PersonalAtividadeRecentePage> createState() =>
@@ -51,7 +52,7 @@ class _PersonalAtividadeRecentePageState
     if (_isLoading || !_hasMore) return;
     setState(() => _isLoading = true);
 
-    final result = await widget.alunoService.fetchAtividadePage(
+    final result = await widget.personalService.fetchAtividadePage(
       limit: _pageSize,
       startAfter: _lastDoc,
     );

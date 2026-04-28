@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:rxdart/rxdart.dart';
+import '../../../../core/services/personal_service.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_bar_divider.dart';
@@ -38,6 +39,7 @@ class PersonalAlunoPerfilPage extends StatefulWidget {
 
 class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
   late final AlunoService _alunoService;
+  late final PersonalService _personalService;
 
   late Stream<AlunoPerfilData> _perfilStream;
   late Stream<dynamic> _logsSemanaStream;
@@ -48,6 +50,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
   void initState() {
     super.initState();
     _alunoService = AlunoService();
+    _personalService = PersonalService();
     _carregarDados();
   }
 
@@ -426,7 +429,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       builder: (context) {
-        final rotinasStream = _alunoService.getRotinasTemplates();
+        final rotinasStream = _personalService.getRotinasTemplates();
         return SizedBox(
           height: MediaQuery.of(context).size.height * 0.85,
           child: Padding(

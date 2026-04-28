@@ -2,33 +2,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../features/alunos/shared/models/aluno_perfil_data.dart';
 
-class PaginatedAlunos {
-  final List<dynamic> docs;
-  final dynamic lastDoc;
-  final bool hasMore;
-
-  PaginatedAlunos({required this.docs, this.lastDoc, required this.hasMore});
-}
-
-class ContagemAlunos {
-  final int total;
-  final int ativos;
-  final int inativos;
-  final int risco;
-
-  ContagemAlunos({
-    required this.total,
-    required this.ativos,
-    required this.inativos,
-    required this.risco,
-  });
-}
-
 class AlunoService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
   String? get _currentPersonalId => _supabase.auth.currentUser?.id;
 
+  /// Cadastro de novo aluno pelo personal
   Future<void> salvarAluno(
     String nome,
     String sobrenome,
@@ -57,6 +36,7 @@ class AlunoService {
     }
   }
 
+  /// Atualiza dados de saúde e perfil do aluno
   Future<void> atualizarAluno({
     required String alunoId,
     required String nome,
@@ -67,7 +47,6 @@ class AlunoService {
     double? altura,
     DateTime? dataNascimento,
     String? genero,
-    String? recadoPersonal,
   }) async {
     try {
       await _supabase.from('profiles').update({
@@ -80,73 +59,30 @@ class AlunoService {
         'genero': genero,
       }).eq('id', alunoId);
     } catch (e) {
-      throw Exception('Erro ao atualizar: $e');
+      throw Exception('Erro ao atualizar aluno: $e');
     }
   }
 
+  /// Busca um aluno por ID (na tabela profiles)
   Future<Map<String, dynamic>> getAluno(String alunoId) async {
-    final data = await _supabase.from('profiles').select().eq('id', alunoId).single();
-    return data;
-  }
-
-  Future<void> deletarAluno(String alunoId) async {
-    await _supabase.from('profiles').delete().eq('id', alunoId);
-  }
-
-  Future<ContagemAlunos> fetchContagens() async {
-    final personalId = _currentPersonalId;
-    if (personalId == null) return ContagemAlunos(total: 0, ativos: 0, inativos: 0, risco: 0);
-
     try {
-      final res = await _supabase
-          .from('profiles')
-          .select('id, status')
-          .eq('personal_id', personalId)
-          .eq('tipo_usuario', 'aluno');
-
-      final list = res as List;
-      final ativos = list.where((a) => a['status'] == 'ativo').length;
-
-      return ContagemAlunos(
-        total: list.length,
-        ativos: ativos,
-        inativos: list.length - ativos,
-        risco: 0,
-      );
+      final data = await _supabase.from('profiles').select().eq('id', alunoId).single();
+      return data;
     } catch (e) {
-      return ContagemAlunos(total: 0, ativos: 0, inativos: 0, risco: 0);
+      throw Exception('Erro ao buscar aluno: $e');
     }
   }
 
-  Future<PaginatedAlunos> fetchAlunosPaginado({
-    required String statusFilter,
-    required String searchQuery,
-    dynamic lastDoc,
-    int limit = 20,
-  }) async {
-    final personalId = _currentPersonalId;
-    if (personalId == null) throw Exception('Personal não autenticado');
-
-    var query = _supabase
-        .from('profiles')
-        .select()
-        .eq('personal_id', personalId)
-        .eq('tipo_usuario', 'aluno');
-
-    if (searchQuery.isNotEmpty) {
-      query = query.ilike('nome', '%$searchQuery%');
+  /// Deleta um aluno (perfil)
+  Future<void> deletarAluno(String alunoId) async {
+    try {
+      await _supabase.from('profiles').delete().eq('id', alunoId);
+    } catch (e) {
+      throw Exception('Erro ao deletar aluno: $e');
     }
-
-    final List<dynamic> data = await query.order('nome').limit(limit);
-    return PaginatedAlunos(
-      docs: data,
-      lastDoc: null,
-      hasMore: data.length == limit,
-    );
   }
 
-  Stream<List<AtividadeRecenteItem>> getAtividadeRecenteStream({int limit = 10}) => Stream.value([]);
-  
+  /// Perfil completo do aluno (Dados + Rotina Ativa + Info do Personal)
   Stream<AlunoPerfilData> getAlunoPerfilCompletoStream(String alunoId) {
     return _supabase
         .from('profiles')
@@ -200,30 +136,7 @@ class AlunoService {
         });
   }
 
-  Stream<Map<String, dynamic>> getPersonalPerfilStream(String personalId) {
-    return _supabase
-        .from('profiles')
-        .stream(primaryKey: ['id'])
-        .eq('id', personalId)
-        .map((list) => list.isNotEmpty ? list.first : {});
-  }
-
-  Stream<List<Map<String, dynamic>>> getLogsDaSemanaStream(String alunoId) => Stream.value([]);
-  Stream<List<Map<String, dynamic>>> getUltimoLogStream(String alunoId) => Stream.value([]);
-  
-  /// Busca rotinas que servem como modelos (não pertencem a nenhum aluno específico)
-  Stream<List<Map<String, dynamic>>> getRotinasTemplates() {
-    final personalId = _currentPersonalId;
-    if (personalId == null) return Stream.value([]);
-
-    return _supabase
-        .from('rotinas')
-        .stream(primaryKey: ['id'])
-        .eq('personal_id', personalId)
-        .map((list) => list.where((r) => r['aluno_id'] == null).toList());
-  }
-
-  /// Busca todas as planilhas de um aluno específico
+  /// Busca as planilhas de um aluno com normalização de campos
   Stream<List<Map<String, dynamic>>> getPlanilhasStream(String alunoId) {
     return _supabase
         .from('rotinas')
@@ -243,56 +156,13 @@ class AlunoService {
     };
   }
 
+  Stream<List<Map<String, dynamic>>> getLogsDaSemanaStream(String alunoId) => Stream.value([]);
+  Stream<List<Map<String, dynamic>>> getUltimoLogStream(String alunoId) => Stream.value([]);
   Stream<List<Map<String, dynamic>>> getHistoricoPesoStream(String alunoId) => Stream.value([]);
-  
-  Future<void> registrarPeso({required String alunoId, required double peso}) async {}
-  
-  /// Clona um modelo da biblioteca e atribui ao aluno
-  Future<void> atribuirTreinoAoAluno({
-    required String alunoId, 
-    required String templateId, 
-    String? tipoVencimento,
-    int? sessoesAlvo,
-    DateTime? dataVencimento,
-  }) async {
-    try {
-      // 1. Busca o template original
-      final template = await _supabase
-          .from('rotinas')
-          .select()
-          .eq('id', templateId)
-          .single();
 
-      // 2. Desativa rotinas anteriores do aluno
-      await _supabase
-          .from('rotinas')
-          .update({'ativa': false})
-          .eq('aluno_id', alunoId)
-          .eq('ativa', true);
-
-      // 3. Prepara a cópia para o aluno
-      final novaRotina = {
-        'aluno_id': alunoId,
-        'personal_id': _currentPersonalId,
-        'nome': template['nome'],
-        'objetivo': template['objetivo'],
-        'sessoes': template['sessoes'],
-        'ativa': true,
-        'tipo_vencimento': tipoVencimento ?? template['tipo_vencimento'] ?? 'data',
-        'vencimento_sessoes': sessoesAlvo ?? template['vencimento_sessoes'],
-        'data_vencimento': dataVencimento?.toIso8601String() ?? template['data_vencimento'],
-        'data_criacao': DateTime.now().toIso8601String(),
-      };
-
-      // 4. Insere a nova rotina
-      await _supabase.from('rotinas').insert(novaRotina);
-
-    } catch (e) {
-      throw Exception('Erro ao atribuir treino: $e');
-    }
+  Future<void> registrarPeso({required String alunoId, required double peso}) async {
+    // TODO: Implementar registro de peso no Supabase
   }
-
-  Future<dynamic> fetchAtividadePage({int limit = 20, dynamic startAfter}) async => (items: [], lastDoc: null);
 }
 
 class AtividadeRecenteItem {
