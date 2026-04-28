@@ -75,6 +75,7 @@ class AlunoService {
         'sobrenome': sobrenome,
         'email': email,
         'telefone': telefone,
+        'peso_atual': peso,
         'data_nascimento': dataNascimento?.toIso8601String(),
         'genero': genero,
       }).eq('id', alunoId);

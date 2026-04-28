@@ -63,10 +63,11 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
       _sobrenomeController.text = data['sobrenome'] ?? '';
       _emailController.text = data['email'] ?? '';
       _telefoneController.text = data['telefone'] ?? '';
-      _pesoController.text = data['pesoAtual']?.toString() ?? '';
+      _pesoController.text = (data['peso_atual'] ?? data['pesoAtual'])?.toString() ?? '';
 
-      if (data['dataNascimento'] != null) {
-        _dataNascimento = DateTime.tryParse(data['dataNascimento'].toString());
+      final rawDataNascimento = data['data_nascimento'] ?? data['dataNascimento'];
+      if (rawDataNascimento != null) {
+        _dataNascimento = DateTime.tryParse(rawDataNascimento.toString());
       }
 
       if (data['genero'] != null && _generos.contains(data['genero'])) {

@@ -26,12 +26,14 @@ class PersonalGerenciarAlunoPage extends StatefulWidget {
 class _PersonalGerenciarAlunoPageState
     extends State<PersonalGerenciarAlunoPage> {
   final AlunoService _alunoService = AlunoService();
+  late String _alunoNome;
   String? _fotoUrl;
   DateTime? _dataCriacao;
 
   @override
   void initState() {
     super.initState();
+    _alunoNome = widget.alunoNome;
     _buscarDadosAluno();
   }
 
@@ -40,9 +42,10 @@ class _PersonalGerenciarAlunoPageState
       final data = await _alunoService.getAluno(widget.alunoId);
       if (data.isNotEmpty && mounted) {
         setState(() {
+          _alunoNome = '${data['nome'] ?? ''} ${data['sobrenome'] ?? ''}'.trim();
           _fotoUrl = data['photoUrl'] ?? data['fotoUrl'];
-          if (data['dataCriacao'] != null) {
-            _dataCriacao = DateTime.tryParse(data['dataCriacao'].toString());
+          if (data['data_criacao'] != null || data['dataCriacao'] != null) {
+            _dataCriacao = DateTime.tryParse((data['data_criacao'] ?? data['dataCriacao']).toString());
           }
         });
       }
@@ -73,7 +76,7 @@ class _PersonalGerenciarAlunoPageState
       MaterialPageRoute(
         builder: (context) => PersonalFinanceiroAlunoPage(
           alunoId: widget.alunoId,
-          alunoNome: widget.alunoNome,
+          alunoNome: _alunoNome,
           photoUrl: _fotoUrl,
           dataCriacao: _dataCriacao,
         ),
@@ -112,7 +115,7 @@ class _PersonalGerenciarAlunoPageState
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         content: Text(
-          'Tem certeza que deseja remover ${widget.alunoNome} definitivamente? Todos os treinos e históricos serão perdidos.',
+          'Tem certeza que deseja remover $_alunoNome definitivamente? Todos os treinos e históricos serão perdidos.',
           style: const TextStyle(color: AppColors.labelSecondary),
         ),
         actions: [
@@ -243,7 +246,7 @@ class _PersonalGerenciarAlunoPageState
     return Row(
       children: [
         AlunoAvatar(
-          alunoNome: widget.alunoNome,
+          alunoNome: _alunoNome,
           photoUrl: _fotoUrl,
           radius: AvatarTokens.lg,
         ),
@@ -253,7 +256,7 @@ class _PersonalGerenciarAlunoPageState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.alunoNome,
+                _alunoNome,
                 style: CardTokens.cardTitle.copyWith(fontSize: 20),
               ),
               const SizedBox(height: SpacingTokens.titleToSubtitle),
