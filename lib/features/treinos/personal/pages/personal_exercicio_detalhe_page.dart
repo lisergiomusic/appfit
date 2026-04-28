@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'dart:ui';
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/services/exercise_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/orange_glass_action_button.dart';
@@ -31,10 +32,34 @@ class PersonalExercicioDetalhePage extends StatefulWidget {
 }
 
 class _PersonalExercicioDetalhePageState
-    extends State<PersonalExercicioDetalhePage>
+    extends State<PersonalExercicioDetalhePage> {
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => ExercicioDetalheController(widget.exercicio),
+      child: _PersonalExercicioDetalheView(
+        onChanged: widget.onChanged,
+      ),
+    );
+  }
+}
+
+class _PersonalExercicioDetalheView extends StatefulWidget {
+  final VoidCallback onChanged;
+
+  const _PersonalExercicioDetalheView({
+    required this.onChanged,
+  });
+
+  @override
+  State<_PersonalExercicioDetalheView> createState() =>
+      _PersonalExercicioDetalheViewState();
+}
+
+class _PersonalExercicioDetalheViewState
+    extends State<_PersonalExercicioDetalheView>
     with TickerProviderStateMixin {
   late final ExercicioItem ex;
-  late final ExercicioDetalheController controller;
   final ExerciseService _exerciseService = ExerciseService();
   late final Future<ExercicioItem?> _exercicioBaseFuture;
 
@@ -51,8 +76,7 @@ class _PersonalExercicioDetalhePageState
   @override
   void initState() {
     super.initState();
-    ex = widget.exercicio;
-    controller = ExercicioDetalheController(ex);
+    ex = context.read<ExercicioDetalheController>().exercicio;
     final hasLocalMedia = ex.mediaUrl != null && ex.mediaUrl!.isNotEmpty;
     _exercicioBaseFuture = hasLocalMedia
         ? Future.value(null)
@@ -62,7 +86,6 @@ class _PersonalExercicioDetalhePageState
   @override
   void dispose() {
     _disposeControllers();
-    controller.dispose();
     super.dispose();
   }
 
@@ -114,6 +137,7 @@ class _PersonalExercicioDetalhePageState
       _setControllerText(fieldKey, controller, nextValue);
     }
     onSave(nextValue);
+    context.read<ExercicioDetalheController>().onManualNotify();
     widget.onChanged();
   }
 
@@ -127,6 +151,7 @@ class _PersonalExercicioDetalhePageState
   }
 
   void _onDeleteSerie(SerieItem serie) {
+    final controller = context.read<ExercicioDetalheController>();
     final sectionIndex = controller.sectionIndexOf(serie);
     controller.deleteSerie(serie);
 
@@ -184,6 +209,7 @@ class _PersonalExercicioDetalhePageState
   }
 
   void _onDuplicateSerie(SerieItem serie) {
+    final controller = context.read<ExercicioDetalheController>();
     final sectionIndex = controller.sectionIndexOf(serie);
     controller.duplicateSerie(serie);
     setState(() {});
@@ -195,6 +221,7 @@ class _PersonalExercicioDetalhePageState
   }
 
   Future<void> _adicionarSerie() async {
+    final controller = context.read<ExercicioDetalheController>();
     FocusScope.of(context).unfocus();
     final tipoEscolhido = await _showSerieTypeSelector();
 
@@ -379,6 +406,7 @@ class _PersonalExercicioDetalhePageState
   }
 
   void _showEditInstructionsSheet() {
+    final controller = context.read<ExercicioDetalheController>();
     final ctrl = TextEditingController(
       text: ex.instrucoesPersonalizadasTexto ?? '',
     );
@@ -441,6 +469,7 @@ class _PersonalExercicioDetalhePageState
                                 ? null
                                 : ctrl.text.trim();
                           });
+                          controller.onManualNotify();
                           widget.onChanged();
                           Navigator.pop(context);
                         },
@@ -534,6 +563,7 @@ class _PersonalExercicioDetalhePageState
     bool isFirst,
     bool isLast,
   ) {
+    final controller = context.read<ExercicioDetalheController>();
     final serie = entry.value;
     final realIndex = entry.key;
     final stableId = serie.id;
@@ -595,6 +625,7 @@ class _PersonalExercicioDetalhePageState
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<ExercicioDetalheController>();
     // Mapa de seções da interface desta página:
     // 1) Estrutura superior: AppBar, título e ações de navegação.
     // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
@@ -643,10 +674,13 @@ class _PersonalExercicioDetalhePageState
                 AppFitSliverAppBar(
                   title: exerciseTitle,
                   expandedHeight: 148,
+                  onBackPressed: () => Navigator.of(context).maybePop(),
                   actions: [
                     AppBarTextButton(
                       label: 'Salvar',
-                      onPressed: () => Navigator.of(context).maybePop(),
+                      onPressed: controller.hasChanges
+                          ? () => Navigator.of(context).maybePop()
+                          : null,
                     ),
                   ],
                   background: Align(
@@ -834,6 +868,7 @@ class _PersonalExercicioDetalhePageState
     required List<MapEntry<int, SerieItem>> entries,
     required TipoSerie tipo,
   }) {
+    final controller = context.read<ExercicioDetalheController>();
     final color = serieTypeOptions.firstWhere((o) => o.type == tipo).color;
     return SeriesSection(
       title: title,

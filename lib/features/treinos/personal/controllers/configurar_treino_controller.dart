@@ -15,6 +15,7 @@ class ConfigurarTreinoController extends ChangeNotifier {
   late final String initialNomeTreino;
   late final String _initialSessaoNote;
   late final List<String> _initialExercicioIds;
+  late final List<ExercicioItem> _initialExercicioSnapshots;
 
   late List<ExercicioWrapper> _exercicios;
   List<ExercicioWrapper> get exercicios => _exercicios;
@@ -23,7 +24,7 @@ class ConfigurarTreinoController extends ChangeNotifier {
     final nomeChanged = nomeTreinoController.text.trim() != initialNomeTreino;
     final noteChanged = _sessaoNote != _initialSessaoNote;
     
-    // Compara estrutura da lista (Instâncias e Ordem)
+    // 1. Compara estrutura da lista (Instâncias e Ordem)
     final currentIds = _exercicios.map((e) => e.id).toList();
     bool listChanged = currentIds.length != _initialExercicioIds.length;
     if (!listChanged) {
@@ -35,7 +36,19 @@ class ConfigurarTreinoController extends ChangeNotifier {
       }
     }
 
-    return nomeChanged || noteChanged || listChanged;
+    if (nomeChanged || noteChanged || listChanged) return true;
+
+    // 2. Compara conteúdo interno dos exercícios originais
+    // Se a estrutura não mudou, checamos se os conteúdos dos itens batem com os iniciais
+    if (_exercicios.length == _initialExercicioSnapshots.length) {
+      for (int i = 0; i < _exercicios.length; i++) {
+        if (_exercicios[i].item != _initialExercicioSnapshots[i]) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   final TextEditingController nomeTreinoController;
@@ -66,6 +79,7 @@ class ConfigurarTreinoController extends ChangeNotifier {
     _sessaoNote = sessaoNote;
     _exercicios = exercicios.map((ex) => ExercicioWrapper(ex.clone())).toList();
     _initialExercicioIds = _exercicios.map((e) => e.id).toList();
+    _initialExercicioSnapshots = exercicios.map((ex) => ex.clone()).toList();
 
     nomeTreinoController.addListener(_onNomeTreinoChanged);
     titleFocusNode.addListener(_onFocusChanged);

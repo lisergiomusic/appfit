@@ -2,8 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../shared/models/exercicio_model.dart';
 
-class ExercicioDetalheController {
+class ExercicioDetalheController extends ChangeNotifier {
   final ExercicioItem exercicio;
+  late final ExercicioItem _initialSnapshot;
   final Set<String> _newSeriesIds = {};
 
   SerieItem? _lastRemovedItem;
@@ -15,7 +16,30 @@ class ExercicioDetalheController {
 
   bool get isEditing => _editingSections.isNotEmpty;
 
-  ExercicioDetalheController(this.exercicio);
+  ExercicioDetalheController(this.exercicio) {
+    _initialSnapshot = exercicio.clone();
+  }
+
+  bool get hasChanges {
+    // 1. Check instructions
+    if (exercicio.instrucoesPersonalizadas != _initialSnapshot.instrucoesPersonalizadas) {
+      return true;
+    }
+
+    // 2. Check series count
+    if (exercicio.series.length != _initialSnapshot.series.length) {
+      return true;
+    }
+
+    // 3. Deep check each series
+    for (int i = 0; i < exercicio.series.length; i++) {
+      if (exercicio.series[i] != _initialSnapshot.series[i]) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   Set<String> get newSeriesIds => _newSeriesIds;
 
@@ -25,6 +49,7 @@ class ExercicioDetalheController {
     } else {
       _editingSections.add(tipo);
     }
+    notifyListeners();
   }
 
   void markAsNew(String id) {
@@ -69,6 +94,7 @@ class ExercicioDetalheController {
     _lastRemovedIndex = exercicio.series.indexOf(serie);
     if (_lastRemovedIndex != -1) {
       _lastRemovedItem = exercicio.series.removeAt(_lastRemovedIndex!);
+      notifyListeners();
     }
   }
 
@@ -78,6 +104,7 @@ class ExercicioDetalheController {
       final newSerie = serie.clone(sameId: false);
       exercicio.series.insert(index + 1, newSerie);
       markAsNew(newSerie.id);
+      notifyListeners();
     }
   }
 
@@ -87,6 +114,7 @@ class ExercicioDetalheController {
       exercicio.series.insert(index, _lastRemovedItem!);
       _lastRemovedItem = null;
       _lastRemovedIndex = null;
+      notifyListeners();
       return index;
     }
     return null;
@@ -108,8 +136,14 @@ class ExercicioDetalheController {
 
   SerieItem removeAt(int index) => exercicio.series.removeAt(index);
 
-  void insertAt(int index, SerieItem serie) =>
-      exercicio.series.insert(index, serie);
+  void insertAt(int index, SerieItem serie) {
+    exercicio.series.insert(index, serie);
+    notifyListeners();
+  }
+
+  void onManualNotify() {
+    notifyListeners();
+  }
 
   void dispose() {
     _snackBarTimer?.cancel();
