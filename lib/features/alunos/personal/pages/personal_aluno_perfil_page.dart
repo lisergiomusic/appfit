@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:rxdart/rxdart.dart';
 import '../../../../core/services/personal_service.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/app_bar_divider.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../../../core/widgets/app_primary_button.dart';
 import '../../../../core/widgets/app_tappable.dart';
@@ -117,7 +115,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
               }
 
               if (snapshot.hasError) {
-                final error = snapshot.error;
+
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(32.0),
