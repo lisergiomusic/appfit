@@ -99,12 +99,19 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
 
           final data = snapshot.data!;
           final aluno = data.aluno;
+          
+          // Debug Senior: Vamos inspecionar exatamente as chaves desse Map
+          print('DEBUG AlunoHomePage: Chaves presentes no Map = ${aluno.keys.toList()}');
+          print('DEBUG AlunoHomePage: Valores do Map = $aluno');
+
           final rotina = data.rotinaAtiva;
           final rotinaId = data.rotinaId;
           final nomePersonal = data.nomePersonal;
 
-          final nome = aluno['nome']?.toString().split(' ')[0] ?? 'Aluno';
-          final photoUrl = aluno['photoUrl'] as String?;
+          // Tenta pegar o nome de várias chaves possíveis que o SQL pode retornar
+          final nomeRaw = (aluno['nome'] ?? aluno['display_name'] ?? aluno['full_name'] ?? '').toString();
+          final nome = nomeRaw.trim().isEmpty ? 'Aluno' : nomeRaw.trim().split(' ')[0];
+          final photoUrl = (aluno['photo_url'] ?? aluno['photoUrl'])?.toString();
 
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),

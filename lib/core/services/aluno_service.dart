@@ -7,56 +7,89 @@ class AlunoService {
 
   /// Perfil completo do aluno (Dados + Rotina Ativa + Info do Personal)
   Stream<AlunoPerfilData> getAlunoPerfilCompletoStream(String alunoId) {
+    // Pegamos o e-mail do usuário logado via Auth
+    final userEmail = _supabase.auth.currentUser?.email;
+
+    // Criamos um stream que tenta buscar pelo ID primeiro.
+    // Se a lista vier vazia, fazemos o switch para buscar pelo E-mail.
     return _supabase
         .from('profiles')
         .stream(primaryKey: ['id'])
         .eq('id', alunoId)
         .switchMap((alunoList) {
-          if (alunoList.isEmpty) {
-            return Stream.value(AlunoPerfilData(aluno: {}, rotinaAtiva: null));
+          if (alunoList.isNotEmpty) {
+            print('DEBUG AlunoService: Perfil encontrado pelo ID: $alunoId');
+            return _buildFullProfileStream(alunoList.first);
           }
 
-          final alunoMap = alunoList.first;
-          final personalId = alunoMap['personal_id'];
+          // FALLBACK: Se pelo ID não veio nada, tentamos pelo e-mail
+          if (userEmail != null) {
+            print('DEBUG AlunoService: Tentando fallback pelo e-mail: $userEmail');
+            
+            // Usamos .from(...).select() em vez de .stream() para o fallback inicial
+            // para evitar comportamentos estranhos de múltiplos streams abertos
+            return _supabase
+                .from('profiles')
+                .select()
+                .ilike('email', userEmail.trim())
+                .eq('tipo_usuario', 'aluno')
+                .asStream()
+                .switchMap((list) {
+                  if (list.isNotEmpty) {
+                    print('DEBUG AlunoService: Perfil encontrado via fallback de e-mail!');
+                    return _buildFullProfileStream(list.first);
+                  }
+                  
+                  print('DEBUG AlunoService: Perfil não encontrado nem por ID nem por E-mail.');
+                  return Stream.value(AlunoPerfilData(aluno: {}));
+                });
+          }
 
-          final rotinaStream = _supabase
-              .from('rotinas')
-              .stream(primaryKey: ['id'])
-              .eq('aluno_id', alunoId)
-              .map((list) {
-                try {
-                  return list.firstWhere((r) => r['ativa'] == true);
-                } catch (_) {
-                  return null;
-                }
-              });
-
-          final personalStream = personalId != null
-              ? _supabase
-                  .from('profiles')
-                  .stream(primaryKey: ['id'])
-                  .eq('id', personalId)
-                  .map((list) => list.isNotEmpty ? list.first : null)
-              : Stream<Map<String, dynamic>?>.value(null);
-
-          return Rx.combineLatest2<Map<String, dynamic>?, Map<String, dynamic>?, AlunoPerfilData>(
-            rotinaStream,
-            personalStream,
-            (rotina, personal) {
-              return AlunoPerfilData(
-                aluno: alunoMap,
-                rotinaAtiva: rotina,
-                rotinaId: rotina?['id']?.toString(),
-                nomePersonal: personal != null 
-                    ? '${personal['nome']} ${personal['sobrenome'] ?? ''}'.trim() 
-                    : null,
-                especialidadePersonal: personal?['especialidade'],
-                photoUrlPersonal: personal?['photoUrl'],
-                telefonePersonal: personal?['telefone'],
-              );
-            },
-          );
+          return Stream.value(AlunoPerfilData(aluno: {}));
         });
+  }
+
+  Stream<AlunoPerfilData> _buildFullProfileStream(Map<String, dynamic> alunoMap) {
+    final alunoId = alunoMap['id'].toString();
+    final personalId = alunoMap['personal_id'];
+
+    final rotinaStream = _supabase
+        .from('rotinas')
+        .stream(primaryKey: ['id'])
+        .eq('aluno_id', alunoId)
+        .map((list) {
+          try {
+            return list.firstWhere((r) => r['ativa'] == true);
+          } catch (_) {
+            return null;
+          }
+        });
+
+    final personalStream = personalId != null
+        ? _supabase
+            .from('profiles')
+            .stream(primaryKey: ['id'])
+            .eq('id', personalId)
+            .map((list) => list.isNotEmpty ? list.first : null)
+        : Stream<Map<String, dynamic>?>.value(null);
+
+    return Rx.combineLatest2<Map<String, dynamic>?, Map<String, dynamic>?, AlunoPerfilData>(
+      rotinaStream,
+      personalStream,
+      (rotina, personal) {
+        return AlunoPerfilData(
+          aluno: alunoMap,
+          rotinaAtiva: rotina,
+          rotinaId: rotina?['id']?.toString(),
+          nomePersonal: personal != null
+              ? '${personal['nome']} ${personal['sobrenome'] ?? ''}'.trim()
+              : null,
+          especialidadePersonal: personal?['especialidade'],
+          photoUrlPersonal: personal?['photoUrl'],
+          telefonePersonal: personal?['telefone'],
+        );
+      },
+    );
   }
 
   /// Busca as planilhas de um aluno com normalização de campos

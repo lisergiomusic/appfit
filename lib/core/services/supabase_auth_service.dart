@@ -141,19 +141,44 @@ class SupabaseAuthService {
   }) async {
     final existing = await _supabase
         .from('profiles')
-        .select('id')
-        .eq('email', email)
+        .select('id, nome, sobrenome')
+        .ilike('email', email.trim())
         .eq('tipo_usuario', 'aluno')
         .maybeSingle();
 
     if (existing == null) {
+      // Log para depuração (pode ser removido depois)
+      print('DEBUG: Perfil não encontrado para email: $email');
       throw Exception(
         'Nenhum cadastro encontrado para este e-mail. Peça ao seu personal para te cadastrar.',
       );
     }
 
     try {
-      await _supabase.auth.signUp(email: email, password: password);
+      // 1. Criar o usuário no Auth com o nome no user_metadata
+      final res = await _supabase.auth.signUp(
+        email: email,
+        password: password,
+        data: {
+          'display_name': '${existing['nome']} ${existing['sobrenome'] ?? ''}'.trim(),
+        },
+      );
+      
+      final newUserId = res.user?.id;
+      if (newUserId != null) {
+        print('DEBUG: Vinculando perfil ID antigo ${existing['id']} ao novo Auth ID: $newUserId');
+        
+        try {
+          // 2. Vinculamos o perfil ao ID do Auth usando o e-mail como chave de busca
+          await _supabase
+              .from('profiles')
+              .update({'id': newUserId})
+              .eq('email', email.trim().toLowerCase());
+          print('DEBUG: Perfil vinculado com sucesso.');
+        } catch (updateError) {
+          print('DEBUG: Erro ao atualizar ID no perfil: $updateError');
+        }
+      }
     } on AuthException catch (e) {
       if (e.message.contains('already registered')) {
         throw Exception('Este e-mail já possui uma conta. Use a tela de login.');

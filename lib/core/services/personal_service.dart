@@ -277,9 +277,9 @@ class PersonalService {
 
     try {
       await _supabase.from('profiles').insert({
-        'nome': nome,
-        'email': email,
-        'sobrenome': sobrenome,
+        'nome': nome.trim(),
+        'email': email.trim().toLowerCase(),
+        'sobrenome': sobrenome.trim(),
         'tipo_usuario': 'aluno',
         'personal_id': personalId,
         'telefone': whatsapp,
