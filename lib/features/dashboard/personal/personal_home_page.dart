@@ -10,6 +10,7 @@ import '../../../core/widgets/app_section_link_button.dart';
 import '../../alunos/shared/widgets/app_avatar.dart';
 import '../../alunos/personal/pages/personal_log_detalhe_page.dart';
 import 'personal_atividade_recente_page.dart';
+import 'personal_atencao_page.dart';
 
 class PersonalHomePage extends StatefulWidget {
   final VoidCallback? onNovoAlunoTap;
@@ -185,13 +186,31 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _buildStatCard(
-                      label: 'Atenção necessária',
-                      value: '05',
-                      trendText: 'Pendentes',
-                      trendIcon: Icons.error_rounded,
-                      trendColor: AppColors.accentMetrics,
-                      onTap: () {},
+                    child: FutureBuilder<ContagemAlunos>(
+                      future: _contagensFuture,
+                      builder: (context, snapshot) {
+                        final count = snapshot.hasData
+                            ? snapshot.data!.risco.toString().padLeft(2, '0')
+                            : snapshot.hasError
+                                ? '--'
+                                : '...';
+
+                        return _buildStatCard(
+                          label: 'Atenção necessária',
+                          value: count,
+                          trendText: 'Pendentes',
+                          trendIcon: Icons.error_rounded,
+                          trendColor: AppColors.accentMetrics,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PersonalAtencaoPage(
+                                personalService: _personalService,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],

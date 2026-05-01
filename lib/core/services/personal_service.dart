@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/aluno_service.dart';
+import '../models/atencao_item.dart';
 
 class ContagemAlunos {
   final int total;
@@ -42,15 +43,138 @@ class PersonalService {
 
       final list = res as List;
       final ativos = list.where((a) => a['status'] == 'ativo').length;
+      
+      // Busca contagem de itens de atenção para o campo 'risco'
+      final itensAtencao = await fetchAtencaoItems();
 
       return ContagemAlunos(
         total: list.length,
         ativos: ativos,
         inativos: list.length - ativos,
-        risco: 0, // TODO: Implementar lógica de risco baseada no último treino
+        risco: itensAtencao.length,
       );
     } catch (e) {
       return ContagemAlunos(total: 0, ativos: 0, inativos: 0, risco: 0);
+    }
+  }
+
+  /// Busca itens que precisam de atenção do personal
+  Future<List<AtencaoItem>> fetchAtencaoItems() async {
+    final personalId = _currentPersonalId;
+    if (personalId == null) return [];
+
+    try {
+      final items = <AtencaoItem>[];
+      final agora = DateTime.now();
+
+      // 1. Busca alunos ativos
+      final alunosRes = await _supabase
+          .from('profiles')
+          .select('id, nome, sobrenome, photo_url, ultimo_treino, status')
+          .eq('personal_id', personalId)
+          .eq('tipo_usuario', 'aluno')
+          .eq('status', 'ativo');
+
+      final alunos = alunosRes as List;
+
+      // 2. Busca rotinas ativas para checar vencimento e falta de planejamento
+      final rotinasRes = await _supabase
+          .from('rotinas')
+          .select('id, aluno_id, data_vencimento, ativa')
+          .eq('personal_id', personalId)
+          .eq('ativa', true)
+          .not('aluno_id', 'is', null);
+
+      final rotinasAtivas = rotinasRes as List;
+
+      for (var aluno in alunos) {
+        final alunoId = aluno['id'];
+        final nomeCompleto = '${aluno['nome']} ${aluno['sobrenome'] ?? ''}'.trim();
+        final photoUrl = aluno['photo_url'];
+
+        // Checar Inatividade (> 7 dias)
+        if (aluno['ultimo_treino'] != null) {
+          final ultimoTreino = DateTime.parse(aluno['ultimo_treino']);
+          final diffDias = agora.difference(ultimoTreino).inDays;
+          if (diffDias >= 7) {
+            items.add(AtencaoItem(
+              alunoId: alunoId,
+              alunoNome: nomeCompleto,
+              alunoPhotoUrl: photoUrl,
+              tipo: TipoAtencao.inatividade,
+              descricao: 'Sem treinar há $diffDias dias',
+              dataReferencia: ultimoTreino,
+            ));
+          }
+        }
+
+        // Checar Falta de Planejamento (Ativo sem rotina ativa)
+        final temRotinaAtiva = rotinasAtivas.any((r) => r['aluno_id'] == alunoId);
+        if (!temRotinaAtiva) {
+          items.add(AtencaoItem(
+            alunoId: alunoId,
+            alunoNome: nomeCompleto,
+            alunoPhotoUrl: photoUrl,
+            tipo: TipoAtencao.semPlanejamento,
+            descricao: 'Não possui treino ativo atribuído',
+            dataReferencia: agora,
+          ));
+        } else {
+          // Checar Vencimento Próximo (< 5 dias)
+          final rotina = rotinasAtivas.firstWhere((r) => r['aluno_id'] == alunoId);
+          if (rotina['data_vencimento'] != null) {
+            final dataVencimento = DateTime.parse(rotina['data_vencimento']);
+            final diffVencimento = dataVencimento.difference(agora).inDays;
+            
+            if (diffVencimento <= 5) {
+              final jaVenceu = diffVencimento < 0;
+              items.add(AtencaoItem(
+                alunoId: alunoId,
+                alunoNome: nomeCompleto,
+                alunoPhotoUrl: photoUrl,
+                tipo: TipoAtencao.vencimento,
+                descricao: jaVenceu ? 'Treino vencido' : 'Vence em $diffVencimento dias',
+                dataReferencia: dataVencimento,
+              ));
+            }
+          }
+        }
+      }
+
+      // 3. Feedback Crítico (últimos logs com esforço >= 9)
+      final logsRes = await _supabase
+          .from('logs_treino')
+          .select('id, aluno_id, esforco, data_hora, profiles(nome, sobrenome, photo_url)')
+          .eq('personal_id', personalId)
+          .gte('esforco', 9)
+          .order('data_hora', ascending: false)
+          .limit(10);
+
+      final logsCriticos = logsRes as List;
+      for (var log in logsCriticos) {
+        final profile = log['profiles'];
+        final dataHora = DateTime.parse(log['data_hora']);
+        
+        // Só adicionar se for recente (últimos 3 dias) para não poluir
+        if (agora.difference(dataHora).inDays <= 3) {
+          items.add(AtencaoItem(
+            alunoId: log['aluno_id'],
+            alunoNome: '${profile['nome']} ${profile['sobrenome'] ?? ''}'.trim(),
+            alunoPhotoUrl: profile['photo_url'],
+            tipo: TipoAtencao.feedbackCritico,
+            descricao: 'Relatou esforço nível ${log['esforco']}',
+            dataReferencia: dataHora,
+          ));
+        }
+      }
+
+      // Ordenar por data de referência (mais recentes/urgentes primeiro)
+      items.sort((a, b) => b.dataReferencia.compareTo(a.dataReferencia));
+
+      return items;
+    } catch (e) {
+      print('Erro ao buscar itens de atenção: $e');
+      return [];
     }
   }
 
