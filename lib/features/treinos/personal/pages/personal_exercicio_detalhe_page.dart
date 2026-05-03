@@ -9,10 +9,12 @@ import '../../../../core/widgets/orange_glass_action_button.dart';
 import '../../../../core/widgets/app_bar_text_button.dart';
 import '../../../../core/widgets/sliver_safe_title.dart';
 import '../../../../core/widgets/note_display_field.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../core/utils/cloudinary.dart';
 import '../controllers/exercicio_detalhe_controller.dart';
 import '../../shared/models/exercicio_model.dart';
 import '../../shared/widgets/exercicio_detalhe/exercicio_constants.dart';
-import '../../shared/widgets/exercicio_detalhe/exercise_video_card.dart';
+import '../../shared/widgets/exercicio_detalhe/exercise_spotlight_overlay.dart';
 import '../../shared/widgets/exercicio_detalhe/serie_row.dart';
 import '../../shared/widgets/exercicio_detalhe/series_section.dart';
 
@@ -62,6 +64,7 @@ class _PersonalExercicioDetalheViewState
   late final ExercicioItem ex;
   final ExerciseService _exerciseService = ExerciseService();
   late final Future<ExercicioItem?> _exercicioBaseFuture;
+  late final double _dynamicHeaderHeight;
 
   final Map<TipoSerie, GlobalKey<AnimatedListState>> _animatedListKeys = {
     TipoSerie.aquecimento: GlobalKey<AnimatedListState>(),
@@ -82,6 +85,22 @@ class _PersonalExercicioDetalheViewState
     _exercicioBaseFuture = hasLocalMedia
         ? Future.value(null)
         : _exerciseService.buscarExercicioPorNome(ex.nome);
+    _calculateHeaderHeight();
+  }
+
+  void _calculateHeaderHeight() {
+    final title = SliverSafeTitle.safeTitle(ex.nome, fallback: 'Exercício');
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: title,
+        style: AppTheme.bigTitle.copyWith(height: 1.1, letterSpacing: -1),
+      ),
+      textDirection: TextDirection.ltr,
+      maxLines: 2,
+    )..layout(maxWidth: 300); // Estimativa conservadora de largura disponível para o texto
+
+    final lines = textPainter.computeLineMetrics().length;
+    _dynamicHeaderHeight = lines > 1 ? 210 : 180;
   }
 
   @override
@@ -701,27 +720,12 @@ class _PersonalExercicioDetalheViewState
               : null,
           body: LayoutBuilder(
             builder: (context, constraints) {
-              // Cálculo de engenharia para altura do header
-              // 1. Medimos o título exatamente como ele será renderizado
-              final titlePainter = TextPainter(
-                text: TextSpan(text: exerciseTitle, style: AppTheme.bigTitle),
-                textDirection: TextDirection.ltr,
-                maxLines: 2,
-              )..layout(maxWidth: constraints.maxWidth - (SpacingTokens.screenHorizontalPadding * 2));
-
-              final int titleLines = titlePainter.computeLineMetrics().length;
-
-              // 2. Definimos a altura baseada na realidade (não em estimativas de caracteres)
-              // 144px é o ideal para 1 linha + badges
-              // 178px é o ideal para 2 linhas + badges
-              final double dynamicHeight = titleLines > 1 ? 178.0 : 144.0;
-
               return CustomScrollView(
                 controller: _scrollController,
                 slivers: [
                   AppFitSliverAppBar(
                     title: exerciseTitle,
-                    expandedHeight: dynamicHeight,
+                    expandedHeight: _dynamicHeaderHeight,
                     onBackPressed: () => Navigator.of(context).maybePop(),
                     actions: [
                       AppBarTextButton(
@@ -734,31 +738,44 @@ class _PersonalExercicioDetalheViewState
                     background: Align(
                       alignment: Alignment.bottomLeft,
                       child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: SpacingTokens.screenHorizontalPadding,
-                          right: SpacingTokens.screenHorizontalPadding,
-                          bottom: SpacingTokens.sm,
+                        padding: const EdgeInsets.fromLTRB(
+                          SpacingTokens.screenHorizontalPadding,
+                          0,
+                          SpacingTokens.screenHorizontalPadding,
+                          SpacingTokens.sm,
                         ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text(
-                              exerciseTitle,
-                              style: AppTheme.bigTitle,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            if (muscleGroups.isNotEmpty) ...[
-                              const SizedBox(height: SpacingTokens.sm),
-                              Wrap(
-                                spacing: 6,
-                                runSpacing: 6,
-                                children: muscleGroups
-                                    .map((g) => _buildMuscleGroupBadge(g))
-                                    .toList(),
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    exerciseTitle,
+                                    style: AppTheme.bigTitle.copyWith(
+                                      height: 1.1,
+                                      letterSpacing: -1,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (muscleGroups.isNotEmpty) ...[
+                                    const SizedBox(height: SpacingTokens.sm),
+                                    Wrap(
+                                      spacing: 6,
+                                      runSpacing: 6,
+                                      children: muscleGroups
+                                          .map((g) => _buildMuscleGroupBadge(g))
+                                          .toList(),
+                                    ),
+                                  ],
+                                ],
                               ),
-                            ],
+                            ),
+                            const SizedBox(width: 16),
+                            _buildMiniVideoPreview(ex),
                           ],
                         ),
                       ),
@@ -768,36 +785,13 @@ class _PersonalExercicioDetalheViewState
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(
                         SpacingTokens.screenHorizontalPadding,
-                        4,
+                        SpacingTokens.sectionGap,
                         SpacingTokens.screenHorizontalPadding,
                         0,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          FutureBuilder<ExercicioItem?>(
-                            future: _exercicioBaseFuture,
-                            builder: (context, snapshot) {
-                              final hasLocalMedia =
-                                  ex.mediaUrl != null && ex.mediaUrl!.isNotEmpty;
-
-                              if (!hasLocalMedia &&
-                                  snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                return _buildVideoCardLoadingPlaceholder();
-                              }
-
-                              final resolvedMedia = hasLocalMedia
-                                  ? ex.mediaUrl
-                                  : snapshot.data?.mediaUrl;
-
-                              return ExerciseVideoCard(
-                                mediaUrl: resolvedMedia,
-                                exerciseTitle: exerciseTitle,
-                              );
-                            },
-                          ),
-                          const SizedBox(height: SpacingTokens.sectionGap),
                           NoteDisplayField(
                             text: ex.instrucoesPersonalizadasTexto,
                             label: 'Instruções gerais',
@@ -836,29 +830,86 @@ class _PersonalExercicioDetalheViewState
 
   Widget _buildMuscleGroupBadge(String g) {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: SpacingTokens.md,
-        vertical: SpacingTokens.xs,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 4,
       ),
       decoration: BoxDecoration(
         color: AppColors.surfaceLight,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
       ),
-      child: Text(g, style: AppTheme.caption2),
+      child: Text(
+        g.toUpperCase(),
+        style: AppTheme.caption2.copyWith(
+          fontSize: 9,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+          color: AppColors.labelSecondary,
+        ),
+      ),
     );
   }
 
-  Widget _buildVideoCardLoadingPlaceholder() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withAlpha(8),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
-      ),
-      child: const AspectRatio(
-        aspectRatio: ExercicioDetalheConstants.videoAspectRatio,
-        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-      ),
+  Widget _buildMiniVideoPreview(ExercicioItem ex) {
+    return FutureBuilder<ExercicioItem?>(
+      future: _exercicioBaseFuture,
+      builder: (context, snapshot) {
+        final hasLocalMedia = ex.mediaUrl != null && ex.mediaUrl!.isNotEmpty;
+        final resolvedMedia = hasLocalMedia ? ex.mediaUrl : snapshot.data?.mediaUrl;
+
+        if (resolvedMedia == null || resolvedMedia.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final heroTag = 'video_${ex.id}';
+
+        return GestureDetector(
+          onTap: () => ExerciseSpotlightOverlay.show(
+            context,
+            mediaUrl: resolvedMedia,
+            exerciseTitle: ex.nome,
+            heroTag: heroTag,
+          ),
+          child: Hero(
+            tag: heroTag,
+            child: Container(
+              width: 84,
+              height: 84,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(50),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  CachedNetworkImage(
+                    imageUrl: Cloudinary.thumbnail(resolvedMedia),
+                    fit: BoxFit.cover,
+                  ),
+                  Container(
+                    color: Colors.black.withAlpha(40),
+                    child: const Center(
+                      child: Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
