@@ -110,7 +110,7 @@ class AlunoSessaoDetalhePage extends StatelessWidget {
         slivers: [
           AppFitSliverAppBar(
             title: sessao.nome,
-            expandedHeight: 180,
+            expandedHeight: 160,
             background: Align(
               alignment: Alignment.bottomLeft,
               child: Padding(
