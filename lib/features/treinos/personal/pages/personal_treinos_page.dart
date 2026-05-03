@@ -221,42 +221,24 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
                 );
               }
 
-              return SliverMainAxisGroup(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        SpacingTokens.screenHorizontalPadding,
-                        0,
-                        SpacingTokens.screenHorizontalPadding,
-                        SpacingTokens.labelToField,
-                      ),
-                      child: Text(
-                        'Templates (${filteredDocs.length})',
-                        style: AppTheme.sectionHeader,
-                      ),
-                    ),
-                  ),
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        var rotina = filteredDocs[index];
-                        final id = rotina['id'].toString();
-                        int qtdSessoes = rotina['sessoes'] != null
-                            ? (rotina['sessoes'] as List).length
-                            : 0;
+              return SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    var rotina = filteredDocs[index];
+                    final id = rotina['id'].toString();
+                    int qtdSessoes = rotina['sessoes'] != null
+                        ? (rotina['sessoes'] as List).length
+                        : 0;
 
-                        return _buildTreinoCard(
-                          id,
-                          rotina,
-                          qtdSessoes,
-                          isSelecting,
-                        );
-                      }, childCount: filteredDocs.length),
-                    ),
-                  ),
-                ],
+                    return _buildTreinoCard(
+                      id,
+                      rotina,
+                      qtdSessoes,
+                      isSelecting,
+                    );
+                  }, childCount: filteredDocs.length),
+                ),
               );
             },
           ),

@@ -6,6 +6,7 @@ class RotinaDetalheHeader extends StatelessWidget {
   final String title;
   final String subtitle;
   final String vencimentoLabel;
+  final bool showVencimento;
   final VoidCallback onEdit;
 
   const RotinaDetalheHeader({
@@ -13,6 +14,7 @@ class RotinaDetalheHeader extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.vencimentoLabel,
+    this.showVencimento = true,
     required this.onEdit,
   });
 
@@ -34,18 +36,20 @@ class RotinaDetalheHeader extends StatelessWidget {
               ),
               const SizedBox(height: SpacingTokens.titleToSubtitle),
               Text(subtitle, style: CardTokens.cardSubtitle),
-              const SizedBox(height: SpacingTokens.titleToSubtitle),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.schedule,
-                    size: 11,
-                    color: AppColors.labelSecondary,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(vencimentoLabel, style: AppTheme.caption),
-                ],
-              ),
+              if (showVencimento) ...[
+                const SizedBox(height: SpacingTokens.titleToSubtitle),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.schedule,
+                      size: 11,
+                      color: AppColors.labelSecondary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(vencimentoLabel, style: AppTheme.caption),
+                  ],
+                ),
+              ],
             ],
           ),
         ),

@@ -13,6 +13,7 @@ class PlanilhaSettingsModal extends StatefulWidget {
   final int vencimentoSessoes;
   final DateTime vencimentoData;
   final bool hasTreinos;
+  final bool isGlobalTemplate;
   final Function(String, String, String, int, DateTime) onSave;
   final VoidCallback onDelete;
   final Future<bool> Function() showDescartarDialog;
@@ -26,6 +27,7 @@ class PlanilhaSettingsModal extends StatefulWidget {
     required this.vencimentoSessoes,
     required this.vencimentoData,
     required this.hasTreinos,
+    this.isGlobalTemplate = false,
     required this.onSave,
     required this.onDelete,
     required this.showDescartarDialog,
@@ -193,82 +195,84 @@ class _PlanilhaSettingsModalState extends State<PlanilhaSettingsModal> {
                       : null,
                 ),
               ),
-              const SizedBox(height: SpacingTokens.sectionGap),
-              Row(
-                children: [
-                  const SizedBox(width: AppTheme.space8),
-                  const Text('Vencimento', style: AppTheme.formLabel),
-                ],
-              ),
-              const SizedBox(height: SpacingTokens.labelToField),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-                ),
-                child: Column(
+              if (!widget.isGlobalTemplate) ...[
+                const SizedBox(height: SpacingTokens.sectionGap),
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        _buildTabOption(
-                          'Sessões',
-                          tipoTemp == 'sessoes',
-                          () => setState(() => tipoTemp = 'sessoes'),
-                        ),
-                        _buildTabOption(
-                          'Data Fixa',
-                          tipoTemp == 'data',
-                          () => setState(() => tipoTemp = 'data'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: tipoTemp == 'sessoes'
-                          ? TextFormField(
-                              key: const ValueKey('inputSessoes'),
-                              keyboardType: TextInputType.number,
-                              initialValue: sessoesInput,
-                              decoration: rotinaInputDecoration(
-                                hintText: 'Quantas sessões?',
-                              ),
-                              onChanged: (v) => sessoesInput = v,
-                            )
-                          : ListTile(
-                              key: const ValueKey('inputData'),
-                              tileColor: AppColors.surfaceDark,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  AppTheme.radiusSM,
-                                ),
-                              ),
-                              leading: const Icon(
-                                Icons.calendar_month,
-                                color: AppColors.primary,
-                              ),
-                              title: Text(
-                                DateFormat('dd/MM/yyyy').format(dataTemp),
-                              ),
-                              onTap: () async {
-                                final picked = await showDatePicker(
-                                  context: context,
-                                  initialDate: dataTemp,
-                                  firstDate: DateTime.now(),
-                                  lastDate: DateTime.now().add(
-                                    const Duration(days: 365),
-                                  ),
-                                );
-                                if (picked != null) {
-                                  setState(() => dataTemp = picked);
-                                }
-                              },
-                            ),
-                    ),
+                    const SizedBox(width: AppTheme.space8),
+                    const Text('Vencimento', style: AppTheme.formLabel),
                   ],
                 ),
-              ),
+                const SizedBox(height: SpacingTokens.labelToField),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceLight,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          _buildTabOption(
+                            'Sessões',
+                            tipoTemp == 'sessoes',
+                            () => setState(() => tipoTemp = 'sessoes'),
+                          ),
+                          _buildTabOption(
+                            'Data Fixa',
+                            tipoTemp == 'data',
+                            () => setState(() => tipoTemp = 'data'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: tipoTemp == 'sessoes'
+                            ? TextFormField(
+                                key: const ValueKey('inputSessoes'),
+                                keyboardType: TextInputType.number,
+                                initialValue: sessoesInput,
+                                decoration: rotinaInputDecoration(
+                                  hintText: 'Quantas sessões?',
+                                ),
+                                onChanged: (v) => sessoesInput = v,
+                              )
+                            : ListTile(
+                                key: const ValueKey('inputData'),
+                                tileColor: AppColors.surfaceDark,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusSM,
+                                  ),
+                                ),
+                                leading: const Icon(
+                                  Icons.calendar_month,
+                                  color: AppColors.primary,
+                                ),
+                                title: Text(
+                                  DateFormat('dd/MM/yyyy').format(dataTemp),
+                                ),
+                                onTap: () async {
+                                  final picked = await showDatePicker(
+                                    context: context,
+                                    initialDate: dataTemp,
+                                    firstDate: DateTime.now(),
+                                    lastDate: DateTime.now().add(
+                                      const Duration(days: 365),
+                                    ),
+                                  );
+                                  if (picked != null) {
+                                    setState(() => dataTemp = picked);
+                                  }
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               if (widget.rotinaId != null) ...[
                 const SizedBox(height: 40),
                 SizedBox(

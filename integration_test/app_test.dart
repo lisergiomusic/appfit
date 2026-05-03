@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:appfit/main.dart' as app;
-import 'package:appfit/core/theme/app_theme.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -24,10 +23,10 @@ void main() {
       // ou que o testador fará o login manual se necessário antes de rodar o teste real,
       // ou que o ambiente de teste já tem uma sessão ativa.
       // Para fins deste script, vamos esperar o Dashboard aparecer.
-      
+
       // Tentamos encontrar a aba 'Alunos' que indica que estamos no Dashboard
       final tabAlunos = find.byIcon(Icons.group);
-      
+
       // Se não encontrar de primeira, pode ser que precise de login.
       // Aqui o teste pararia ou falharia se não houver login automático.
       expect(tabAlunos, findsOneWidget, reason: 'O app deve estar logado no perfil Personal para prosseguir.');
@@ -57,7 +56,7 @@ void main() {
 
       // 7. Configurações da Planilha (PlanilhaSettingsModal abre automaticamente)
       expect(find.text('Configurações'), findsOneWidget);
-      
+
       // Encontrar o campo de texto pelo seu tipo (é o primeiro da tela)
       final fieldNome = find.byType(TextFormField).first;
       await tester.enterText(fieldNome, 'Treino de Força');
@@ -67,7 +66,7 @@ void main() {
       // O DropdownButtonFormField contém o texto 'Selecione o objetivo' quando vazio
       await tester.tap(find.text('Selecione o objetivo'));
       await tester.pumpAndSettle();
-      
+
       // No menu do Dropdown, selecionar 'Ganho de Força'
       final itemObjetivo = find.text('Ganho de Força').last;
       await tester.tap(itemObjetivo);

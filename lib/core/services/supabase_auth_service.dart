@@ -86,13 +86,13 @@ class SupabaseAuthService {
     try {
       final user = currentUser;
       if (user == null) return false;
-      
+
       final data = await _supabase
           .from('profiles')
           .select('is_admin')
           .eq('id', user.id)
           .maybeSingle();
-          
+
       return data?['is_admin'] == true;
     } catch (e) {
       return false;
@@ -104,13 +104,13 @@ class SupabaseAuthService {
     try {
       final user = currentUser;
       if (user == null) return null;
-      
+
       final data = await _supabase
           .from('profiles')
           .select()
           .eq('id', user.id)
           .single();
-          
+
       return data;
     } catch (e) {
       return null;
@@ -148,7 +148,6 @@ class SupabaseAuthService {
 
     if (existing == null) {
       // Log para depuração (pode ser removido depois)
-      print('DEBUG: Perfil não encontrado para email: $email');
       throw Exception(
         'Nenhum cadastro encontrado para este e-mail. Peça ao seu personal para te cadastrar.',
       );
@@ -163,20 +162,17 @@ class SupabaseAuthService {
           'display_name': '${existing['nome']} ${existing['sobrenome'] ?? ''}'.trim(),
         },
       );
-      
+
       final newUserId = res.user?.id;
       if (newUserId != null) {
-        print('DEBUG: Vinculando perfil ID antigo ${existing['id']} ao novo Auth ID: $newUserId');
-        
+
         try {
           // 2. Vinculamos o perfil ao ID do Auth usando o e-mail como chave de busca
           await _supabase
               .from('profiles')
               .update({'id': newUserId})
               .eq('email', email.trim().toLowerCase());
-          print('DEBUG: Perfil vinculado com sucesso.');
         } catch (updateError) {
-          print('DEBUG: Erro ao atualizar ID no perfil: $updateError');
         }
       }
     } on AuthException catch (e) {

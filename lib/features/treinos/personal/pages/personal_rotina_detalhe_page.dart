@@ -182,6 +182,7 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
           vencimentoSessoes: _controller.vencimentoSessoes,
           vencimentoData: _controller.vencimentoData,
           hasTreinos: _controller.treinos.isNotEmpty,
+          isGlobalTemplate: _controller.isGlobalTemplate,
           onSave: (nome, obj, tipo, sessoes, data) {
             _controller.atualizarConfiguracoes(
               nome: nome,
@@ -512,6 +513,7 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
                               title: _controller.nomeRotinaExibicao,
                               subtitle: _controller.objetivoExibicao,
                               vencimentoLabel: _controller.vencimentoLabel,
+                              showVencimento: !_controller.isGlobalTemplate,
                               onEdit: () => _exibirModalInfo(context),
                             ),
                           ),

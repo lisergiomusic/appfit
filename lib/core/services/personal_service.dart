@@ -43,7 +43,7 @@ class PersonalService {
 
       final list = res as List;
       final ativos = list.where((a) => a['status'] == 'ativo').length;
-      
+
       // Busca contagem de itens de atenção para o campo 'risco'
       final itensAtencao = await fetchAtencaoItems();
 
@@ -125,7 +125,7 @@ class PersonalService {
           if (rotina['data_vencimento'] != null) {
             final dataVencimento = DateTime.parse(rotina['data_vencimento']);
             final diffVencimento = dataVencimento.difference(agora).inDays;
-            
+
             if (diffVencimento <= 5) {
               final jaVenceu = diffVencimento < 0;
               items.add(AtencaoItem(
@@ -154,7 +154,7 @@ class PersonalService {
       for (var log in logsCriticos) {
         final profile = log['profiles'];
         final dataHora = DateTime.parse(log['data_hora']);
-        
+
         // Só adicionar se for recente (últimos 3 dias) para não poluir
         if (agora.difference(dataHora).inDays <= 3) {
           items.add(AtencaoItem(
@@ -173,7 +173,6 @@ class PersonalService {
 
       return items;
     } catch (e) {
-      print('Erro ao buscar itens de atenção: $e');
       return [];
     }
   }
@@ -197,7 +196,7 @@ class PersonalService {
     if (searchQuery.isNotEmpty) {
       query = query.ilike('nome', '%$searchQuery%');
     }
-    
+
     if (statusFilter != 'todos') {
       query = query.eq('status', statusFilter);
     }
@@ -225,8 +224,8 @@ class PersonalService {
 
   /// Atribui um treino da biblioteca a um aluno específico
   Future<void> atribuirTreinoAoAluno({
-    required String alunoId, 
-    required String templateId, 
+    required String alunoId,
+    required String templateId,
     String? tipoVencimento,
     int? sessoesAlvo,
     DateTime? dataVencimento,

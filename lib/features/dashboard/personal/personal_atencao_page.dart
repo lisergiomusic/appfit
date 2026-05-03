@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../../core/models/atencao_item.dart';
 import '../../../core/services/personal_service.dart';
 import '../../../core/theme/app_theme.dart';
@@ -103,9 +102,6 @@ class _AtencaoCard extends StatelessWidget {
 
   const _AtencaoCard({required this.item});
 
-  String _formatData(DateTime data) {
-    return DateFormat('d MMM', 'pt_BR').format(data);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -171,8 +167,8 @@ class _AtencaoCard extends StatelessWidget {
                     Text(
                       item.descricao,
                       style: AppTheme.cardSubtitle.copyWith(
-                        color: item.tipo == TipoAtencao.feedbackCritico 
-                          ? item.tipo.color 
+                        color: item.tipo == TipoAtencao.feedbackCritico
+                          ? item.tipo.color
                           : AppColors.labelSecondary,
                       ),
                     ),

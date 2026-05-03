@@ -18,6 +18,8 @@ class RotinaDetalheController extends ChangeNotifier {
   final String? alunoId;
   final RotinaService _rotinaService;
 
+  bool get isGlobalTemplate => alunoId == null;
+
   late TextEditingController nomeCtrl;
   late TextEditingController objCtrl;
   String tipoVencimento = 'sessoes';

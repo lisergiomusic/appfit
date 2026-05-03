@@ -18,14 +18,12 @@ class AlunoService {
         .eq('id', alunoId)
         .switchMap<AlunoPerfilData>((alunoList) {
           if (alunoList.isNotEmpty) {
-            print('DEBUG AlunoService: Perfil encontrado pelo ID: $alunoId');
             return _buildFullProfileStream(alunoList.first);
           }
 
           // FALLBACK: Se pelo ID não veio nada, tentamos pelo e-mail
           if (userEmail != null) {
-            print('DEBUG AlunoService: Tentando fallback pelo e-mail: $userEmail');
-            
+
             // Usamos .from(...).select() em vez de .stream() para o fallback inicial
             // para evitar comportamentos estranhos de múltiplos streams abertos
             return _supabase
@@ -36,11 +34,9 @@ class AlunoService {
                 .asStream()
                 .switchMap<AlunoPerfilData>((list) {
                   if (list.isNotEmpty) {
-                    print('DEBUG AlunoService: Perfil encontrado via fallback de e-mail!');
                     return _buildFullProfileStream(list.first);
                   }
-                  
-                  print('DEBUG AlunoService: Perfil não encontrado nem por ID nem por E-mail.');
+
                   return Stream.value(AlunoPerfilData(aluno: {}));
                 });
           }
@@ -113,11 +109,11 @@ class AlunoService {
     };
   }
 
-  Stream<List<Map<String, dynamic>>> getLogsDaSemanaStream(String alunoId) => 
+  Stream<List<Map<String, dynamic>>> getLogsDaSemanaStream(String alunoId) =>
       Stream.value(<Map<String, dynamic>>[]).asBroadcastStream();
-  Stream<List<Map<String, dynamic>>> getUltimoLogStream(String alunoId) => 
+  Stream<List<Map<String, dynamic>>> getUltimoLogStream(String alunoId) =>
       Stream.value(<Map<String, dynamic>>[]).asBroadcastStream();
-  Stream<List<Map<String, dynamic>>> getHistoricoPesoStream(String alunoId) => 
+  Stream<List<Map<String, dynamic>>> getHistoricoPesoStream(String alunoId) =>
       Stream.value(<Map<String, dynamic>>[]).asBroadcastStream();
 
   Future<void> registrarPeso({required String alunoId, required double peso}) async {

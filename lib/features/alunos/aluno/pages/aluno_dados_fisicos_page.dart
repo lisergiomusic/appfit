@@ -27,9 +27,6 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
   late TextEditingController _alturaController;
 
   // campos read-only necessários para atualizarAluno
-  String _nomeAtual = '';
-  String _sobrenomeAtual = '';
-  String _emailAtual = '';
 
   double? _pesoOriginal;
   String _pesoInicial = '';
@@ -57,12 +54,9 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
       final data = await _userService
           .getProfile(widget.uid)
           .timeout(const Duration(seconds: 12));
-      
+
       if (data.isEmpty) throw Exception('Dados não encontrados');
 
-      _nomeAtual = data['nome'] ?? '';
-      _sobrenomeAtual = data['sobrenome'] ?? '';
-      _emailAtual = data['email'] ?? '';
 
       final peso = data['pesoAtual'];
       if (peso != null) {
