@@ -224,7 +224,7 @@ class _PersonalExercicioDetalheViewState
 
   Future<void> _adicionarSerie() async {
     final controller = context.read<ExercicioDetalheController>();
-    
+
     // Forçamos a perda de foco de qualquer campo antes de abrir o seletor ou adicionar
     FocusManager.instance.primaryFocus?.unfocus();
 
@@ -247,7 +247,7 @@ class _PersonalExercicioDetalheViewState
           insertSectionIndex,
           duration: ExercicioDetalheConstants.rowAnimationDuration,
         );
-        
+
         // UX Senior: Rolar para a nova série se ela estiver fora de vista
         _scrollToNewItem();
       });
@@ -259,14 +259,14 @@ class _PersonalExercicioDetalheViewState
   void _scrollToNewItem() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollController.hasClients) return;
-      
+
       // Aguardamos um pouco para a animação de inserção começar
       Future.delayed(const Duration(milliseconds: 100), () {
         if (!mounted || !_scrollController.hasClients) return;
-        
+
         final maxScroll = _scrollController.position.maxScrollExtent;
         final currentScroll = _scrollController.offset;
-        
+
         // Se já estamos perto do fim, ou se a lista cresceu
         if (maxScroll > currentScroll) {
           _scrollController.animateTo(
@@ -404,7 +404,7 @@ class _PersonalExercicioDetalheViewState
                           ),
                         ),
                         Text(
-                          option.subtitle,
+                          option.subtitlePersonal,
                           style: const TextStyle(
                             color: AppColors.labelTertiary,
                             fontSize: 12,
@@ -710,7 +710,7 @@ class _PersonalExercicioDetalheViewState
               )..layout(maxWidth: constraints.maxWidth - (SpacingTokens.screenHorizontalPadding * 2));
 
               final int titleLines = titlePainter.computeLineMetrics().length;
-              
+
               // 2. Definimos a altura baseada na realidade (não em estimativas de caracteres)
               // 144px é o ideal para 1 linha + badges
               // 178px é o ideal para 2 linhas + badges
@@ -867,14 +867,7 @@ class _PersonalExercicioDetalheViewState
       padding: const EdgeInsets.symmetric(vertical: SpacingTokens.sectionGap),
       child: Container(
         padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceDark,
-          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-          border: Border.all(
-            color: AppColors.primary.withAlpha(40),
-            width: 1,
-          ),
-        ),
+        decoration: AppTheme.cardDecoration,
         child: Column(
           children: [
             Row(

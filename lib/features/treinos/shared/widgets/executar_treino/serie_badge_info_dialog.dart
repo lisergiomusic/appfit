@@ -53,7 +53,7 @@ class SerieBadgeInfoDialog extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              option.subtitle,
+              option.subtitleAluno,
               style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.labelSecondary,
