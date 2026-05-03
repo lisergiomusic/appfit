@@ -407,7 +407,7 @@ class _SessaoDetalhePersonalViewState
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
                                         color: Colors.white.withAlpha(20),
-                                        width: 1,
+                                        width: 0.5,
                                       ),
                                     ),
                                     child: Icon(

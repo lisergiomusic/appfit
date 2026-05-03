@@ -1,164 +1,117 @@
-import 'dart:ui';
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
-import 'package:flutter/services.dart';
-import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/note_display_field.dart';
 import '../../personal/controllers/configurar_treino_controller.dart';
 
-class SessaoNoteWidget extends StatelessWidget {
+class SessaoNoteWidget extends StatefulWidget {
   const SessaoNoteWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = context.watch<ConfigurarTreinoController>();
+  State<SessaoNoteWidget> createState() => _SessaoNoteWidgetState();
+}
 
-    return NoteDisplayField(
-      text: controller.sessaoNote,
-      label: 'Instruções gerais',
-      addLabel: 'Adicionar instruções gerais',
-      onTap: () => _showEditNoteSheet(context, controller),
-      showInsetShadow: true,
-    );
+class _SessaoNoteWidgetState extends State<SessaoNoteWidget> {
+  late final TextEditingController _controller;
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    final initialNote = context.read<ConfigurarTreinoController>().sessaoNote;
+    _controller = TextEditingController(text: initialNote);
+    _focusNode.addListener(() => setState(() {}));
   }
 
-  void _showEditNoteSheet(
-    BuildContext context,
-    ConfigurarTreinoController controller,
-  ) {
-    HapticFeedback.lightImpact();
-    final ctrl = TextEditingController(text: controller.sessaoNote);
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.background.withAlpha(235),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(100),
-                  blurRadius: 40,
-                  spreadRadius: 10,
-                ),
-              ],
+  @override
+  Widget build(BuildContext context) {
+    final bool hasFocus = _focusNode.hasFocus;
+    final configController = context.watch<ConfigurarTreinoController>();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Instruções da Sessão',
+              style: AppTheme.sectionHeader,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(
-                          'Cancelar',
-                          style: TextStyle(
-                            color: Colors.white.withAlpha(120),
-                            fontSize: 15,
-                          ),
-                        ),
+            if (hasFocus)
+              GestureDetector(
+                onTap: () {
+                  _focusNode.unfocus();
+                  configController.updateSessaoNote(_controller.text.trim());
+                },
+                child: const Row(
+                  children: [
+                    Text(
+                      'Concluir',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
                       ),
-                      const Text(
-                        'Notas da Sessão',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          controller.updateSessaoNote(ctrl.text.trim());
-                          Navigator.pop(context);
-                        },
-                        child: const Text(
-                          'OK',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                    SizedBox(width: 4),
+                    Icon(
+                      Icons.check_rounded,
+                      color: AppColors.primary,
+                      size: 14,
+                    ),
+                  ],
                 ),
-                Divider(
-                  height: 1,
-                  thickness: 0.5,
-                  color: Colors.white.withAlpha(20),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: ctrl,
-                        maxLines: 8,
-                        maxLength: 500,
-                        autofocus: true,
-                        cursorColor: AppColors.primary,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          height: 1.5,
-                        ),
-                        decoration: InputDecoration(
-                          hintText:
-                              'Ex: "Focar na cadência do movimento e manter o abdômen contraído em todos os exercícios."',
-                          hintStyle: TextStyle(
-                            color: Colors.white.withAlpha(40),
-                            fontSize: 15,
-                          ),
-                          border: InputBorder.none,
-                          counterText: '',
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      ValueListenableBuilder<TextEditingValue>(
-                        valueListenable: ctrl,
-                        builder: (context, value, child) {
-                          final remaining = 500 - value.text.length;
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(
-                                '$remaining caracteres disponíveis',
-                                style: TextStyle(
-                                  color: remaining < 50
-                                      ? Colors.redAccent.withAlpha(200)
-                                      : Colors.white.withAlpha(60),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
+              ),
+          ],
+        ),
+        const SizedBox(height: SpacingTokens.labelToField),
+        TextField(
+          controller: _controller,
+          focusNode: _focusNode,
+          maxLines: 2,
+          maxLength: 200,
+          style: AppTheme.bodyText,
+          cursorColor: AppColors.primary,
+          onChanged: (val) => configController.updateSessaoNote(val.trim()),
+          decoration: InputDecoration(
+            hintText: 'Ex: Beber 500ml de água durante o treino e respeitar o descanso...',
+            hintStyle: TextStyle(
+              color: Colors.white.withAlpha(40),
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
+            ),
+            filled: true,
+            fillColor: AppColors.surfaceDark,
+            contentPadding: const EdgeInsets.all(16),
+            counterText: hasFocus ? null : '',
+            counterStyle: const TextStyle(
+              color: AppColors.labelTertiary,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: const BorderSide(color: AppColors.primary, width: 1),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/services/exercise_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/orange_glass_action_button.dart';
+import '../../../../core/widgets/secondary_glass_action_button.dart';
 import '../../../../core/widgets/app_bar_text_button.dart';
 import '../../../../core/widgets/sliver_safe_title.dart';
 import '../../../../core/widgets/note_display_field.dart';
@@ -83,6 +84,8 @@ class _PersonalExercicioDetalheViewState
 
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _instructionsController = TextEditingController();
+  final FocusNode _instructionsFocusNode = FocusNode();
   final Map<String, TextEditingController> _controllers = {};
   final Set<String> _suppressNextOnChanged = {};
 
@@ -90,6 +93,9 @@ class _PersonalExercicioDetalheViewState
   void initState() {
     super.initState();
     ex = context.read<ExercicioDetalheController>().exercicio;
+    _instructionsController.text = ex.instrucoesPersonalizadasTexto ?? '';
+    _instructionsController.addListener(_onInstructionsChanged);
+    _instructionsFocusNode.addListener(() => setState(() {}));
     final hasLocalMedia = ex.mediaUrl != null && ex.mediaUrl!.isNotEmpty;
     _exercicioBaseFuture = hasLocalMedia
         ? Future.value(null)
@@ -115,8 +121,20 @@ class _PersonalExercicioDetalheViewState
   @override
   void dispose() {
     _scrollController.dispose();
+    _instructionsController.removeListener(_onInstructionsChanged);
+    _instructionsController.dispose();
+    _instructionsFocusNode.dispose();
     _disposeControllers();
     super.dispose();
+  }
+
+  void _onInstructionsChanged() {
+    final text = _instructionsController.text.trim();
+    if (ex.instrucoesPersonalizadas != (text.isEmpty ? null : text)) {
+      ex.instrucoesPersonalizadas = text.isEmpty ? null : text;
+      context.read<ExercicioDetalheController>().onManualNotify();
+      widget.onChanged();
+    }
   }
 
   void _disposeControllers() {
@@ -306,7 +324,7 @@ class _PersonalExercicioDetalheViewState
             }
           }
         }
-        
+
         // Auto-scroll para o topo para ver o resultado da cópia
         _scrollToTop();
       });
@@ -314,7 +332,7 @@ class _PersonalExercicioDetalheViewState
       if (mounted) {
         // Remove snackbars anteriores para não empilhar
         _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
-        
+
         final snackBar = SnackBar(
           content: const Text(
             'Séries copiadas',
@@ -663,13 +681,9 @@ class _PersonalExercicioDetalheViewState
                           ),
                         ),
                       ),
-                      const Text(
+                      Text(
                         'Instruções gerais',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                        ),
+                        style: AppTheme.sectionHeader,
                       ),
                       TextButton(
                         onPressed: () {
@@ -894,11 +908,25 @@ class _PersonalExercicioDetalheViewState
                             SpacingTokens.screenHorizontalPadding,
                             SpacingTokens.md,
                           ),
-                          child: OrangeGlassActionButton(
-                            label: 'Adicionar Série',
-                            onTap: _adicionarSerie,
-                            bottomMargin: 0,
-                            showGlow: false,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (ex.series.isEmpty &&
+                                  widget.otherExercisesInSession != null &&
+                                  widget.otherExercisesInSession!.isNotEmpty)
+                                SecondaryGlassActionButton(
+                                  label: 'Copiar de outro exercício',
+                                  icon: Icons.copy_rounded,
+                                  onTap: _onCopySeries,
+                                  bottomMargin: 12,
+                                ),
+                              OrangeGlassActionButton(
+                                label: 'Adicionar Série',
+                                onTap: _adicionarSerie,
+                                bottomMargin: 0,
+                                showGlow: false,
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -972,17 +1000,7 @@ class _PersonalExercicioDetalheViewState
                                 SpacingTokens.screenHorizontalPadding,
                                 0,
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  NoteDisplayField(
-                                    text: ex.instrucoesPersonalizadasTexto,
-                                    label: 'Instruções gerais',
-                                    addLabel: 'Adicionar instruções gerais',
-                                    onTap: _showEditInstructionsSheet,
-                                  ),
-                                ],
-                              ),
+                              child: _buildInstructionsInput(),
                             ),
                           ),
                         if (ex.series.isEmpty)
@@ -1144,6 +1162,86 @@ class _PersonalExercicioDetalheViewState
     );
   }
 
+  Widget _buildInstructionsInput() {
+    final bool hasFocus = _instructionsFocusNode.hasFocus;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Instruções Gerais',
+              style: AppTheme.sectionHeader,
+            ),
+            if (hasFocus)
+              GestureDetector(
+                onTap: () => _instructionsFocusNode.unfocus(),
+                child: const Row(
+                  children: [
+                    Text(
+                      'Concluir',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    SizedBox(width: 4),
+                    Icon(
+                      Icons.check_rounded,
+                      color: AppColors.primary,
+                      size: 14,
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: SpacingTokens.labelToField),
+        TextField(
+          controller: _instructionsController,
+          focusNode: _instructionsFocusNode,
+          maxLines: 2,
+          maxLength: 150,
+          style: AppTheme.bodyText,
+          cursorColor: AppColors.primary,
+          decoration: InputDecoration(
+            hintText: 'Ex: Focar na cadência do movimento e controlar a descida...',
+            hintStyle: TextStyle(
+              color: Colors.white.withAlpha(40),
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
+            ),
+            filled: true,
+            fillColor: AppColors.surfaceDark,
+            contentPadding: const EdgeInsets.all(16),
+            counterText: hasFocus ? null : '',
+            counterStyle: const TextStyle(
+              color: AppColors.labelTertiary,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: const BorderSide(color: AppColors.primary, width: 1),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildEmptyState() {
     return SliverFillRemaining(
       hasScrollBody: false,
@@ -1188,11 +1286,6 @@ class _PersonalExercicioDetalheViewState
                 height: 1.4,
               ),
             ),
-            if (widget.otherExercisesInSession != null &&
-                widget.otherExercisesInSession!.isNotEmpty) ...[
-              const SizedBox(height: 32),
-              _buildCopyActionCard(),
-            ],
             const Spacer(flex: 4), // Equilibrado para não deixar o vácuo tão grande
           ],
         ),
@@ -1200,71 +1293,6 @@ class _PersonalExercicioDetalheViewState
     );
   }
 
-  Widget _buildCopyActionCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.primary.withAlpha(15),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.primary.withAlpha(30),
-          width: 1,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _onCopySeries,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withAlpha(30),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.copy_rounded,
-                    color: AppColors.primary,
-                    size: 18,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Copiar de outro exercício',
-                        style: TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        'Importe as séries planejadas',
-                        style: TextStyle(
-                          color: AppColors.labelSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.primary.withAlpha(100),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildSliverSeries(
     BuildContext context,
