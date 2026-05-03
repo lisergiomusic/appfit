@@ -783,6 +783,10 @@ class _SessaoDetalhePersonalViewState
                     MaterialPageRoute(
                       builder: (context) => PersonalExercicioDetalhePage(
                         exercicio: ex,
+                        otherExercisesInSession: controller.exercicios
+                            .where((w) => w.item != ex)
+                            .map((w) => w.item)
+                            .toList(),
                         onChanged: () {
                           // Notifica a sessão que algo dentro do exercício mudou
                           controller.onExercicioChanged();

@@ -12,6 +12,7 @@ import '../../../../core/widgets/note_display_field.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/utils/cloudinary.dart';
 import '../controllers/exercicio_detalhe_controller.dart';
+import '../widgets/copy_series_sheet.dart';
 import '../../shared/models/exercicio_model.dart';
 import '../../shared/widgets/exercicio_detalhe/exercicio_constants.dart';
 import '../../shared/widgets/exercicio_detalhe/exercise_spotlight_overlay.dart';
@@ -21,11 +22,13 @@ import '../../shared/widgets/exercicio_detalhe/series_section.dart';
 class PersonalExercicioDetalhePage extends StatefulWidget {
   final ExercicioItem exercicio;
   final VoidCallback onChanged;
+  final List<ExercicioItem>? otherExercisesInSession;
 
   const PersonalExercicioDetalhePage({
     super.key,
     required this.exercicio,
     required this.onChanged,
+    this.otherExercisesInSession,
   });
 
   @override
@@ -41,6 +44,7 @@ class _PersonalExercicioDetalhePageState
       create: (_) => ExercicioDetalheController(widget.exercicio),
       child: _PersonalExercicioDetalheView(
         onChanged: widget.onChanged,
+        otherExercisesInSession: widget.otherExercisesInSession,
       ),
     );
   }
@@ -48,9 +52,11 @@ class _PersonalExercicioDetalhePageState
 
 class _PersonalExercicioDetalheView extends StatefulWidget {
   final VoidCallback onChanged;
+  final List<ExercicioItem>? otherExercisesInSession;
 
   const _PersonalExercicioDetalheView({
     required this.onChanged,
+    this.otherExercisesInSession,
   });
 
   @override
@@ -247,6 +253,36 @@ class _PersonalExercicioDetalheViewState
       duration: ExercicioDetalheConstants.rowAnimationDuration,
     );
     widget.onChanged();
+  }
+
+  Future<void> _onCopySeries() async {
+    final others = widget.otherExercisesInSession;
+    if (others == null || others.isEmpty) return;
+
+    final List<SerieItem>? copiedSeries = await CopySeriesSheet.show(
+      context,
+      otherExercises: others,
+      currentExerciseName: ex.nome,
+    );
+
+    if (copiedSeries != null && copiedSeries.isNotEmpty) {
+      final controller = context.read<ExercicioDetalheController>();
+
+      controller.replaceAllSeries(copiedSeries);
+
+      setState(() {});
+      widget.onChanged();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Séries copiadas com sucesso'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _adicionarSerie() async {
@@ -684,11 +720,7 @@ class _PersonalExercicioDetalheViewState
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<ExercicioDetalheController>();
-    // Mapa de seções da interface desta página:
-    // 1) Estrutura superior: AppBar, título e ações de navegação.
-    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
-    // 3) Ações finais: botões primários, confirmadores e feedbacks.
-    final exerciseTitle = SliverSafeTitle.safeTitle(
+        final exerciseTitle = SliverSafeTitle.safeTitle(
       ex.nome,
       fallback: 'Exercício',
     );
@@ -707,7 +739,7 @@ class _PersonalExercicioDetalheViewState
         if (controller.hasChanges && !_isSaving) {
           setState(() => _isSaving = true);
 
-          // Feedback visual de salvamento (Staff-level UX)
+          // Feedback visual de salvamento
           await Future.delayed(const Duration(milliseconds: 800));
 
           if (mounted) {
@@ -733,27 +765,53 @@ class _PersonalExercicioDetalheViewState
             children: [
               Scaffold(
                 backgroundColor: AppColors.background,
-                bottomNavigationBar: ex.series.isNotEmpty
-                    ? ColoredBox(
-                        color: AppColors.background,
-                        child: SafeArea(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(
-                              SpacingTokens.screenHorizontalPadding,
-                              8,
-                              SpacingTokens.screenHorizontalPadding,
-                              SpacingTokens.md,
-                            ),
-                            child: OrangeGlassActionButton(
-                              label: 'Adicionar Série',
-                              onTap: _adicionarSerie,
-                              bottomMargin: 0,
-                              showGlow: false,
-                            ),
+                bottomNavigationBar: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (ex.series.isEmpty && 
+                        widget.otherExercisesInSession != null &&
+                        widget.otherExercisesInSession!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          SpacingTokens.screenHorizontalPadding,
+                          4,
+                          SpacingTokens.screenHorizontalPadding,
+                          0,
+                        ),
+                        child: TextButton.icon(
+                          onPressed: _onCopySeries,
+                          icon: const Icon(Icons.copy_rounded, size: 18),
+                          label: const Text(
+                            'Copiar séries de outro exercício',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
                         ),
-                      )
-                    : null,
+                      ),
+                    ColoredBox(
+                      color: AppColors.background,
+                      child: SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            SpacingTokens.screenHorizontalPadding,
+                            4,
+                            SpacingTokens.screenHorizontalPadding,
+                            SpacingTokens.md,
+                          ),
+                          child: OrangeGlassActionButton(
+                            label: 'Adicionar Série',
+                            onTap: _adicionarSerie,
+                            bottomMargin: 0,
+                            showGlow: false,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 body: LayoutBuilder(
                   builder: (context, constraints) {
                     return CustomScrollView(
@@ -776,7 +834,7 @@ class _PersonalExercicioDetalheViewState
                                 SpacingTokens.screenHorizontalPadding,
                                 0,
                                 SpacingTokens.screenHorizontalPadding,
-                                SpacingTokens.sm,
+                                20,
                               ),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -788,10 +846,7 @@ class _PersonalExercicioDetalheViewState
                                       children: [
                                         Text(
                                           exerciseTitle,
-                                          style: AppTheme.bigTitle.copyWith(
-                                            height: 1.1,
-                                            letterSpacing: -1,
-                                          ),
+                                          style: AppTheme.bigTitle,
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -1040,14 +1095,7 @@ class _PersonalExercicioDetalheViewState
                 height: 1.4,
               ),
             ),
-            const Spacer(flex: 2),
-            OrangeGlassActionButton(
-              label: 'Adicionar Primeira Série',
-              onTap: _adicionarSerie,
-              bottomMargin: 0,
-              showGlow: true,
-            ),
-            const Spacer(flex: 3),
+            const Spacer(flex: 5), // Removido o botão duplicado e aumentado o spacer
           ],
         ),
       ),

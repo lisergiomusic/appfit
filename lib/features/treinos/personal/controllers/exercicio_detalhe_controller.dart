@@ -145,6 +145,23 @@ class ExercicioDetalheController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void replaceAllSeries(List<SerieItem> newSeries) {
+    exercicio.series.clear();
+    exercicio.series.addAll(newSeries);
+    for (var s in newSeries) {
+      markAsNew(s.id);
+    }
+    notifyListeners();
+  }
+
+  void appendSeries(List<SerieItem> newSeries) {
+    exercicio.series.addAll(newSeries);
+    for (var s in newSeries) {
+      markAsNew(s.id);
+    }
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     _snackBarTimer?.cancel();
