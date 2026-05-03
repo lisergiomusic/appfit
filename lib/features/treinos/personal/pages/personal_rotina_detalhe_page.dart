@@ -527,26 +527,6 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
                           ),
                         )
                       else ...[
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(
-                              AppTheme.paddingScreen,
-                              SpacingTokens.sectionGap,
-                              AppTheme.paddingScreen,
-                              0,
-                            ),
-                            child: RotinaSectionHeader(
-                              isReordering: _isReordering,
-                              canReorder: _controller.canReorderSessoes,
-                              onToggleReordering: () {
-                                setState(() => _isReordering = !_isReordering);
-                              },
-                            ),
-                          ),
-                        ),
-                        const SliverToBoxAdapter(
-                          child: SizedBox(height: SpacingTokens.labelToField),
-                        ),
                         if (_controller.treinos.isEmpty)
                           SliverFillRemaining(
                             hasScrollBody: false,
@@ -555,6 +535,26 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
                             ),
                           )
                         else ...[
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                AppTheme.paddingScreen,
+                                SpacingTokens.sectionGap,
+                                AppTheme.paddingScreen,
+                                0,
+                              ),
+                              child: RotinaSectionHeader(
+                                isReordering: _isReordering,
+                                canReorder: _controller.canReorderSessoes,
+                                onToggleReordering: () {
+                                  setState(() => _isReordering = !_isReordering);
+                                },
+                              ),
+                            ),
+                          ),
+                          const SliverToBoxAdapter(
+                            child: SizedBox(height: SpacingTokens.labelToField),
+                          ),
                           SliverPadding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: AppTheme.paddingScreen,

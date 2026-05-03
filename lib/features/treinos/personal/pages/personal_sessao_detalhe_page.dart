@@ -239,7 +239,7 @@ class _SessaoDetalhePersonalViewState
                 slivers: [
                   AppFitSliverAppBar(
                     title: safeTreinoTitle,
-                    expandedHeight: controller.isEditingTitle ? 160 : 170,
+                    expandedHeight: controller.isEditingTitle ? 140 : 150,
                     onBackPressed: () => Navigator.of(context).maybePop(),
                     leading: controller.isEditingTitle
                         ? const SizedBox.shrink()
@@ -259,7 +259,7 @@ class _SessaoDetalhePersonalViewState
                         padding: const EdgeInsets.only(
                           left: 16,
                           right: 16,
-                          bottom: 20,
+                          bottom: 12,
                         ),
                         child: Row(
                           crossAxisAlignment: controller.isEditingTitle
@@ -428,72 +428,73 @@ class _SessaoDetalhePersonalViewState
                       ),
                     ),
                   ),
-                  SliverOpacity(
-                    opacity: controller.isEditingTitle ? 0.3 : 1.0,
-                    sliver: SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          AppTheme.paddingScreen,
-                          4,
-                          AppTheme.paddingScreen,
-                          0,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _MetricCard(
-                                    label: 'Exercícios',
-                                    value: '${controller.exercicios.length}',
+                  if (controller.exercicios.isNotEmpty)
+                    SliverOpacity(
+                      opacity: controller.isEditingTitle ? 0.3 : 1.0,
+                      sliver: SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppTheme.paddingScreen,
+                            4,
+                            AppTheme.paddingScreen,
+                            0,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _MetricCard(
+                                      label: 'Exercícios',
+                                      value: '${controller.exercicios.length}',
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: _MetricCard(
-                                    label: 'Séries',
-                                    value: '${controller.totalSeries}',
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: _MetricCard(
+                                      label: 'Séries',
+                                      value: '${controller.totalSeries}',
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: _MetricCard(
-                                    label: 'Estimado',
-                                    value: controller.estimatedDurationLabel,
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: _MetricCard(
+                                      label: 'Estimado',
+                                      value: controller.estimatedDurationLabel,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: SpacingTokens.sectionGap),
-                            const SessaoNoteWidget(),
-                            const SizedBox(height: SpacingTokens.sectionGap),
-                            Row(
-                              children: [
-                                Text(
-                                  'Lista de exercícios',
-                                  style: AppTheme.sectionHeader,
-                                ),
-                                const Spacer(),
-                                AppSectionLinkButton(
-                                  label: _isReordering ? 'Concluir' : 'Reorganizar',
-                                  onPressed: controller.exercicios.length < 2
-                                      ? null
-                                      : () {
-                                          HapticFeedback.lightImpact();
-                                          setState(
-                                            () => _isReordering = !_isReordering,
-                                          );
-                                        },
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: SpacingTokens.labelToField),
-                          ],
+                                ],
+                              ),
+                              const SizedBox(height: SpacingTokens.sectionGap),
+                              const SessaoNoteWidget(),
+                              const SizedBox(height: SpacingTokens.sectionGap),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Lista de exercícios',
+                                    style: AppTheme.sectionHeader,
+                                  ),
+                                  const Spacer(),
+                                  AppSectionLinkButton(
+                                    label: _isReordering ? 'Concluir' : 'Reorganizar',
+                                    onPressed: controller.exercicios.length < 2
+                                        ? null
+                                        : () {
+                                            HapticFeedback.lightImpact();
+                                            setState(
+                                              () => _isReordering = !_isReordering,
+                                            );
+                                          },
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: SpacingTokens.labelToField),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
                   if (controller.exercicios.isEmpty)
                     emptyState(shouldShowFab, context),
                   if (controller.exercicios.isNotEmpty)

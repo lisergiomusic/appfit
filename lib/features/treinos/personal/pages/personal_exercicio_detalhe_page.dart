@@ -815,36 +815,30 @@ class _PersonalExercicioDetalheViewState
                             ),
                           ),
                         ),
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(
-                              SpacingTokens.screenHorizontalPadding,
-                              SpacingTokens.sectionGap,
-                              SpacingTokens.screenHorizontalPadding,
-                              0,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                NoteDisplayField(
-                                  text: ex.instrucoesPersonalizadasTexto,
-                                  label: 'Instruções gerais',
-                                  addLabel: 'Adicionar instruções gerais',
-                                  onTap: _showEditInstructionsSheet,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        if (ex.series.isEmpty)
+                        if (ex.series.isNotEmpty)
                           SliverToBoxAdapter(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: SpacingTokens.screenHorizontalPadding,
+                              padding: const EdgeInsets.fromLTRB(
+                                SpacingTokens.screenHorizontalPadding,
+                                SpacingTokens.sectionGap,
+                                SpacingTokens.screenHorizontalPadding,
+                                0,
                               ),
-                              child: _buildEmptyState(),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  NoteDisplayField(
+                                    text: ex.instrucoesPersonalizadasTexto,
+                                    label: 'Instruções gerais',
+                                    addLabel: 'Adicionar instruções gerais',
+                                    onTap: _showEditInstructionsSheet,
+                                  ),
+                                ],
+                              ),
                             ),
-                          )
+                          ),
+                        if (ex.series.isEmpty)
+                          _buildEmptyState()
                         else ...[
                           _buildSliverSeries(context, warmup, TipoSerie.aquecimento),
                           _buildSliverSeries(context, feeder, TipoSerie.feeder),
@@ -1003,63 +997,57 @@ class _PersonalExercicioDetalheViewState
   }
 
   Widget _buildEmptyState() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: SpacingTokens.sectionGap),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: AppTheme.cardDecoration,
+    return SliverFillRemaining(
+      hasScrollBody: false,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: SpacingTokens.screenHorizontalPadding,
+        ),
         child: Column(
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withAlpha(20),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.fitness_center_rounded,
-                    size: 28,
-                    color: AppColors.primary,
-                  ),
+            const Spacer(flex: 2),
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(10),
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.fitness_center_rounded,
+                  size: 40,
+                  color: AppColors.primary,
                 ),
-                const SizedBox(width: 16),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Prescreva o exercício',
-                        style: TextStyle(
-                          color: AppColors.labelPrimary,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Adicione séries de aquecimento,\naproximação ou trabalho.',
-                        style: TextStyle(
-                          color: AppColors.labelTertiary,
-                          fontSize: 13,
-                          height: 1.3,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
             const SizedBox(height: 24),
+            const Text(
+              'Planeje a execução',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Defina as séries de aquecimento,\naproximação ou trabalho para este exercício.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppColors.labelSecondary,
+                fontSize: 14,
+                height: 1.4,
+              ),
+            ),
+            const Spacer(flex: 2),
             OrangeGlassActionButton(
               label: 'Adicionar Primeira Série',
               onTap: _adicionarSerie,
               bottomMargin: 0,
               showGlow: true,
             ),
+            const Spacer(flex: 3),
           ],
         ),
       ),

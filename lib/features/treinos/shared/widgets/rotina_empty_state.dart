@@ -20,43 +20,46 @@ class RotinaEmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const Spacer(flex: 2),
           Container(
-            padding: const EdgeInsets.all(24),
+            width: 88,
+            height: 88,
             decoration: BoxDecoration(
-              color: AppColors.surfaceLight.withAlpha(40),
+              color: Colors.white.withAlpha(10),
               shape: BoxShape.circle,
             ),
             child: Icon(
               CupertinoIcons.square_list,
-              size: 48,
-              color: AppColors.primary.withAlpha(150),
+              size: 40,
+              color: AppColors.primary,
             ),
           ),
           const SizedBox(height: 24),
           const Text(
-            'Sua planilha está vazia',
+            'Estruture a planilha',
             style: TextStyle(
               color: Colors.white,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           const Text(
-            'Adicione as sessões de treino (ex: Treino A, Treino B)\npara começar a configurar os exercícios.',
+            'Adicione as sessões de treino (ex: Treino A, Treino B)\npara começar a organizar a rotina.',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: AppColors.labelSecondary,
               fontSize: 14,
-              height: 1.5,
+              height: 1.4,
             ),
           ),
-          const SizedBox(height: 32),
+          const Spacer(flex: 2),
           AppPrimaryButton(
-            label: 'Criar sessão',
+            label: 'Criar Primeira Sessão',
             icon: CupertinoIcons.add_circled,
             onPressed: onCreateSession,
           ),
+          const Spacer(flex: 3),
         ],
       ),
     );
