@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UserService {
@@ -9,8 +10,13 @@ class UserService {
   Future<Map<String, dynamic>> getProfile(String uid) async {
     try {
       final data = await _supabase.from('profiles').select().eq('id', uid).maybeSingle();
+      if (data == null) {
+        debugPrint('>>> [UserService] Perfil não encontrado para o ID: $uid');
+      }
       return data ?? {};
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('>>> [UserService] ERRO CRÍTICO ao buscar perfil: $e');
+      debugPrint(stack.toString());
       throw Exception('Erro ao buscar perfil: $e');
     }
   }

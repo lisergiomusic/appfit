@@ -61,9 +61,9 @@ class _AlunoFeedbackTreinoPageState extends State<AlunoFeedbackTreinoPage> {
     return 'Exaustivo';
   }
 
-  Color _esforcoColor(int valor) {
-    if (valor <= 3) return const Color(0xFF30D158);
-    if (valor <= 5) return const Color(0xFF30D158);
+  Color _getEsforcoColor(int valor) {
+    if (valor <= 3) return AppColors.primary;
+    if (valor <= 5) return AppColors.primary;
     if (valor <= 7) return AppColors.accentMetrics;
     if (valor <= 9) return const Color(0xFFFF6B35);
     return AppColors.systemRed;
@@ -107,13 +107,14 @@ class _AlunoFeedbackTreinoPageState extends State<AlunoFeedbackTreinoPage> {
                     HapticFeedback.selectionClick();
                     setState(() => _esforco = v);
                   },
+                  colorMapper: _getEsforcoColor,
                 ),
                 if (temEsforco) ...[
                   const SizedBox(height: SpacingTokens.sm),
                   _EsforcoIndicador(
                     valor: esforcoSelecionado,
                     label: _esforcoLabel(esforcoSelecionado),
-                    color: _esforcoColor(esforcoSelecionado),
+                    color: _getEsforcoColor(esforcoSelecionado),
                   ),
                 ],
                 const SizedBox(height: SpacingTokens.xxl),
@@ -198,8 +199,13 @@ class _SectionLabel extends StatelessWidget {
 class _EsforcoGrid extends StatelessWidget {
   final int? selecionado;
   final ValueChanged<int> onSelect;
+  final Color Function(int) colorMapper;
 
-  const _EsforcoGrid({required this.selecionado, required this.onSelect});
+  const _EsforcoGrid({
+    required this.selecionado,
+    required this.onSelect,
+    required this.colorMapper,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -218,7 +224,7 @@ class _EsforcoGrid extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 color: abaixo
-                    ? _barColor(selecionado!).withValues(alpha: ativo ? 1.0 : 0.45)
+                    ? colorMapper(selecionado!).withValues(alpha: ativo ? 1.0 : 0.45)
                     : AppColors.surfaceLight,
                 borderRadius: BorderRadius.circular(AppTheme.radiusSM),
               ),
@@ -236,14 +242,6 @@ class _EsforcoGrid extends StatelessWidget {
         );
       }),
     );
-  }
-
-  Color _barColor(int valor) {
-    if (valor <= 3) return const Color(0xFF30D158);
-    if (valor <= 5) return const Color(0xFF30D158);
-    if (valor <= 7) return AppColors.accentMetrics;
-    if (valor <= 9) return const Color(0xFFFF6B35);
-    return AppColors.systemRed;
   }
 }
 

@@ -43,6 +43,7 @@ class SupabaseAuthService {
         password: password,
         data: {
           'display_name': nome,
+          'tipo_usuario': tipoUsuario,
         },
       );
 
@@ -68,15 +69,37 @@ class SupabaseAuthService {
 
   /// Recupera o tipo de usuário do banco SQL
   Future<String?> getUserType(String uid) async {
+    // 1. Tenta primeiro pelo metadata do usuário (cacheado no Auth, ultra rápido)
+    final metaType = _supabase.auth.currentUser?.userMetadata?['tipo_usuario'];
+    if (metaType != null) return metaType as String;
+
     try {
+      // 2. Tenta buscar pelo ID (UID do Auth)
       final data = await _supabase
           .from('profiles')
           .select('tipo_usuario')
           .eq('id', uid)
           .maybeSingle();
-      return data?['tipo_usuario'] as String?;
+      
+      if (data != null) return data['tipo_usuario'] as String?;
+
+      // 3. Fallback: Tenta buscar pelo E-mail do usuário atual
+      // Isso é necessário para Alunos cadastrados manualmente pelo Personal,
+      // onde o ID na tabela 'profiles' ainda não foi sincronizado com o UID do Auth.
+      final email = currentUser?.email;
+      if (email != null) {
+        final dataByEmail = await _supabase
+            .from('profiles')
+            .select('tipo_usuario')
+            .ilike('email', email.trim())
+            .maybeSingle();
+        
+        return dataByEmail?['tipo_usuario'] as String?;
+      }
+
+      return null;
     } catch (e) {
-      debugPrint('Erro ao buscar tipo de usuário no Supabase: $e');
+      debugPrint('>>> [SupabaseAuthService] Erro ao buscar tipo de usuário: $e');
       return null;
     }
   }
@@ -154,12 +177,13 @@ class SupabaseAuthService {
     }
 
     try {
-      // 1. Criar o usuário no Auth com o nome no user_metadata
+      // 1. Criar o usuário no Auth com o nome e tipo no user_metadata
       final res = await _supabase.auth.signUp(
         email: email,
         password: password,
         data: {
           'display_name': '${existing['nome']} ${existing['sobrenome'] ?? ''}'.trim(),
+          'tipo_usuario': 'aluno',
         },
       );
 

@@ -119,7 +119,9 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
         _isLoading = false;
         _canSave = false;
       });
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('>>> [AlunoEditarPerfil] Erro ao carregar dados: $e');
+      debugPrint(stack.toString());
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(

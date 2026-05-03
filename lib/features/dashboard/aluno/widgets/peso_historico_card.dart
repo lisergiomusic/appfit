@@ -58,6 +58,7 @@ class PesoHistoricoCard extends StatelessWidget {
         Text('Peso corporal', style: AppTheme.sectionHeader),
         const SizedBox(height: SpacingTokens.labelToField),
         Container(
+          width: double.infinity,
           decoration: AppTheme.cardDecoration,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,6 +187,7 @@ class PesoHistoricoCard extends StatelessWidget {
         Text('Peso corporal', style: AppTheme.sectionHeader),
         const SizedBox(height: SpacingTokens.labelToField),
         Container(
+          width: double.infinity,
           decoration: BoxDecoration(
             color: AppColors.surfaceDark,
             borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -260,6 +262,7 @@ class PesoHistoricoCard extends StatelessWidget {
         Text('Peso corporal', style: AppTheme.sectionHeader),
         const SizedBox(height: SpacingTokens.labelToField),
         Container(
+          width: double.infinity,
           decoration: BoxDecoration(
             color: AppColors.surfaceDark,
             borderRadius: BorderRadius.circular(AppTheme.radiusXL),

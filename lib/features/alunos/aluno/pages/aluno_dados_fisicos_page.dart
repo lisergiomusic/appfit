@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/services/user_service.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -22,6 +24,7 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
 
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _canSave = false;
 
   late TextEditingController _pesoController;
   late TextEditingController _alturaController;
@@ -37,9 +40,16 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
     super.initState();
     _alunoService = AlunoService();
     _userService = UserService();
-    _pesoController = TextEditingController();
-    _alturaController = TextEditingController();
+    _pesoController = TextEditingController()..addListener(_onFieldChanged);
+    _alturaController = TextEditingController()..addListener(_onFieldChanged);
     _carregarDados();
+  }
+
+  void _onFieldChanged() {
+    final hasChanges = _houveMudanca;
+    if (hasChanges != _canSave) {
+      setState(() => _canSave = hasChanges);
+    }
   }
 
   @override
@@ -51,14 +61,27 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
 
   Future<void> _carregarDados() async {
     try {
-      final data = await _userService
+      var data = await _userService
           .getProfile(widget.uid)
           .timeout(const Duration(seconds: 12));
+
+      // Fallback: Se não encontrou pelo ID, tenta pelo e-mail do usuário logado
+      if (data.isEmpty) {
+        final currentUser = _userService.currentUser;
+        if (currentUser != null && currentUser.email != null) {
+          final response = await Supabase.instance.client
+              .from('profiles')
+              .select()
+              .ilike('email', currentUser.email!.trim())
+              .maybeSingle();
+          if (response != null) data = response;
+        }
+      }
 
       if (data.isEmpty) throw Exception('Dados não encontrados');
 
 
-      final peso = data['pesoAtual'];
+      final peso = data['peso_atual'] ?? data['pesoAtual'];
       if (peso != null) {
         _pesoOriginal = (peso as num).toDouble();
         _pesoController.text = _pesoOriginal!.toStringAsFixed(
@@ -66,7 +89,7 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
         );
       }
 
-      final altura = data['alturaAtual'];
+      final altura = data['altura_atual'] ?? data['alturaAtual'];
       if (altura != null) {
         _alturaController.text = (altura as num).toInt().toString();
       }
@@ -74,8 +97,13 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
       _pesoInicial = _pesoController.text;
       _alturaInicial = _alturaController.text;
 
-      setState(() => _isLoading = false);
-    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _canSave = false;
+      });
+    } catch (e, stack) {
+      debugPrint('>>> [AlunoDadosFisicos] Erro ao carregar dados: $e');
+      debugPrint(stack.toString());
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -98,6 +126,7 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSaving = true);
+    HapticFeedback.lightImpact();
     try {
       final novoPeso = double.tryParse(_pesoController.text.trim());
       final novaAltura = double.tryParse(_alturaController.text.trim());
@@ -176,7 +205,7 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
           child: AppBarTextButton(
             label: 'Salvar',
             isLoading: _isSaving,
-            onPressed: _salvar,
+            onPressed: _canSave ? _salvar : null,
           ),
         ),
       ],

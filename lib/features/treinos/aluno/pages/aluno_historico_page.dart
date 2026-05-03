@@ -228,6 +228,7 @@ class _HistoricoContent extends StatelessWidget {
           horizontal: SpacingTokens.screenHorizontalPadding,
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: SpacingTokens.lg),
             _CalendarioFrequenciaCard(

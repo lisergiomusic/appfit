@@ -164,7 +164,9 @@ class _AlunoContaPageState extends State<AlunoContaPage> {
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => AlunoDadosFisicosPage(uid: widget.uid),
+                              builder: (_) => AlunoDadosFisicosPage(
+                                uid: alunoData['id']?.toString() ?? widget.uid,
+                              ),
                             ),
                           ),
                         ),
