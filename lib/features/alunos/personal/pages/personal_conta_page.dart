@@ -102,7 +102,6 @@ class _PersonalContaPageState extends State<PersonalContaPage> {
                 _buildHero(
                   nomeCompleto: nomeCompleto,
                   photoUrl: photoUrl,
-
                 ),
                 const SizedBox(height: SpacingTokens.sectionGap + 8),
 
@@ -114,13 +113,7 @@ class _PersonalContaPageState extends State<PersonalContaPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // ── Configurações do Personal ─────────────────────────
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
-                        child: Text(
-                          'Minha conta',
-                          style: AppTheme.sectionHeader,
-                        ),
-                      ),
+
                       SettingsGroup(items: [
                         SettingsItem(
                           icon: Icons.person_rounded,
@@ -201,7 +194,6 @@ class _PersonalContaPageState extends State<PersonalContaPage> {
   Widget _buildHero({
     required String nomeCompleto,
     required String? photoUrl,
-
   }) {
     return SizedBox(
       width: double.infinity,
@@ -226,7 +218,6 @@ class _PersonalContaPageState extends State<PersonalContaPage> {
               style: AppTheme.title1,
               textAlign: TextAlign.center,
             ),
-
           ],
         ),
       ),

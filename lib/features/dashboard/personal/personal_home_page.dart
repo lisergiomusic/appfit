@@ -51,10 +51,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: false,
-        title: Padding(
-          padding: const EdgeInsets.only(left: 4),
-          child: const Text('Painel de Controle'),
-        ),
+
         actions: [
           IconButton(
             icon: Stack(
@@ -86,7 +83,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
           ),
           const SizedBox(width: 8),
         ],
-        bottom: const AppBarDivider(),
+
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -109,7 +106,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                   padding: const EdgeInsets.only(
                     left: SpacingTokens.screenHorizontalPadding,
                     right: SpacingTokens.screenHorizontalPadding,
-                    top: SpacingTokens.screenTopPadding,
+                    top: 0,
                   ),
                   child: Row(
                     children: [

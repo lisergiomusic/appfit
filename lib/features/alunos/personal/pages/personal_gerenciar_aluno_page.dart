@@ -29,8 +29,8 @@ class _PersonalGerenciarAlunoPageState
   final PersonalService _personalService = PersonalService();
   final UserService _userService = UserService();
   late String _alunoNome;
-  String? _fotoUrl;
-  DateTime? _dataCriacao;
+  String? _photoUrl;
+  DateTime? _dataCadastro;
 
   @override
   void initState() {
@@ -45,9 +45,9 @@ class _PersonalGerenciarAlunoPageState
       if (data.isNotEmpty && mounted) {
         setState(() {
           _alunoNome = '${data['nome'] ?? ''} ${data['sobrenome'] ?? ''}'.trim();
-          _fotoUrl = data['photoUrl'] ?? data['fotoUrl'];
-          if (data['data_criacao'] != null || data['dataCriacao'] != null) {
-            _dataCriacao = DateTime.tryParse((data['data_criacao'] ?? data['dataCriacao']).toString());
+          _photoUrl = data['photo_url'];
+          if (data['data_cadastro'] != null) {
+            _dataCadastro = DateTime.tryParse((data['data_cadastro']).toString());
           }
         });
       }
@@ -79,8 +79,8 @@ class _PersonalGerenciarAlunoPageState
         builder: (context) => PersonalFinanceiroAlunoPage(
           alunoId: widget.alunoId,
           alunoNome: _alunoNome,
-          photoUrl: _fotoUrl,
-          dataCriacao: _dataCriacao,
+          photoUrl: _photoUrl,
+          dataCriacao: _dataCadastro,
         ),
       ),
     );
@@ -249,7 +249,7 @@ class _PersonalGerenciarAlunoPageState
       children: [
         AppAvatar(
           name: _alunoNome,
-          photoUrl: _fotoUrl,
+          photoUrl: _photoUrl,
           radius: AvatarTokens.lg,
         ),
         const SizedBox(width: 16),
@@ -263,12 +263,12 @@ class _PersonalGerenciarAlunoPageState
               ),
               const SizedBox(height: SpacingTokens.titleToSubtitle),
               Text(
-                _dataCriacao != null
+                _dataCadastro != null
                     ? () {
                         String dataFormatada = DateFormat(
                           "MMMM 'de' y",
                           "pt_BR",
-                        ).format(_dataCriacao!);
+                        ).format(_dataCadastro!);
                         return 'Aluno desde ${dataFormatada[0].toUpperCase()}${dataFormatada.substring(1)}';
                       }()
                     : 'Aluno Ativo',
