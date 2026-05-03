@@ -16,7 +16,7 @@ class AlunoService {
         .from('profiles')
         .stream(primaryKey: ['id'])
         .eq('id', alunoId)
-        .switchMap((alunoList) {
+        .switchMap<AlunoPerfilData>((alunoList) {
           if (alunoList.isNotEmpty) {
             print('DEBUG AlunoService: Perfil encontrado pelo ID: $alunoId');
             return _buildFullProfileStream(alunoList.first);
@@ -34,7 +34,7 @@ class AlunoService {
                 .ilike('email', userEmail.trim())
                 .eq('tipo_usuario', 'aluno')
                 .asStream()
-                .switchMap((list) {
+                .switchMap<AlunoPerfilData>((list) {
                   if (list.isNotEmpty) {
                     print('DEBUG AlunoService: Perfil encontrado via fallback de e-mail!');
                     return _buildFullProfileStream(list.first);
@@ -46,7 +46,7 @@ class AlunoService {
           }
 
           return Stream.value(AlunoPerfilData(aluno: {}));
-        });
+        }).asBroadcastStream();
   }
 
   Stream<AlunoPerfilData> _buildFullProfileStream(Map<String, dynamic> alunoMap) {
@@ -98,7 +98,8 @@ class AlunoService {
         .from('rotinas')
         .stream(primaryKey: ['id'])
         .eq('aluno_id', alunoId)
-        .map((list) => list.map((r) => _normalizeRotina(r)).toList());
+        .map((list) => list.map((r) => _normalizeRotina(r)).toList())
+        .asBroadcastStream();
   }
 
   Map<String, dynamic> _normalizeRotina(Map<String, dynamic> r) {
@@ -112,9 +113,12 @@ class AlunoService {
     };
   }
 
-  Stream<List<Map<String, dynamic>>> getLogsDaSemanaStream(String alunoId) => Stream.value([]);
-  Stream<List<Map<String, dynamic>>> getUltimoLogStream(String alunoId) => Stream.value([]);
-  Stream<List<Map<String, dynamic>>> getHistoricoPesoStream(String alunoId) => Stream.value([]);
+  Stream<List<Map<String, dynamic>>> getLogsDaSemanaStream(String alunoId) => 
+      Stream.value(<Map<String, dynamic>>[]).asBroadcastStream();
+  Stream<List<Map<String, dynamic>>> getUltimoLogStream(String alunoId) => 
+      Stream.value(<Map<String, dynamic>>[]).asBroadcastStream();
+  Stream<List<Map<String, dynamic>>> getHistoricoPesoStream(String alunoId) => 
+      Stream.value(<Map<String, dynamic>>[]).asBroadcastStream();
 
   Future<void> registrarPeso({required String alunoId, required double peso}) async {
     // TODO: Implementar registro de peso no Supabase
