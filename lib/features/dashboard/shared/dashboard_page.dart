@@ -21,88 +21,68 @@ class _DashboardPageState extends State<DashboardPage> {
   int _indiceAtual = 0;
   final SupabaseAuthService _authService = SupabaseAuthService();
 
-  late final List<Widget> _paginas;
-
-  @override
-  void initState() {
-    super.initState();
+  List<Widget> _getPaginas() {
     final uid = _authService.currentUser?.id ?? '';
     final isAluno = widget.userType == 'aluno';
 
-    _paginas = isAluno
-        ? [
-            AlunoHomePage(uid: uid),
-            const Center(
-              child: Text(
-                'Meu Treino — em breve',
-                style: TextStyle(color: AppColors.labelSecondary),
-              ),
-            ),
-            AlunoHistoricoPage(uid: uid),
-            AlunoContaPage(uid: uid),
-          ]
-        : [
-            PersonalHomePage(
-              onNovoAlunoTap: _abrirCadastroAlunoPeloAtalhoHome,
-              onCriarRotinaTap: _abrirCriacaoRotinaPeloAtalhoHome,
-            ),
-            const PersonalAlunosPage(openCadastroOnLoad: false),
-            const PersonalTreinosPage(openCriarRotinaOnLoad: false),
-            PersonalContaPage(uid: uid),
-          ];
+    if (isAluno) {
+      return [
+        AlunoHomePage(uid: uid),
+        AlunoHistoricoPage(uid: uid),
+        AlunoContaPage(uid: uid),
+      ];
+    }
+
+    return [
+      PersonalHomePage(
+        onNovoAlunoTap: _abrirCadastroAlunoPeloAtalhoHome,
+        onCriarRotinaTap: _abrirCriacaoRotinaPeloAtalhoHome,
+      ),
+      PersonalAlunosPage(
+        openCadastroOnLoad: _abrirCadastroPendente,
+      ),
+      PersonalTreinosPage(
+        openCriarRotinaOnLoad: _abrirCriacaoPendente,
+      ),
+      PersonalContaPage(uid: uid),
+    ];
   }
 
-  void _abrirCadastroAlunoPeloAtalhoHome() {
-    setState(() => _indiceAtual = 1);
+  bool _abrirCadastroPendente = false;
+  bool _abrirCriacaoPendente = false;
 
+  void _abrirCadastroAlunoPeloAtalhoHome() {
+    setState(() {
+      _indiceAtual = 1;
+      _abrirCadastroPendente = true;
+    });
+    // Resetar flag após o frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final page = _paginas[1];
-      if (page is PersonalAlunosPage) {
-        setState(() {
-          _paginas[1] = const PersonalAlunosPage(openCadastroOnLoad: true);
-        });
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          setState(() {
-            _paginas[1] = const PersonalAlunosPage(openCadastroOnLoad: false);
-          });
-        });
-      }
+      _abrirCadastroPendente = false;
     });
   }
 
   void _abrirCriacaoRotinaPeloAtalhoHome() {
-    setState(() => _indiceAtual = 2);
-
+    setState(() {
+      _indiceAtual = 2;
+      _abrirCriacaoPendente = true;
+    });
+    // Resetar flag após o frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      setState(() {
-        _paginas[2] = const PersonalTreinosPage(openCriarRotinaOnLoad: true);
-      });
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        setState(() {
-          _paginas[2] = const PersonalTreinosPage(openCriarRotinaOnLoad: false);
-        });
-      });
+      _abrirCriacaoPendente = false;
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
     final isAluno = widget.userType == 'aluno';
+    final paginas = _getPaginas();
 
     final List<BottomNavigationBarItem> items = isAluno
         ? const [
             BottomNavigationBarItem(
               icon: Icon(Icons.grid_view_rounded),
               label: 'Início',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.fitness_center),
-              label: 'Meu Treino',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.bar_chart_rounded),
@@ -128,7 +108,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: IndexedStack(index: _indiceAtual, children: _paginas),
+      body: IndexedStack(index: _indiceAtual, children: paginas),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _indiceAtual,
         onTap: (index) => setState(() => _indiceAtual = index),

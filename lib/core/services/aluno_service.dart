@@ -56,7 +56,8 @@ class AlunoService {
         .eq('aluno_id', alunoId)
         .map((list) {
           try {
-            return list.firstWhere((r) => r['ativa'] == true);
+            final rawRotina = list.firstWhere((r) => r['ativa'] == true);
+            return _normalizeRotina(rawRotina);
           } catch (_) {
             return null;
           }
@@ -110,35 +111,99 @@ class AlunoService {
     };
   }
 
-  Stream<List<Map<String, dynamic>>> getLogsDaSemanaStream(String alunoId) =>
-      Stream.value(<Map<String, dynamic>>[]).asBroadcastStream();
-  Stream<List<Map<String, dynamic>>> getUltimoLogStream(String alunoId) =>
-      Stream.value(<Map<String, dynamic>>[]).asBroadcastStream();
+  /// Stream dos logs de treino da semana atual (para o Ritmo da Semana)
+  Stream<List<Map<String, dynamic>>> getLogsDaSemanaStream(String alunoId) {
+    final now = DateTime.now();
+    // Segunda-feira como início da semana
+    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    final startOfDate = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+
+    // Ouvimos diretamente a tabela de logs. 
+    // O RLS deve garantir que o Personal veja apenas os logs dos seus alunos.
+    return _supabase
+        .from('logs_treino')
+        .stream(primaryKey: ['id'])
+        .eq('aluno_id', alunoId)
+        .map((list) {
+          final filtrados = list
+              .where((item) {
+                final dataHoraStr = item['data_hora']?.toString();
+                if (dataHoraStr == null) return false;
+                final dataHora = DateTime.tryParse(dataHoraStr);
+                // Compara se é após o início da segunda-feira
+                return dataHora != null && dataHora.isAfter(startOfDate);
+              })
+              .map((item) => {
+                    'id': item['id'],
+                    'dataHora': item['data_hora'],
+                  })
+              .toList();
+          
+          debugPrint('>>> [AlunoService] Logs encontrados para a semana: ${filtrados.length}');
+          return filtrados;
+        });
+  }
+
+  /// Stream do último log de treino (para calcular o próximo treino na sequência)
+  Stream<List<Map<String, dynamic>>> getUltimoLogStream(String alunoId) {
+    return _resolveRealIdStream(alunoId).switchMap((realId) {
+      if (realId == null) return Stream.value([]);
+
+      return _supabase
+          .from('logs_treino')
+          .stream(primaryKey: ['id'])
+          .eq('aluno_id', realId)
+          .order('data_hora', ascending: false)
+          .limit(1)
+          .map((list) => list
+              .map((item) => {
+                    'id': item['id'],
+                    'sessaoNome': item['sessao_nome'],
+                    'dataHora': item['data_hora'],
+                  })
+              .toList());
+    });
+  }
+
   /// Stream do histórico de peso do aluno (Resiliente a descompasso de ID)
   Stream<List<Map<String, dynamic>>> getHistoricoPesoStream(String alunoId) {
-    final email = _supabase.auth.currentUser?.email;
+    return _resolveRealIdStream(alunoId).switchMap((realId) {
+      if (realId == null) return Stream.value([]);
 
-    // 1. Primeiro buscamos o perfil para garantir que temos o ID correto (o que está no banco)
-    return _supabase
-        .from('profiles')
-        .stream(primaryKey: ['id'])
-        .eq('email', email ?? '')
-        .switchMap((profiles) {
-          if (profiles.isEmpty) return Stream.value([]);
-
-          // 2. Agora que temos o ID real do banco, ouvimos o histórico dele
-          final realId = profiles.first['id'];
-          
-          return _supabase
-              .from('historico_peso')
-              .stream(primaryKey: ['id'])
-              .eq('aluno_id', realId)
-              .order('data_hora', ascending: false)
-              .map((list) => list.map((item) => {
+      return _supabase
+          .from('historico_peso')
+          .stream(primaryKey: ['id'])
+          .eq('aluno_id', realId)
+          .order('data_hora', ascending: false)
+          .map((list) => list
+              .map((item) => {
                     'id': item['id'],
                     'peso': item['peso'],
                     'dataHora': item['data_hora'],
-                  }).toList());
+                  })
+              .toList());
+    });
+  }
+
+  /// Resolve o ID real do banco (profiles), lidando com descompassos entre Auth ID e Profile ID
+  Stream<String?> _resolveRealIdStream(String alunoId) {
+    final user = _supabase.auth.currentUser;
+    final isMe = user?.id == alunoId;
+
+    return _supabase
+        .from('profiles')
+        .stream(primaryKey: ['id'])
+        .eq('id', alunoId)
+        .switchMap((list) {
+          if (list.isEmpty && isMe && user?.email != null) {
+            // Se eu sou o aluno e meu ID de Auth não está no Profiles, busca pelo e-mail
+            return _supabase
+                .from('profiles')
+                .stream(primaryKey: ['id'])
+                .eq('email', user!.email!)
+                .map((l) => l.isNotEmpty ? l.first['id'].toString() : null);
+          }
+          return Stream.value(list.isNotEmpty ? list.first['id'].toString() : null);
         });
   }
 

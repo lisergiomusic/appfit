@@ -3,11 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/services/user_service.dart';
+import '../../../../core/services/media_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../../../core/widgets/app_bar_text_button.dart';
+import '../../shared/widgets/app_avatar.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:intl_phone_field/country_picker_dialog.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class AlunoEditarPerfilPage extends StatefulWidget {
   final String uid;
@@ -20,6 +24,7 @@ class AlunoEditarPerfilPage extends StatefulWidget {
 
 class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
   late final UserService _service;
+  late final MediaService _mediaService;
   final _formKey = GlobalKey<FormState>();
 
   bool _isLoading = true;
@@ -32,6 +37,8 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
   late final FocusNode _phoneFocusNode;
   DateTime? _dataNascimento;
   String? _generoSelecionado;
+  String? _photoUrl;
+  File? _imageFile;
 
   final List<String> _generos = ['Masculino', 'Feminino', 'Outro'];
 
@@ -48,6 +55,7 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
   void initState() {
     super.initState();
     _service = UserService();
+    _mediaService = MediaService();
     _nomeController = TextEditingController()..addListener(_onFieldChanged);
     _sobrenomeController = TextEditingController()..addListener(_onFieldChanged);
     _telefoneController = TextEditingController()..addListener(_onFieldChanged);
@@ -100,6 +108,7 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
       _sobrenomeOriginal = data['sobrenome'] ?? '';
       _telefoneOriginal = data['telefone'] ?? '';
       _emailAtual = data['email'] ?? '';
+      _photoUrl = (data['photo_url'] ?? data['photoUrl'])?.toString();
 
       _nomeController.text = _nomeOriginal;
       _sobrenomeController.text = _sobrenomeOriginal;
@@ -132,6 +141,7 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
   }
 
   bool _houveAlteracao() {
+    if (_imageFile != null) return true;
     if (_nomeController.text.trim() != _nomeOriginal) return true;
     if (_sobrenomeController.text.trim() != _sobrenomeOriginal) return true;
     if (_telefoneController.text.trim() != _telefoneOriginal) return true;
@@ -153,6 +163,19 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
     setState(() => _isSaving = true);
     HapticFeedback.lightImpact();
     try {
+      String? finalPhotoUrl = _photoUrl;
+
+      // Se houver uma nova imagem, faz o upload primeiro
+      if (_imageFile != null) {
+        final uploadedUrl = await _mediaService.uploadAvatar(
+          uid: widget.uid,
+          imageFile: _imageFile!,
+        );
+        if (uploadedUrl != null) {
+          finalPhotoUrl = uploadedUrl;
+        }
+      }
+
       await _service
           .updateProfile(
             uid: widget.uid,
@@ -163,6 +186,7 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
               'telefone': _telefoneController.text.trim(),
               'data_nascimento': _dataNascimento?.toIso8601String(),
               'genero': _generoSelecionado,
+              'photo_url': finalPhotoUrl,
             },
           )
           .timeout(const Duration(seconds: 12));
@@ -250,6 +274,8 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _buildAvatarPicker(),
+              const SizedBox(height: 32),
               _buildTextField(
                 controller: _nomeController,
                 label: 'Nome',
@@ -278,6 +304,78 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildAvatarPicker() {
+    return Center(
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.primary.withAlpha(50), width: 2),
+            ),
+            child: CircleAvatar(
+              radius: 50,
+              backgroundColor: AppColors.surfaceLight,
+              backgroundImage: _imageFile != null
+                  ? FileImage(_imageFile!)
+                  : (_photoUrl != null ? NetworkImage(_photoUrl!) : null) as ImageProvider?,
+              child: (_imageFile == null && _photoUrl == null)
+                  ? Text(
+                      _nomeController.text.isNotEmpty ? _nomeController.text[0].toUpperCase() : 'A',
+                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primary),
+                    )
+                  : null,
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.camera_alt_rounded, size: 20, color: Colors.black),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      debugPrint('>>> [Picker] Abrindo galeria...');
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70,
+        maxWidth: 800,
+      );
+
+      if (image != null) {
+        debugPrint('>>> [Picker] Imagem selecionada: ${image.path}');
+        setState(() {
+          _imageFile = File(image.path);
+          _onFieldChanged();
+        });
+      } else {
+        debugPrint('>>> [Picker] Seleção cancelada pelo usuário');
+      }
+    } catch (e) {
+      debugPrint('>>> [Picker] ERRO ao selecionar imagem: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao acessar galeria: $e')),
+        );
+      }
+    }
   }
 
   Widget _buildPhoneField() {

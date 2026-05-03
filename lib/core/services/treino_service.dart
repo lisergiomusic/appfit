@@ -15,8 +15,28 @@ class TreinoService {
     int duracaoMinutos = 0,
   }) async {
     try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) throw Exception('Usuário não autenticado.');
+      
+      final email = user.email;
+      
+      // 1. Resolvemos os dados do perfil (ID real e ID do Personal vinculado)
+      String targetId = alunoId;
+      String? actualPersonalId;
+
+      final profile = await _supabase
+          .from('profiles')
+          .select('id, personal_id')
+          .ilike('email', email?.trim() ?? '')
+          .maybeSingle();
+
+      if (profile != null) {
+        targetId = profile['id'].toString();
+        actualPersonalId = profile['personal_id']?.toString();
+      }
+
       final logData = {
-        'aluno_id': alunoId,
+        'aluno_id': targetId,
         'rotina_id': rotinaId,
         'sessao_nome': sessaoNome,
         'data_hora': DateTime.now().toIso8601String(),
@@ -24,14 +44,12 @@ class TreinoService {
         'esforco': esforco,
         'observacoes': observacoes,
         'exercicios': exercicios,
-        'personal_id': _supabase.auth.currentUser?.id,
+        'personal_id': actualPersonalId, // Salvamos o ID do personal vinculado, não o do usuário logado
       };
 
       await _supabase.from('logs_treino').insert(logData);
 
-      // Atualiza o contador na rotina (SQL Update com incremento)
-      // Nota: No SQL fazemos isso via RPC ou buscando e salvando.
-      // Simplificado por enquanto:
+      // Atualiza o contador na rotina
       try {
         final rotina = await _supabase.from('rotinas').select('sessoes_concluidas').eq('id', rotinaId).maybeSingle();
         if (rotina != null) {
@@ -43,7 +61,7 @@ class TreinoService {
       // Atualiza o perfil do aluno
       await _supabase.from('profiles').update({
         'ultimo_treino': DateTime.now().toIso8601String()
-      }).eq('id', alunoId);
+      }).eq('id', targetId);
       
     } catch (e) {
       throw Exception('Erro ao salvar log de treino: $e');

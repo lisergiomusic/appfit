@@ -89,7 +89,7 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
         );
       }
 
-      final altura = data['altura_atual'] ?? data['alturaAtual'];
+      final altura = data['altura'];
       if (altura != null) {
         _alturaController.text = (altura as num).toInt().toString();
       }
@@ -140,7 +140,7 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
             uid: widget.uid,
             data: {
               'peso_atual': novoPeso,
-              'altura_atual': novaAltura,
+              'altura': novaAltura,
             },
           )
           .timeout(const Duration(seconds: 12));

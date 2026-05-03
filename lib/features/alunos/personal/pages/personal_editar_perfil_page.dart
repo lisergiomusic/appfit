@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../../../core/services/user_service.dart';
+import '../../../../core/services/media_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../../../core/widgets/app_bar_text_button.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:intl_phone_field/country_picker_dialog.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class PersonalEditarPerfilPage extends StatefulWidget {
   final String uid;
@@ -17,6 +20,7 @@ class PersonalEditarPerfilPage extends StatefulWidget {
 
 class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
   late final UserService _service;
+  late final MediaService _mediaService;
   final _formKey = GlobalKey<FormState>();
 
   bool _isLoading = true;
@@ -30,6 +34,9 @@ class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
   late final FocusNode _phoneFocusNode;
   late final FocusNode _especialidadeFocusNode;
 
+  String? _photoUrl;
+  File? _imageFile;
+
   String _emailAtual = '';
 
   // valores originais para detectar alterações
@@ -42,6 +49,7 @@ class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
   void initState() {
     super.initState();
     _service = UserService();
+    _mediaService = MediaService();
     _nomeController = TextEditingController()..addListener(_onFieldChanged);
     _sobrenomeController = TextEditingController()..addListener(_onFieldChanged);
     _especialidadeController = TextEditingController()..addListener(_onFieldChanged);
@@ -82,6 +90,7 @@ class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
       _especialidadeOriginal = data['especialidade'] ?? '';
       _telefoneOriginal = data['telefone'] ?? '';
       _emailAtual = data['email'] ?? '';
+      _photoUrl = (data['photo_url'] ?? data['photoUrl'])?.toString();
 
       _nomeController.text = _nomeOriginal;
       _sobrenomeController.text = _sobrenomeOriginal;
@@ -104,6 +113,7 @@ class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
 
   bool _houveAlteracao() {
     if (_isLoading) return false;
+    if (_imageFile != null) return true;
 
     String norm(String? v) => (v ?? '').trim();
 
@@ -125,14 +135,30 @@ class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
 
     setState(() => _isSaving = true);
     try {
+      String? finalPhotoUrl = _photoUrl;
+
+      // Se houver uma nova imagem, faz o upload primeiro
+      if (_imageFile != null) {
+        final uploadedUrl = await _mediaService.uploadAvatar(
+          uid: widget.uid,
+          imageFile: _imageFile!,
+        );
+        if (uploadedUrl != null) {
+          finalPhotoUrl = uploadedUrl;
+        }
+      }
+
       await _service
-          .updatePersonalProfile(
+          .updateProfile(
             uid: widget.uid,
-            nome: _nomeController.text.trim(),
-            sobrenome: _sobrenomeController.text.trim(),
-            email: _emailAtual,
-            especialidade: _especialidadeController.text.trim(),
-            telefone: _telefoneController.text.trim(),
+            data: {
+              'nome': _nomeController.text.trim(),
+              'sobrenome': _sobrenomeController.text.trim(),
+              'email': _emailAtual,
+              'especialidade': _especialidadeController.text.trim(),
+              'telefone': _telefoneController.text.trim(),
+              'photo_url': finalPhotoUrl,
+            },
           )
           .timeout(const Duration(seconds: 12));
 
@@ -219,6 +245,8 @@ class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _buildAvatarPicker(),
+              const SizedBox(height: 32),
               _buildTextField(
                 controller: _nomeController,
                 label: 'Nome',
@@ -256,6 +284,78 @@ class _PersonalEditarPerfilPageState extends State<PersonalEditarPerfilPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildAvatarPicker() {
+    return Center(
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.primary.withAlpha(50), width: 2),
+            ),
+            child: CircleAvatar(
+              radius: 50,
+              backgroundColor: AppColors.surfaceLight,
+              backgroundImage: _imageFile != null
+                  ? FileImage(_imageFile!)
+                  : (_photoUrl != null ? NetworkImage(_photoUrl!) : null) as ImageProvider?,
+              child: (_imageFile == null && _photoUrl == null)
+                  ? Text(
+                      _nomeController.text.isNotEmpty ? _nomeController.text[0].toUpperCase() : 'P',
+                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primary),
+                    )
+                  : null,
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.camera_alt_rounded, size: 20, color: Colors.black),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      debugPrint('>>> [Picker] Abrindo galeria...');
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70,
+        maxWidth: 800,
+      );
+
+      if (image != null) {
+        debugPrint('>>> [Picker] Imagem selecionada: ${image.path}');
+        setState(() {
+          _imageFile = File(image.path);
+          _onFieldChanged();
+        });
+      } else {
+        debugPrint('>>> [Picker] Seleção cancelada pelo usuário');
+      }
+    } catch (e) {
+      debugPrint('>>> [Picker] ERRO ao selecionar imagem: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao acessar galeria: $e')),
+        );
+      }
+    }
   }
 
   Widget _buildPhoneField() {
