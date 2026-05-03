@@ -4,6 +4,16 @@ Refactor the exercise detail page header to prioritize technical info for Person
 
 ## Proposed Changes
 
+### [Bugfix] [personal_sessao_detalhe_page.dart](file:///C:/Dev/Projetos/appfit/lib/features/treinos/personal/pages/personal_sessao_detalhe_page.dart)
+
+- **Key Collision Fix**: Changed `AppSwipeToDelete` key to `ValueKey('dismiss_${wrapper.id}')` to avoid collision with parent `Padding` key, resolving the `Dismissible` state error.
+
+### [Bugfix] [personal_exercicio_detalhe_page.dart](file:///C:/Dev/Projetos/appfit/lib/features/treinos/personal/pages/personal_exercicio_detalhe_page.dart)
+
+- **Removal Synchronization**: Reordered `AnimatedList.removeItem` and `controller.deleteSerie` to ensure the widget tree remains consistent during removal animations.
+
+---
+
 ### [UI/UX] [personal_exercicio_detalhe_page.dart](file:///C:/Dev/Projetos/appfit/lib/features/treinos/personal/pages/personal_exercicio_detalhe_page.dart)
 
 - **Compact Header Row**: Replace the vertical stack in the AppBar background with a Row layout.

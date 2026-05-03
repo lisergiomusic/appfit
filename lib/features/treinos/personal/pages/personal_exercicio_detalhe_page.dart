@@ -174,13 +174,18 @@ class _PersonalExercicioDetalheViewState
   void _onDeleteSerie(SerieItem serie) {
     final controller = context.read<ExercicioDetalheController>();
     final sectionIndex = controller.sectionIndexOf(serie);
-    controller.deleteSerie(serie);
 
+    // UX Senior: Primeiro removemos do AnimatedList para garantir a sincronia da árvore de widgets
     _animatedListKeys[serie.tipo]?.currentState?.removeItem(
       sectionIndex,
-      (context, animation) =>
-          SizeTransition(sizeFactor: animation, child: const SizedBox.shrink()),
+      (context, animation) => SizeTransition(
+        sizeFactor: animation,
+        child: const SizedBox.shrink(),
+      ),
     );
+
+    // Depois atualizamos o data source (isso dispara o notifyListeners)
+    controller.deleteSerie(serie);
 
     setState(() {
       _clearEditingState();

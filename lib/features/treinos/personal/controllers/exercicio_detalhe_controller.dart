@@ -145,7 +145,9 @@ class ExercicioDetalheController extends ChangeNotifier {
     notifyListeners();
   }
 
+  @override
   void dispose() {
     _snackBarTimer?.cancel();
+    super.dispose();
   }
 }

@@ -540,7 +540,7 @@ class _SessaoDetalhePersonalViewState
                               AppTheme.radiusLG,
                             ),
                             child: AppSwipeToDelete(
-                              dismissibleKey: Key(wrapper.id),
+                              dismissibleKey: ValueKey('dismiss_${wrapper.id}'),
                               onDismissed: (direction) {
                                 final removedItemName =
                                     controller.exercicios[index].item.nome;

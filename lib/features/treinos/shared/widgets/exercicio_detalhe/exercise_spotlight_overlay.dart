@@ -25,7 +25,7 @@ class ExerciseSpotlightOverlay extends StatefulWidget {
       PageRouteBuilder(
         opaque: false,
         barrierDismissible: true,
-        pageBuilder: (context, _, __) => ExerciseSpotlightOverlay(
+        pageBuilder: (context, animation, secondaryAnimation) => ExerciseSpotlightOverlay(
           mediaUrl: mediaUrl,
           exerciseTitle: exerciseTitle,
           heroTag: heroTag,

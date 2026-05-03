@@ -13,7 +13,8 @@ class RemovedSessaoResult {
 }
 
 class RotinaDetalheController extends ChangeNotifier {
-  final String? rotinaId;
+  String? _rotinaId;
+  String? get rotinaId => _rotinaId;
   final String? alunoId;
   final RotinaService _rotinaService;
 
@@ -40,11 +41,12 @@ final Map<String, dynamic>? initialData;
   Map<String, dynamic>? _loadedData;
 
   RotinaDetalheController({
-    this.rotinaId,
+    String? rotinaId,
     this.alunoId,
     RotinaService? rotinaService,
     this.initialData,
-  }) : _rotinaService = rotinaService ?? RotinaService() {
+  }) : _rotinaId = rotinaId,
+       _rotinaService = rotinaService ?? RotinaService() {
     _loadedData = initialData;
     nomeCtrl = TextEditingController(text: initialData?['nome'] ?? '');
     objCtrl = TextEditingController(text: initialData?['objetivo'] ?? '');
@@ -363,6 +365,8 @@ final Map<String, dynamic>? initialData;
 
   /// Aguardado apenas na criação (rotinaId == null), onde o ID ainda não existe.
   Future<bool> salvarRotina() async {
+    if (isSaving) return false;
+
     final String nomeParaSalvar = nomeCtrl.text.trim();
     final String objetivoParaSalvar = objCtrl.text.trim();
 
@@ -381,7 +385,7 @@ final Map<String, dynamic>? initialData;
 
     try {
       final sessoesJson = treinos.map((t) => t.toMap()).toList();
-      await _rotinaService.criarRotina(
+      final newId = await _rotinaService.criarRotina(
         alunoId: alunoId,
         nome: nomeParaSalvar,
         objetivo: objetivoParaSalvar,
@@ -390,6 +394,19 @@ final Map<String, dynamic>? initialData;
         sessoesAlvo: tipoVencimento == 'sessoes' ? vencimentoSessoes : null,
         dataVencimento: tipoVencimento == 'data' ? vencimentoData : null,
       );
+
+      _rotinaId = newId;
+      _loadedData = {
+        'nome': nomeParaSalvar,
+        'objetivo': objetivoParaSalvar,
+        'sessoes': sessoesJson,
+        'tipo_vencimento': tipoVencimento,
+        if (tipoVencimento == 'sessoes') 'vencimento_sessoes': vencimentoSessoes,
+        if (tipoVencimento == 'data')
+          'data_vencimento': vencimentoData.toIso8601String(),
+      };
+
+      _saveFlushed = true;
       return true;
     } catch (e) {
       debugPrint('Erro ao criar rotina: $e');

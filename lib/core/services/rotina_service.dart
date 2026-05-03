@@ -32,7 +32,7 @@ class RotinaService {
         'nome': nome,
         'objetivo': objetivo,
         'sessoes': sessoes,
-        'ativa': true,
+        'ativa': alunoId != null,
         'tipo_vencimento': tipoVencimento,
         'data_criacao': DateTime.now().toIso8601String(),
       };

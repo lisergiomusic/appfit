@@ -31,6 +31,7 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String _searchQuery = "";
+  final Set<String> _dismissedIds = {};
 
   late final PersonalService _personalService;
   late final RotinaService _rotinaService;
@@ -63,6 +64,9 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
   }
 
   Future<void> _deletarTreino(String id) async {
+    setState(() {
+      _dismissedIds.add(id);
+    });
     await _rotinaService.excluirRotina(id);
   }
 
@@ -203,6 +207,9 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
 
               final docs = (snapshot.data as List<Map<String, dynamic>>?) ?? [];
               final filteredDocs = docs.where((data) {
+                final id = data['id'].toString();
+                if (_dismissedIds.contains(id)) return false;
+
                 final nome = (data['nome'] ?? '').toString().toLowerCase();
                 return nome.contains(_searchQuery.toLowerCase());
               }).toList();

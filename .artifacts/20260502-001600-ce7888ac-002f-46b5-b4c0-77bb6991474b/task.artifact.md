@@ -4,6 +4,7 @@
     - [x] Research current implementation
     - [x] Design new compact header layout
     - [/] Create implementation plan
-    - [ ] Implement `ExerciseSpotlightOverlay`
-    - [ ] Refactor `PersonalExercicioDetalhePage` header
+    - [x] Refactor `PersonalExercicioDetalhePage` header
+    - [x] Implement `ExerciseSpotlightOverlay`
+    - [x] Fix Dismissible StateError in Session/Exercise pages
     - [ ] Verify UI and video expansion
