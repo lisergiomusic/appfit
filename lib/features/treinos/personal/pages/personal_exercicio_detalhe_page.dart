@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/services/exercise_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/orange_glass_action_button.dart';
+import '../../../../core/widgets/app_bar_icon_button.dart';
 import '../../../../core/widgets/app_bar_text_button.dart';
 import '../../../../core/widgets/sliver_safe_title.dart';
 import '../../../../core/widgets/note_display_field.dart';
@@ -65,6 +66,9 @@ class _PersonalExercicioDetalheViewState
   final ExerciseService _exerciseService = ExerciseService();
   late final Future<ExercicioItem?> _exercicioBaseFuture;
   late final double _dynamicHeaderHeight;
+
+  bool _isSaving = false;
+  bool _canPopNow = false;
 
   final Map<TipoSerie, GlobalKey<AnimatedListState>> _animatedListKeys = {
     TipoSerie.aquecimento: GlobalKey<AnimatedListState>(),
@@ -696,137 +700,218 @@ class _PersonalExercicioDetalheViewState
         ? const ['Geral']
         : ex.grupoMuscular;
 
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: ScaffoldMessenger(
-        key: _scaffoldMessengerKey,
-        child: Scaffold(
-          backgroundColor: AppColors.background,
-          bottomNavigationBar: ex.series.isNotEmpty
-              ? ColoredBox(
-                  color: AppColors.background,
-                  child: SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        SpacingTokens.screenHorizontalPadding,
-                        8,
-                        SpacingTokens.screenHorizontalPadding,
-                        SpacingTokens.md,
-                      ),
-                      child: OrangeGlassActionButton(
-                        label: 'Adicionar Série',
-                        onTap: _adicionarSerie,
-                        bottomMargin: 0,
-                        showGlow: false,
-                      ),
-                    ),
-                  ),
-                )
-              : null,
-          body: LayoutBuilder(
-            builder: (context, constraints) {
-              return CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  AppFitSliverAppBar(
-                    title: exerciseTitle,
-                    expandedHeight: _dynamicHeaderHeight,
-                    onBackPressed: () => Navigator.of(context).maybePop(),
-                    actions: [
-                      AppBarTextButton(
-                        label: 'Salvar',
-                        onPressed: controller.hasChanges
-                            ? () => Navigator.of(context).maybePop()
-                            : null,
-                      ),
-                    ],
-                    background: Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          SpacingTokens.screenHorizontalPadding,
-                          0,
-                          SpacingTokens.screenHorizontalPadding,
-                          SpacingTokens.sm,
+    return PopScope(
+      canPop: !controller.hasChanges || _canPopNow,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+
+        if (controller.hasChanges && !_isSaving) {
+          setState(() => _isSaving = true);
+
+          // Feedback visual de salvamento (Staff-level UX)
+          await Future.delayed(const Duration(milliseconds: 800));
+
+          if (mounted) {
+            setState(() {
+              _isSaving = false;
+              _canPopNow = true;
+            });
+            if (mounted) {
+              Navigator.of(context).pop();
+            }
+          }
+        } else if (!controller.hasChanges) {
+          // Se não houver mudanças, apenas sai imediatamente
+          setState(() => _canPopNow = true);
+          Navigator.of(context).pop();
+        }
+      },
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: ScaffoldMessenger(
+          key: _scaffoldMessengerKey,
+          child: Stack(
+            children: [
+              Scaffold(
+                backgroundColor: AppColors.background,
+                bottomNavigationBar: ex.series.isNotEmpty
+                    ? ColoredBox(
+                        color: AppColors.background,
+                        child: SafeArea(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                              SpacingTokens.screenHorizontalPadding,
+                              8,
+                              SpacingTokens.screenHorizontalPadding,
+                              SpacingTokens.md,
+                            ),
+                            child: OrangeGlassActionButton(
+                              label: 'Adicionar Série',
+                              onTap: _adicionarSerie,
+                              bottomMargin: 0,
+                              showGlow: false,
+                            ),
+                          ),
                         ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                      )
+                    : null,
+                body: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return CustomScrollView(
+                      controller: _scrollController,
+                      slivers: [
+                        AppFitSliverAppBar(
+                          title: exerciseTitle,
+                          expandedHeight: _dynamicHeaderHeight,
+                          onBackPressed: () => Navigator.of(context).maybePop(),
+                          actions: [
+                            AppBarTextButton(
+                              label: 'Salvar',
+                              onPressed: () => Navigator.of(context).maybePop(),
+                            ),
+                          ],
+                          background: Align(
+                            alignment: Alignment.bottomLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                SpacingTokens.screenHorizontalPadding,
+                                0,
+                                SpacingTokens.screenHorizontalPadding,
+                                SpacingTokens.sm,
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    exerciseTitle,
-                                    style: AppTheme.bigTitle.copyWith(
-                                      height: 1.1,
-                                      letterSpacing: -1,
+                                  Expanded(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          exerciseTitle,
+                                          style: AppTheme.bigTitle.copyWith(
+                                            height: 1.1,
+                                            letterSpacing: -1,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        if (muscleGroups.isNotEmpty) ...[
+                                          const SizedBox(height: SpacingTokens.sm),
+                                          Wrap(
+                                            spacing: 6,
+                                            runSpacing: 6,
+                                            children: muscleGroups
+                                                .map((g) => _buildMuscleGroupBadge(g))
+                                                .toList(),
+                                          ),
+                                        ],
+                                      ],
                                     ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  if (muscleGroups.isNotEmpty) ...[
-                                    const SizedBox(height: SpacingTokens.sm),
-                                    Wrap(
-                                      spacing: 6,
-                                      runSpacing: 6,
-                                      children: muscleGroups
-                                          .map((g) => _buildMuscleGroupBadge(g))
-                                          .toList(),
-                                    ),
-                                  ],
+                                  const SizedBox(width: 16),
+                                  _buildMiniVideoPreview(ex),
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 16),
-                            _buildMiniVideoPreview(ex),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        SpacingTokens.screenHorizontalPadding,
-                        SpacingTokens.sectionGap,
-                        SpacingTokens.screenHorizontalPadding,
-                        0,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          NoteDisplayField(
-                            text: ex.instrucoesPersonalizadasTexto,
-                            label: 'Instruções gerais',
-                            addLabel: 'Adicionar instruções gerais',
-                            onTap: _showEditInstructionsSheet,
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                              SpacingTokens.screenHorizontalPadding,
+                              SpacingTokens.sectionGap,
+                              SpacingTokens.screenHorizontalPadding,
+                              0,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                NoteDisplayField(
+                                  text: ex.instrucoesPersonalizadasTexto,
+                                  label: 'Instruções gerais',
+                                  addLabel: 'Adicionar instruções gerais',
+                                  onTap: _showEditInstructionsSheet,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (ex.series.isEmpty)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: SpacingTokens.screenHorizontalPadding,
+                              ),
+                              child: _buildEmptyState(),
+                            ),
+                          )
+                        else ...[
+                          _buildSliverSeries(context, warmup, TipoSerie.aquecimento),
+                          _buildSliverSeries(context, feeder, TipoSerie.feeder),
+                          _buildSliverSeries(context, work, TipoSerie.trabalho),
+                          const SliverToBoxAdapter(
+                            child: SizedBox(height: SpacingTokens.screenBottomPadding),
                           ),
                         ],
-                      ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+              if (_isSaving) _buildSavingOverlay(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSavingOverlay() {
+    return Container(
+      color: Colors.black.withAlpha(100),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDark,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(100),
+                  blurRadius: 20,
+                  spreadRadius: 5,
+                ),
+              ],
+            ),
+            child: Material(
+              type: MaterialType.transparency,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3,
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                     ),
                   ),
-                  if (ex.series.isEmpty)
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: SpacingTokens.screenHorizontalPadding,
-                        ),
-                        child: _buildEmptyState(),
-                      ),
-                    )
-                  else ...[
-                    _buildSliverSeries(context, warmup, TipoSerie.aquecimento),
-                    _buildSliverSeries(context, feeder, TipoSerie.feeder),
-                    _buildSliverSeries(context, work, TipoSerie.trabalho),
-                    const SliverToBoxAdapter(
-                      child: SizedBox(height: SpacingTokens.screenBottomPadding),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Salvando...',
+                    style: TextStyle(
+                      color: Colors.white.withAlpha(230),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.3,
                     ),
-                  ],
+                  ),
                 ],
-              );
-            },
+              ),
+            ),
           ),
         ),
       ),
