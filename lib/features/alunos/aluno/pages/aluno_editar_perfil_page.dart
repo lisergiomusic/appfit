@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/services/user_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
@@ -22,6 +24,7 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
 
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _canSave = false;
 
   late TextEditingController _nomeController;
   late TextEditingController _sobrenomeController;
@@ -45,11 +48,18 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
   void initState() {
     super.initState();
     _service = UserService();
-    _nomeController = TextEditingController();
-    _sobrenomeController = TextEditingController();
-    _telefoneController = TextEditingController();
+    _nomeController = TextEditingController()..addListener(_onFieldChanged);
+    _sobrenomeController = TextEditingController()..addListener(_onFieldChanged);
+    _telefoneController = TextEditingController()..addListener(_onFieldChanged);
     _phoneFocusNode = FocusNode()..addListener(() => setState(() {}));
     _carregarDados();
+  }
+
+  void _onFieldChanged() {
+    final hasChanges = _houveAlteracao();
+    if (hasChanges != _canSave) {
+      setState(() => _canSave = hasChanges);
+    }
   }
 
   @override
@@ -63,9 +73,26 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
 
   Future<void> _carregarDados() async {
     try {
-      final data = await _service
+      var data = await _service
           .getProfile(widget.uid)
           .timeout(const Duration(seconds: 12));
+      
+      // Fallback: Se não encontrou pelo ID (widget.uid), tenta pelo e-mail do usuário atual
+      // Isso resolve casos onde o ID no banco difere do Auth UID (comum em migrações ou cadastros manuais)
+      if (data.isEmpty) {
+        final currentUser = _service.currentUser;
+        if (currentUser != null && currentUser.id == widget.uid && currentUser.email != null) {
+          final response = await Supabase.instance.client
+              .from('profiles')
+              .select()
+              .ilike('email', currentUser.email!.trim())
+              .maybeSingle();
+          
+          if (response != null) {
+            data = response;
+          }
+        }
+      }
       
       if (data.isEmpty) throw Exception('Dados não encontrados');
 
@@ -78,8 +105,9 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
       _sobrenomeController.text = _sobrenomeOriginal;
       _telefoneController.text = _telefoneOriginal;
 
-      if (data['dataNascimento'] != null) {
-        _dataNascimentoOriginal = DateTime.tryParse(data['dataNascimento'].toString());
+      final rawDataNascimento = data['data_nascimento'] ?? data['dataNascimento'];
+      if (rawDataNascimento != null) {
+        _dataNascimentoOriginal = DateTime.tryParse(rawDataNascimento.toString());
         _dataNascimento = _dataNascimentoOriginal;
       }
       if (data['genero'] != null && _generos.contains(data['genero'])) {
@@ -87,7 +115,10 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
         _generoSelecionado = _generoOriginal;
       }
 
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+        _canSave = false;
+      });
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -118,6 +149,7 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSaving = true);
+    HapticFeedback.lightImpact();
     try {
       await _service
           .updateProfile(
@@ -193,7 +225,7 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
           child: AppBarTextButton(
             label: 'Salvar',
             isLoading: _isSaving,
-            onPressed: _salvar,
+            onPressed: _canSave ? _salvar : null,
           ),
         ),
       ],
@@ -425,7 +457,12 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
                 );
               },
             );
-            if (picked != null) setState(() => _dataNascimento = picked);
+            if (picked != null) {
+              setState(() {
+                _dataNascimento = picked;
+                _onFieldChanged();
+              });
+            }
           },
           splashColor: AppColors.splash,
           borderRadius: BorderRadius.circular(AppTheme.radiusMD),
@@ -479,7 +516,12 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
           items: _generos
               .map((g) => DropdownMenuItem(value: g, child: Text(g)))
               .toList(),
-          onChanged: (value) => setState(() => _generoSelecionado = value),
+          onChanged: (value) {
+            setState(() {
+              _generoSelecionado = value;
+              _onFieldChanged();
+            });
+          },
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.surfaceDark,

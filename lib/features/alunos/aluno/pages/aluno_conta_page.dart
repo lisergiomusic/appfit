@@ -101,7 +101,7 @@ class _AlunoContaPageState extends State<AlunoContaPage> {
           final nome = alunoData['nome'] as String? ?? 'Aluno';
           final sobrenome = alunoData['sobrenome'] as String? ?? '';
           final nomeCompleto = '$nome $sobrenome'.trim();
-          final photoUrl = alunoData['photoUrl'] as String?;
+          final photoUrl = (alunoData['photo_url'] ?? alunoData['photoUrl']) as String?;
 
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -150,7 +150,9 @@ class _AlunoContaPageState extends State<AlunoContaPage> {
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => AlunoEditarPerfilPage(uid: widget.uid),
+                              builder: (_) => AlunoEditarPerfilPage(
+                                uid: alunoData['id']?.toString() ?? widget.uid,
+                              ),
                             ),
                           ),
                         ),

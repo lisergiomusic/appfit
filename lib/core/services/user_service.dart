@@ -8,8 +8,8 @@ class UserService {
   /// Retorna os dados brutos de qualquer perfil pelo ID
   Future<Map<String, dynamic>> getProfile(String uid) async {
     try {
-      final data = await _supabase.from('profiles').select().eq('id', uid).single();
-      return data;
+      final data = await _supabase.from('profiles').select().eq('id', uid).maybeSingle();
+      return data ?? {};
     } catch (e) {
       throw Exception('Erro ao buscar perfil: $e');
     }
