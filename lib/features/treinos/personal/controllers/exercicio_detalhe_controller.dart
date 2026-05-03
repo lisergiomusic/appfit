@@ -5,6 +5,7 @@ import '../../shared/models/exercicio_model.dart';
 class ExercicioDetalheController extends ChangeNotifier {
   final ExercicioItem exercicio;
   late final ExercicioItem _initialSnapshot;
+  List<SerieItem>? _lastReplacedSeries;
   final Set<String> _newSeriesIds = {};
 
   SerieItem? _lastRemovedItem;
@@ -146,12 +147,22 @@ class ExercicioDetalheController extends ChangeNotifier {
   }
 
   void replaceAllSeries(List<SerieItem> newSeries) {
+    _lastReplacedSeries = List<SerieItem>.from(exercicio.series);
     exercicio.series.clear();
     exercicio.series.addAll(newSeries);
     for (var s in newSeries) {
       markAsNew(s.id);
     }
     notifyListeners();
+  }
+
+  void undoReplace() {
+    if (_lastReplacedSeries != null) {
+      exercicio.series.clear();
+      exercicio.series.addAll(_lastReplacedSeries!);
+      _lastReplacedSeries = null;
+      notifyListeners();
+    }
   }
 
   void appendSeries(List<SerieItem> newSeries) {

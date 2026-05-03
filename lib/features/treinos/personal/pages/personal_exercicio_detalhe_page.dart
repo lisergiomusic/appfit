@@ -268,21 +268,137 @@ class _PersonalExercicioDetalheViewState
     if (copiedSeries != null && copiedSeries.isNotEmpty) {
       final controller = context.read<ExercicioDetalheController>();
 
-      controller.replaceAllSeries(copiedSeries);
+      // Se já houver séries, perguntamos se deseja adicionar ou substituir
+      bool replace = true;
+      if (ex.series.isNotEmpty) {
+        final result = await _showCopyModeSelector();
+        if (result == null) return;
+        replace = result;
+      }
+
+      if (replace) {
+        // Para animação de saída na substituição, limpamos o estado visual
+        setState(() {
+          _clearEditingState();
+          controller.replaceAllSeries(copiedSeries);
+        });
+      } else {
+        controller.appendSeries(copiedSeries);
+      }
 
       setState(() {});
       widget.onChanged();
 
+      // UX Senior: Animar a entrada de cada série nova
+      Future.microtask(() {
+        for (var tipo in TipoSerie.values) {
+          final entries = controller.entriesForTipo(tipo);
+          if (entries.isNotEmpty) {
+            final animatedList = _animatedListKeys[tipo]?.currentState;
+            if (animatedList != null) {
+              // Notificamos o AnimatedList sobre cada item novo
+              for (int i = 0; i < entries.length; i++) {
+                animatedList.insertItem(
+                  i,
+                  duration: ExercicioDetalheConstants.rowAnimationDuration,
+                );
+              }
+            }
+          }
+        }
+        
+        // Auto-scroll para o topo para ver o resultado da cópia
+        _scrollToTop();
+      });
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Séries copiadas com sucesso'),
-            backgroundColor: AppColors.success,
-            behavior: SnackBarBehavior.floating,
+        // Remove snackbars anteriores para não empilhar
+        _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+        
+        final snackBar = SnackBar(
+          content: const Text(
+            'Séries copiadas',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
           ),
+          backgroundColor: const Color(0xFF1C1C1E), // AppColors.surfaceDark literal para garantir visibilidade
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'DESFAZER',
+            textColor: AppColors.primary,
+            onPressed: () {
+              controller.cancelSnackBarTimer();
+              _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+              setState(() {
+                controller.undoReplace();
+              });
+              widget.onChanged();
+            },
+          ),
+          duration: const Duration(seconds: 4),
         );
+
+        final snackBarController = _scaffoldMessengerKey.currentState?.showSnackBar(
+          snackBar,
+        );
+
+        if (snackBarController != null) {
+          controller.startSnackBarTimer(() {
+            _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+            controller.clearUndoState();
+          });
+        }
       }
     }
+  }
+
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
+  Future<bool?> _showCopyModeSelector() {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surfaceDark,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Copiar séries',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+        ),
+        content: const Text(
+          'Você já possui séries neste exercício. Deseja substituir as atuais ou apenas adicionar as novas ao final?',
+          style: TextStyle(color: AppColors.labelSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'ADICIONAR',
+              style: TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'SUBSTITUIR',
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _adicionarSerie() async {
@@ -768,29 +884,6 @@ class _PersonalExercicioDetalheViewState
                 bottomNavigationBar: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (ex.series.isEmpty && 
-                        widget.otherExercisesInSession != null &&
-                        widget.otherExercisesInSession!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          SpacingTokens.screenHorizontalPadding,
-                          4,
-                          SpacingTokens.screenHorizontalPadding,
-                          0,
-                        ),
-                        child: TextButton.icon(
-                          onPressed: _onCopySeries,
-                          icon: const Icon(Icons.copy_rounded, size: 18),
-                          label: const Text(
-                            'Copiar séries de outro exercício',
-                            style: TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                          style: TextButton.styleFrom(
-                            foregroundColor: AppColors.primary,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                        ),
-                      ),
                     ColoredBox(
                       color: AppColors.background,
                       child: SafeArea(
@@ -1060,7 +1153,7 @@ class _PersonalExercicioDetalheViewState
         ),
         child: Column(
           children: [
-            const Spacer(flex: 2),
+            const Spacer(flex: 3), // Aumentado para empurrar o conteúdo para baixo
             Container(
               width: 88,
               height: 88,
@@ -1095,8 +1188,79 @@ class _PersonalExercicioDetalheViewState
                 height: 1.4,
               ),
             ),
-            const Spacer(flex: 5), // Removido o botão duplicado e aumentado o spacer
+            if (widget.otherExercisesInSession != null &&
+                widget.otherExercisesInSession!.isNotEmpty) ...[
+              const SizedBox(height: 32),
+              _buildCopyActionCard(),
+            ],
+            const Spacer(flex: 4), // Equilibrado para não deixar o vácuo tão grande
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCopyActionCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.primary.withAlpha(15),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.primary.withAlpha(30),
+          width: 1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _onCopySeries,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withAlpha(30),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.copy_rounded,
+                    color: AppColors.primary,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Copiar de outro exercício',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        'Importe as séries planejadas',
+                        style: TextStyle(
+                          color: AppColors.labelSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.primary.withAlpha(100),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
