@@ -190,7 +190,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                       future: _contagensFuture,
                       builder: (context, snapshot) {
                         final count = snapshot.hasData
-                            ? snapshot.data!.risco.toString().padLeft(2, '0')
+                            ? snapshot.data!.risco.toString()
                             : snapshot.hasError
                                 ? '--'
                                 : '...';

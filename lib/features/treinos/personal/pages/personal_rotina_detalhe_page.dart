@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -41,6 +42,7 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   bool _canPopNow = false;
   bool _isReordering = false;
+  bool _isSavingOverlay = false;
 
   @override
   void initState() {
@@ -274,24 +276,37 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
 
   Future<void> _handlePop(bool didPop) async {
     if (didPop) return;
-    if (_controller.isSaving) return;
+    if (_controller.isSaving || _isSavingOverlay) return;
 
-    // Save já foi disparado manualmente (botão Salvar) — não dispara outro.
-    if (_controller.saveFlushed) {
+    // Se não houve alteração desde o último save manual, sai direto.
+    if (_controller.saveFlushed || !_controller.verificarAlteracoes()) {
       setState(() => _canPopNow = true);
       Navigator.of(context).pop();
       return;
     }
 
+    // Se há alterações, dispara o fluxo unificado de salvamento
+    await _executarSalvamentoManual();
+  }
+
+  Future<void> _executarSalvamentoManual() async {
+    if (_controller.isSaving || _isSavingOverlay) return;
+
+    // Se não houve alteração desde o último save, apenas fecha a tela.
     if (!_controller.verificarAlteracoes()) {
       setState(() => _canPopNow = true);
-      Navigator.of(context).pop();
+      if (mounted) Navigator.pop(context);
       return;
     }
 
-    final podesSalvar = _controller.nomeCtrl.text.trim().isNotEmpty &&
-        _controller.objCtrl.text.trim().isNotEmpty &&
-        _controller.treinos.isNotEmpty;
+    final nomeParaSalvar = _controller.nomeCtrl.text.trim();
+    final objetivoParaSalvar = _controller.objCtrl.text.trim();
+    final sessoesParaSalvar = _controller.treinos;
+
+    // Se os dados preenchidos não são válidos para salvar (ex: campos vazios)
+    final podesSalvar = nomeParaSalvar.isNotEmpty &&
+        objetivoParaSalvar.isNotEmpty &&
+        sessoesParaSalvar.isNotEmpty;
 
     if (!podesSalvar) {
       final descartar = await _showDescartarDialog(erroDeRede: false);
@@ -303,47 +318,23 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
       return;
     }
 
-    if (_controller.rotinaId != null) {
-      await _controller.salvarRotinaAgora();
-    } else {
-      await _controller.salvarRotina();
-    }
-    if (!mounted) return;
-    setState(() => _canPopNow = true);
-    Navigator.of(context).pop();
-  }
+    setState(() => _isSavingOverlay = true);
 
-  Future<void> _executarSalvamentoManual() async {
-    // Se não houve alteração desde o último save (ex: save da sessão já enviou tudo),
-    // apenas fecha a tela sem disparar um novo write pesado.
-    if (!_controller.verificarAlteracoes()) {
-      if (mounted) Navigator.pop(context);
-      return;
-    }
+    // Feedback visual de salvamento (Staff-level UX)
+    final animationDelay = Future.delayed(const Duration(milliseconds: 800));
 
-    debugPrint(
-        '[SALVAR] isSaving=${_controller.isSaving} rotinaId=${_controller.rotinaId} nome="${_controller.nomeCtrl.text.trim()}" treinos=${_controller.treinos.length}');
-    if (_controller.isSaving) return;
+    try {
+      bool salvo = false;
+      if (_controller.rotinaId != null) {
+        salvo = await _controller.salvarRotinaAgora();
+      } else {
+        salvo = await _controller.salvarRotina();
+      }
 
-    if (_controller.nomeCtrl.text.trim().isEmpty ||
-        _controller.objCtrl.text.trim().isEmpty ||
-        _controller.treinos.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Preencha o nome, objetivo e adicione ao menos uma sessão.'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return;
-    }
+      if (!mounted) return;
 
-    // Rotina existente: flush do debounce + aguarda write Firestore.
-    // Rotina nova (rotinaId == null): usa salvarRotina() que chama criarRotina.
-    if (_controller.rotinaId != null) {
-      debugPrint('[SALVAR] chamando salvarRotinaAgora...');
-      final salvo = await _controller.salvarRotinaAgora();
       if (!salvo) {
-        if (!mounted) return;
+        setState(() => _isSavingOverlay = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Falha ao salvar. Verifique sua conexão.'),
@@ -352,24 +343,26 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
         );
         return;
       }
-      debugPrint('[SALVAR] salvarRotinaAgora concluído, fazendo pop');
-    } else {
-      final salvo = await _controller.salvarRotina();
-      if (!salvo) {
-        if (!mounted) return;
+
+      await animationDelay;
+
+      if (!mounted) return;
+      setState(() {
+        _isSavingOverlay = false;
+        _canPopNow = true;
+      });
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSavingOverlay = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Falha ao salvar. Verifique sua conexão.'),
+          SnackBar(
+            content: Text('Erro ao salvar: $e'),
             backgroundColor: Colors.redAccent,
           ),
         );
-        return;
       }
     }
-
-    if (!mounted) return;
-    setState(() => _canPopNow = true);
-    Navigator.of(context).pop();
   }
 
   void _removerSessaoComUndo(SessaoTreinoModel sessao) {
@@ -488,156 +481,211 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
         child: ListenableBuilder(
           listenable: _controller,
           builder: (context, _) {
-            return Scaffold(
-              backgroundColor: AppColors.background,
-              body: CustomScrollView(
-                physics: const AlwaysScrollableScrollPhysics(
-                  parent: BouncingScrollPhysics(),
-                ),
-                slivers: [
-                  AppFitSliverAppBar(
-                    title: _controller.nomeRotinaExibicao,
-                    expandedHeight: 148,
-                    onBackPressed: () => Navigator.of(context).maybePop(),
-                    actions: [
-                      AppBarTextButton(
-                        label: 'Salvar',
-                        onPressed: _controller.verificarAlteracoes() 
-                            ? _executarSalvamentoManual 
-                            : null,
-                      ),
-                    ],
-                    background: Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: SpacingTokens.screenHorizontalPadding,
-                          right: SpacingTokens.screenHorizontalPadding,
-                          bottom: 0,
-                        ),
-                        child: RotinaDetalheHeader(
-                          title: _controller.nomeRotinaExibicao,
-                          subtitle: _controller.objetivoExibicao,
-                          vencimentoLabel: _controller.vencimentoLabel,
-                          onEdit: () => _exibirModalInfo(context),
-                        ),
-                      ),
+            return Stack(
+              children: [
+                Scaffold(
+                  backgroundColor: AppColors.background,
+                  body: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
                     ),
-                  ),
-                  if (_controller.isDeleting)
-                    const SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primary,
+                    slivers: [
+                      AppFitSliverAppBar(
+                        title: _controller.nomeRotinaExibicao,
+                        expandedHeight: 148,
+                        onBackPressed: () => Navigator.of(context).maybePop(),
+                        actions: [
+                          AppBarTextButton(
+                            label: 'Salvar',
+                            onPressed: _executarSalvamentoManual,
+                          ),
+                        ],
+                        background: Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              left: SpacingTokens.screenHorizontalPadding,
+                              right: SpacingTokens.screenHorizontalPadding,
+                              bottom: 0,
+                            ),
+                            child: RotinaDetalheHeader(
+                              title: _controller.nomeRotinaExibicao,
+                              subtitle: _controller.objetivoExibicao,
+                              vencimentoLabel: _controller.vencimentoLabel,
+                              onEdit: () => _exibirModalInfo(context),
+                            ),
+                          ),
                         ),
                       ),
-                    )
-                  else ...[
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          AppTheme.paddingScreen,
-                          SpacingTokens.sectionGap,
-                          AppTheme.paddingScreen,
-                          0,
+                      if (_controller.isDeleting)
+                        const SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        )
+                      else ...[
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                              AppTheme.paddingScreen,
+                              SpacingTokens.sectionGap,
+                              AppTheme.paddingScreen,
+                              0,
+                            ),
+                            child: RotinaSectionHeader(
+                              isReordering: _isReordering,
+                              canReorder: _controller.canReorderSessoes,
+                              onToggleReordering: () {
+                                setState(() => _isReordering = !_isReordering);
+                              },
+                            ),
+                          ),
                         ),
-                        child: RotinaSectionHeader(
-                          isReordering: _isReordering,
-                          canReorder: _controller.canReorderSessoes,
-                          onToggleReordering: () {
-                            setState(() => _isReordering = !_isReordering);
-                          },
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: SpacingTokens.labelToField),
                         ),
-                      ),
-                    ),
-                    const SliverToBoxAdapter(
-                      child: SizedBox(height: SpacingTokens.labelToField),
-                    ),
-                    if (_controller.treinos.isEmpty)
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: RotinaEmptyState(
-                          onCreateSession: () => _exibirModalSessao(),
-                        ),
-                      )
-                    else ...[
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppTheme.paddingScreen,
-                        ),
-                        sliver: SliverReorderableList(
-                          itemCount: _controller.treinos.length,
-                          onReorder: _controller.onReorderSessoes,
-                          proxyDecorator: (child, index, animation) {
-                            final curvedAnimation = CurvedAnimation(
-                              parent: animation,
-                              curve: Curves.easeInOut,
-                            );
+                        if (_controller.treinos.isEmpty)
+                          SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: RotinaEmptyState(
+                              onCreateSession: () => _exibirModalSessao(),
+                            ),
+                          )
+                        else ...[
+                          SliverPadding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppTheme.paddingScreen,
+                            ),
+                            sliver: SliverReorderableList(
+                              itemCount: _controller.treinos.length,
+                              onReorder: _controller.onReorderSessoes,
+                              proxyDecorator: (child, index, animation) {
+                                final curvedAnimation = CurvedAnimation(
+                                  parent: animation,
+                                  curve: Curves.easeInOut,
+                                );
 
-                            return ScaleTransition(
-                              scale: Tween<double>(
-                                begin: 1.0,
-                                end: 1.02,
-                              ).animate(curvedAnimation),
-                              child: Material(
-                                elevation: 2.0,
-                                shadowColor: Colors.black.withAlpha(60),
-                                color: Colors.transparent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppTheme.radiusLarge,
+                                return ScaleTransition(
+                                  scale: Tween<double>(
+                                    begin: 1.0,
+                                    end: 1.02,
+                                  ).animate(curvedAnimation),
+                                  child: Material(
+                                    elevation: 2.0,
+                                    shadowColor: Colors.black.withAlpha(60),
+                                    color: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusLarge,
+                                      ),
+                                    ),
+                                    child: child,
                                   ),
-                                ),
-                                child: child,
-                              ),
-                            );
-                          },
-                          itemBuilder: (context, index) {
-                            final sessao = _controller.treinos[index];
+                                );
+                              },
+                              itemBuilder: (context, index) {
+                                final sessao = _controller.treinos[index];
 
-                            return Padding(
-                              key: ValueKey(
-                                'sessao-${identityHashCode(sessao)}',
-                              ),
-                              padding: const EdgeInsets.only(
-                                bottom: SpacingTokens.listItemGap,
-                              ),
-                              child: RotinaSessaoCard(
-                                sessao: sessao,
-                                index: index,
-                                isReordering: _isReordering,
-                                onOpen: () => _editarSessao(sessao),
-                                onEdit: () {
-                                  _renomearSessao(sessao);
-                                },
-                                onDelete: () => _removerSessaoComUndo(sessao),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            AppTheme.paddingScreen,
-                            SpacingTokens.sectionGap,
-                            AppTheme.paddingScreen,
-                            SpacingTokens.screenBottomPadding,
+                                return Padding(
+                                  key: ValueKey(
+                                    'sessao-${identityHashCode(sessao)}',
+                                  ),
+                                  padding: const EdgeInsets.only(
+                                    bottom: SpacingTokens.listItemGap,
+                                  ),
+                                  child: RotinaSessaoCard(
+                                    sessao: sessao,
+                                    index: index,
+                                    isReordering: _isReordering,
+                                    onOpen: () => _editarSessao(sessao),
+                                    onEdit: () {
+                                      _renomearSessao(sessao);
+                                    },
+                                    onDelete: () => _removerSessaoComUndo(sessao),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
-                          child: AppPrimaryButton(
-                            label: 'Nova sessão',
-                            icon: CupertinoIcons.add_circled,
-                            onPressed: () => _exibirModalSessao(),
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                AppTheme.paddingScreen,
+                                SpacingTokens.sectionGap,
+                                AppTheme.paddingScreen,
+                                SpacingTokens.screenBottomPadding,
+                              ),
+                              child: AppPrimaryButton(
+                                label: 'Nova sessão',
+                                icon: CupertinoIcons.add_circled,
+                                onPressed: () => _exibirModalSessao(),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
+                        ],
+                      ],
                     ],
-                  ],
-                ],
-              ),
+                  ),
+                ),
+                if (_isSavingOverlay) _buildSavingOverlay(),
+              ],
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSavingOverlay() {
+    return Container(
+      color: Colors.black.withAlpha(100),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDark,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(100),
+                  blurRadius: 20,
+                  spreadRadius: 5,
+                ),
+              ],
+            ),
+            child: Material(
+              type: MaterialType.transparency,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Salvando...',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

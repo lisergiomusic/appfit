@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import '../../../../core/services/exercise_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/orange_glass_action_button.dart';
-import '../../../../core/widgets/app_bar_icon_button.dart';
 import '../../../../core/widgets/app_bar_text_button.dart';
 import '../../../../core/widgets/sliver_safe_title.dart';
 import '../../../../core/widgets/note_display_field.dart';
