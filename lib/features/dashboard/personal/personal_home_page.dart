@@ -5,12 +5,12 @@ import '../../../core/services/aluno_service.dart';
 import '../../../core/services/personal_service.dart';
 import '../../../core/services/supabase_auth_service.dart';
 import '../../../core/services/user_service.dart';
-import '../../../core/widgets/app_bar_divider.dart';
 import '../../../core/widgets/app_section_link_button.dart';
 import '../../alunos/shared/widgets/app_avatar.dart';
 import '../../alunos/personal/pages/personal_log_detalhe_page.dart';
 import 'personal_atividade_recente_page.dart';
 import 'personal_atencao_page.dart';
+import 'personal_notificacoes_page.dart';
 
 class PersonalHomePage extends StatefulWidget {
   final VoidCallback? onNovoAlunoTap;
@@ -59,47 +59,38 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
         centerTitle: false,
 
         actions: [
-          FutureBuilder<ContagemAlunos>(
-            future: _contagensFuture,
-            builder: (context, snapshot) {
-              final hasNew = (snapshot.data?.risco ?? 0) > 0;
-              return IconButton(
-                icon: Stack(
-                  children: [
-                    const Icon(
-                      Icons.notifications_rounded,
-                      color: AppColors.primary,
-                      size: 26,
-                    ),
-                    if (hasNew)
-                      Positioned(
-                        right: 2,
-                        top: 2,
-                        child: Container(
-                          width: 9,
-                          height: 9,
-                          decoration: BoxDecoration(
-                            color: AppColors.systemRed,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.background,
-                              width: 1.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
+          IconButton(
+            icon: Stack(
+              children: [
+                const Icon(
+                  Icons.notifications_rounded,
+                  color: AppColors.labelSecondary,
+                  size: 26,
                 ),
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => PersonalAtencaoPage(
-                      personalService: _personalService,
+                Positioned(
+                  right: 2,
+                  top: 2,
+                  child: Container(
+                    width: 9,
+                    height: 9,
+                    decoration: BoxDecoration(
+                      color: AppColors.systemRed,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.background,
+                        width: 1.5,
+                      ),
                     ),
                   ),
-                ).then((_) => _refreshContagens()),
-              );
-            },
+                ),
+              ],
+            ),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const PersonalNotificationsPage(),
+              ),
+            ),
           ),
           const SizedBox(width: 8),
         ],
@@ -217,8 +208,8 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                           value: count,
                           trendText: 'Novos alertas',
                           trendIcon: Icons.error_rounded,
-                          trendColor: (snapshot.data?.risco ?? 0) > 0 
-                              ? AppColors.systemRed 
+                          trendColor: (snapshot.data?.risco ?? 0) > 0
+                              ? AppColors.systemRed
                               : AppColors.accentMetrics,
                           onTap: () => Navigator.push(
                             context,
