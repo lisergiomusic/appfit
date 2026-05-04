@@ -11,12 +11,14 @@ class ExercicioSectionHeader extends StatelessWidget {
   final int exIdx;
   final String? alunoId;
   final void Function(ExercicioMenuAction)? onMenuAction;
+  final VoidCallback? onSwap;
 
   const ExercicioSectionHeader({
     super.key,
     required this.exercicio,
     required this.exIdx,
     this.onMenuAction,
+    this.onSwap,
     this.alunoId,
   });
 
@@ -91,6 +93,16 @@ class ExercicioSectionHeader extends StatelessWidget {
               ),
             ),
           ),
+          if (exercicio.alternativas.isNotEmpty && onSwap != null)
+            IconButton(
+              onPressed: onSwap,
+              tooltip: 'Trocar exercício',
+              icon: const Icon(
+                Icons.swap_horiz_rounded,
+                color: AppColors.primary,
+                size: 24,
+              ),
+            ),
           if (onMenuAction != null)
             PopupMenuButton<ExercicioMenuAction>(
               icon: const Icon(

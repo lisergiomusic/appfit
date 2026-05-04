@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+import 'dart:ui';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/treino_service.dart';
 import '../../shared/models/rotina_model.dart';
 import '../../shared/models/historico_treino_model.dart';
 import '../../shared/models/exercicio_model.dart';
+import '../../shared/widgets/exercicio_thumbnail.dart';
 import '../controllers/executar_treino_controller.dart';
 import 'aluno_feedback_treino_page.dart';
 import '../../shared/widgets/executar_treino/treino_scrollable_body.dart';
@@ -284,6 +286,45 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
     }
   }
 
+  void _onSwapExercise(int index) async {
+    final exercicioAtual = widget.sessao.exercicios[index];
+    final todasOpcoes = [exercicioAtual, ...exercicioAtual.alternativas];
+
+    final selecionado = await showModalBottomSheet<ExercicioItem>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _SwapExerciseSheet(
+        selecionados: todasOpcoes,
+        atual: exercicioAtual,
+      ),
+    );
+
+    if (selecionado != null && selecionado != exercicioAtual) {
+      setState(() {
+        final altIndex = exercicioAtual.alternativas.indexOf(selecionado);
+        exercicioAtual.alternativas.removeAt(altIndex);
+        
+        final anterior = exercicioAtual.clone();
+        final novo = selecionado.clone();
+        
+        // Mantém a prescrição (séries) do Personal, mas clona para evitar referências mútuas
+        novo.series = exercicioAtual.series.map((s) => s.clone()).toList();
+        
+        // Re-organiza a lista de alternativas para permitir a volta
+        novo.alternativas = [anterior, ...exercicioAtual.alternativas];
+
+        widget.sessao.exercicios[index] = novo;
+        
+        // Recarrega o histórico para o novo exercício substituído
+        _controller.carregarUltimoHistorico().then((_) {
+          if (mounted) setState(() {});
+        });
+      });
+      HapticFeedback.mediumImpact();
+    }
+  }
+
   Future<void> _finalizarTreino() async {
     _restTimer?.cancel();
     _restTimer = null;
@@ -394,6 +435,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
               pesoControllers: _pesoControllers,
               onSerieCompleted: _onSerieCompleted,
               onVerHistorico: _onVerHistorico,
+              onSwapExercise: _onSwapExercise,
               alunoId: widget.alunoId,
               ultimoHistorico: _controller.ultimoHistorico,
             ),
@@ -598,6 +640,120 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
                 );
               },
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SwapExerciseSheet extends StatelessWidget {
+  final List<ExercicioItem> selecionados;
+  final ExercicioItem atual;
+
+  const _SwapExerciseSheet({
+    required this.selecionados,
+    required this.atual,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        decoration: BoxDecoration(
+          color: AppColors.background.withAlpha(235),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Trocar exercício',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close_rounded, color: Colors.white24),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Escolha uma das alternativas configuradas pelo seu treinador.',
+              style: TextStyle(
+                color: Colors.white.withAlpha(120),
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ...selecionados.map((ex) {
+              final isAtual = ex.nome == atual.nome;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: InkWell(
+                  onTap: isAtual ? null : () => Navigator.pop(context, ex),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isAtual ? AppColors.primary.withAlpha(20) : Colors.white.withAlpha(10),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isAtual ? AppColors.primary.withAlpha(80) : Colors.white.withAlpha(10),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        ExercicioThumbnail(
+                          exercicio: ex,
+                          width: 50,
+                          height: 50,
+                          borderRadius: 12,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                ex.nome,
+                                style: TextStyle(
+                                  color: isAtual ? AppColors.primary : Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                ex.grupoMuscular.join(' • '),
+                                style: TextStyle(
+                                  color: Colors.white.withAlpha(100),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (isAtual)
+                          const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 24),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+            const SizedBox(height: 32),
           ],
         ),
       ),

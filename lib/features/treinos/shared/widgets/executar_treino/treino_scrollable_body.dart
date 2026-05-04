@@ -20,6 +20,7 @@ class TreinoScrollableBody extends StatelessWidget {
 
   final void Function(int exercicioIndex, int serieIndex) onSerieCompleted;
   final void Function(String exercicioNome, List<SerieHistorico> historico) onVerHistorico;
+  final void Function(int exercicioIndex) onSwapExercise;
 
   final String? alunoId;
 
@@ -33,6 +34,7 @@ class TreinoScrollableBody extends StatelessWidget {
     required this.pesoControllers,
     required this.onSerieCompleted,
     required this.onVerHistorico,
+    required this.onSwapExercise,
     this.alunoId,
     this.ultimoHistorico = const {},
   });
@@ -72,6 +74,7 @@ class TreinoScrollableBody extends StatelessWidget {
                     exercicio: exercicio,
                     exIdx: exIdx,
                     alunoId: alunoId,
+                    onSwap: () => onSwapExercise(exIdx),
                     onMenuAction: (action) {
                       if (action == ExercicioMenuAction.verUltimoTreino) {
                         onVerHistorico(

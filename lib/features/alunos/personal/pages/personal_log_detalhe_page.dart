@@ -68,18 +68,24 @@ class _CabecalhoCard extends StatelessWidget {
               AppAvatar(
                 name: item.alunoNome,
                 photoUrl: item.alunoPhotoUrl,
-                radius: AvatarTokens.md,
+                radius: AvatarTokens.lg,
                 showBorder: false,
               ),
-              const SizedBox(width: SpacingTokens.md),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(item.alunoNome, style: AppTheme.cardTitle),
+                    Text(item.alunoNome, style: AppTheme.cardTitle.copyWith(
+                      fontSize: 20,
+                    )),
                     const SizedBox(height: SpacingTokens.xs),
-                    Text('Concluiu ${item.sessaoNome}',
-                        style: AppTheme.cardSubtitle),
+                    Text(
+                      item.sessaoNome.isEmpty
+                          ? 'Concluiu um treino'
+                          : 'Concluiu o treino "${item.sessaoNome}"',
+                      style: AppTheme.cardSubtitle,
+                    ),
                   ],
                 ),
               ),

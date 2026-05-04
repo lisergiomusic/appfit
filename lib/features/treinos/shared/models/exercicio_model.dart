@@ -58,6 +58,7 @@ class ExercicioItem {
   String? instrucoesPersonalizadas;
   List<SerieItem> series;
   List<ExercicioItem> alternativas;
+  bool isSupersetWithNext;
 
   ExercicioItem({
     this.id,
@@ -71,6 +72,7 @@ class ExercicioItem {
     this.instrucoesPersonalizadas,
     required this.series,
     this.alternativas = const [],
+    this.isSupersetWithNext = false,
   });
 
   String? get instrucoesPadraoTexto => _normalizeOptionalText(instrucoes);
@@ -93,6 +95,7 @@ class ExercicioItem {
       'instrucoes': instrucoes,
       'instrucoes_personalizadas': instrucoesPersonalizadas,
       'alternativas': alternativas.map((ex) => ex.toMap()).toList(),
+      'is_superset_with_next': isSupersetWithNext,
       'series': series.map((s) => {
         'id': s.id,
         'tipo': s.tipo.name,
@@ -140,6 +143,7 @@ class ExercicioItem {
       personalId: data['personal_id'] ?? data['personalId'],
       instrucoes: data['instrucoes'],
       instrucoesPersonalizadas: data['instrucoes_personalizadas'] ?? data['instrucoesPersonalizadas'],
+      isSupersetWithNext: data['is_superset_with_next'] ?? data['isSupersetWithNext'] ?? false,
       alternativas: (data['alternativas'] as List?)
               ?.map((e) => ExercicioItem.fromMap(e as Map<String, dynamic>))
               .toList() ??
@@ -192,6 +196,7 @@ class ExercicioItem {
       instrucoesPersonalizadas: instrucoesPersonalizadas,
       alternativas: alternativas.map((e) => e.clone()).toList(),
       series: series.map((s) => s.clone()).toList(),
+      isSupersetWithNext: isSupersetWithNext,
     );
   }
 
@@ -203,6 +208,7 @@ class ExercicioItem {
           nome == other.nome &&
           tipoAlvo == other.tipoAlvo &&
           instrucoesPersonalizadas == other.instrucoesPersonalizadas &&
+          isSupersetWithNext == other.isSupersetWithNext &&
           _listEquals(grupoMuscular, other.grupoMuscular) &&
           _listEquals(series, other.series) &&
           _listEquals(alternativas, other.alternativas);
@@ -212,6 +218,7 @@ class ExercicioItem {
       nome.hashCode ^
       tipoAlvo.hashCode ^
       instrucoesPersonalizadas.hashCode ^
+      isSupersetWithNext.hashCode ^
       grupoMuscular.length.hashCode ^
       series.length.hashCode ^
       alternativas.length.hashCode;

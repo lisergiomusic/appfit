@@ -906,13 +906,24 @@ class _SessaoDetalhePersonalViewState
     final alternativasCount = ex.alternativas.length;
     final hasAlternative = alternativasCount > 0;
 
+    final isConnectedToNext = ex.isSupersetWithNext;
+    final isConnectedToPrev = exIndex > 0 && controller.exercicios[exIndex - 1].item.isSupersetWithNext;
+
     final Widget card = Container(
-      decoration: AppTheme.cardDecoration,
+      decoration: AppTheme.cardDecoration.copyWith(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(isConnectedToPrev ? 0 : AppTheme.radiusLarge),
+          bottom: Radius.circular(isConnectedToNext ? 0 : AppTheme.radiusLarge),
+        ),
+      ),
       child: Material(
         type: MaterialType.transparency,
         elevation: 0,
         child: InkWell(
-          borderRadius: CardTokens.cardRadius,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(isConnectedToPrev ? 0 : AppTheme.radiusLarge),
+            bottom: Radius.circular(isConnectedToNext ? 0 : AppTheme.radiusLarge),
+          ),
           splashColor: AppColors.splash.withAlpha(50),
           highlightColor: AppColors.splash.withAlpha(30),
           onTap: isReordering
@@ -1019,6 +1030,9 @@ class _SessaoDetalhePersonalViewState
                         _showAlternativesModal(context, ex, exIndex, controller);
                       } else if (value == 'copy_to') {
                         _copySeriesToOthers(context, exIndex);
+                      } else if (value == 'toggle_superset') {
+                        controller.toggleSuperset(exIndex);
+                        HapticFeedback.lightImpact();
                       }
                     },
                     color: AppColors.surfaceDark,
@@ -1062,6 +1076,25 @@ class _SessaoDetalhePersonalViewState
                           ],
                         ),
                       ),
+                      if (exIndex < controller.exercicios.length - 1)
+                        PopupMenuItem(
+                          value: 'toggle_superset',
+                          child: Row(
+                            children: [
+                              Icon(
+                                ex.isSupersetWithNext
+                                    ? Icons.link_off_rounded
+                                    : Icons.link_rounded,
+                                size: 18,
+                                color: Colors.white70,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(ex.isSupersetWithNext
+                                  ? 'Desmembrar Bi-set'
+                                  : 'Agrupar com o próximo (Bi-set)'),
+                            ],
+                          ),
+                        ),
                       if (!hasAlternative)
                         PopupMenuItem(
                           value: 'add_alt',
@@ -1098,53 +1131,75 @@ class _SessaoDetalhePersonalViewState
       ),
     );
 
-    if (isReordering) {
-      return Padding(
-        key: Key(wrapper.id),
-        padding: const EdgeInsets.only(bottom: SpacingTokens.listItemGap),
-        child: card,
+    final gap = isConnectedToNext ? 0.0 : SpacingTokens.listItemGap;
+
+    Widget finalCard = isReordering
+        ? Padding(
+            key: Key(wrapper.id),
+            padding: EdgeInsets.only(bottom: gap),
+            child: card,
+          )
+        : Padding(
+            key: Key(wrapper.id),
+            padding: EdgeInsets.only(bottom: gap),
+            child: AppSwipeToDelete(
+              dismissibleKey: ValueKey('dismiss_${wrapper.id}'),
+              onDismissed: (direction) {
+                final removedItemName = controller.exercicios[exIndex].item.nome;
+                controller.deleteExercicio(exIndex);
+
+                controller.cancelSnackBarTimer();
+                _scaffoldMessengerKey.currentState?.removeCurrentSnackBar();
+
+                final snackBar = SnackBar(
+                  content: Text('$removedItemName removido'),
+                  action: SnackBarAction(
+                    label: 'DESFAZER',
+                    textColor: AppColors.primary,
+                    onPressed: () {
+                      controller.cancelSnackBarTimer();
+                      _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+                      controller.undoDelete();
+                    },
+                  ),
+                  duration: const Duration(days: 365),
+                  behavior: SnackBarBehavior.floating,
+                );
+
+                final snackBarController =
+                    _scaffoldMessengerKey.currentState?.showSnackBar(snackBar);
+
+                if (snackBarController != null) {
+                  controller.startSnackBarTimer(() {
+                    snackBarController.close();
+                    controller.clearUndoState();
+                  });
+                }
+              },
+              child: card,
+            ),
+          );
+
+    if (isConnectedToNext) {
+      return Column(
+        key: Key('${wrapper.id}_group'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          finalCard,
+          Container(
+            height: 12,
+            width: 2,
+            margin: const EdgeInsets.only(left: 40), // 16 (pad) + 24 (half thumb)
+            decoration: BoxDecoration(
+              color: AppColors.primary.withAlpha(100),
+              borderRadius: BorderRadius.circular(1),
+            ),
+          ),
+        ],
       );
     }
 
-    return Padding(
-      key: Key(wrapper.id),
-      padding: const EdgeInsets.only(bottom: SpacingTokens.listItemGap),
-      child: AppSwipeToDelete(
-        dismissibleKey: ValueKey('dismiss_${wrapper.id}'),
-        onDismissed: (direction) {
-          final removedItemName = controller.exercicios[exIndex].item.nome;
-          controller.deleteExercicio(exIndex);
-
-          controller.cancelSnackBarTimer();
-          _scaffoldMessengerKey.currentState?.removeCurrentSnackBar();
-
-          final snackBar = SnackBar(
-            content: Text('$removedItemName removido'),
-            action: SnackBarAction(
-              label: 'DESFAZER',
-              textColor: AppColors.primary,
-              onPressed: () {
-                controller.cancelSnackBarTimer();
-                _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
-                controller.undoDelete();
-              },
-            ),
-            duration: const Duration(days: 365),
-            behavior: SnackBarBehavior.floating,
-          );
-
-          final snackBarController = _scaffoldMessengerKey.currentState?.showSnackBar(snackBar);
-
-          if (snackBarController != null) {
-            controller.startSnackBarTimer(() {
-              snackBarController.close();
-              controller.clearUndoState();
-            });
-          }
-        },
-        child: card,
-      ),
-    );
+    return finalCard;
   }
 }
 

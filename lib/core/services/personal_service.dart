@@ -361,12 +361,12 @@ class PersonalService {
                   ? '${profile['nome']} ${profile['sobrenome'] ?? ''}'.trim()
                   : 'Aluno',
               alunoPhotoUrl: profile?['photo_url'],
-              sessaoNome: log['nome_sessao'] ?? 'Treino Concluído',
+              sessaoNome: log['sessao_nome'] ?? '',
               dataHora: DateTime.parse(log['data_hora']),
               duracaoMinutos: log['duracao_minutos'] ?? 0,
               esforco: log['esforco'],
               observacoes: log['observacoes'],
-              exercicios: <Map<String, dynamic>>[],
+              exercicios: (log['exercicios'] as List?)?.cast<Map<String, dynamic>>() ?? [],
             );
           }).toList();
         }).asBroadcastStream();
@@ -402,12 +402,12 @@ class PersonalService {
               ? '${profile['nome']} ${profile['sobrenome'] ?? ''}'.trim()
               : 'Aluno',
           alunoPhotoUrl: profile?['photo_url'],
-          sessaoNome: log['nome_sessao'] ?? 'Treino Concluído',
+          sessaoNome: log['sessao_nome'] ?? '',
           dataHora: DateTime.parse(log['data_hora']),
           duracaoMinutos: log['duracao_minutos'] ?? 0,
           esforco: log['esforco'],
           observacoes: log['observacoes'],
-          exercicios: <Map<String, dynamic>>[],
+          exercicios: (log['exercicios'] as List?)?.cast<Map<String, dynamic>>() ?? [],
         );
       }).toList();
 

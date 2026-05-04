@@ -369,8 +369,8 @@ class ButtonTokens {
 }
 
 class AvatarTokens {
-  static const double sm = 14.0;
-  static const double md = 20.0;
+  static const double sm = 16.0;
+  static const double md = 24.0;
   static const double lg = 32.0;
 }
 

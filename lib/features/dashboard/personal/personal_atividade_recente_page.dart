@@ -213,7 +213,9 @@ class _AtividadeCard extends StatelessWidget {
                         Text(item.alunoNome, style: AppTheme.cardTitle),
                         const SizedBox(height: SpacingTokens.titleToSubtitle),
                         Text(
-                          'Concluiu ${item.sessaoNome}',
+                          item.sessaoNome.isEmpty
+                              ? 'Concluiu um treino'
+                              : 'Concluiu o treino "${item.sessaoNome}"',
                           style: AppTheme.cardSubtitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

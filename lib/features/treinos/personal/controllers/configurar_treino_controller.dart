@@ -217,6 +217,13 @@ class ConfigurarTreinoController extends ChangeNotifier {
     }
   }
 
+  void toggleSuperset(int index) {
+    if (index >= 0 && index < _exercicios.length - 1) {
+      _exercicios[index].item.isSupersetWithNext = !_exercicios[index].item.isSupersetWithNext;
+      notifyListeners();
+    }
+  }
+
   void onExercicioChanged() {
     notifyListeners();
   }
