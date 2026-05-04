@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/cloudinary.dart';
 import '../../../treinos/shared/models/exercicio_model.dart';
 import '../../../alunos/shared/widgets/app_avatar.dart';
+import 'personal_aluno_perfil_page.dart';
 
 class PersonalLogDetalhePage extends StatelessWidget {
   final AtividadeRecenteItem item;
@@ -84,23 +85,36 @@ class _CabecalhoCard extends StatelessWidget {
           style: AppTheme.bigTitle,
         ),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            AppAvatar(
-              name: item.alunoNome,
-              photoUrl: item.alunoPhotoUrl,
-              radius: 10,
-              showBorder: false,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '${item.alunoNome} • $dataFormatada, $horaFormatada',
-              style: AppTheme.caption.copyWith(
-                color: AppColors.labelSecondary,
-                fontWeight: FontWeight.w500,
+        InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => PersonalAlunoPerfilPage(
+                alunoId: item.alunoId,
+                alunoNome: item.alunoNome,
+                photoUrl: item.alunoPhotoUrl,
               ),
             ),
-          ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppAvatar(
+                name: item.alunoNome,
+                photoUrl: item.alunoPhotoUrl,
+                radius: 10,
+                showBorder: false,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${item.alunoNome} • $dataFormatada, $horaFormatada',
+                style: AppTheme.caption.copyWith(
+                  color: AppColors.labelSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 24),
 
