@@ -182,6 +182,26 @@ class ConfigurarTreinoController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void addAlternativa(int index, ExercicioItem alternativa) {
+    if (index >= 0 && index < _exercicios.length) {
+      final list = List<ExercicioItem>.from(_exercicios[index].item.alternativas);
+      list.add(alternativa.clone());
+      _exercicios[index].item.alternativas = list;
+      notifyListeners();
+    }
+  }
+
+  void removeAlternativa(int exIndex, int altIndex) {
+    if (exIndex >= 0 && exIndex < _exercicios.length) {
+      final list = List<ExercicioItem>.from(_exercicios[exIndex].item.alternativas);
+      if (altIndex >= 0 && altIndex < list.length) {
+        list.removeAt(altIndex);
+        _exercicios[exIndex].item.alternativas = list;
+        notifyListeners();
+      }
+    }
+  }
+
   void onExercicioChanged() {
     notifyListeners();
   }

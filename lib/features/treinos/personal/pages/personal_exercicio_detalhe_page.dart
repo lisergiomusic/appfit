@@ -10,7 +10,6 @@ import '../../../../core/widgets/orange_glass_action_button.dart';
 import '../../../../core/widgets/secondary_glass_action_button.dart';
 import '../../../../core/widgets/app_bar_text_button.dart';
 import '../../../../core/widgets/sliver_safe_title.dart';
-import '../../../../core/widgets/note_display_field.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/utils/cloudinary.dart';
 import '../controllers/exercicio_detalhe_controller.dart';
@@ -72,7 +71,7 @@ class _PersonalExercicioDetalheViewState
   late final ExercicioItem ex;
   final ExerciseService _exerciseService = ExerciseService();
   late final Future<ExercicioItem?> _exercicioBaseFuture;
-  late final double _dynamicHeaderHeight;
+  double _dynamicHeaderHeight = 180;
 
   bool _isSaving = false;
   bool _canPopNow = false;
@@ -106,6 +105,7 @@ class _PersonalExercicioDetalheViewState
 
   void _calculateHeaderHeight() {
     final title = SliverSafeTitle.safeTitle(ex.nome, fallback: 'Exercício');
+
     final textPainter = TextPainter(
       text: TextSpan(
         text: title,
@@ -113,7 +113,7 @@ class _PersonalExercicioDetalheViewState
       ),
       textDirection: TextDirection.ltr,
       maxLines: 2,
-    )..layout(maxWidth: 300); // Estimativa conservadora de largura disponível para o texto
+    )..layout(maxWidth: 300);
 
     final lines = textPainter.computeLineMetrics().length;
     _dynamicHeaderHeight = lines > 1 ? 210 : 180;

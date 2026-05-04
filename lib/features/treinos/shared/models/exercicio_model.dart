@@ -57,6 +57,7 @@ class ExercicioItem {
   String? instrucoes;
   String? instrucoesPersonalizadas;
   List<SerieItem> series;
+  List<ExercicioItem> alternativas;
 
   ExercicioItem({
     this.id,
@@ -69,6 +70,7 @@ class ExercicioItem {
     this.instrucoes,
     this.instrucoesPersonalizadas,
     required this.series,
+    this.alternativas = const [],
   });
 
   String? get instrucoesPadraoTexto => _normalizeOptionalText(instrucoes);
@@ -90,6 +92,7 @@ class ExercicioItem {
       'personal_id': personalId,
       'instrucoes': instrucoes,
       'instrucoes_personalizadas': instrucoesPersonalizadas,
+      'alternativas': alternativas.map((ex) => ex.toMap()).toList(),
       'series': series.map((s) => {
         'id': s.id,
         'tipo': s.tipo.name,
@@ -137,6 +140,10 @@ class ExercicioItem {
       personalId: data['personal_id'] ?? data['personalId'],
       instrucoes: data['instrucoes'],
       instrucoesPersonalizadas: data['instrucoes_personalizadas'] ?? data['instrucoesPersonalizadas'],
+      alternativas: (data['alternativas'] as List?)
+              ?.map((e) => ExercicioItem.fromMap(e as Map<String, dynamic>))
+              .toList() ??
+          [],
       series: seriesList,
     );
   }
@@ -183,6 +190,7 @@ class ExercicioItem {
       personalId: personalId,
       instrucoes: instrucoes,
       instrucoesPersonalizadas: instrucoesPersonalizadas,
+      alternativas: alternativas.map((e) => e.clone()).toList(),
       series: series.map((s) => s.clone()).toList(),
     );
   }
@@ -194,15 +202,19 @@ class ExercicioItem {
           runtimeType == other.runtimeType &&
           nome == other.nome &&
           tipoAlvo == other.tipoAlvo &&
+          instrucoesPersonalizadas == other.instrucoesPersonalizadas &&
           _listEquals(grupoMuscular, other.grupoMuscular) &&
-          _listEquals(series, other.series);
+          _listEquals(series, other.series) &&
+          _listEquals(alternativas, other.alternativas);
 
   @override
   int get hashCode =>
       nome.hashCode ^
       tipoAlvo.hashCode ^
+      instrucoesPersonalizadas.hashCode ^
       grupoMuscular.length.hashCode ^
-      series.length.hashCode;
+      series.length.hashCode ^
+      alternativas.length.hashCode;
 
   bool _listEquals(List a, List b) {
     if (a.length != b.length) return false;

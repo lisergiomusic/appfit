@@ -47,17 +47,7 @@ class SessaoTreinoModel {
       }
 
       exerciciosList.add(
-        ExercicioItem(
-          nome: ex['nome'] ?? 'Exercício',
-          grupoMuscular: grupos,
-          imagemUrl: ex['imagem_url'] ?? ex['imagemUrl'],
-          mediaUrl: ex['media_url'] ?? ex['mediaUrl'],
-          tipoAlvo: ex['tipo_alvo'] ?? ex['tipoAlvo'] ?? 'Reps',
-          personalId: ex['personal_id'] ?? ex['personalId'],
-          instrucoes: ex['instrucoes'],
-          instrucoesPersonalizadas: ex['instrucoes_personalizadas'] ?? ex['instrucoesPersonalizadas'],
-          series: seriesList,
-        ),
+        ExercicioItem.fromMap(ex),
       );
     }
     return SessaoTreinoModel(

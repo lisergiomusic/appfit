@@ -16,6 +16,7 @@ import '../../shared/models/exercicio_model.dart';
 import '../../shared/widgets/exercicio_thumbnail.dart';
 import '../../shared/widgets/sessao_note_widget.dart';
 import 'personal_exercicio_detalhe_page.dart';
+import 'personal_exercicio_view_page.dart';
 import 'personal_exercicios_library_page.dart';
 
 class PersonalSessaoDetalhePage extends StatelessWidget {
@@ -23,9 +24,6 @@ class PersonalSessaoDetalhePage extends StatelessWidget {
   final List<ExercicioItem> exercicios;
   final String sessaoNote;
 
-  /// Called when the session has changes to persist. Receives the updated
-  /// exercicios list, session name and note. Returns true on success.
-  /// Null means the parent will handle persistence (e.g. new unsaved rotina).
   final Future<bool> Function(
     List<ExercicioItem> exercicios,
     String nome,
@@ -114,7 +112,6 @@ class _SessaoDetalhePersonalViewState
 
     setState(() => _isSaving = true);
 
-    // Feedback visual de salvamento (Staff-level UX)
     final animationDelay = Future.delayed(const Duration(milliseconds: 800));
 
     try {
@@ -151,7 +148,6 @@ class _SessaoDetalhePersonalViewState
 
       await animationDelay;
 
-      // Atualiza a lista original apenas após o sucesso do salvamento
       widget.originalExercicios.clear();
       widget.originalExercicios.addAll(finalExercicios);
 
@@ -199,6 +195,180 @@ class _SessaoDetalhePersonalViewState
         }
       });
     }
+  }
+
+  Future<void> _addAlternative(BuildContext context, int index) async {
+    final controller = context.read<ConfigurarTreinoController>();
+
+    final List<ExercicioItem>? selecionados = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const PersonalExerciciosLibraryPage(
+          isSelectionMode: true,
+        ),
+      ),
+    );
+
+    if (selecionados != null && selecionados.isNotEmpty) {
+      controller.addAlternativa(index, selecionados.first);
+      HapticFeedback.mediumImpact();
+    }
+  }
+
+  void _showAlternativesModal(
+    BuildContext context,
+    ExercicioItem exPrincipal,
+    int exIndex,
+    ConfigurarTreinoController controller,
+  ) {
+    HapticFeedback.lightImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          decoration: BoxDecoration(
+            color: AppColors.background.withAlpha(235),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(100),
+                blurRadius: 40,
+                spreadRadius: 10,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Alternativas',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(CupertinoIcons.xmark_circle_fill, color: Colors.white24, size: 28),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Exercícios equivalentes para o slot de ${exPrincipal.nome}',
+                style: TextStyle(
+                  color: Colors.white.withAlpha(120),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Lista de Alternativas
+              ...exPrincipal.alternativas.asMap().entries.map((entry) {
+                final altIndex = entry.key;
+                final alt = entry.value;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(10),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withAlpha(10), width: 1),
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PersonalExercicioViewPage(
+                                exercicio: alt,
+                                isSelected: false,
+                                isAdmin: false,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            children: [
+                              ExercicioThumbnail(
+                                exercicio: alt,
+                                width: 60,
+                                height: 60,
+                                borderRadius: 12,
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      alt.nome,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      alt.grupoMuscular.join(' • '),
+                                      style: TextStyle(
+                                        color: Colors.white.withAlpha(100),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent, size: 20),
+                                onPressed: () {
+                                  controller.removeAlternativa(exIndex, altIndex);
+                                  Navigator.pop(context);
+                                  HapticFeedback.lightImpact();
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: AppPrimaryButton(
+                  label: 'Adicionar mais alternativas',
+                  icon: CupertinoIcons.plus_circle,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _addAlternative(context, exIndex);
+                  },
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -532,79 +702,10 @@ class _SessaoDetalhePersonalViewState
                             );
                           },
                           itemBuilder: (context, index) {
-                            final wrapper = controller.exercicios[index];
-
-                            final card = _buildCardContent(
+                            return _buildCardContent(
                               context,
                               index,
                               isReordering: _isReordering,
-                            );
-
-                            if (_isReordering) {
-                              return Padding(
-                                key: Key(wrapper.id),
-                                padding: const EdgeInsets.only(
-                                  bottom: SpacingTokens.listItemGap,
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(
-                                    AppTheme.radiusLG,
-                                  ),
-                                  child: card,
-                                ),
-                              );
-                            }
-
-                            return Padding(
-                              key: Key(wrapper.id),
-                              padding: const EdgeInsets.only(
-                                bottom: SpacingTokens.listItemGap,
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                  AppTheme.radiusLG,
-                                ),
-                                child: AppSwipeToDelete(
-                                  dismissibleKey: ValueKey('dismiss_${wrapper.id}'),
-                                  onDismissed: (direction) {
-                                    final removedItemName =
-                                        controller.exercicios[index].item.nome;
-                                    controller.deleteExercicio(index);
-
-                                    controller.cancelSnackBarTimer();
-                                    _scaffoldMessengerKey.currentState
-                                        ?.removeCurrentSnackBar();
-
-                                    final snackBar = SnackBar(
-                                      content: Text('$removedItemName removido'),
-                                      action: SnackBarAction(
-                                        label: 'DESFAZER',
-                                        textColor: AppColors.primary,
-                                        onPressed: () {
-                                          controller.cancelSnackBarTimer();
-                                          _scaffoldMessengerKey.currentState
-                                              ?.hideCurrentSnackBar();
-                                          controller.undoDelete();
-                                        },
-                                      ),
-                                      duration: const Duration(days: 365),
-                                      behavior: SnackBarBehavior.floating,
-                                    );
-
-                                    final snackBarController = _scaffoldMessengerKey
-                                        .currentState
-                                        ?.showSnackBar(snackBar);
-
-                                    if (snackBarController != null) {
-                                      controller.startSnackBarTimer(() {
-                                        snackBarController.close();
-                                        controller.clearUndoState();
-                                      });
-                                    }
-                                  },
-                                  child: card,
-                                ),
-                              ),
                             );
                           },
                         ),
@@ -765,8 +866,10 @@ class _SessaoDetalhePersonalViewState
     final controller = context.read<ConfigurarTreinoController>();
     final wrapper = controller.exercicios[exIndex];
     final ex = wrapper.item;
+    final alternativasCount = ex.alternativas.length;
+    final hasAlternative = alternativasCount > 0;
 
-    return Container(
+    final Widget card = Container(
       decoration: AppTheme.cardDecoration,
       child: Material(
         type: MaterialType.transparency,
@@ -788,7 +891,6 @@ class _SessaoDetalhePersonalViewState
                             .map((w) => w.item)
                             .toList(),
                         onChanged: () {
-                          // Notifica a sessão que algo dentro do exercício mudou
                           controller.onExercicioChanged();
                         },
                       ),
@@ -842,48 +944,152 @@ class _SessaoDetalhePersonalViewState
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: SpacingTokens.xs),
-                      RichText(
-                        text: TextSpan(
-                          style: CardTokens.cardSubtitle,
-                          children: [
-                            TextSpan(
-                              text:
-                                  '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
-                              style: const TextStyle(color: AppColors.primary),
-                            ),
-                            if (ex.grupoMuscular.isNotEmpty)
-                              TextSpan(
-                                text: ' • ${ex.grupoMuscular.join(' • ')}',
-                                style: const TextStyle(),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: RichText(
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              text: TextSpan(
+                                style: CardTokens.cardSubtitle,
+                                children: [
+                                  TextSpan(
+                                    text:
+                                        '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
+                                    style: const TextStyle(color: AppColors.primary),
+                                  ),
+                                  if (ex.grupoMuscular.isNotEmpty)
+                                    TextSpan(
+                                      text: ' • ${ex.grupoMuscular.join(' • ')}',
+                                      style: const TextStyle(),
+                                    ),
+                                ],
                               ),
-                          ],
-                        ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 8),
-                isReordering
-                    ? ReorderableDragStartListener(
-                        index: exIndex,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: Icon(
-                            Icons.drag_handle_rounded,
-                            color: AppColors.labelSecondary,
-                            size: 24,
+                if (!isReordering)
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'add_alt') {
+                        _addAlternative(context, exIndex);
+                      } else if (value == 'view_alt') {
+                        _showAlternativesModal(context, ex, exIndex, controller);
+                      }
+                    },
+                    color: AppColors.surfaceDark,
+                    surfaceTintColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: Colors.white.withAlpha(10), width: 1),
+                    ),
+                    icon: Icon(
+                      Icons.more_vert_rounded,
+                      color: hasAlternative ? AppColors.primary : AppColors.labelSecondary,
+                      size: 20,
+                    ),
+                    itemBuilder: (context) => [
+                      if (hasAlternative)
+                        const PopupMenuItem(
+                          value: 'view_alt',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.visibility_outlined,
+                                size: 18,
+                                color: Colors.white70,
+                              ),
+                              SizedBox(width: 12),
+                              Text('Ver exercícios alternativos'),
+                            ],
                           ),
                         ),
-                      )
-                    : Icon(
-                        CupertinoIcons.chevron_right,
-                        color: AppColors.labelSecondary.withAlpha(100),
-                        size: 20.0,
+                      if (!hasAlternative)
+                        PopupMenuItem(
+                          value: 'add_alt',
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.add_circle_outline_rounded,
+                                size: 18,
+                                color: Colors.white70,
+                              ),
+                              const SizedBox(width: 12),
+                              const Text('Add exercício alternativo'),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                if (isReordering)
+                  ReorderableDragStartListener(
+                    index: exIndex,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Icon(
+                        Icons.drag_handle_rounded,
+                        color: AppColors.labelSecondary,
+                        size: 24,
                       ),
+                    ),
+                  ),
               ],
             ),
           ),
         ),
+      ),
+    );
+
+    if (isReordering) {
+      return Padding(
+        key: Key(wrapper.id),
+        padding: const EdgeInsets.only(bottom: SpacingTokens.listItemGap),
+        child: card,
+      );
+    }
+
+    return Padding(
+      key: Key(wrapper.id),
+      padding: const EdgeInsets.only(bottom: SpacingTokens.listItemGap),
+      child: AppSwipeToDelete(
+        dismissibleKey: ValueKey('dismiss_${wrapper.id}'),
+        onDismissed: (direction) {
+          final removedItemName = controller.exercicios[exIndex].item.nome;
+          controller.deleteExercicio(exIndex);
+
+          controller.cancelSnackBarTimer();
+          _scaffoldMessengerKey.currentState?.removeCurrentSnackBar();
+
+          final snackBar = SnackBar(
+            content: Text('$removedItemName removido'),
+            action: SnackBarAction(
+              label: 'DESFAZER',
+              textColor: AppColors.primary,
+              onPressed: () {
+                controller.cancelSnackBarTimer();
+                _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+                controller.undoDelete();
+              },
+            ),
+            duration: const Duration(days: 365),
+            behavior: SnackBarBehavior.floating,
+          );
+
+          final snackBarController = _scaffoldMessengerKey.currentState?.showSnackBar(snackBar);
+
+          if (snackBarController != null) {
+            controller.startSnackBarTimer(() {
+              snackBarController.close();
+              controller.clearUndoState();
+            });
+          }
+        },
+        child: card,
       ),
     );
   }
