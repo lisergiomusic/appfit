@@ -490,8 +490,8 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
             nome: '${aluno['nome'] ?? ''} ${aluno['sobrenome'] ?? ''}'.trim(),
             email: aluno['email'] ?? 'Sem e-mail',
             status: aluno['status'] ?? 'ativo',
-            photoUrl: aluno['photoUrl'],
-            ultimoTreino: aluno['ultimoTreino'],
+            photoUrl: aluno['photo_url'],
+            ultimoTreino: aluno['ultimo_treino'],
             onTap: () {
               Navigator.push(
                 context,
@@ -501,7 +501,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
                     alunoNome:
                         '${aluno['nome'] ?? ''} ${aluno['sobrenome'] ?? ''}'
                             .trim(),
-                    photoUrl: aluno['photoUrl'],
+                    photoUrl: aluno['photo_url'],
                   ),
                 ),
               );
