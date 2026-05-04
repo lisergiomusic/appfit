@@ -12,7 +12,6 @@ class SerieRow extends StatefulWidget {
   final bool isFirst;
   final bool isLast;
   final bool isNew;
-  final bool isEditingSection;
   final TextEditingController repsController;
   final TextEditingController cargaController;
   final TextEditingController descansoController;
@@ -29,7 +28,6 @@ class SerieRow extends StatefulWidget {
     required this.isFirst,
     required this.isLast,
     required this.isNew,
-    required this.isEditingSection,
     required this.repsController,
     required this.cargaController,
     required this.descansoController,
@@ -131,59 +129,27 @@ class _SerieRowState extends State<SerieRow> with TickerProviderStateMixin {
               color: hintColor ?? editFlashColor,
               child: Row(
                 children: [
-                  AnimatedContainer(
-                    duration: ExercicioDetalheConstants.rowAnimationDuration,
-                    curve: Curves.easeInOutCubic,
-                    width: widget.isEditingSection ? 28 : 0,
-                    child: AnimatedOpacity(
-                      duration: ExercicioDetalheConstants.fadeAnimationDuration,
-                      opacity: widget.isEditingSection ? 1.0 : 0.0,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.remove_circle_outline,
-                          color: Colors.redAccent,
-                          size: 20,
-                        ),
-                        onPressed: widget.onDelete,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        splashRadius: 20,
-                      ),
-                    ),
-                  ),
-                  AnimatedContainer(
-                    duration: ExercicioDetalheConstants.rowAnimationDuration,
-                    curve: Curves.easeInOutCubic,
-                    width: widget.isEditingSection ? 8 : 0,
-                  ),
                   Expanded(
                     flex: 2,
-                    child: AnimatedPadding(
-                      duration: ExercicioDetalheConstants.rowAnimationDuration,
-                      curve: Curves.easeInOutCubic,
-                      padding: EdgeInsets.only(
-                        left: widget.isEditingSection ? 2 : 6,
-                      ),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Container(
-                          width: 26,
-                          height: 26,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: widget.accentColor.withAlpha(22),
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusSM,
-                            ),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        width: 26,
+                        height: 26,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: widget.accentColor.withAlpha(22),
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusSM,
                           ),
-                          child: Text(
-                            '${widget.visualNumber}',
-                            style: TextStyle(
-                              color: widget.accentColor,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.3,
-                            ),
+                        ),
+                        child: Text(
+                          '${widget.visualNumber}',
+                          style: TextStyle(
+                            color: widget.accentColor,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.3,
                           ),
                         ),
                       ),
@@ -227,32 +193,6 @@ class _SerieRowState extends State<SerieRow> with TickerProviderStateMixin {
                       suffixText: 's',
                       hintText: 'Ex: 60s',
                       keyboardType: TextInputType.number,
-                    ),
-                  ),
-
-                  AnimatedContainer(
-                    duration: ExercicioDetalheConstants.rowAnimationDuration,
-                    curve: Curves.easeInOutCubic,
-                    width: widget.isEditingSection ? 8 : 0,
-                  ),
-                  AnimatedContainer(
-                    duration: ExercicioDetalheConstants.rowAnimationDuration,
-                    curve: Curves.easeInOutCubic,
-                    width: widget.isEditingSection ? 26 : 0,
-                    child: AnimatedOpacity(
-                      duration: ExercicioDetalheConstants.fadeAnimationDuration,
-                      opacity: widget.isEditingSection ? 1.0 : 0.0,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.copy_rounded,
-                          color: AppColors.primary,
-                          size: 18,
-                        ),
-                        onPressed: widget.onDuplicate,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        splashRadius: 20,
-                      ),
                     ),
                   ),
                 ],

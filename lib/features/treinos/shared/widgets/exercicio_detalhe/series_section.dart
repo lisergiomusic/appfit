@@ -8,8 +8,7 @@ class SeriesSection extends StatelessWidget {
   final String title;
   final List<MapEntry<int, SerieItem>> entries;
   final Color? titleColor;
-  final bool isEditingSection;
-  final VoidCallback onToggleEditing;
+  final Function({bool reps, bool carga, bool descanso})? onEqualize;
   final GlobalKey<AnimatedListState> animatedListKey;
   final Widget Function(
     BuildContext context,
@@ -24,8 +23,7 @@ class SeriesSection extends StatelessWidget {
     required this.title,
     required this.entries,
     this.titleColor,
-    required this.isEditingSection,
-    required this.onToggleEditing,
+    this.onEqualize,
     required this.animatedListKey,
     required this.itemBuilder,
   });
@@ -56,16 +54,78 @@ class SeriesSection extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(title, style: AppTheme.sectionHeader),
                 const Spacer(),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                  onPressed: onToggleEditing,
-                  child: Icon(
-                    isEditingSection ? Icons.check : Icons.more_vert,
-                    color: AppColors.labelSecondary,
-                    size: 20,
+                if (entries.length >= 2)
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (onEqualize != null) {
+                        if (value == 'equalize_reps') onEqualize!(reps: true);
+                        if (value == 'equalize_carga') onEqualize!(carga: true);
+                        if (value == 'equalize_descanso') {
+                          onEqualize!(descanso: true);
+                        }
+                      }
+                    },
+                    color: AppColors.surfaceDark,
+                    surfaceTintColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: Colors.white.withAlpha(10),
+                        width: 1,
+                      ),
+                    ),
+                    icon: const Icon(
+                      Icons.more_horiz_rounded,
+                      color: AppColors.labelSecondary,
+                      size: 20,
+                    ),
+                    itemBuilder: (context) {
+                      return [
+                        const PopupMenuItem(
+                          value: 'equalize_reps',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.sync_rounded,
+                                size: 18,
+                                color: Colors.white70,
+                              ),
+                              SizedBox(width: 12),
+                              Text('Igualar Repetições'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'equalize_carga',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.fitness_center_rounded,
+                                size: 18,
+                                color: Colors.white70,
+                              ),
+                              SizedBox(width: 12),
+                              Text('Igualar Cargas'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'equalize_descanso',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.timer_rounded,
+                                size: 18,
+                                color: Colors.white70,
+                              ),
+                              SizedBox(width: 12),
+                              Text('Igualar Descanso'),
+                            ],
+                          ),
+                        ),
+                      ];
+                    },
                   ),
-                ),
               ],
             ),
           ),
@@ -89,23 +149,12 @@ class SeriesSection extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        AnimatedContainer(
-                          duration:
-                              ExercicioDetalheConstants.rowAnimationDuration,
-                          curve: Curves.easeInOutCubic,
-                          width: isEditingSection ? 36 : 0,
-                        ),
                         Expanded(
                           flex: 2,
                           child: Align(
                             alignment: Alignment.centerLeft,
-                            child: AnimatedPadding(
-                              duration: ExercicioDetalheConstants
-                                  .rowAnimationDuration,
-                              curve: Curves.easeInOutCubic,
-                              padding: EdgeInsets.only(
-                                left: isEditingSection ? 0 : 4,
-                              ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 4),
                               child: Text(
                                 'SÉRIE',
                                 style: AppTheme.microLabelTextStyle,
@@ -142,12 +191,6 @@ class SeriesSection extends StatelessWidget {
                               style: AppTheme.microLabelTextStyle,
                             ),
                           ),
-                        ),
-                        AnimatedContainer(
-                          duration:
-                              ExercicioDetalheConstants.rowAnimationDuration,
-                          curve: Curves.easeInOutCubic,
-                          width: isEditingSection ? 34 : 0,
                         ),
                       ],
                     ),

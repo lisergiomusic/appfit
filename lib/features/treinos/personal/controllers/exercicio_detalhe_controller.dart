@@ -12,11 +12,6 @@ class ExercicioDetalheController extends ChangeNotifier {
   int? _lastRemovedIndex;
   Timer? _snackBarTimer;
 
-  final Set<TipoSerie> _editingSections = {};
-  bool isSectionEditing(TipoSerie tipo) => _editingSections.contains(tipo);
-
-  bool get isEditing => _editingSections.isNotEmpty;
-
   ExercicioDetalheController(this.exercicio) {
     _initialSnapshot = exercicio.clone();
   }
@@ -43,15 +38,6 @@ class ExercicioDetalheController extends ChangeNotifier {
   }
 
   Set<String> get newSeriesIds => _newSeriesIds;
-
-  void toggleEditing(TipoSerie tipo) {
-    if (_editingSections.contains(tipo)) {
-      _editingSections.remove(tipo);
-    } else {
-      _editingSections.add(tipo);
-    }
-    notifyListeners();
-  }
 
   void markAsNew(String id) {
     _newSeriesIds.add(id);
@@ -169,6 +155,20 @@ class ExercicioDetalheController extends ChangeNotifier {
     exercicio.series.addAll(newSeries);
     for (var s in newSeries) {
       markAsNew(s.id);
+    }
+    notifyListeners();
+  }
+
+  /// Pega a primeira série de um tipo e aplica seus valores (reps, carga, descanso) em todas as outras do mesmo tipo.
+  void equalizeSeries(TipoSerie tipo, {bool reps = false, bool carga = false, bool descanso = false}) {
+    final list = exercicio.series.where((s) => s.tipo == tipo).toList();
+    if (list.length < 2) return;
+
+    final first = list.first;
+    for (int i = 1; i < list.length; i++) {
+      if (reps) list[i].alvo = first.alvo;
+      if (carga) list[i].carga = first.carga;
+      if (descanso) list[i].descanso = first.descanso;
     }
     notifyListeners();
   }

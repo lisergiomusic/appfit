@@ -65,7 +65,7 @@ class RotinaDetalheHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: Colors.white.withAlpha(20), // Borda ultra-fina "glassmorphism"
-                  width: 1,
+                  width: 0.5,
                 ),
               ),
               child: const Icon(

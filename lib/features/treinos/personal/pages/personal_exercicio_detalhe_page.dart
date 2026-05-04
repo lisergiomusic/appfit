@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
+import 'package:flutter/services.dart';
 import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'dart:ui';
 import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
@@ -814,7 +815,6 @@ class _PersonalExercicioDetalheViewState
         isFirst: isFirst,
         isLast: isLast,
         isNew: controller.newSeriesIds.contains(serie.id),
-        isEditingSection: controller.isSectionEditing(serie.tipo),
         repsController: repsController,
         cargaController: cargaController,
         descansoController: descansoController,
@@ -1335,8 +1335,19 @@ class _PersonalExercicioDetalheViewState
       title: title,
       entries: entries,
       titleColor: color,
-      isEditingSection: controller.isSectionEditing(tipo),
-      onToggleEditing: () => setState(() => controller.toggleEditing(tipo)),
+      onEqualize: ({reps = false, carga = false, descanso = false}) {
+        setState(() {
+          controller.equalizeSeries(
+            tipo,
+            reps: reps,
+            carga: carga,
+            descanso: descanso,
+          );
+          _clearEditingState(); // Reinicia os controllers para refletir os novos valores
+        });
+        widget.onChanged();
+        HapticFeedback.mediumImpact();
+      },
       animatedListKey: _animatedListKeys[tipo]!,
       itemBuilder: (context, index, animation, entry) => _buildSerieRow(
         context,
