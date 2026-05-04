@@ -182,6 +182,21 @@ class ConfigurarTreinoController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void replicateSeries(int sourceIndex, List<int> targetIndices) {
+    if (sourceIndex < 0 || sourceIndex >= _exercicios.length) return;
+    
+    final sourceSeries = _exercicios[sourceIndex].item.series;
+    
+    for (final targetIdx in targetIndices) {
+      if (targetIdx < 0 || targetIdx >= _exercicios.length) continue;
+      if (targetIdx == sourceIndex) continue;
+      
+      // Senior UX: Clona as séries para evitar problemas de referência mútua
+      _exercicios[targetIdx].item.series = sourceSeries.map((s) => s.clone(sameId: false)).toList();
+    }
+    notifyListeners();
+  }
+
   void addAlternativa(int index, ExercicioItem alternativa) {
     if (index >= 0 && index < _exercicios.length) {
       final list = List<ExercicioItem>.from(_exercicios[index].item.alternativas);

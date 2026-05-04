@@ -10,6 +10,8 @@ class ExercicioDetalheController extends ChangeNotifier {
 
   SerieItem? _lastRemovedItem;
   int? _lastRemovedIndex;
+  List<SerieItem>? _lastClearedSeries;
+  TipoSerie? _lastClearedTipo;
   Timer? _snackBarTimer;
 
   ExercicioDetalheController(this.exercicio) {
@@ -107,11 +109,6 @@ class ExercicioDetalheController extends ChangeNotifier {
     return null;
   }
 
-  void clearUndoState() {
-    _lastRemovedItem = null;
-    _lastRemovedIndex = null;
-  }
-
   void startSnackBarTimer(VoidCallback onTimeout) {
     _snackBarTimer?.cancel();
     _snackBarTimer = Timer(const Duration(seconds: 4), onTimeout);
@@ -171,6 +168,33 @@ class ExercicioDetalheController extends ChangeNotifier {
       if (descanso) list[i].descanso = first.descanso;
     }
     notifyListeners();
+  }
+
+  void clearAllSeries(TipoSerie tipo) {
+    _lastClearedTipo = tipo;
+    _lastClearedSeries = exercicio.series.where((s) => s.tipo == tipo).toList();
+    exercicio.series.removeWhere((s) => s.tipo == tipo);
+    notifyListeners();
+  }
+
+  void undoClearAll() {
+    if (_lastClearedSeries != null && _lastClearedTipo != null) {
+      exercicio.series.addAll(_lastClearedSeries!);
+      // Re-ordena as séries para manter Aquecimento -> Feeder -> Trabalho
+      final order = {TipoSerie.aquecimento: 0, TipoSerie.feeder: 1, TipoSerie.trabalho: 2};
+      exercicio.series.sort((a, b) => order[a.tipo]!.compareTo(order[b.tipo]!));
+      
+      _lastClearedSeries = null;
+      _lastClearedTipo = null;
+      notifyListeners();
+    }
+  }
+
+  void clearUndoState() {
+    _lastRemovedItem = null;
+    _lastRemovedIndex = null;
+    _lastClearedSeries = null;
+    _lastClearedTipo = null;
   }
 
   @override

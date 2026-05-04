@@ -9,6 +9,7 @@ class SeriesSection extends StatelessWidget {
   final List<MapEntry<int, SerieItem>> entries;
   final Color? titleColor;
   final Function({bool reps, bool carga, bool descanso})? onEqualize;
+  final VoidCallback? onClearAll;
   final GlobalKey<AnimatedListState> animatedListKey;
   final Widget Function(
     BuildContext context,
@@ -24,6 +25,7 @@ class SeriesSection extends StatelessWidget {
     required this.entries,
     this.titleColor,
     this.onEqualize,
+    this.onClearAll,
     required this.animatedListKey,
     required this.itemBuilder,
   });
@@ -54,10 +56,12 @@ class SeriesSection extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(title, style: AppTheme.sectionHeader),
                 const Spacer(),
-                if (entries.length >= 2)
+                if (entries.isNotEmpty)
                   PopupMenuButton<String>(
                     onSelected: (value) {
-                      if (onEqualize != null) {
+                      if (value == 'clear_all') {
+                        onClearAll?.call();
+                      } else if (onEqualize != null) {
                         if (value == 'equalize_reps') onEqualize!(reps: true);
                         if (value == 'equalize_carga') onEqualize!(carga: true);
                         if (value == 'equalize_descanso') {
@@ -80,46 +84,67 @@ class SeriesSection extends StatelessWidget {
                       size: 20,
                     ),
                     itemBuilder: (context) {
+                      final hasMany = entries.length >= 2;
                       return [
-                        const PopupMenuItem(
-                          value: 'equalize_reps',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.sync_rounded,
-                                size: 18,
-                                color: Colors.white70,
-                              ),
-                              SizedBox(width: 12),
-                              Text('Igualar Repetições'),
-                            ],
+                        if (hasMany) ...[
+                          const PopupMenuItem(
+                            value: 'equalize_reps',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.sync_rounded,
+                                  size: 18,
+                                  color: Colors.white70,
+                                ),
+                                SizedBox(width: 12),
+                                Text('Igualar Repetições'),
+                              ],
+                            ),
                           ),
-                        ),
-                        const PopupMenuItem(
-                          value: 'equalize_carga',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.fitness_center_rounded,
-                                size: 18,
-                                color: Colors.white70,
-                              ),
-                              SizedBox(width: 12),
-                              Text('Igualar Cargas'),
-                            ],
+                          const PopupMenuItem(
+                            value: 'equalize_carga',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.fitness_center_rounded,
+                                  size: 18,
+                                  color: Colors.white70,
+                                ),
+                                SizedBox(width: 12),
+                                Text('Igualar Cargas'),
+                              ],
+                            ),
                           ),
-                        ),
+                          const PopupMenuItem(
+                            value: 'equalize_descanso',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.timer_rounded,
+                                  size: 18,
+                                  color: Colors.white70,
+                                ),
+                                SizedBox(width: 12),
+                                Text('Igualar Descanso'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuDivider(height: 1),
+                        ],
                         const PopupMenuItem(
-                          value: 'equalize_descanso',
+                          value: 'clear_all',
                           child: Row(
                             children: [
                               Icon(
-                                Icons.timer_rounded,
+                                Icons.delete_sweep_rounded,
                                 size: 18,
-                                color: Colors.white70,
+                                color: Colors.redAccent,
                               ),
                               SizedBox(width: 12),
-                              Text('Igualar Descanso'),
+                              Text(
+                                'Remover todas as séries',
+                                style: TextStyle(color: Colors.redAccent),
+                              ),
                             ],
                           ),
                         ),

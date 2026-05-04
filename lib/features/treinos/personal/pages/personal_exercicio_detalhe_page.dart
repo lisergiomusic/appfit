@@ -1348,6 +1348,47 @@ class _PersonalExercicioDetalheViewState
         widget.onChanged();
         HapticFeedback.mediumImpact();
       },
+      onClearAll: () {
+        final controller = context.read<ExercicioDetalheController>();
+        setState(() {
+          controller.clearAllSeries(tipo);
+          _clearEditingState();
+        });
+        widget.onChanged();
+        HapticFeedback.lightImpact();
+
+        controller.cancelSnackBarTimer();
+        _scaffoldMessengerKey.currentState?.removeCurrentSnackBar();
+
+        final snackBar = SnackBar(
+          content: const Text('Séries removidas'),
+          action: SnackBarAction(
+            label: 'DESFAZER',
+            textColor: AppColors.primary,
+            onPressed: () {
+              controller.cancelSnackBarTimer();
+              _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+              setState(() {
+                controller.undoClearAll();
+                _clearEditingState();
+              });
+              widget.onChanged();
+            },
+          ),
+          duration: const Duration(days: 365), // Mantém aberto para o timer do controller
+          behavior: SnackBarBehavior.floating,
+        );
+
+        final snackBarController =
+            _scaffoldMessengerKey.currentState?.showSnackBar(snackBar);
+
+        if (snackBarController != null) {
+          controller.startSnackBarTimer(() {
+            snackBarController.close();
+            controller.clearUndoState();
+          });
+        }
+      },
       animatedListKey: _animatedListKeys[tipo]!,
       itemBuilder: (context, index, animation, entry) => _buildSerieRow(
         context,

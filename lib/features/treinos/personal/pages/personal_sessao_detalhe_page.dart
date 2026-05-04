@@ -18,6 +18,7 @@ import '../../shared/widgets/sessao_note_widget.dart';
 import 'personal_exercicio_detalhe_page.dart';
 import 'personal_exercicio_view_page.dart';
 import 'personal_exercicios_library_page.dart';
+import '../widgets/copy_to_others_sheet.dart';
 
 class PersonalSessaoDetalhePage extends StatelessWidget {
   final String nomeTreino;
@@ -212,6 +213,42 @@ class _SessaoDetalhePersonalViewState
     if (selecionados != null && selecionados.isNotEmpty) {
       controller.addAlternativa(index, selecionados.first);
       HapticFeedback.mediumImpact();
+    }
+  }
+
+  Future<void> _copySeriesToOthers(BuildContext context, int sourceIndex) async {
+    final controller = context.read<ConfigurarTreinoController>();
+    final allExercises = controller.getFinalExercicios();
+    final sourceEx = allExercises[sourceIndex];
+
+    if (sourceEx.series.isEmpty) {
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+        const SnackBar(
+          content: Text('Este exercício não possui séries para copiar.'),
+          backgroundColor: Colors.orangeAccent,
+        ),
+      );
+      return;
+    }
+
+    final List<int>? selectedIndices = await CopyToOthersSheet.show(
+      context,
+      allExercises: allExercises,
+      sourceExercise: sourceEx,
+    );
+
+    if (selectedIndices != null && selectedIndices.isNotEmpty) {
+      controller.replicateSeries(sourceIndex, selectedIndices);
+      HapticFeedback.mediumImpact();
+
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Séries copiadas para ${selectedIndices.length} ${selectedIndices.length == 1 ? 'exercício' : 'exercícios'}.',
+          ),
+          backgroundColor: AppColors.primary,
+        ),
+      );
     }
   }
 
@@ -980,6 +1017,8 @@ class _SessaoDetalhePersonalViewState
                         _addAlternative(context, exIndex);
                       } else if (value == 'view_alt') {
                         _showAlternativesModal(context, ex, exIndex, controller);
+                      } else if (value == 'copy_to') {
+                        _copySeriesToOthers(context, exIndex);
                       }
                     },
                     color: AppColors.surfaceDark,
@@ -1009,6 +1048,20 @@ class _SessaoDetalhePersonalViewState
                             ],
                           ),
                         ),
+                      const PopupMenuItem(
+                        value: 'copy_to',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.copy_all_rounded,
+                              size: 18,
+                              color: Colors.white70,
+                            ),
+                            SizedBox(width: 12),
+                            Text('Copiar séries para...'),
+                          ],
+                        ),
+                      ),
                       if (!hasAlternative)
                         PopupMenuItem(
                           value: 'add_alt',
