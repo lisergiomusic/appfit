@@ -6,7 +6,6 @@ import '../../../../core/services/exercise_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/cloudinary.dart';
 import '../../../treinos/shared/models/exercicio_model.dart';
-import '../../../treinos/shared/widgets/executar_treino/serie_badge_info_dialog.dart';
 import '../../../alunos/shared/widgets/app_avatar.dart';
 
 class PersonalLogDetalhePage extends StatelessWidget {
@@ -23,8 +22,8 @@ class PersonalLogDetalhePage extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
-        title: Text(item.sessaoNome, style: AppTheme.pageTitle),
-        centerTitle: true,
+        elevation: 0,
+        scrolledUnderElevation: 0,
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(
@@ -82,10 +81,7 @@ class _CabecalhoCard extends StatelessWidget {
         // Hero Section
         Text(
           item.sessaoNome.isEmpty ? 'Treino concluído' : item.sessaoNome,
-          style: AppTheme.bigTitle.copyWith(
-            fontSize: 28,
-            letterSpacing: -0.5,
-          ),
+          style: AppTheme.bigTitle,
         ),
         const SizedBox(height: 12),
         Row(
@@ -551,16 +547,6 @@ class _ExercicioTileState extends State<_ExercicioTile> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(nome, style: AppTheme.cardTitle.copyWith(fontSize: 18)),
-                    const SizedBox(height: 4),
-                    Text(
-                      grupos.isEmpty ? 'Geral' : grupos.join(' · '),
-                      style: AppTheme.caption2.copyWith(
-                        color: AppColors.labelTertiary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
                   ],
                 ),
               ),
@@ -712,13 +698,23 @@ class _SeriesTable extends StatelessWidget {
     final tipo = _toTipoSerie(tipoStr);
     final isTrabalho = tipo == TipoSerie.trabalho;
     final concluida = serie['concluida'] == true;
-    final peso = serie['pesoRealizado']?.toString() ?? '';
-    final reps = serie['repsRealizadas']?.toString() ?? '';
-    final pesoAlvo = serie['cargaAlvo']?.toString() ?? '';
-    final alvo = serie['alvo']?.toString() ?? '';
+    final pesoStr = serie['pesoRealizado']?.toString() ?? '';
+    final repsStr = serie['repsRealizadas']?.toString() ?? '';
+    final pesoAlvoStr = serie['cargaAlvo']?.toString() ?? '';
+    final alvoStr = serie['alvo']?.toString() ?? '';
 
-    final realizado = peso.isNotEmpty && reps.isNotEmpty ? '$peso kg × $reps' : '—';
-    final alvotxt = pesoAlvo.isNotEmpty ? '$pesoAlvo kg × $alvo' : alvo.isNotEmpty ? alvo : '—';
+    // Parsing para lógica diferencial
+    final double? pReal = double.tryParse(pesoStr);
+    final double? pAlvo = double.tryParse(pesoAlvoStr);
+    final int? rReal = int.tryParse(repsStr);
+    final int? rAlvo = int.tryParse(alvoStr);
+
+    final bool superouCarga = pReal != null && pAlvo != null && pReal > pAlvo;
+    final bool superouReps = rReal != null && rAlvo != null && rReal > rAlvo;
+    final bool bateuExato = concluida && pReal == pAlvo && rReal == rAlvo && pReal != null;
+
+    final realizado = pesoStr.isNotEmpty && repsStr.isNotEmpty ? '$pesoStr kg × $repsStr' : '—';
+    final alvotxt = pesoAlvoStr.isNotEmpty ? '$pesoAlvoStr kg × $alvoStr' : alvoStr.isNotEmpty ? alvoStr : '—';
 
     final color = _getColor(tipoStr);
     final icon = _getIcon(tipoStr);
@@ -762,13 +758,25 @@ class _SeriesTable extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Text(
-            realizado,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: concluida ? AppColors.labelPrimary : AppColors.labelTertiary,
-            ),
+          child: Row(
+            children: [
+              Text(
+                realizado,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: concluida ? AppColors.labelPrimary : AppColors.labelTertiary,
+                ),
+              ),
+              if (superouCarga || superouReps) ...[
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.arrow_upward_rounded,
+                  size: 12,
+                  color: AppColors.primary.withAlpha(200),
+                ),
+              ],
+            ],
           ),
         ),
         Expanded(
@@ -777,12 +785,14 @@ class _SeriesTable extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: AppColors.labelSecondary.withAlpha(150),
+              color: AppColors.labelSecondary.withAlpha(80),
             ),
           ),
         ),
         Icon(
-          concluida ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+          !concluida
+              ? Icons.radio_button_unchecked_rounded
+              : (bateuExato ? Icons.stars_rounded : Icons.check_circle_rounded),
           size: 18,
           color: concluida ? AppColors.primary : AppColors.labelTertiary.withAlpha(60),
         ),
