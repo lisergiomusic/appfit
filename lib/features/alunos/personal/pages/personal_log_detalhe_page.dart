@@ -1,7 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/services/aluno_service.dart';
+import '../../../../core/services/exercise_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/cloudinary.dart';
+import '../../../treinos/shared/models/exercicio_model.dart';
+import '../../../treinos/shared/widgets/executar_treino/serie_badge_info_dialog.dart';
 import '../../../alunos/shared/widgets/app_avatar.dart';
 
 class PersonalLogDetalhePage extends StatelessWidget {
@@ -283,15 +288,15 @@ class _ExerciciosSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Exercícios', style: AppTheme.sectionHeader),
+        Text('Execução detalhada', style: AppTheme.sectionHeader),
         const SizedBox(height: SpacingTokens.labelToField),
         Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: AppColors.surfaceDark,
             borderRadius: BorderRadius.circular(AppTheme.radiusLG),
             border: Border.all(color: Colors.white.withAlpha(8)),
           ),
-          clipBehavior: Clip.antiAlias,
           child: Column(
             children: [
               for (var i = 0; i < exercicios.length; i++) ...[
@@ -300,8 +305,7 @@ class _ExerciciosSection extends StatelessWidget {
                   Divider(
                     height: 1,
                     thickness: 0.5,
-                    indent: SpacingTokens.cardPaddingH,
-                    color: AppColors.separator,
+                    color: AppColors.separator.withAlpha(40),
                   ),
               ],
             ],
@@ -321,7 +325,23 @@ class _ExercicioTile extends StatefulWidget {
 }
 
 class _ExercicioTileState extends State<_ExercicioTile> {
-  bool _expandido = false;
+  final ExerciseService _exerciseService = ExerciseService();
+  late final Future<String?> _thumbnailFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    final nome = widget.exercicio['nome']?.toString() ?? '';
+    final mediaUrl = widget.exercicio['mediaUrl']?.toString();
+
+    if (mediaUrl != null && mediaUrl.isNotEmpty) {
+      _thumbnailFuture = Future.value(Cloudinary.thumbnail(mediaUrl));
+    } else {
+      _thumbnailFuture = _exerciseService
+          .buscarExercicioPorNome(nome)
+          .then((base) => base?.mediaUrl != null ? Cloudinary.thumbnail(base!.mediaUrl!) : null);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -335,85 +355,80 @@ class _ExercicioTileState extends State<_ExercicioTile> {
         (widget.exercicio['series'] as List?)?.cast<Map<String, dynamic>>() ??
             [];
 
-    final seriesConcluidas =
-        series.where((s) => s['concluida'] == true).length;
-
-    return InkWell(
-      onTap: series.isNotEmpty
-          ? () => setState(() => _expandido = !_expandido)
-          : null,
-      child: Padding(
-        padding: CardTokens.padding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(nome, style: AppTheme.cardTitle),
-                      if (grupos.isNotEmpty) ...[
-                        const SizedBox(height: SpacingTokens.xs),
-                        Text(
-                          grupos.join(' · '),
-                          style: AppTheme.caption,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ],
-                  ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _Thumbnail(thumbnailFuture: _thumbnailFuture),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(nome, style: AppTheme.cardTitle.copyWith(fontSize: 18)),
+                    const SizedBox(height: 4),
+                    Text(
+                      grupos.isEmpty ? 'Geral' : grupos.join(' · '),
+                      style: AppTheme.caption2.copyWith(
+                        color: AppColors.labelTertiary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: SpacingTokens.sm),
-                _SeriesCounter(
-                    concluidas: seriesConcluidas, total: series.length),
-                if (series.isNotEmpty) ...[
-                  const SizedBox(width: SpacingTokens.xs),
-                  Icon(
-                    _expandido
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
-                    size: 18,
-                    color: AppColors.labelSecondary,
-                  ),
-                ],
-              ],
-            ),
-            if (_expandido && series.isNotEmpty) ...[
-              const SizedBox(height: SpacingTokens.md),
-              _SeriesTable(series: series),
+              ),
             ],
+          ),
+          if (series.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            _SeriesTable(series: series),
           ],
-        ),
+        ],
       ),
     );
   }
 }
 
-class _SeriesCounter extends StatelessWidget {
-  final int concluidas;
-  final int total;
-  const _SeriesCounter({required this.concluidas, required this.total});
+class _Thumbnail extends StatelessWidget {
+  final Future<String?> thumbnailFuture;
+  const _Thumbnail({required this.thumbnailFuture});
 
   @override
   Widget build(BuildContext context) {
-    final completo = concluidas == total && total > 0;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: completo
-            ? AppColors.primary.withValues(alpha: 0.15)
-            : AppColors.surfaceLight,
-        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-      ),
-      child: Text(
-        '$concluidas/$total séries',
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: completo ? AppColors.primary : AppColors.labelSecondary,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        width: 48,
+        height: 48,
+        color: Colors.black.withAlpha(40),
+        child: FutureBuilder<String?>(
+          future: thumbnailFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                ),
+              );
+            }
+            final url = snapshot.data;
+            if (url == null || url.isEmpty) {
+              return const Icon(Icons.fitness_center, color: AppColors.labelTertiary, size: 20);
+            }
+            return CachedNetworkImage(
+              imageUrl: url,
+              fit: BoxFit.cover,
+              placeholder: (_, __) => Container(color: Colors.black.withAlpha(20)),
+              errorWidget: (_, __, ___) => const Icon(Icons.fitness_center, color: AppColors.labelTertiary, size: 20),
+            );
+          },
         ),
       ),
     );
@@ -424,127 +439,172 @@ class _SeriesTable extends StatelessWidget {
   final List<Map<String, dynamic>> series;
   const _SeriesTable({required this.series});
 
-  String _tipoLabel(String tipo) {
+  IconData _getIcon(String tipo) {
     switch (tipo) {
       case 'aquecimento':
-        return 'Aq';
+        return Icons.whatshot_rounded;
       case 'feeder':
-        return 'F';
+        return Icons.trending_up_rounded;
       default:
-        return 'T';
+        return Icons.fitness_center_rounded;
+    }
+  }
+
+  Color _getColor(String tipo) {
+    switch (tipo) {
+      case 'aquecimento':
+        return const Color(0xFF00B4D8);
+      case 'feeder':
+        return const Color(0xFFFFB703);
+      default:
+        return const Color(0xFFFF3366);
+    }
+  }
+
+  TipoSerie _toTipoSerie(String tipo) {
+    switch (tipo) {
+      case 'aquecimento':
+        return TipoSerie.aquecimento;
+      case 'feeder':
+        return TipoSerie.feeder;
+      default:
+        return TipoSerie.trabalho;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Table(
-      columnWidths: const {
-        0: FixedColumnWidth(28),
-        1: FlexColumnWidth(),
-        2: FlexColumnWidth(),
-        3: FixedColumnWidth(24),
-      },
+    int workSetCounter = 0;
+
+    return Column(
       children: [
-        TableRow(
-          children: [
-            _HeaderCell(''),
-            _HeaderCell('Realizado'),
-            _HeaderCell('Alvo'),
-            _HeaderCell(''),
-          ],
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12, left: 40),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'REALIZADO',
+                  style: AppTheme.microLabelTextStyle.copyWith(
+                    fontSize: 9,
+                    color: AppColors.labelTertiary,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  'ALVO',
+                  style: AppTheme.microLabelTextStyle.copyWith(
+                    fontSize: 9,
+                    color: AppColors.labelTertiary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 24),
+            ],
+          ),
         ),
-        for (var i = 0; i < series.length; i++)
-          _buildSerieRow(series[i], i + 1),
+        for (var i = 0; i < series.length; i++) ...[
+          () {
+            final tipoStr = series[i]['tipo']?.toString() ?? 'trabalho';
+            final isTrabalho = tipoStr != 'aquecimento' && tipoStr != 'feeder';
+            if (isTrabalho) workSetCounter++;
+            return _buildSerieRow(context, series[i], isTrabalho ? workSetCounter : 0);
+          }(),
+          if (i < series.length - 1)
+            Padding(
+              padding: const EdgeInsets.only(left: 40),
+              child: Divider(
+                height: 16,
+                thickness: 0.5,
+                color: Colors.white.withAlpha(8),
+              ),
+            ),
+        ],
       ],
     );
   }
 
-  TableRow _buildSerieRow(Map<String, dynamic> serie, int numero) {
-    final tipo = serie['tipo']?.toString() ?? 'trabalho';
+  Widget _buildSerieRow(BuildContext context, Map<String, dynamic> serie, int numero) {
+    final tipoStr = serie['tipo']?.toString() ?? 'trabalho';
+    final tipo = _toTipoSerie(tipoStr);
+    final isTrabalho = tipo == TipoSerie.trabalho;
     final concluida = serie['concluida'] == true;
     final peso = serie['pesoRealizado']?.toString() ?? '';
     final reps = serie['repsRealizadas']?.toString() ?? '';
     final pesoAlvo = serie['cargaAlvo']?.toString() ?? '';
     final alvo = serie['alvo']?.toString() ?? '';
 
-    final realizado =
-        peso.isNotEmpty && reps.isNotEmpty ? '$peso kg × $reps' : '—';
-    final alvotxt =
-        pesoAlvo.isNotEmpty ? '$pesoAlvo kg × $alvo' : alvo.isNotEmpty ? alvo : '—';
+    final realizado = peso.isNotEmpty && reps.isNotEmpty ? '$peso kg × $reps' : '—';
+    final alvotxt = pesoAlvo.isNotEmpty ? '$pesoAlvo kg × $alvo' : alvo.isNotEmpty ? alvo : '—';
 
-    return TableRow(
+    final color = _getColor(tipoStr);
+    final icon = _getIcon(tipoStr);
+
+    final label = tipo == TipoSerie.aquecimento
+        ? 'Série de Aquecimento'
+        : tipo == TipoSerie.feeder
+            ? 'Série Feeder'
+            : 'Série de Trabalho';
+
+    return Row(
       children: [
-        _Cell(
-          child: Text(
-            _tipoLabel(tipo),
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: AppColors.labelTertiary,
+        Tooltip(
+          message: label,
+          triggerMode: TooltipTriggerMode.tap,
+          preferBelow: false,
+          child: Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: color.withAlpha(20),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Center(
+              child: isTrabalho
+                  ? Text(
+                      numero.toString(),
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    )
+                  : Icon(
+                      icon,
+                      size: 14,
+                      color: color,
+                    ),
             ),
           ),
         ),
-        _Cell(
+        const SizedBox(width: 12),
+        Expanded(
           child: Text(
             realizado,
             style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
               color: concluida ? AppColors.labelPrimary : AppColors.labelTertiary,
             ),
           ),
         ),
-        _Cell(
+        Expanded(
           child: Text(
             alvotxt,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.labelTertiary,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.labelSecondary.withAlpha(150),
             ),
           ),
         ),
-        _Cell(
-          child: Icon(
-            concluida ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-            size: 14,
-            color: concluida ? AppColors.primary : AppColors.labelTertiary,
-          ),
+        Icon(
+          concluida ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+          size: 18,
+          color: concluida ? AppColors.primary : AppColors.labelTertiary.withAlpha(60),
         ),
       ],
-    );
-  }
-}
-
-class _HeaderCell extends StatelessWidget {
-  final String text;
-  const _HeaderCell(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: AppColors.labelTertiary,
-          letterSpacing: 0.3,
-        ),
-      ),
-    );
-  }
-}
-
-class _Cell extends StatelessWidget {
-  final Widget child;
-  const _Cell({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: child,
     );
   }
 }
