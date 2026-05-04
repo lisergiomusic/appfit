@@ -246,6 +246,9 @@ class _FeedbackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasEsforco = esforco != null && esforco! > 0;
+    final hasObs = observacoes != null && observacoes!.isNotEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -253,72 +256,103 @@ class _FeedbackCard extends StatelessWidget {
         const SizedBox(height: SpacingTokens.labelToField),
         Container(
           width: double.infinity,
-          padding: CardTokens.padding,
           decoration: BoxDecoration(
             color: AppColors.surfaceDark,
             borderRadius: BorderRadius.circular(AppTheme.radiusLG),
             border: Border.all(color: Colors.white.withAlpha(8)),
           ),
+          clipBehavior: Clip.antiAlias,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (esforco != null && esforco! > 0) ...[
-                Row(
-                  children: [
-                    _EsforcoBar(valor: esforco!),
-                    const SizedBox(width: SpacingTokens.md),
-                    Column(
+              if (hasEsforco)
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      _RadialIntensity(valor: esforco!),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _label(esforco!).toUpperCase(),
+                              style: AppTheme.microLabelTextStyle.copyWith(
+                                color: _color(esforco!),
+                                fontSize: 10,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Intensidade do Treino',
+                              style: AppTheme.cardTitle.copyWith(fontSize: 18),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Escala subjetiva de esforço (RPE)',
+                              style: AppTheme.caption.copyWith(
+                                color: AppColors.labelTertiary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              if (hasObs) ...[
+                if (hasEsforco)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Divider(height: 1, thickness: 0.5, color: Colors.white.withAlpha(5)),
+                  ),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(20, 24, 24, 24),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withAlpha(15),
+                  ),
+                  child: IntrinsicHeight(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '$esforco/10',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: _color(esforco!),
-                            height: 1,
+                        // Barra vertical de destaque (âncora visual)
+                        Container(
+                          width: 3,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withAlpha(120),
+                            borderRadius: BorderRadius.circular(2),
                           ),
                         ),
-                        const SizedBox(height: SpacingTokens.xs),
-                        Text(
-                          _label(esforco!),
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: _color(esforco!).withValues(alpha: 0.8),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.format_quote_rounded,
+                                size: 24,
+                                color: AppColors.primary.withAlpha(180),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                observacoes!,
+                                style: AppTheme.bodyText.copyWith(
+                                  color: AppColors.labelSecondary,
+                                  fontStyle: FontStyle.italic,
+                                  fontSize: 15,
+                                  height: 1.5,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
-                if (observacoes != null && observacoes!.isNotEmpty)
-                  const SizedBox(height: SpacingTokens.md),
-              ],
-              if (observacoes != null && observacoes!.isNotEmpty) ...[
-                if (esforco != null && esforco! > 0)
-                  Divider(
-                      height: 1,
-                      thickness: 0.5,
-                      color: AppColors.separator),
-                if (esforco != null && esforco! > 0)
-                  const SizedBox(height: SpacingTokens.md),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.format_quote_rounded,
-                        size: 16, color: AppColors.labelTertiary),
-                    const SizedBox(width: SpacingTokens.sm),
-                    Expanded(
-                      child: Text(
-                        observacoes!,
-                        style: AppTheme.bodyText.copyWith(
-                          color: AppColors.labelSecondary,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ],
@@ -329,9 +363,9 @@ class _FeedbackCard extends StatelessWidget {
   }
 }
 
-class _EsforcoBar extends StatelessWidget {
+class _RadialIntensity extends StatelessWidget {
   final int valor;
-  const _EsforcoBar({required this.valor});
+  const _RadialIntensity({required this.valor});
 
   Color _color(int v) {
     if (v <= 5) return AppColors.primary;
@@ -343,24 +377,86 @@ class _EsforcoBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _color(valor);
-    return SizedBox(
-      width: 8,
-      height: 48,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: Stack(
-          alignment: Alignment.bottomCenter,
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        SizedBox(
+          width: 72,
+          height: 72,
+          child: CustomPaint(
+            painter: _RadialPainter(
+              progress: valor / 10,
+              color: color,
+              backgroundColor: Colors.white.withAlpha(10),
+            ),
+          ),
+        ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(color: AppColors.surfaceLight),
-            FractionallySizedBox(
-              heightFactor: valor / 10,
-              child: Container(color: color),
+            Text(
+              valor.toString(),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+                color: color,
+                height: 1,
+              ),
+            ),
+            Text(
+              'RPE',
+              style: AppTheme.microLabelTextStyle.copyWith(
+                fontSize: 8,
+                color: AppColors.labelTertiary,
+              ),
             ),
           ],
         ),
-      ),
+      ],
     );
   }
+}
+
+class _RadialPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  final Color backgroundColor;
+
+  _RadialPainter({
+    required this.progress,
+    required this.color,
+    required this.backgroundColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const strokeWidth = 6.0;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width - strokeWidth) / 2;
+
+    final backgroundPaint = Paint()
+      ..color = backgroundColor
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    final foregroundPaint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    canvas.drawCircle(center, radius, backgroundPaint);
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -3.14159 / 2,
+      3.14159 * 2 * progress,
+      false,
+      foregroundPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
 class _ExerciciosSection extends StatelessWidget {
