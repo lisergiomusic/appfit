@@ -55,85 +55,171 @@ class _CabecalhoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dataFormatada = DateFormat("d 'de' MMM 'de' yyyy, HH:mm", 'pt_BR')
-        .format(item.dataHora);
+    final dataFormatada = DateFormat("d 'de' MMM", 'pt_BR').format(item.dataHora);
+    final horaFormatada = DateFormat("HH:mm", 'pt_BR').format(item.dataHora);
 
+    // Cálculos de Volume e Séries
+    double volumeTotal = 0;
+    int seriesTotais = 0;
+    for (var ex in item.exercicios) {
+      final series = (ex['series'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      seriesTotais += series.length;
+      for (var s in series) {
+        final peso = double.tryParse(s['pesoRealizado']?.toString() ?? '0') ?? 0;
+        final reps = int.tryParse(s['repsRealizadas']?.toString() ?? '0') ?? 0;
+        volumeTotal += peso * reps;
+      }
+    }
+
+    final hasVolume = volumeTotal > 0;
+    final volumeDisplay = volumeTotal >= 1000
+        ? '${(volumeTotal / 1000).toStringAsFixed(1)}k'
+        : volumeTotal.toStringAsFixed(0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Hero Section
+        Text(
+          item.sessaoNome.isEmpty ? 'Treino concluído' : item.sessaoNome,
+          style: AppTheme.bigTitle.copyWith(
+            fontSize: 28,
+            letterSpacing: -0.5,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            AppAvatar(
+              name: item.alunoNome,
+              photoUrl: item.alunoPhotoUrl,
+              radius: 10,
+              showBorder: false,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '${item.alunoNome} • $dataFormatada, $horaFormatada',
+              style: AppTheme.caption.copyWith(
+                color: AppColors.labelSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        // Summary Grid
+        Row(
+          children: [
+            Expanded(
+              child: _SummaryItem(
+                label: 'DURAÇÃO',
+                value: '${item.duracaoMinutos}',
+                unit: 'min',
+                icon: Icons.timer_outlined,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _SummaryItem(
+                label: hasVolume ? 'VOLUME' : 'SÉRIES',
+                value: hasVolume ? volumeDisplay : '$seriesTotais',
+                unit: hasVolume ? 'kg' : 'total',
+                icon: hasVolume ? Icons.fitness_center_rounded : Icons.reorder_rounded,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _SummaryItem(
+                label: 'ESFORÇO',
+                value: item.esforco != null && item.esforco! > 0 ? '${item.esforco}' : '—',
+                unit: '/10',
+                icon: Icons.bolt_rounded,
+                valueColor: (item.esforco != null && item.esforco! > 0)
+                    ? _getEsforcoColor(item.esforco!)
+                    : null,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Color _getEsforcoColor(int v) {
+    if (v <= 5) return AppColors.primary;
+    if (v <= 7) return AppColors.accentMetrics;
+    if (v <= 9) return const Color(0xFFFF6B35);
+    return AppColors.systemRed;
+  }
+}
+
+class _SummaryItem extends StatelessWidget {
+  final String label;
+  final String value;
+  final String unit;
+  final IconData icon;
+  final Color? valueColor;
+
+  const _SummaryItem({
+    required this.label,
+    required this.value,
+    required this.unit,
+    required this.icon,
+    this.valueColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: CardTokens.padding,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       decoration: BoxDecoration(
         color: AppColors.surfaceDark,
         borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-        border: Border.all(color: Colors.white.withAlpha(8)),
+        border: Border.all(color: Colors.white.withAlpha(5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              AppAvatar(
-                name: item.alunoNome,
-                photoUrl: item.alunoPhotoUrl,
-                radius: AvatarTokens.lg,
-                showBorder: false,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(item.alunoNome, style: AppTheme.cardTitle.copyWith(
-                      fontSize: 20,
-                    )),
-                    const SizedBox(height: SpacingTokens.xs),
-                    Text(
-                      item.sessaoNome.isEmpty
-                          ? 'Concluiu um treino'
-                          : 'Concluiu o treino "${item.sessaoNome}"',
-                      style: AppTheme.cardSubtitle,
-                    ),
-                  ],
+              Icon(icon, size: 12, color: AppColors.labelTertiary),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: AppTheme.microLabelTextStyle.copyWith(
+                  fontSize: 9,
+                  color: AppColors.labelTertiary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: SpacingTokens.md),
-          Divider(height: 1, thickness: 0.5, color: AppColors.separator),
-          const SizedBox(height: SpacingTokens.md),
+          const SizedBox(height: 10),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
-              _MetaChip(
-                icon: Icons.calendar_today_rounded,
-                label: dataFormatada,
-              ),
-              if (item.duracaoMinutos > 0) ...[
-                const SizedBox(width: SpacingTokens.sm),
-                _MetaChip(
-                  icon: Icons.timer_rounded,
-                  label: '${item.duracaoMinutos} min',
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: valueColor ?? AppColors.labelPrimary,
+                  height: 1,
                 ),
-              ],
+              ),
+              const SizedBox(width: 2),
+              Text(
+                unit,
+                style: AppTheme.caption2.copyWith(
+                  color: AppColors.labelTertiary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ],
       ),
-    );
-  }
-}
-
-class _MetaChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  const _MetaChip({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 12, color: AppColors.labelSecondary),
-        const SizedBox(width: 4),
-        Text(label, style: AppTheme.caption),
-      ],
     );
   }
 }
