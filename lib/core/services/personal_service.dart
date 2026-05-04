@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/aluno_service.dart';
 import '../models/atencao_item.dart';
 
@@ -29,6 +30,8 @@ class PersonalService {
 
   String? get _currentPersonalId => _supabase.auth.currentUser?.id;
 
+  static const String _lastViewedKeyPrefix = 'last_viewed_atencao_';
+
   /// Busca as métricas do dashboard do personal
   Future<ContagemAlunos> fetchContagens() async {
     final personalId = _currentPersonalId;
@@ -44,18 +47,56 @@ class PersonalService {
       final list = res as List;
       final ativos = list.where((a) => a['status'] == 'ativo').length;
 
-      // Busca contagem de itens de atenção para o campo 'risco'
+      // Busca contagem de itens de atenção
       final itensAtencao = await fetchAtencaoItems();
+      
+      // Filtra apenas os que são "novos" (posteriores à última visualização)
+      final prefs = await SharedPreferences.getInstance();
+      final lastViewedStr = prefs.getString('${_lastViewedKeyPrefix}$personalId');
+      
+      int riscoCount = itensAtencao.length;
+      
+      if (lastViewedStr != null) {
+        final lastViewed = DateTime.parse(lastViewedStr);
+        riscoCount = itensAtencao.where((item) => item.dataReferencia.isAfter(lastViewed)).length;
+      }
 
       return ContagemAlunos(
         total: list.length,
         ativos: ativos,
         inativos: list.length - ativos,
-        risco: itensAtencao.length,
+        risco: riscoCount,
       );
     } catch (e) {
       return ContagemAlunos(total: 0, ativos: 0, inativos: 0, risco: 0);
     }
+  }
+
+  /// Marca todos os itens de atenção atuais como "vistos"
+  Future<void> marcarAtencaoComoVista() async {
+    final personalId = _currentPersonalId;
+    if (personalId == null) return;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('${_lastViewedKeyPrefix}$personalId', DateTime.now().toIso8601String());
+    } catch (e) {
+      // Falha silenciosa
+    }
+  }
+
+  /// Dados da página de atenção (itens + data da última visualização)
+  Future<({List<AtencaoItem> items, DateTime? lastViewed})> fetchAtencaoData() async {
+    final personalId = _currentPersonalId;
+    if (personalId == null) return (items: <AtencaoItem>[], lastViewed: null);
+
+    final items = await fetchAtencaoItems();
+    
+    final prefs = await SharedPreferences.getInstance();
+    final lastViewedStr = prefs.getString('${_lastViewedKeyPrefix}$personalId');
+    final lastViewed = lastViewedStr != null ? DateTime.parse(lastViewedStr) : null;
+
+    return (items: items, lastViewed: lastViewed);
   }
 
   /// Busca itens que precisam de atenção do personal
@@ -138,33 +179,6 @@ class PersonalService {
               ));
             }
           }
-        }
-      }
-
-      // 3. Feedback Crítico (últimos logs com esforço >= 9)
-      final logsRes = await _supabase
-          .from('logs_treino')
-          .select('id, aluno_id, esforco, data_hora, profiles:profiles!logs_treino_aluno_id_fkey(nome, sobrenome, photo_url)')
-          .eq('personal_id', personalId)
-          .gte('esforco', 9)
-          .order('data_hora', ascending: false)
-          .limit(10);
-
-      final logsCriticos = logsRes as List;
-      for (var log in logsCriticos) {
-        final profile = log['profiles'];
-        final dataHora = DateTime.parse(log['data_hora']);
-
-        // Só adicionar se for recente (últimos 3 dias) para não poluir
-        if (agora.difference(dataHora).inDays <= 3) {
-          items.add(AtencaoItem(
-            alunoId: log['aluno_id'],
-            alunoNome: '${profile['nome']} ${profile['sobrenome'] ?? ''}'.trim(),
-            alunoPhotoUrl: profile['photo_url'],
-            tipo: TipoAtencao.feedbackCritico,
-            descricao: 'Relatou esforço nível ${log['esforco']}',
-            dataReferencia: dataHora,
-          ));
         }
       }
 

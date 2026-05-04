@@ -16,12 +16,14 @@ class PersonalAtencaoPage extends StatefulWidget {
 }
 
 class _PersonalAtencaoPageState extends State<PersonalAtencaoPage> {
-  late Future<List<AtencaoItem>> _itensFuture;
+  late Future<({List<AtencaoItem> items, DateTime? lastViewed})> _dataFuture;
 
   @override
   void initState() {
     super.initState();
-    _itensFuture = widget.personalService.fetchAtencaoItems();
+    _dataFuture = widget.personalService.fetchAtencaoData();
+    // Marca como visto ao abrir a página (após iniciar a busca dos dados)
+    widget.personalService.marcarAtencaoComoVista();
   }
 
   @override
@@ -36,8 +38,8 @@ class _PersonalAtencaoPageState extends State<PersonalAtencaoPage> {
         title: const Text('Atenção necessária'),
         bottom: const AppBarDivider(),
       ),
-      body: FutureBuilder<List<AtencaoItem>>(
-        future: _itensFuture,
+      body: FutureBuilder<({List<AtencaoItem> items, DateTime? lastViewed})>(
+        future: _dataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -52,7 +54,9 @@ class _PersonalAtencaoPageState extends State<PersonalAtencaoPage> {
             );
           }
 
-          final items = snapshot.data ?? [];
+          final data = snapshot.data;
+          final items = data?.items ?? [];
+          final lastViewed = data?.lastViewed;
 
           if (items.isEmpty) {
             return Center(
@@ -88,7 +92,8 @@ class _PersonalAtencaoPageState extends State<PersonalAtencaoPage> {
             itemCount: items.length,
             itemBuilder: (context, index) {
               final item = items[index];
-              return _AtencaoCard(item: item);
+              final isNew = lastViewed == null || item.dataReferencia.isAfter(lastViewed);
+              return _AtencaoCard(item: item, isNew: isNew);
             },
           );
         },
@@ -99,8 +104,9 @@ class _PersonalAtencaoPageState extends State<PersonalAtencaoPage> {
 
 class _AtencaoCard extends StatelessWidget {
   final AtencaoItem item;
+  final bool isNew;
 
-  const _AtencaoCard({required this.item});
+  const _AtencaoCard({required this.item, this.isNew = false});
 
 
   @override
@@ -110,86 +116,118 @@ class _AtencaoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceDark,
         borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-        border: Border.all(color: Colors.white.withAlpha(5)),
+        border: Border.all(
+          color: isNew 
+              ? AppColors.primary.withAlpha(80) 
+              : Colors.white.withAlpha(5),
+          width: isNew ? 1.5 : 1,
+        ),
       ),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => PersonalAlunoPerfilPage(
-              alunoId: item.alunoId,
-              alunoNome: item.alunoNome,
-              photoUrl: item.alunoPhotoUrl,
-            ),
-          ),
-        ),
-        child: Padding(
-          padding: CardTokens.padding,
-          child: Row(
-            children: [
-              AppAvatar(
-                name: item.alunoNome,
-                photoUrl: item.alunoPhotoUrl,
-                radius: AvatarTokens.md,
-                showBorder: false,
+      child: Stack(
+        children: [
+          InkWell(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PersonalAlunoPerfilPage(
+                  alunoId: item.alunoId,
+                  alunoNome: item.alunoNome,
+                  photoUrl: item.alunoPhotoUrl,
+                ),
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+            ),
+            child: Padding(
+              padding: CardTokens.padding,
+              child: Row(
+                children: [
+                  AppAvatar(
+                    name: item.alunoNome,
+                    photoUrl: item.alunoPhotoUrl,
+                    radius: AvatarTokens.md,
+                    showBorder: false,
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(item.alunoNome, style: AppTheme.cardTitle),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: item.tipo.color.withAlpha(30),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            item.tipo.label.toUpperCase(),
-                            style: AppTheme.caption.copyWith(
-                              color: item.tipo.color,
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
+                        Row(
+                          children: [
+                            Text(item.alunoNome, style: AppTheme.cardTitle),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: item.tipo.color.withAlpha(30),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                item.tipo.label.toUpperCase(),
+                                style: AppTheme.caption.copyWith(
+                                  color: item.tipo.color,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          item.descricao,
+                          style: AppTheme.cardSubtitle.copyWith(
+                            color: item.tipo == TipoAtencao.feedbackCritico
+                              ? item.tipo.color
+                              : AppColors.labelSecondary,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item.descricao,
-                      style: AppTheme.cardSubtitle.copyWith(
-                        color: item.tipo == TipoAtencao.feedbackCritico
-                          ? item.tipo.color
-                          : AppColors.labelSecondary,
-                      ),
-                    ),
-                  ],
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    item.tipo.icon,
+                    size: 20,
+                    color: item.tipo.color.withAlpha(150),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 18,
+                    color: AppColors.labelSecondary.withAlpha(80),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (isNew)
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  'NOVO',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 8,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Icon(
-                item.tipo.icon,
-                size: 20,
-                color: item.tipo.color.withAlpha(150),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 18,
-                color: AppColors.labelSecondary.withAlpha(80),
-              ),
-            ],
-          ),
-        ),
+            ),
+        ],
       ),
     );
   }

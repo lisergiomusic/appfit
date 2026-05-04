@@ -524,11 +524,6 @@ class _ExercicioTileState extends State<_ExercicioTile> {
   @override
   Widget build(BuildContext context) {
     final nome = widget.exercicio['nome']?.toString() ?? '';
-    final grupos = (widget.exercicio['grupoMuscular'] as List?)
-            ?.map((e) => e.toString())
-            .where((e) => e.isNotEmpty)
-            .toList() ??
-        [];
     final series =
         (widget.exercicio['series'] as List?)?.cast<Map<String, dynamic>>() ??
             [];
@@ -593,8 +588,8 @@ class _Thumbnail extends StatelessWidget {
             return CachedNetworkImage(
               imageUrl: url,
               fit: BoxFit.cover,
-              placeholder: (_, __) => Container(color: Colors.black.withAlpha(20)),
-              errorWidget: (_, __, ___) => const Icon(Icons.fitness_center, color: AppColors.labelTertiary, size: 20),
+              placeholder: (_, _) => Container(color: Colors.black.withAlpha(20)),
+              errorWidget: (_, _, _) => const Icon(Icons.fitness_center, color: AppColors.labelTertiary, size: 20),
             );
           },
         ),

@@ -30,12 +30,18 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
   final SupabaseAuthService _authService = SupabaseAuthService();
   final UserService _userService = UserService();
   final PersonalService _personalService = PersonalService();
-  late final Future<ContagemAlunos> _contagensFuture;
+  Future<ContagemAlunos>? _contagensFuture;
 
   @override
   void initState() {
     super.initState();
-    _contagensFuture = _personalService.fetchContagens();
+    _refreshContagens();
+  }
+
+  void _refreshContagens() {
+    setState(() {
+      _contagensFuture = _personalService.fetchContagens();
+    });
   }
 
   @override
@@ -53,33 +59,47 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
         centerTitle: false,
 
         actions: [
-          IconButton(
-            icon: Stack(
-              children: [
-                const Icon(
-                  Icons.notifications_rounded,
-                  color: AppColors.primary,
-                  size: 26,
-                ),
-                Positioned(
-                  right: 2,
-                  top: 2,
-                  child: Container(
-                    width: 9,
-                    height: 9,
-                    decoration: BoxDecoration(
-                      color: AppColors.systemRed,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppColors.background,
-                        width: 1.5,
+          FutureBuilder<ContagemAlunos>(
+            future: _contagensFuture,
+            builder: (context, snapshot) {
+              final hasNew = (snapshot.data?.risco ?? 0) > 0;
+              return IconButton(
+                icon: Stack(
+                  children: [
+                    const Icon(
+                      Icons.notifications_rounded,
+                      color: AppColors.primary,
+                      size: 26,
+                    ),
+                    if (hasNew)
+                      Positioned(
+                        right: 2,
+                        top: 2,
+                        child: Container(
+                          width: 9,
+                          height: 9,
+                          decoration: BoxDecoration(
+                            color: AppColors.systemRed,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.background,
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
                       ),
+                  ],
+                ),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PersonalAtencaoPage(
+                      personalService: _personalService,
                     ),
                   ),
-                ),
-              ],
-            ),
-            onPressed: () {},
+                ).then((_) => _refreshContagens()),
+              );
+            },
           ),
           const SizedBox(width: 8),
         ],
@@ -195,9 +215,11 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                         return _buildStatCard(
                           label: 'Atenção necessária',
                           value: count,
-                          trendText: 'Pendentes',
+                          trendText: 'Novos alertas',
                           trendIcon: Icons.error_rounded,
-                          trendColor: AppColors.accentMetrics,
+                          trendColor: (snapshot.data?.risco ?? 0) > 0 
+                              ? AppColors.systemRed 
+                              : AppColors.accentMetrics,
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -205,7 +227,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                                 personalService: _personalService,
                               ),
                             ),
-                          ),
+                          ).then((_) => _refreshContagens()),
                         );
                       },
                     ),
