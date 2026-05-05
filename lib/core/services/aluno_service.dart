@@ -113,35 +113,41 @@ class AlunoService {
 
   /// Stream dos logs de treino da semana atual (para o Ritmo da Semana)
   Stream<List<Map<String, dynamic>>> getLogsDaSemanaStream(String alunoId) {
-    final now = DateTime.now();
-    // Segunda-feira como início da semana
-    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-    final startOfDate = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+    return _resolveRealIdStream(alunoId).switchMap((realId) {
+      if (realId == null) return Stream.value([]);
 
-    // Ouvimos diretamente a tabela de logs. 
-    // O RLS deve garantir que o Personal veja apenas os logs dos seus alunos.
-    return _supabase
-        .from('logs_treino')
-        .stream(primaryKey: ['id'])
-        .eq('aluno_id', alunoId)
-        .map((list) {
-          final filtrados = list
-              .where((item) {
-                final dataHoraStr = item['data_hora']?.toString();
-                if (dataHoraStr == null) return false;
-                final dataHora = DateTime.tryParse(dataHoraStr);
-                // Compara se é após o início da segunda-feira
-                return dataHora != null && dataHora.isAfter(startOfDate);
-              })
-              .map((item) => {
-                    'id': item['id'],
-                    'dataHora': item['data_hora'],
-                  })
-              .toList();
-          
-          debugPrint('>>> [AlunoService] Logs encontrados para a semana: ${filtrados.length}');
-          return filtrados;
-        });
+      // Ouvimos diretamente a tabela de logs.
+      // O RLS deve garantir que o Aluno veja apenas seus logs e o Personal veja os dos alunos.
+      return _supabase
+          .from('logs_treino')
+          .stream(primaryKey: ['id'])
+          .eq('aluno_id', realId)
+          .map((list) {
+            final now = DateTime.now();
+            // Segunda-feira como início da semana
+            final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+            final startOfDate =
+                DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+
+            final filtrados = list
+                .where((item) {
+                  final dataHoraStr = item['data_hora']?.toString();
+                  if (dataHoraStr == null) return false;
+                  final dataHora = DateTime.tryParse(dataHoraStr);
+                  // Compara se é após o início da segunda-feira
+                  return dataHora != null && dataHora.isAfter(startOfDate);
+                })
+                .map((item) => {
+                      'id': item['id'],
+                      'dataHora': item['data_hora'],
+                    })
+                .toList();
+
+            debugPrint(
+                '>>> [AlunoService] Logs encontrados para a semana: ${filtrados.length}');
+            return filtrados;
+          });
+    });
   }
 
   /// Stream do último log de treino (para calcular o próximo treino na sequência)

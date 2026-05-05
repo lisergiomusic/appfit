@@ -19,140 +19,29 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
   final TreinoService _service = TreinoService();
   late final Stream<dynamic> _pesoStream;
 
-  // Cache por mês: "yyyy-MM" → lista de logs
-  final Map<String, List<Map<String, dynamic>>> _logsPorMes = {};
-  final Set<String> _mesesCarregando = {};
-  final Set<String> _mesesCarregados = {};
-
-  bool _carregandoInicial = true;
-  String? _erro;
-
-  static String _chave(DateTime mes) =>
-      '${mes.year}-${mes.month.toString().padLeft(2, '0')}';
+  // Cache de streams por mês para evitar flickering e re-conexões constantes
+  final Map<String, Stream<List<Map<String, dynamic>>>> _streamsCache = {};
 
   @override
   void initState() {
     super.initState();
     _pesoStream = AlunoService().getHistoricoPesoStream(widget.uid);
-    _carregarPrimeiraPagina();
   }
 
-  Future<void> _carregarPrimeiraPagina() async {
-    final hoje = DateTime.now();
-    try {
-      await _carregarMes(DateTime(hoje.year, hoje.month));
-      if (!mounted) return;
-      setState(() => _carregandoInicial = false);
-    } catch (e) {
-      debugPrint('[AlunoHistoricoPage] erro: $e');
-      if (!mounted) return;
-      setState(() {
-        _erro = 'Erro ao carregar histórico.';
-        _carregandoInicial = false;
-      });
-    }
-  }
-
-  Future<void> _carregarMes(DateTime mes) async {
-    final chave = _chave(mes);
-    if (_mesesCarregados.contains(chave) || _mesesCarregando.contains(chave)) {
-      return;
-    }
-
-    setState(() => _mesesCarregando.add(chave));
-
-    try {
+  Stream<List<Map<String, dynamic>>> _getLogsStreamParaMes(DateTime mes) {
+    final chave = '${mes.year}-${mes.month}';
+    if (!_streamsCache.containsKey(chave)) {
       final inicio = DateTime(mes.year, mes.month, 1);
       final fim = DateTime(mes.year, mes.month + 1, 1)
           .subtract(const Duration(seconds: 1));
-      final logs = await _service.fetchLogsInterval(widget.uid, inicio, fim);
-      
-      if (!mounted) return;
-      setState(() {
-        _logsPorMes[chave] = logs;
-        _mesesCarregados.add(chave);
-        _mesesCarregando.remove(chave);
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _mesesCarregando.remove(chave));
-      rethrow; // Propaga para o _carregarPrimeiraPagina capturar
+      _streamsCache[chave] =
+          _service.getLogsIntervalStream(widget.uid, inicio, fim);
     }
-  }
-
-  Map<DateTime, List<Map<String, dynamic>>> get _logsPorDia {
-    final result = <DateTime, List<Map<String, dynamic>>>{};
-    for (final logs in _logsPorMes.values) {
-      for (final log in logs) {
-        final tsRaw = log['dataHora'];
-        final ts = tsRaw != null ? DateTime.tryParse(tsRaw.toString()) : null;
-        if (ts == null) continue;
-        final dia = DateTime(ts.year, ts.month, ts.day);
-        result.putIfAbsent(dia, () => []).add(log);
-      }
-    }
-    return result;
+    return _streamsCache[chave]!;
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_carregandoInicial) {
-      return _buildScaffoldComAppBar(
-        'Meu histórico',
-        const Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 40),
-            child: CircularProgressIndicator(color: AppColors.primary),
-          ),
-        ),
-      );
-    }
-
-    if (_erro != null) {
-      return _buildScaffoldComAppBar(
-        'Meu Histórico',
-        Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                _erro!,
-                style: const TextStyle(color: AppColors.labelSecondary),
-              ),
-              const SizedBox(height: 16),
-              TextButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _erro = null;
-                    _carregandoInicial = true;
-                    _logsPorMes.clear();
-                    _mesesCarregando.clear();
-                    _mesesCarregados.clear();
-                  });
-                  _carregarPrimeiraPagina();
-                },
-                icon: const Icon(Icons.refresh, color: AppColors.primary),
-                label: const Text(
-                  'Tentar novamente',
-                  style: TextStyle(color: AppColors.primary),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return _HistoricoContent(
-      logsPorDia: _logsPorDia,
-      mesesCarregando: _mesesCarregando,
-      onMesChanged: _carregarMes,
-      uid: widget.uid,
-      pesoStream: _pesoStream,
-    );
-  }
-
-  Scaffold _buildScaffoldComAppBar(String titulo, Widget content) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -160,13 +49,17 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: false,
-        title: Padding(
-          padding: const EdgeInsets.only(left: 4),
-          child: Text(titulo),
+        title: const Padding(
+          padding: EdgeInsets.only(left: 4),
+          child: Text('Meu histórico'),
         ),
         bottom: const AppBarDivider(),
       ),
-      body: content,
+      body: _HistoricoContent(
+        uid: widget.uid,
+        pesoStream: _pesoStream,
+        getLogsStream: _getLogsStreamParaMes,
+      ),
     );
   }
 }
@@ -176,18 +69,14 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _HistoricoContent extends StatelessWidget {
-  final Map<DateTime, List<Map<String, dynamic>>> logsPorDia;
-  final Set<String> mesesCarregando;
-  final void Function(DateTime mes) onMesChanged;
   final String uid;
   final Stream<dynamic> pesoStream;
+  final Stream<List<Map<String, dynamic>>> Function(DateTime mes) getLogsStream;
 
   const _HistoricoContent({
-    required this.logsPorDia,
-    required this.mesesCarregando,
-    required this.onMesChanged,
     required this.uid,
     required this.pesoStream,
+    required this.getLogsStream,
   });
 
   void _abrirEdicaoPeso(BuildContext context, double? pesoAtual) {
@@ -209,78 +98,63 @@ class _HistoricoContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        centerTitle: false,
-        title: const Padding(
-          padding: EdgeInsets.only(left: 4),
-          child: Text('Meu histórico'),
-        ),
-
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(
+        horizontal: SpacingTokens.screenHorizontalPadding,
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(
-          horizontal: SpacingTokens.screenHorizontalPadding,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: SpacingTokens.lg),
-            _CalendarioFrequenciaCard(
-              logsPorDia: logsPorDia,
-              mesesCarregando: mesesCarregando,
-              onMesChanged: onMesChanged,
-            ),
-            const SizedBox(height: SpacingTokens.xxl),
-            StreamBuilder<dynamic>(
-              stream: pesoStream,
-              builder: (context, historicoSnap) {
-                if (historicoSnap.hasError) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Center(
-                      child: Text(
-                        'Erro ao carregar histórico de peso',
-                        style: TextStyle(color: AppColors.labelTertiary),
-                      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: SpacingTokens.lg),
+          _CalendarioFrequenciaCard(
+            getLogsStream: getLogsStream,
+          ),
+          const SizedBox(height: SpacingTokens.xxl),
+          StreamBuilder<dynamic>(
+            stream: pesoStream,
+            builder: (context, historicoSnap) {
+              if (historicoSnap.hasError) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Center(
+                    child: Text(
+                      'Erro ao carregar histórico de peso',
+                      style: TextStyle(color: AppColors.labelTertiary),
                     ),
-                  );
-                }
-
-                if (historicoSnap.connectionState == ConnectionState.waiting) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 40),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                        strokeWidth: 2,
-                      ),
-                    ),
-                  );
-                }
-
-                final List<Map<String, dynamic>>? historico = historicoSnap.hasData
-                    ? List<Map<String, dynamic>>.from(historicoSnap.data!)
-                    : null;
-                final double? pesoAtual =
-                    historico != null && historico.isNotEmpty
-                        ? (historico.first['peso'] as num?)?.toDouble()
-                        : null;
-                return PesoHistoricoCard(
-                  pesoAtual: pesoAtual,
-                  historico: historico,
-                  onAdicionarPeso: () => _abrirEdicaoPeso(context, pesoAtual),
+                  ),
                 );
-              },
-            ),
-            const SizedBox(height: SpacingTokens.screenBottomPadding),
-          ],
-        ),
+              }
+
+              if (historicoSnap.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primary,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                );
+              }
+
+              final List<Map<String, dynamic>>? historico =
+                  historicoSnap.hasData
+                      ? List<Map<String, dynamic>>.from(historicoSnap.data!)
+                      : null;
+              final double? pesoAtual =
+                  historico != null && historico.isNotEmpty
+                      ? (historico.first['peso'] as num?)?.toDouble()
+                      : null;
+              return PesoHistoricoCard(
+                pesoAtual: pesoAtual,
+                historico: historico,
+                onAdicionarPeso: () => _abrirEdicaoPeso(context, pesoAtual),
+              );
+            },
+          ),
+          const SizedBox(height: SpacingTokens.screenBottomPadding),
+        ],
       ),
     );
   }
@@ -291,14 +165,10 @@ class _HistoricoContent extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _CalendarioFrequenciaCard extends StatefulWidget {
-  final Map<DateTime, List<Map<String, dynamic>>> logsPorDia;
-  final Set<String> mesesCarregando;
-  final void Function(DateTime mes) onMesChanged;
+  final Stream<List<Map<String, dynamic>>> Function(DateTime mes) getLogsStream;
 
   const _CalendarioFrequenciaCard({
-    required this.logsPorDia,
-    required this.mesesCarregando,
-    required this.onMesChanged,
+    required this.getLogsStream,
   });
 
   @override
@@ -306,24 +176,24 @@ class _CalendarioFrequenciaCard extends StatefulWidget {
       _CalendarioFrequenciaCardState();
 }
 
-class _CalendarioFrequenciaCardState
-    extends State<_CalendarioFrequenciaCard> {
+class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
   late DateTime _mesAtual;
+  late Stream<List<Map<String, dynamic>>> _logsStream;
 
   @override
   void initState() {
     super.initState();
     final hoje = DateTime.now();
     _mesAtual = DateTime(hoje.year, hoje.month);
+    _logsStream = widget.getLogsStream(_mesAtual);
   }
-
-  String get _chaveMesAtual =>
-      '${_mesAtual.year}-${_mesAtual.month.toString().padLeft(2, '0')}';
 
   void _irParaMesAnterior() {
     final novoMes = DateTime(_mesAtual.year, _mesAtual.month - 1);
-    setState(() => _mesAtual = novoMes);
-    widget.onMesChanged(novoMes);
+    setState(() {
+      _mesAtual = novoMes;
+      _logsStream = widget.getLogsStream(novoMes);
+    });
   }
 
   void _irParaProximoMes() {
@@ -331,9 +201,24 @@ class _CalendarioFrequenciaCardState
     final mesHoje = DateTime(hoje.year, hoje.month);
     if (_mesAtual.isBefore(mesHoje)) {
       final novoMes = DateTime(_mesAtual.year, _mesAtual.month + 1);
-      setState(() => _mesAtual = novoMes);
-      widget.onMesChanged(novoMes);
+      setState(() {
+        _mesAtual = novoMes;
+        _logsStream = widget.getLogsStream(novoMes);
+      });
     }
+  }
+
+  Map<DateTime, List<Map<String, dynamic>>> _processarLogs(
+      List<Map<String, dynamic>> logs) {
+    final result = <DateTime, List<Map<String, dynamic>>>{};
+    for (final log in logs) {
+      final tsRaw = log['dataHora'];
+      final ts = tsRaw != null ? DateTime.tryParse(tsRaw.toString()) : null;
+      if (ts == null) continue;
+      final dia = DateTime(ts.year, ts.month, ts.day);
+      result.putIfAbsent(dia, () => []).add(log);
+    }
+    return result;
   }
 
   void _onDiaTapped(
@@ -360,150 +245,165 @@ class _CalendarioFrequenciaCardState
 
   @override
   Widget build(BuildContext context) {
-    final hoje = DateTime.now();
-    final mesHoje = DateTime(hoje.year, hoje.month);
-    final isUltimoMes = !_mesAtual.isBefore(mesHoje);
-    final isCarregando = widget.mesesCarregando.contains(_chaveMesAtual);
+    return StreamBuilder<List<Map<String, dynamic>>>(
+      stream: _logsStream,
+      builder: (context, snapshot) {
+        final logs = snapshot.data ?? [];
+        final logsPorDia = _processarLogs(logs);
+        final isCarregando =
+            snapshot.connectionState == ConnectionState.waiting;
 
-    final nomeMesRaw = DateFormat('MMMM', 'pt_BR').format(_mesAtual);
-    final nomeMes = nomeMesRaw[0].toUpperCase() + nomeMesRaw.substring(1);
-    final diasNoMes =
-        DateUtils.getDaysInMonth(_mesAtual.year, _mesAtual.month);
-    final primeiroDia = DateTime(_mesAtual.year, _mesAtual.month, 1);
-    final offsetInicio = (primeiroDia.weekday - 1) % 7;
+        final hoje = DateTime.now();
+        final mesHoje = DateTime(hoje.year, hoje.month);
+        final isUltimoMes = !_mesAtual.isBefore(mesHoje);
 
-    final treinosNoMes = widget.logsPorDia.keys
-        .where(
-          (d) => d.year == _mesAtual.year && d.month == _mesAtual.month,
-        )
-        .length;
+        final nomeMesRaw = DateFormat('MMMM', 'pt_BR').format(_mesAtual);
+        final nomeMes = nomeMesRaw[0].toUpperCase() + nomeMesRaw.substring(1);
+        final diasNoMes =
+            DateUtils.getDaysInMonth(_mesAtual.year, _mesAtual.month);
+        final primeiroDia = DateTime(_mesAtual.year, _mesAtual.month, 1);
+        final offsetInicio = (primeiroDia.weekday - 1) % 7;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(4, 16, 4, 12),
-      decoration: AppTheme.cardDecoration,
-      child: Column(
-        children: [
-          // ── Cabeçalho ──────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$nomeMes ${_mesAtual.year}',
-                        style: CardTokens.cardTitle,
-                      ),
-                      const SizedBox(height: 4),
-                      isCarregando
-                          ? const SizedBox(
-                              height: 14,
-                              width: 14,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 1.5,
-                                color: AppColors.primary,
+        final treinosNoMes = logsPorDia.keys
+            .where(
+              (d) => d.year == _mesAtual.year && d.month == _mesAtual.month,
+            )
+            .length;
+
+        return Container(
+          padding: const EdgeInsets.fromLTRB(4, 16, 4, 12),
+          decoration: AppTheme.cardDecoration,
+          child: Column(
+            children: [
+              // ── Cabeçalho ──────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                '$nomeMes ${_mesAtual.year}',
+                                style: CardTokens.cardTitle,
                               ),
-                            )
-                          : Text(
-                              treinosNoMes == 0
-                                  ? 'Nenhum treino neste mês'
-                                  : treinosNoMes == 1
-                                  ? '1 treino neste mês'
-                                  : '$treinosNoMes treinos neste mês',
-                              style: AppTheme.caption.copyWith(
-                                color: treinosNoMes > 0
-                                    ? AppColors.primary
-                                    : AppColors.labelTertiary,
-                              ),
+                              if (isCarregando) ...[
+                                const SizedBox(width: 8),
+                                const SizedBox(
+                                  height: 12,
+                                  width: 12,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 1.5,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            treinosNoMes == 0
+                                ? 'Nenhum treino neste mês'
+                                : treinosNoMes == 1
+                                    ? '1 treino neste mês'
+                                    : '$treinosNoMes treinos neste mês',
+                            style: AppTheme.caption.copyWith(
+                              color: treinosNoMes > 0
+                                  ? AppColors.primary
+                                  : AppColors.labelTertiary,
                             ),
-                    ],
-                  ),
-                ),
-                _NavButton(
-                  icon: Icons.chevron_left_rounded,
-                  onTap: _irParaMesAnterior,
-                ),
-                const SizedBox(width: 4),
-                _NavButton(
-                  icon: Icons.chevron_right_rounded,
-                  onTap: isUltimoMes ? null : _irParaProximoMes,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // ── Labels dias da semana ────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: Row(
-              children: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
-                  .asMap()
-                  .entries
-                  .map(
-                    (e) => Expanded(
-                      child: Text(
-                        e.value,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                          color: e.key == 6
-                              ? AppColors.systemRed.withAlpha(150)
-                              : AppColors.labelTertiary,
-                          letterSpacing: 0.1,
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                  )
-                  .toList(),
-            ),
-          ),
-
-          // ── Grade de dias ──────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 7,
-                mainAxisSpacing: 2,
-                crossAxisSpacing: 0,
-                childAspectRatio: 1,
+                    _NavButton(
+                      icon: Icons.chevron_left_rounded,
+                      onTap: _irParaMesAnterior,
+                    ),
+                    const SizedBox(width: 4),
+                    _NavButton(
+                      icon: Icons.chevron_right_rounded,
+                      onTap: isUltimoMes ? null : _irParaProximoMes,
+                    ),
+                  ],
+                ),
               ),
-              itemCount: offsetInicio + diasNoMes,
-              itemBuilder: (context, index) {
-                if (index < offsetInicio) return const SizedBox.shrink();
+              const SizedBox(height: 16),
 
-                final dia = index - offsetInicio + 1;
-                final data = DateTime(_mesAtual.year, _mesAtual.month, dia);
-                final logsNoDia = widget.logsPorDia[data];
-                final treinado = logsNoDia != null && logsNoDia.isNotEmpty;
-                final ehHoje =
-                    data.year == hoje.year &&
-                    data.month == hoje.month &&
-                    data.day == hoje.day;
-                final futuro = data.isAfter(hoje);
-                final isDomingo = index % 7 == 6;
+              // ── Labels dias da semana ────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: Row(
+                  children: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+                      .asMap()
+                      .entries
+                      .map(
+                        (e) => Expanded(
+                          child: Text(
+                            e.value,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: e.key == 6
+                                  ? AppColors.systemRed.withAlpha(150)
+                                  : AppColors.labelTertiary,
+                              letterSpacing: 0.1,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
 
-                return _DiaCelula(
-                  dia: dia,
-                  treinado: treinado,
-                  ehHoje: ehHoje,
-                  futuro: futuro,
-                  isDomingo: isDomingo,
-                  onTap: treinado
-                      ? () => _onDiaTapped(context, logsNoDia, data)
-                      : null,
-                );
-              },
-            ),
+              // ── Grade de dias ──────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 7,
+                    mainAxisSpacing: 2,
+                    crossAxisSpacing: 0,
+                    childAspectRatio: 1,
+                  ),
+                  itemCount: offsetInicio + diasNoMes,
+                  itemBuilder: (context, index) {
+                    if (index < offsetInicio) return const SizedBox.shrink();
+
+                    final dia = index - offsetInicio + 1;
+                    final data = DateTime(_mesAtual.year, _mesAtual.month, dia);
+                    final logsNoDia = logsPorDia[data];
+                    final treinado = logsNoDia != null && logsNoDia.isNotEmpty;
+                    final ehHoje =
+                        data.year == hoje.year &&
+                        data.month == hoje.month &&
+                        data.day == hoje.day;
+                    final futuro = data.isAfter(hoje);
+                    final isDomingo = index % 7 == 6;
+
+                    return _DiaCelula(
+                      dia: dia,
+                      treinado: treinado,
+                      ehHoje: ehHoje,
+                      futuro: futuro,
+                      isDomingo: isDomingo,
+                      onTap: treinado
+                          ? () => _onDiaTapped(context, logsNoDia, data)
+                          : null,
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

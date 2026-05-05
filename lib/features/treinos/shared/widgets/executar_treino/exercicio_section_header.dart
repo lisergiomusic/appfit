@@ -140,7 +140,10 @@ class ExercicioSectionHeader extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppTheme.radiusMD),
               ),
+              onOpened: () => FocusScope.of(context).unfocus(),
+              onCanceled: () => FocusScope.of(context).unfocus(),
               onSelected: (action) {
+                FocusScope.of(context).unfocus();
                 if (action == ExercicioMenuAction.detalhes) {
                   _goToExercicioDetails(context);
                 } else if (action == ExercicioMenuAction.trocar) {

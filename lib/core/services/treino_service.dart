@@ -104,6 +104,31 @@ class TreinoService {
     }
   }
 
+  Stream<List<Map<String, dynamic>>> getLogsIntervalStream(
+    String alunoId,
+    DateTime startDate,
+    DateTime endDate,
+  ) {
+    return _supabase
+        .from('logs_treino')
+        .stream(primaryKey: ['id'])
+        .eq('aluno_id', alunoId)
+        .map((list) {
+          return list
+              .where((item) {
+                final dataHoraStr = item['data_hora']?.toString();
+                if (dataHoraStr == null) return false;
+                final dataHora = DateTime.tryParse(dataHoraStr);
+                return dataHora != null &&
+                    dataHora.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+                    dataHora.isBefore(endDate.add(const Duration(seconds: 1)));
+              })
+              .map((item) => _normalizeLog(item))
+              .toList()
+            ..sort((a, b) => (b['dataHora'] as String).compareTo(a['dataHora'] as String));
+        });
+  }
+
   Future<Map<String, dynamic>> getTrainingStats(String alunoId) async {
     try {
       final logs = await fetchLogsAluno(alunoId);
