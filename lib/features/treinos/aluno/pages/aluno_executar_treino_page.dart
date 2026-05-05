@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:ui';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/treino_service.dart';
+import '../../../../core/services/workout_draft_service.dart';
 import '../../shared/models/rotina_model.dart';
 import '../../shared/models/historico_treino_model.dart';
 import '../../shared/models/exercicio_model.dart';
@@ -33,7 +34,7 @@ class AlunoExecutarTreinoPage extends StatefulWidget {
 }
 
 class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late ExecutarTreinoController _controller;
 
   late DateTime _startedAt;
@@ -52,6 +53,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _controller = ExecutarTreinoController(
       sessao: widget.sessao,
       rotinaId: widget.rotinaId,
@@ -75,6 +77,63 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
     _controller.carregarUltimoHistorico().then((_) {
       if (mounted) setState(() {});
     });
+
+    // Tenta recuperar rascunho anterior se for o mesmo treino
+    _loadDraftIfExists();
+  }
+
+  Future<void> _loadDraftIfExists() async {
+    final draft = await WorkoutDraftService().loadDraft();
+    if (draft != null &&
+        draft.alunoId == widget.alunoId &&
+        draft.rotinaId == widget.rotinaId &&
+        draft.sessao.nome == widget.sessao.nome) {
+      if (mounted) {
+        setState(() {
+          _startedAt = draft.startedAt;
+          _elapsedSeconds = DateTime.now().difference(_startedAt).inSeconds;
+          _recordedData.clear();
+          _recordedData.addAll(draft.recordedData);
+
+          // Atualiza os controllers de texto com o que estava no rascunho
+          for (var i = 0; i < widget.sessao.exercicios.length; i++) {
+            final key = 'exercicio_$i';
+            final seriesData = _recordedData[key]?['series'] as List?;
+            if (seriesData != null) {
+              for (var j = 0; j < seriesData.length; j++) {
+                if (j < _repsControllers[i].length) {
+                  _repsControllers[i][j].text =
+                      seriesData[j]['reps']?.toString() ?? '';
+                }
+                if (j < _pesoControllers[i].length) {
+                  _pesoControllers[i][j].text =
+                      seriesData[j]['peso']?.toString() ?? '';
+                }
+              }
+            }
+          }
+        });
+        _animateProgress();
+      }
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _saveDraft();
+    }
+  }
+
+  void _saveDraft() {
+    // Sincroniza o rascunho local com o estado atual antes de fechar/pausar
+    // (Apenas se houver algum progresso para evitar IO desnecessário)
+    if (_hasAnyProgress()) {
+      _controller.saveDraft(
+        startedAt: _startedAt,
+        recordedData: _recordedData,
+      );
+    }
   }
 
   void _initializeRecordedData() {
@@ -113,6 +172,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _elapsedTimer?.cancel();
     _progressAnimController.dispose();
     for (final row in _repsControllers) {
@@ -198,6 +258,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
           _pesoControllers[exercicioIndex][serieIndex].text;
     });
     _animateProgress();
+    _saveDraft();
   }
 
   void _onSwapExercise(int index) async {
@@ -234,6 +295,8 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
         _controller.carregarUltimoHistorico().then((_) {
           if (mounted) setState(() {});
         });
+
+        _saveDraft();
       });
       HapticFeedback.mediumImpact();
     }
@@ -268,7 +331,8 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
         esforco: feedback?.esforco ?? 0,
         observacoes: feedback?.observacoes ?? '',
       );
-      Navigator.of(context).pop();
+      await _controller.clearDraft();
+      if (mounted) Navigator.of(context).pop();
     } else {
       _startElapsedTimer();
     }
@@ -281,6 +345,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
     );
 
     if (confirm == true) {
+      await _controller.clearDraft();
       if (mounted) Navigator.pop(context);
     } else {
       _startElapsedTimer();

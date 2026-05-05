@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:appfit/core/services/treino_service.dart';
+import 'package:appfit/core/services/workout_draft_service.dart';
 import 'package:appfit/features/treinos/shared/models/historico_treino_model.dart';
 import '../../shared/models/rotina_model.dart';
 
@@ -9,6 +10,7 @@ class ExecutarTreinoController {
   final String rotinaId;
   final String alunoId;
   final TreinoService _treinoService;
+  final WorkoutDraftService _draftService;
 
   Map<String, List<SerieHistorico>> ultimoHistorico = {};
 
@@ -17,7 +19,30 @@ class ExecutarTreinoController {
     required this.rotinaId,
     required this.alunoId,
     TreinoService? treinoService,
-  }) : _treinoService = treinoService ?? TreinoService();
+    WorkoutDraftService? draftService,
+  })  : _treinoService = treinoService ?? TreinoService(),
+        _draftService = draftService ?? WorkoutDraftService();
+
+  /// Salva o estado atual do treino localmente para recuperação em caso de fechamento do app.
+  Future<void> saveDraft({
+    required DateTime startedAt,
+    required Map<String, dynamic> recordedData,
+  }) async {
+    final draft = WorkoutDraft(
+      alunoId: alunoId,
+      rotinaId: rotinaId,
+      sessao: sessao,
+      startedAt: startedAt,
+      recordedData: recordedData,
+      lastUpdated: DateTime.now(),
+    );
+    await _draftService.saveDraft(draft);
+  }
+
+  /// Remove o rascunho local.
+  Future<void> clearDraft() async {
+    await _draftService.clearDraft();
+  }
 
   /// Persiste o log da sessão em background (fire-and-forget).
   void saveTreinoLog(

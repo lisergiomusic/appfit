@@ -1,64 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-import '../../../../core/services/aluno_service.dart';
-import '../../../../core/services/treino_service.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/app_bar_divider.dart';
 import '../../../dashboard/aluno/widgets/peso_historico_card.dart';
+import '../controllers/historico_controller.dart';
 
-class AlunoHistoricoPage extends StatefulWidget {
+class AlunoHistoricoPage extends StatelessWidget {
   final String uid;
   const AlunoHistoricoPage({super.key, required this.uid});
 
   @override
-  State<AlunoHistoricoPage> createState() => _AlunoHistoricoPageState();
-}
-
-class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
-  final TreinoService _service = TreinoService();
-  late final Stream<dynamic> _pesoStream;
-
-  // Cache de streams por mês para evitar flickering e re-conexões constantes
-  final Map<String, Stream<List<Map<String, dynamic>>>> _streamsCache = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _pesoStream = AlunoService().getHistoricoPesoStream(widget.uid);
-  }
-
-  Stream<List<Map<String, dynamic>>> _getLogsStreamParaMes(DateTime mes) {
-    final chave = '${mes.year}-${mes.month}';
-    if (!_streamsCache.containsKey(chave)) {
-      final inicio = DateTime(mes.year, mes.month, 1);
-      final fim = DateTime(mes.year, mes.month + 1, 1)
-          .subtract(const Duration(seconds: 1));
-      _streamsCache[chave] =
-          _service.getLogsIntervalStream(widget.uid, inicio, fim);
-    }
-    return _streamsCache[chave]!;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
+    return ChangeNotifierProvider(
+      create: (_) => HistoricoController(uid: uid),
+      child: Scaffold(
         backgroundColor: AppColors.background,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        centerTitle: false,
-        title: const Padding(
-          padding: EdgeInsets.only(left: 4),
-          child: Text('Meu histórico'),
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          centerTitle: false,
+          title: const Padding(
+            padding: EdgeInsets.only(left: 4),
+            child: Text('Meu histórico'),
+          ),
         ),
-        bottom: const AppBarDivider(),
-      ),
-      body: _HistoricoContent(
-        uid: widget.uid,
-        pesoStream: _pesoStream,
-        getLogsStream: _getLogsStreamParaMes,
+        body: const _HistoricoContent(),
       ),
     );
   }
@@ -69,23 +37,15 @@ class _AlunoHistoricoPageState extends State<AlunoHistoricoPage> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _HistoricoContent extends StatelessWidget {
-  final String uid;
-  final Stream<dynamic> pesoStream;
-  final Stream<List<Map<String, dynamic>>> Function(DateTime mes) getLogsStream;
-
-  const _HistoricoContent({
-    required this.uid,
-    required this.pesoStream,
-    required this.getLogsStream,
-  });
+  const _HistoricoContent();
 
   void _abrirEdicaoPeso(BuildContext context, double? pesoAtual) {
+    final controller = context.read<HistoricoController>();
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) => _PesoEditSheet(
-        uid: uid,
         pesoAtual: pesoAtual,
-        service: AlunoService(),
+        onSalvar: (peso) => controller.registrarPeso(peso),
       ),
       isScrollControlled: true,
       shape: RoundedRectangleBorder(
@@ -98,6 +58,8 @@ class _HistoricoContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<HistoricoController>();
+
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(
@@ -107,12 +69,10 @@ class _HistoricoContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: SpacingTokens.lg),
-          _CalendarioFrequenciaCard(
-            getLogsStream: getLogsStream,
-          ),
+          const _CalendarioFrequenciaCard(),
           const SizedBox(height: SpacingTokens.xxl),
           StreamBuilder<dynamic>(
-            stream: pesoStream,
+            stream: controller.pesoStream,
             builder: (context, historicoSnap) {
               if (historicoSnap.hasError) {
                 return const Padding(
@@ -164,62 +124,8 @@ class _HistoricoContent extends StatelessWidget {
 // Calendário mensal de frequência
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _CalendarioFrequenciaCard extends StatefulWidget {
-  final Stream<List<Map<String, dynamic>>> Function(DateTime mes) getLogsStream;
-
-  const _CalendarioFrequenciaCard({
-    required this.getLogsStream,
-  });
-
-  @override
-  State<_CalendarioFrequenciaCard> createState() =>
-      _CalendarioFrequenciaCardState();
-}
-
-class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
-  late DateTime _mesAtual;
-  late Stream<List<Map<String, dynamic>>> _logsStream;
-
-  @override
-  void initState() {
-    super.initState();
-    final hoje = DateTime.now();
-    _mesAtual = DateTime(hoje.year, hoje.month);
-    _logsStream = widget.getLogsStream(_mesAtual);
-  }
-
-  void _irParaMesAnterior() {
-    final novoMes = DateTime(_mesAtual.year, _mesAtual.month - 1);
-    setState(() {
-      _mesAtual = novoMes;
-      _logsStream = widget.getLogsStream(novoMes);
-    });
-  }
-
-  void _irParaProximoMes() {
-    final hoje = DateTime.now();
-    final mesHoje = DateTime(hoje.year, hoje.month);
-    if (_mesAtual.isBefore(mesHoje)) {
-      final novoMes = DateTime(_mesAtual.year, _mesAtual.month + 1);
-      setState(() {
-        _mesAtual = novoMes;
-        _logsStream = widget.getLogsStream(novoMes);
-      });
-    }
-  }
-
-  Map<DateTime, List<Map<String, dynamic>>> _processarLogs(
-      List<Map<String, dynamic>> logs) {
-    final result = <DateTime, List<Map<String, dynamic>>>{};
-    for (final log in logs) {
-      final tsRaw = log['dataHora'];
-      final ts = tsRaw != null ? DateTime.tryParse(tsRaw.toString()) : null;
-      if (ts == null) continue;
-      final dia = DateTime(ts.year, ts.month, ts.day);
-      result.putIfAbsent(dia, () => []).add(log);
-    }
-    return result;
-  }
+class _CalendarioFrequenciaCard extends StatelessWidget {
+  const _CalendarioFrequenciaCard();
 
   void _onDiaTapped(
     BuildContext context,
@@ -245,28 +151,30 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<HistoricoController>();
+
     return StreamBuilder<List<Map<String, dynamic>>>(
-      stream: _logsStream,
+      stream: controller.logsStream,
       builder: (context, snapshot) {
         final logs = snapshot.data ?? [];
-        final logsPorDia = _processarLogs(logs);
+        final logsPorDia = controller.processarLogs(logs);
         final isCarregando =
             snapshot.connectionState == ConnectionState.waiting;
 
         final hoje = DateTime.now();
-        final mesHoje = DateTime(hoje.year, hoje.month);
-        final isUltimoMes = !_mesAtual.isBefore(mesHoje);
+        final mesAtual = controller.mesAtual;
+        final isUltimoMes = controller.isUltimoMes;
 
-        final nomeMesRaw = DateFormat('MMMM', 'pt_BR').format(_mesAtual);
+        final nomeMesRaw = DateFormat('MMMM', 'pt_BR').format(mesAtual);
         final nomeMes = nomeMesRaw[0].toUpperCase() + nomeMesRaw.substring(1);
         final diasNoMes =
-            DateUtils.getDaysInMonth(_mesAtual.year, _mesAtual.month);
-        final primeiroDia = DateTime(_mesAtual.year, _mesAtual.month, 1);
+            DateUtils.getDaysInMonth(mesAtual.year, mesAtual.month);
+        final primeiroDia = DateTime(mesAtual.year, mesAtual.month, 1);
         final offsetInicio = (primeiroDia.weekday - 1) % 7;
 
         final treinosNoMes = logsPorDia.keys
             .where(
-              (d) => d.year == _mesAtual.year && d.month == _mesAtual.month,
+              (d) => d.year == mesAtual.year && d.month == mesAtual.month,
             )
             .length;
 
@@ -287,7 +195,7 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
                           Row(
                             children: [
                               Text(
-                                '$nomeMes ${_mesAtual.year}',
+                                '$nomeMes ${mesAtual.year}',
                                 style: CardTokens.cardTitle,
                               ),
                               if (isCarregando) ...[
@@ -321,12 +229,12 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
                     ),
                     _NavButton(
                       icon: Icons.chevron_left_rounded,
-                      onTap: _irParaMesAnterior,
+                      onTap: () => controller.irParaMesAnterior(),
                     ),
                     const SizedBox(width: 4),
                     _NavButton(
                       icon: Icons.chevron_right_rounded,
-                      onTap: isUltimoMes ? null : _irParaProximoMes,
+                      onTap: isUltimoMes ? null : () => controller.irParaProximoMes(),
                     ),
                   ],
                 ),
@@ -377,7 +285,7 @@ class _CalendarioFrequenciaCardState extends State<_CalendarioFrequenciaCard> {
                     if (index < offsetInicio) return const SizedBox.shrink();
 
                     final dia = index - offsetInicio + 1;
-                    final data = DateTime(_mesAtual.year, _mesAtual.month, dia);
+                    final data = DateTime(mesAtual.year, mesAtual.month, dia);
                     final logsNoDia = logsPorDia[data];
                     final treinado = logsNoDia != null && logsNoDia.isNotEmpty;
                     final ehHoje =
@@ -801,14 +709,12 @@ class _TreinoDetalheSheet extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _PesoEditSheet extends StatefulWidget {
-  final String uid;
   final double? pesoAtual;
-  final AlunoService service;
+  final Future<void> Function(double peso) onSalvar;
 
   const _PesoEditSheet({
-    required this.uid,
     required this.pesoAtual,
-    required this.service,
+    required this.onSalvar,
   });
 
   @override
@@ -853,7 +759,7 @@ class _PesoEditSheetState extends State<_PesoEditSheet> {
     setState(() => _isSaving = true);
 
     try {
-      await widget.service.registrarPeso(alunoId: widget.uid, peso: peso);
+      await widget.onSalvar(peso);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

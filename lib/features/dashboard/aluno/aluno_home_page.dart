@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/aluno_service.dart';
+import '../../../core/services/workout_draft_service.dart';
 import '../../../core/utils/app_ui_utils.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../alunos/shared/models/aluno_perfil_data.dart';
@@ -25,6 +26,8 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
   late final Stream<dynamic> _logsSemanaStream;
   late final Stream<dynamic> _ultimoLogStream;
 
+  WorkoutDraft? _activeDraft;
+
   @override
   void initState() {
     super.initState();
@@ -32,6 +35,38 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
     _perfilStream = _service.getAlunoPerfilCompletoStream(widget.uid);
     _logsSemanaStream = _service.getLogsDaSemanaStream(widget.uid);
     _ultimoLogStream = _service.getUltimoLogStream(widget.uid);
+    _checkDraft();
+  }
+
+  Future<void> _checkDraft() async {
+    final draft = await WorkoutDraftService().loadDraft();
+    if (mounted && draft != null && draft.alunoId == widget.uid) {
+      // Verifica se o rascunho é recente (ex: menos de 6 horas)
+      final diff = DateTime.now().difference(draft.lastUpdated);
+      if (diff.inHours < 6) {
+        setState(() => _activeDraft = draft);
+      } else {
+        await WorkoutDraftService().clearDraft();
+      }
+    }
+  }
+
+  void _resumeWorkout() async {
+    if (_activeDraft == null) return;
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AlunoExecutarTreinoPage(
+          sessao: _activeDraft!.sessao,
+          rotinaId: _activeDraft!.rotinaId,
+          alunoId: _activeDraft!.alunoId,
+        ),
+      ),
+    );
+
+    // Após voltar da execução, verifica se o rascunho ainda existe
+    _checkDraft();
   }
 
   @override
@@ -122,6 +157,10 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
                 children: [
                   const SizedBox(height: SpacingTokens.screenTopPadding),
                   _buildHeader(nome, photoUrl, nomePersonal),
+                  if (_activeDraft != null) ...[
+                    const SizedBox(height: SpacingTokens.xxl),
+                    _buildResumeWorkoutCard(),
+                  ],
                   const SizedBox(height: SpacingTokens.xxl),
                   StreamBuilder<dynamic>(
                     stream: _logsSemanaStream,
@@ -235,6 +274,98 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildResumeWorkoutCard() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary,
+            AppColors.primary.withAlpha(200),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withAlpha(80),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _resumeWorkout,
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withAlpha(40),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.play_arrow_rounded,
+                    color: Colors.black,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Treino em andamento',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _activeDraft!.sessao.nome,
+                        style: TextStyle(
+                          color: Colors.black.withAlpha(160),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                  ),
+                  child: const Text(
+                    'Retomar',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -432,13 +563,26 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
     String rotinaId,
     String alunoId,
   ) async {
+    // Se for a mesma sessão do rascunho, retoma direto
+    if (_activeDraft != null &&
+        _activeDraft!.sessao.nome == sessao.nome &&
+        _activeDraft!.rotinaId == rotinaId) {
+      _resumeWorkout();
+      return;
+    }
+
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surfaceDark,
-        title: Text('Iniciar sessão', style: AppTheme.title1),
+        title: Text(
+          _activeDraft != null ? 'Trocar treino?' : 'Iniciar sessão',
+          style: AppTheme.title1,
+        ),
         content: Text(
-          'Pronto para treinar? Você vai executar a sessão "${sessao.nome}" e o tempo de treino começará a contar imediatamente.',
+          _activeDraft != null
+              ? 'Você já tem um progresso salvo em "${_activeDraft!.sessao.nome}". Iniciar este novo treino descartará o rascunho anterior.'
+              : 'Pronto para treinar? Você vai executar a sessão "${sessao.nome}" e o tempo de treino começará a contar imediatamente.',
           style: AppTheme.bodyText,
         ),
         actions: [
@@ -451,14 +595,22 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Iniciar', style: TextStyle(color: AppColors.primary)),
+            child: Text(
+              _activeDraft != null ? 'Iniciar e Descartar' : 'Iniciar',
+              style: TextStyle(color: _activeDraft != null ? AppColors.systemRed : AppColors.primary),
+            ),
           ),
         ],
       ),
     );
 
     if (confirmar == true && context.mounted) {
-      Navigator.push(
+      // Limpa rascunho anterior se existir um diferente
+      if (_activeDraft != null) {
+        await WorkoutDraftService().clearDraft();
+      }
+
+      await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => AlunoExecutarTreinoPage(
@@ -468,6 +620,7 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
           ),
         ),
       );
+      _checkDraft();
     }
   }
 
