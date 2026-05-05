@@ -187,6 +187,7 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
                           sessoes.indexOf(proxSessao),
                           rotinaId!,
                           widget.uid,
+                          rotina,
                         );
                       },
                     ),
@@ -425,6 +426,50 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
     return '${minutes}m';
   }
 
+  Future<void> _confirmarIniciarSessao(
+    BuildContext context,
+    SessaoTreinoModel sessao,
+    String rotinaId,
+    String alunoId,
+  ) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceDark,
+        title: Text('Iniciar sessão', style: AppTheme.title1),
+        content: Text(
+          'Pronto para treinar? Você vai executar a sessão "${sessao.nome}" e o tempo de treino começará a contar imediatamente.',
+          style: AppTheme.bodyText,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(color: AppColors.labelSecondary),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Iniciar', style: TextStyle(color: AppColors.primary)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true && context.mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AlunoExecutarTreinoPage(
+            sessao: sessao,
+            rotinaId: rotinaId,
+            alunoId: alunoId,
+          ),
+        ),
+      );
+    }
+  }
 
   Widget _buildProximoTreinoCard(
     BuildContext context,
@@ -432,6 +477,7 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
     int sessaoIndex,
     String rotinaId,
     String alunoId,
+    Map<String, dynamic> rotinaData,
   ) {
     final letra = String.fromCharCode(65 + (sessaoIndex % 26));
 
@@ -449,16 +495,12 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
 
     final tempoEstimado = _calcularTempoSessao(sessao);
 
-    void iniciar() => Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => AlunoExecutarTreinoPage(
-          sessao: sessao,
-          rotinaId: rotinaId,
-          alunoId: alunoId,
-        ),
-      ),
-    );
+    void iniciar() => _confirmarIniciarSessao(
+          context,
+          sessao,
+          rotinaId,
+          alunoId,
+        );
 
     void verDetalhe() => Navigator.push(
       context,
@@ -484,97 +526,149 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
           child: Column(
             children: [
               // Header: tappable → vai para detalhes da sessão
-              InkWell(
-                onTap: verDetalhe,
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        AppColors.primary.withAlpha(28),
-                        AppColors.primary.withAlpha(5),
-                      ],
-                    ),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.primary.withAlpha(28),
+                      AppColors.primary.withAlpha(5),
+                    ],
                   ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withAlpha(22),
-                          borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-                          border: Border.all(
-                            color: AppColors.primary.withAlpha(60),
-                            width: 1,
-                          ),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          letra,
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
-                            height: 1,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              sessao.nome,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.labelPrimary,
-                                letterSpacing: -0.5,
-                                height: 1,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: verDetalhe,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 52,
+                                height: 52,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withAlpha(22),
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                                  border: Border.all(
+                                    color: AppColors.primary.withAlpha(60),
+                                    width: 1,
+                                  ),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  letra,
+                                  style: const TextStyle(
+                                    color: AppColors.primary,
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.5,
+                                    height: 1,
+                                  ),
+                                ),
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            if (sessao.diaSemana != null &&
-                                sessao.diaSemana!.isNotEmpty) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                sessao.diaSemana!,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.primary.withAlpha(200),
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: -0.1,
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      sessao.nome,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.labelPrimary,
+                                        letterSpacing: -0.5,
+                                        height: 1,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    if (sessao.diaSemana != null &&
+                                        sessao.diaSemana!.isNotEmpty) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        sessao.diaSemana!,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: AppColors.primary.withAlpha(200),
+                                          fontWeight: FontWeight.w500,
+                                          letterSpacing: -0.1,
+                                        ),
+                                      ),
+                                    ],
+                                    if (grupos.isNotEmpty) ...[
+                                      const SizedBox(height: 8),
+                                      Wrap(
+                                        spacing: 5,
+                                        runSpacing: 5,
+                                        children: grupos
+                                            .map((g) => _MuscleChip(label: g))
+                                            .toList(),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                               ),
                             ],
-                            if (grupos.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Wrap(
-                                spacing: 5,
-                                runSpacing: 5,
-                                children: grupos
-                                    .map((g) => _MuscleChip(label: g))
-                                    .toList(),
-                              ),
-                            ],
-                          ],
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Icon(
-                        Icons.chevron_right_rounded,
-                        size: 20,
-                        color: AppColors.labelSecondary.withAlpha(80),
+                    ),
+                    PopupMenuButton<String>(
+                      icon: Icon(
+                        Icons.more_vert_rounded,
+                        size: 22,
+                        color: AppColors.labelSecondary.withAlpha(120),
                       ),
-                    ],
-                  ),
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                      ),
+                      onSelected: (value) {
+                        if (value == 'detalhes') {
+                          verDetalhe();
+                        } else if (value == 'escolher') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AlunoRotinaViewPage(
+                                rotinaData: rotinaData,
+                                rotinaId: rotinaId,
+                                alunoId: alunoId,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'escolher',
+                          child: Row(
+                            children: [
+                              Icon(Icons.swap_horiz_rounded, size: 20),
+                              SizedBox(width: 10),
+                              Text('Escolher outro treino'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'detalhes',
+                          child: Row(
+                            children: [
+                              Icon(Icons.info_outline_rounded, size: 20),
+                              SizedBox(width: 10),
+                              Text('Ver detalhes'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                 ),
               ),
 
@@ -613,65 +707,35 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
               // Ações
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: verDetalhe,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 13),
-                          decoration: BoxDecoration(
-                            color: AppColors.fillSecondary,
-                            borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-                          ),
-                          alignment: Alignment.center,
-                          child: const Text(
-                            'Ver detalhes',
-                            style: TextStyle(
-                              color: AppColors.labelPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: -0.2,
-                            ),
+                child: GestureDetector(
+                  onTap: iniciar,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.play_arrow_rounded,
+                          color: Colors.black,
+                          size: 20,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          'Iniciar treino',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.3,
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      flex: 2,
-                      child: GestureDetector(
-                        onTap: iniciar,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 13),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.play_arrow_rounded,
-                                color: Colors.black,
-                                size: 20,
-                              ),
-                              SizedBox(width: 6),
-                              Text(
-                                'Iniciar treino',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.3,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],

@@ -5,7 +5,6 @@ import '../../../../core/services/aluno_service.dart';
 import '../../../../core/services/exercise_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/cloudinary.dart';
-import '../../../treinos/shared/models/exercicio_model.dart';
 import '../../../alunos/shared/widgets/app_avatar.dart';
 import 'personal_aluno_perfil_page.dart';
 
@@ -44,6 +43,49 @@ class PersonalLogDetalhePage extends StatelessWidget {
           _ExerciciosSection(exercicios: item.exercicios),
           const SizedBox(height: SpacingTokens.screenBottomPadding),
         ],
+      ),
+    );
+  }
+}
+
+class _Thumbnail extends StatelessWidget {
+  final Future<String?> thumbnailFuture;
+  const _Thumbnail({required this.thumbnailFuture});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.black.withAlpha(40),
+        border: Border.all(color: Colors.white.withAlpha(5)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: FutureBuilder<String?>(
+        future: thumbnailFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+              ),
+            );
+          }
+          final url = snapshot.data;
+          if (url == null || url.isEmpty) {
+            return const Icon(Icons.fitness_center, color: AppColors.labelTertiary, size: 22);
+          }
+          return CachedNetworkImage(
+            imageUrl: url,
+            fit: BoxFit.cover,
+            placeholder: (_, _) => Container(color: Colors.black.withAlpha(20)),
+            errorWidget: (_, _, _) => const Icon(Icons.fitness_center, color: AppColors.labelTertiary, size: 22),
+          );
+        },
       ),
     );
   }
@@ -480,27 +522,24 @@ class _ExerciciosSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Execução detalhada', style: AppTheme.sectionHeader),
-        const SizedBox(height: SpacingTokens.labelToField),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceDark,
-            borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-            border: Border.all(color: Colors.white.withAlpha(8)),
-          ),
-          child: Column(
-            children: [
-              for (var i = 0; i < exercicios.length; i++) ...[
-                _ExercicioTile(exercicio: exercicios[i]),
-                if (i < exercicios.length - 1)
-                  Divider(
-                    height: 1,
-                    thickness: 0.5,
-                    color: AppColors.separator.withAlpha(40),
-                  ),
-              ],
-            ],
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Execução Detalhada', style: AppTheme.sectionHeader),
+            Text(
+              '${exercicios.length} EXERCÍCIOS',
+              style: AppTheme.microLabelTextStyle.copyWith(color: AppColors.labelTertiary),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: exercicios.length,
+          itemBuilder: (context, index) => _ExercicioPerformanceCard(
+            exercicio: exercicios[index],
+            index: index + 1,
           ),
         ),
       ],
@@ -508,15 +547,16 @@ class _ExerciciosSection extends StatelessWidget {
   }
 }
 
-class _ExercicioTile extends StatefulWidget {
+class _ExercicioPerformanceCard extends StatefulWidget {
   final Map<String, dynamic> exercicio;
-  const _ExercicioTile({required this.exercicio});
+  final int index;
+  const _ExercicioPerformanceCard({required this.exercicio, required this.index});
 
   @override
-  State<_ExercicioTile> createState() => _ExercicioTileState();
+  State<_ExercicioPerformanceCard> createState() => _ExercicioPerformanceCardState();
 }
 
-class _ExercicioTileState extends State<_ExercicioTile> {
+class _ExercicioPerformanceCardState extends State<_ExercicioPerformanceCard> {
   final ExerciseService _exerciseService = ExerciseService();
   late final Future<String?> _thumbnailFuture;
 
@@ -524,288 +564,302 @@ class _ExercicioTileState extends State<_ExercicioTile> {
   void initState() {
     super.initState();
     final nome = widget.exercicio['nome']?.toString() ?? '';
-    final mediaUrl = widget.exercicio['mediaUrl']?.toString();
+    final mediaUrl = widget.exercicio['media_url']?.toString();
 
     if (mediaUrl != null && mediaUrl.isNotEmpty) {
       _thumbnailFuture = Future.value(Cloudinary.thumbnail(mediaUrl));
     } else {
       _thumbnailFuture = _exerciseService
           .buscarExercicioPorNome(nome)
-          .then((base) => base?.mediaUrl != null ? Cloudinary.thumbnail(base!.mediaUrl!) : null);
+          .then((base) {
+            final url = base?.mediaUrl;
+            return url != null ? Cloudinary.thumbnail(url) : null;
+          });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final nome = widget.exercicio['nome']?.toString() ?? '';
-    final series =
-        (widget.exercicio['series'] as List?)?.cast<Map<String, dynamic>>() ??
-            [];
+    final series = (widget.exercicio['series'] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20),
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withAlpha(8)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(20),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              _Thumbnail(thumbnailFuture: _thumbnailFuture),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(nome, style: AppTheme.cardTitle.copyWith(fontSize: 18)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          if (series.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            _SeriesTable(series: series),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _Thumbnail extends StatelessWidget {
-  final Future<String?> thumbnailFuture;
-  const _Thumbnail({required this.thumbnailFuture});
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        width: 48,
-        height: 48,
-        color: Colors.black.withAlpha(40),
-        child: FutureBuilder<String?>(
-          future: thumbnailFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
-                ),
-              );
-            }
-            final url = snapshot.data;
-            if (url == null || url.isEmpty) {
-              return const Icon(Icons.fitness_center, color: AppColors.labelTertiary, size: 20);
-            }
-            return CachedNetworkImage(
-              imageUrl: url,
-              fit: BoxFit.cover,
-              placeholder: (_, _) => Container(color: Colors.black.withAlpha(20)),
-              errorWidget: (_, _, _) => const Icon(Icons.fitness_center, color: AppColors.labelTertiary, size: 20),
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class _SeriesTable extends StatelessWidget {
-  final List<Map<String, dynamic>> series;
-  const _SeriesTable({required this.series});
-
-  IconData _getIcon(String tipo) {
-    switch (tipo) {
-      case 'aquecimento':
-        return Icons.whatshot_rounded;
-      case 'feeder':
-        return Icons.trending_up_rounded;
-      default:
-        return Icons.fitness_center_rounded;
-    }
-  }
-
-  Color _getColor(String tipo) {
-    switch (tipo) {
-      case 'aquecimento':
-        return const Color(0xFF00B4D8);
-      case 'feeder':
-        return const Color(0xFFFFB703);
-      default:
-        return const Color(0xFFFF3366);
-    }
-  }
-
-  TipoSerie _toTipoSerie(String tipo) {
-    switch (tipo) {
-      case 'aquecimento':
-        return TipoSerie.aquecimento;
-      case 'feeder':
-        return TipoSerie.feeder;
-      default:
-        return TipoSerie.trabalho;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    int workSetCounter = 0;
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12, left: 40),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'REALIZADO',
-                  style: AppTheme.microLabelTextStyle.copyWith(
-                    fontSize: 9,
-                    color: AppColors.labelTertiary,
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Text(
-                  'ALVO',
-                  style: AppTheme.microLabelTextStyle.copyWith(
-                    fontSize: 9,
-                    color: AppColors.labelTertiary,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 24),
-            ],
-          ),
-        ),
-        for (var i = 0; i < series.length; i++) ...[
-          () {
-            final tipoStr = series[i]['tipo']?.toString() ?? 'trabalho';
-            final isTrabalho = tipoStr != 'aquecimento' && tipoStr != 'feeder';
-            if (isTrabalho) workSetCounter++;
-            return _buildSerieRow(context, series[i], isTrabalho ? workSetCounter : 0);
-          }(),
-          if (i < series.length - 1)
-            Padding(
-              padding: const EdgeInsets.only(left: 40),
-              child: Divider(
-                height: 16,
-                thickness: 0.5,
-                color: Colors.white.withAlpha(8),
-              ),
-            ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildSerieRow(BuildContext context, Map<String, dynamic> serie, int numero) {
-    final tipoStr = serie['tipo']?.toString() ?? 'trabalho';
-    final tipo = _toTipoSerie(tipoStr);
-    final isTrabalho = tipo == TipoSerie.trabalho;
-    final concluida = serie['concluida'] == true;
-    final pesoStr = serie['pesoRealizado']?.toString() ?? '';
-    final repsStr = serie['repsRealizadas']?.toString() ?? '';
-    final pesoAlvoStr = serie['cargaAlvo']?.toString() ?? '';
-    final alvoStr = serie['alvo']?.toString() ?? '';
-
-    // Parsing para lógica diferencial
-    final double? pReal = double.tryParse(pesoStr);
-    final double? pAlvo = double.tryParse(pesoAlvoStr);
-    final int? rReal = int.tryParse(repsStr);
-    final int? rAlvo = int.tryParse(alvoStr);
-
-    final bool superouCarga = pReal != null && pAlvo != null && pReal > pAlvo;
-    final bool superouReps = rReal != null && rAlvo != null && rReal > rAlvo;
-    final bool bateuExato = concluida && pReal == pAlvo && rReal == rAlvo && pReal != null;
-
-    final realizado = pesoStr.isNotEmpty && repsStr.isNotEmpty ? '$pesoStr kg × $repsStr' : '—';
-    final alvotxt = pesoAlvoStr.isNotEmpty ? '$pesoAlvoStr kg × $alvoStr' : alvoStr.isNotEmpty ? alvoStr : '—';
-
-    final color = _getColor(tipoStr);
-    final icon = _getIcon(tipoStr);
-
-    final label = tipo == TipoSerie.aquecimento
-        ? 'Série de Aquecimento'
-        : tipo == TipoSerie.feeder
-            ? 'Série Feeder'
-            : 'Série de Trabalho';
-
-    return Row(
-      children: [
-        Tooltip(
-          message: label,
-          triggerMode: TooltipTriggerMode.tap,
-          preferBelow: false,
-          child: Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: color.withAlpha(20),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Center(
-              child: isTrabalho
-                  ? Text(
-                      numero.toString(),
-                      style: TextStyle(
-                        color: color,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
+          // Header com Info de Performance
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _Thumbnail(thumbnailFuture: _thumbnailFuture),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        nome.toUpperCase(),
+                        style: AppTheme.cardTitle.copyWith(
+                          fontSize: 15,
+                          letterSpacing: 0.5,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                    )
-                  : Icon(
-                      icon,
-                      size: 14,
-                      color: color,
-                    ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Row(
-            children: [
-              Text(
-                realizado,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: concluida ? AppColors.labelPrimary : AppColors.labelTertiary,
-                ),
-              ),
-              if (superouCarga || superouReps) ...[
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.arrow_upward_rounded,
-                  size: 12,
-                  color: AppColors.primary.withAlpha(200),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          _Badge(
+                            label: '${series.length} SÉRIES',
+                            color: AppColors.labelSecondary,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
-            ],
-          ),
-        ),
-        Expanded(
-          child: Text(
-            alvotxt,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: AppColors.labelSecondary.withAlpha(80),
             ),
           ),
+
+          // Lista de Séries (Layout Moderno)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black.withAlpha(20),
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+            ),
+            child: Column(
+              children: [
+                // Header das Colunas
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 32,
+                        child: Text(
+                          'SÉRIE',
+                          style: AppTheme.microLabelTextStyle.copyWith(
+                            fontSize: 9,
+                            color: AppColors.labelTertiary,
+                            letterSpacing: 1,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        child: Text(
+                          'EXECUTADO',
+                          style: AppTheme.microLabelTextStyle.copyWith(
+                            fontSize: 9,
+                            color: AppColors.labelTertiary,
+                            letterSpacing: 1,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 50,
+                        child: Text(
+                          'META',
+                          style: AppTheme.microLabelTextStyle.copyWith(
+                            fontSize: 9,
+                            color: AppColors.labelTertiary,
+                            letterSpacing: 1,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                for (var i = 0; i < series.length; i++)
+                  _SeriePerformanceRow(
+                    serie: series[i],
+                    index: i,
+                    totalSeries: series.length,
+                  ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  final String label;
+  final Color color;
+  final IconData? icon;
+
+  const _Badge({required this.label, required this.color, this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withAlpha(15),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withAlpha(30)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 10, color: color),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 9,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SeriePerformanceRow extends StatelessWidget {
+  final Map<String, dynamic> serie;
+  final int index;
+  final int totalSeries;
+
+  const _SeriePerformanceRow({
+    required this.serie,
+    required this.index,
+    required this.totalSeries,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tipoStr = serie['tipo']?.toString() ?? 'trabalho';
+    final concluida = serie['concluida'] == true;
+    final pesoReal = serie['pesoRealizado']?.toString() ?? '0';
+    final repsReal = serie['repsRealizadas']?.toString() ?? '0';
+    final repsAlvo = serie['alvo']?.toString() ?? '0';
+
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(concluida ? 5 : 2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          // Indicador de Ordem
+          _OrderCircle(index: index + 1, tipo: tipoStr),
+          const SizedBox(width: 24),
+
+          // Dados Realizados (Destaque Principal)
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  pesoReal,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: concluida ? AppColors.labelPrimary : AppColors.labelTertiary,
+                  ),
+                ),
+                Text('kg', style: AppTheme.caption2.copyWith(color: AppColors.labelTertiary)),
+                const SizedBox(width: 8),
+                Text(
+                  '×',
+                  style: TextStyle(color: AppColors.primary.withAlpha(150), fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  repsReal,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: concluida ? AppColors.labelPrimary : AppColors.labelTertiary,
+                  ),
+                ),
+                Text(' reps', style: AppTheme.caption2.copyWith(color: AppColors.labelTertiary)),
+              ],
+            ),
+          ),
+
+          // Comparativo com Alvo
+          SizedBox(
+            width: 50,
+            child: Text(
+              repsAlvo,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.labelSecondary.withAlpha(100),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OrderCircle extends StatelessWidget {
+  final int index;
+  final String tipo;
+  const _OrderCircle({required this.index, required this.tipo});
+
+  @override
+  Widget build(BuildContext context) {
+    Color color = AppColors.primary;
+    if (tipo == 'aquecimento') color = const Color(0xFF00B4D8);
+    if (tipo == 'feeder') color = const Color(0xFFFFB703);
+
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: color.withAlpha(15),
+        shape: BoxShape.circle,
+        border: Border.all(color: color.withAlpha(40), width: 1),
+      ),
+      child: Center(
+        child: Text(
+          index.toString(),
+          style: TextStyle(
+            color: color,
+            fontSize: 13,
+            fontWeight: FontWeight.w900,
+          ),
         ),
-        Icon(
-          !concluida
-              ? Icons.radio_button_unchecked_rounded
-              : (bateuExato ? Icons.stars_rounded : Icons.check_circle_rounded),
-          size: 18,
-          color: concluida ? AppColors.primary : AppColors.labelTertiary.withAlpha(60),
-        ),
-      ],
+      ),
     );
   }
 }

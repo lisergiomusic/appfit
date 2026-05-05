@@ -128,25 +128,6 @@ class WorkoutSetRow extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                if (serie.descanso.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.timer_outlined,
-                        size: 9,
-                        color: AppColors.labelSecondary,
-                      ),
-                      const SizedBox(width: 2),
-                      Text(
-                        serie.descanso,
-                        style: AppTheme.caption2,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ],
               ],
             ),
           ),

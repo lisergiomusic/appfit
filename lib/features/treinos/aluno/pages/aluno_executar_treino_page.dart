@@ -11,7 +11,6 @@ import '../../shared/widgets/exercicio_thumbnail.dart';
 import '../controllers/executar_treino_controller.dart';
 import 'aluno_feedback_treino_page.dart';
 import '../../shared/widgets/executar_treino/treino_scrollable_body.dart';
-import '../../shared/widgets/executar_treino/rest_timer_sheet.dart';
 
 /// Tela de execução da sessão com marcação de séries e timer de descanso.
 class AlunoExecutarTreinoPage extends StatefulWidget {
@@ -35,20 +34,12 @@ class AlunoExecutarTreinoPage extends StatefulWidget {
 
 class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
     with TickerProviderStateMixin {
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
-
   late ExecutarTreinoController _controller;
 
   late DateTime _startedAt;
   final Map<String, dynamic> _recordedData = {};
   late List<List<TextEditingController>> _repsControllers;
   late List<List<TextEditingController>> _pesoControllers;
-
-  final ValueNotifier<int> _restSecondsNotifier = ValueNotifier(0);
-  PersistentBottomSheetController? _restSheetController;
-  Timer? _restTimer;
-  int? _restTotalSeconds;
-  String? _restExercicioNome;
 
   Timer? _elapsedTimer;
   int _elapsedSeconds = 0;
@@ -122,9 +113,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
 
   @override
   void dispose() {
-    _restTimer?.cancel();
     _elapsedTimer?.cancel();
-    _restSecondsNotifier.dispose();
     _progressAnimController.dispose();
     for (final row in _repsControllers) {
       for (final c in row) {
@@ -174,20 +163,6 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
     _progressAnimController.forward(from: 0);
   }
 
-  int _parseDescanso(String descanso) {
-    // Aceita formatos como "90", "90s" e "1m 30s".
-    final cleaned = descanso.trim().toLowerCase();
-    final mMatch = RegExp(r'(\d+)\s*m').firstMatch(cleaned);
-    final sMatch = RegExp(r'(\d+)\s*s').firstMatch(cleaned);
-    if (mMatch != null || sMatch != null) {
-      final minutes = mMatch != null ? int.parse(mMatch.group(1)!) : 0;
-      final seconds = sMatch != null ? int.parse(sMatch.group(1)!) : 0;
-      return (minutes * 60) + seconds;
-    }
-    return int.tryParse(RegExp(r'\d+').firstMatch(cleaned)?.group(0) ?? '') ??
-        60;
-  }
-
   void _onVerHistorico(String exercicioNome, List<SerieHistorico> historico) {
     showModalBottomSheet(
       context: context,
@@ -223,67 +198,6 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
           _pesoControllers[exercicioIndex][serieIndex].text;
     });
     _animateProgress();
-
-    final serie = widget.sessao.exercicios[exercicioIndex].series[serieIndex];
-    _startRestTimer(
-      serie.descanso,
-      widget.sessao.exercicios[exercicioIndex].nome,
-    );
-  }
-
-  void _startRestTimer(String descansoStr, String exercicioNome) {
-    _restTimer?.cancel();
-    _restSheetController?.close();
-
-    final totalSeconds = _parseDescanso(descansoStr);
-    _restSecondsNotifier.value = totalSeconds;
-    _restTotalSeconds = totalSeconds;
-    _restExercicioNome = exercicioNome;
-
-    _restSheetController = _scaffoldKey.currentState!.showBottomSheet(
-      (ctx) => ValueListenableBuilder<int>(
-        valueListenable: _restSecondsNotifier,
-        builder: (context, seconds, _) => RestTimerSheet(
-          remainingSeconds: seconds,
-          totalSeconds: _restTotalSeconds!,
-          exercicioNome: _restExercicioNome!,
-          onSkip: _skipRest,
-        ),
-      ),
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-    );
-
-    _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      final next = _restSecondsNotifier.value - 1;
-      _restSecondsNotifier.value = next;
-      if (next <= 0) {
-        timer.cancel();
-        _dismissRestSheet();
-      }
-    });
-  }
-
-  void _skipRest() {
-    _restTimer?.cancel();
-    _dismissRestSheet();
-  }
-
-  void _dismissRestSheet() {
-    final controller = _restSheetController;
-    _restSheetController = null;
-    _restSecondsNotifier.value = 0;
-    if (controller != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        try {
-          controller.close();
-        } catch (_) {}
-      });
-    }
   }
 
   void _onSwapExercise(int index) async {
@@ -326,22 +240,8 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
   }
 
   Future<void> _finalizarTreino() async {
-    _restTimer?.cancel();
-    _restTimer = null;
     _elapsedTimer?.cancel();
     _elapsedTimer = null;
-
-    // Fecha o sheet antes do dialog para evitar conflito de contexto.
-    final sheetController = _restSheetController;
-    _restSheetController = null;
-    _restSecondsNotifier.value = 0;
-    if (sheetController != null) {
-      try {
-        sheetController.close();
-      } catch (_) {}
-      // Aguarda o frame fechar o sheet antes de abrir o dialog.
-      await Future.delayed(const Duration(milliseconds: 100));
-    }
 
     if (!mounted) return;
 
@@ -375,8 +275,6 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
   }
 
   Future<void> _confirmarCancelamento() async {
-    _restTimer?.cancel();
-
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => _CancelarDialog(),
@@ -385,20 +283,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
     if (confirm == true) {
       if (mounted) Navigator.pop(context);
     } else {
-      if (_restTotalSeconds != null && _restTotalSeconds! > 0) {
-        _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-          if (!mounted) {
-            timer.cancel();
-            return;
-          }
-          final next = _restSecondsNotifier.value - 1;
-          _restSecondsNotifier.value = next;
-          if (next <= 0) {
-            timer.cancel();
-            _dismissRestSheet();
-          }
-        });
-      }
+      _startElapsedTimer();
     }
   }
 
@@ -413,7 +298,6 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
         if (!didPop) _confirmarCancelamento();
       },
       child: Scaffold(
-        key: _scaffoldKey,
         backgroundColor: AppColors.background,
         appBar: _WorkoutAppBar(
           sessaoNome: widget.sessao.nome,

@@ -4,7 +4,7 @@ import '../../../../../core/theme/app_theme.dart';
 import '../exercicio_thumbnail.dart';
 import '../../../aluno/pages/aluno_exercicio_view_page.dart';
 
-enum ExercicioMenuAction { verUltimoTreino, detalhes }
+enum ExercicioMenuAction { verUltimoTreino, detalhes, trocar }
 
 class ExercicioSectionHeader extends StatelessWidget {
   final ExercicioItem exercicio;
@@ -56,13 +56,49 @@ class ExercicioSectionHeader extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    ExercicioThumbnail(
-                      exercicio: exercicio,
-                      width: 56,
-                      height: 56,
-                      borderRadius: AppTheme.radiusSM,
-                      iconSize: 22,
-                      backgroundColor: AppColors.surfaceLight,
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        ExercicioThumbnail(
+                          exercicio: exercicio,
+                          width: 56,
+                          height: 56,
+                          borderRadius: AppTheme.radiusSM,
+                          iconSize: 22,
+                          backgroundColor: AppColors.surfaceLight,
+                        ),
+                        if (exercicio.alternativas.isNotEmpty && onSwap != null)
+                          Positioned(
+                            right: -4,
+                            bottom: -4,
+                            child: GestureDetector(
+                              onTap: onSwap,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.surfaceDark,
+                                    width: 2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withAlpha(80),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.swap_horiz_rounded,
+                                  color: Colors.black,
+                                  size: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(width: SpacingTokens.md),
                     Expanded(
@@ -93,16 +129,6 @@ class ExercicioSectionHeader extends StatelessWidget {
               ),
             ),
           ),
-          if (exercicio.alternativas.isNotEmpty && onSwap != null)
-            IconButton(
-              onPressed: onSwap,
-              tooltip: 'Trocar exercício',
-              icon: const Icon(
-                Icons.swap_horiz_rounded,
-                color: AppColors.primary,
-                size: 24,
-              ),
-            ),
           if (onMenuAction != null)
             PopupMenuButton<ExercicioMenuAction>(
               icon: const Icon(
@@ -117,6 +143,8 @@ class ExercicioSectionHeader extends StatelessWidget {
               onSelected: (action) {
                 if (action == ExercicioMenuAction.detalhes) {
                   _goToExercicioDetails(context);
+                } else if (action == ExercicioMenuAction.trocar) {
+                  onSwap?.call();
                 } else {
                   onMenuAction?.call(action);
                 }
@@ -133,6 +161,18 @@ class ExercicioSectionHeader extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (exercicio.alternativas.isNotEmpty && onSwap != null)
+                  PopupMenuItem(
+                    value: ExercicioMenuAction.trocar,
+                    child: Row(
+                      children: [
+                        Icon(Icons.swap_horiz_rounded,
+                            size: 18, color: AppColors.labelSecondary),
+                        const SizedBox(width: 10),
+                        const Text('Trocar exercício'),
+                      ],
+                    ),
+                  ),
                 PopupMenuItem(
                   value: ExercicioMenuAction.verUltimoTreino,
                   child: Row(
