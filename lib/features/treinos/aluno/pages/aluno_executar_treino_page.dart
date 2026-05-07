@@ -180,11 +180,31 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
       final repsRow = <TextEditingController>[];
       final pesoRow = <TextEditingController>[];
       for (var j = 0; j < exercise.series.length; j++) {
-        repsRow.add(TextEditingController());
-        pesoRow.add(TextEditingController());
+        final rc = TextEditingController();
+        final pc = TextEditingController();
+
+        // Sincroniza mudanças em tempo real para o recordedData
+        rc.addListener(() => _updateRecordedValue(i, j, 'reps', rc.text));
+        pc.addListener(() => _updateRecordedValue(i, j, 'peso', pc.text));
+
+        repsRow.add(rc);
+        pesoRow.add(pc);
       }
       _repsControllers.add(repsRow);
       _pesoControllers.add(pesoRow);
+    }
+  }
+
+  void _updateRecordedValue(int exIdx, int sIdx, String key, String value) {
+    final exKey = 'exercicio_$exIdx';
+    if (_recordedData[exKey]?['series'] != null &&
+        sIdx < _recordedData[exKey]['series'].length) {
+      if (_recordedData[exKey]['series'][sIdx][key] != value) {
+        _recordedData[exKey]['series'][sIdx][key] = value;
+        // Salva o rascunho sempre que um valor for alterado,
+        // para garantir que edições em séries concluídas sejam persistidas.
+        _saveDraft();
+      }
     }
   }
 
@@ -277,10 +297,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
     // Snapshot da edição atual para garantir consistência no log final.
     setState(() {
       _recordedData[key]['series'][serieIndex]['completa'] = true;
-      _recordedData[key]['series'][serieIndex]['reps'] =
-          _repsControllers[exercicioIndex][serieIndex].text;
-      _recordedData[key]['series'][serieIndex]['peso'] =
-          _pesoControllers[exercicioIndex][serieIndex].text;
+      // Os valores de reps/peso já são sincronizados via listeners dos controllers
     });
     _animateProgress();
     _saveDraft();

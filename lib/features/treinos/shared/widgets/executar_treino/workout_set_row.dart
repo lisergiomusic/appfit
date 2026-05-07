@@ -302,7 +302,6 @@ class _SetInputFieldState extends State<_SetInputField> {
           keyboardType: widget.keyboardType,
           textAlign: TextAlign.center,
           textAlignVertical: TextAlignVertical.center,
-          enabled: !widget.isCompleted,
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w600,
