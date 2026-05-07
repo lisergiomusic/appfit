@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
+import 'dart:ui';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/appfit_sliver_app_bar.dart';
 import '../../shared/models/rotina_model.dart';
@@ -46,20 +48,23 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
     _sortearCapa();
   }
 
+  // Mapeamento centralizado para evitar desvios entre sorteio e exibição
+  static const Map<String, String> _muscleImageMap = {
+    'peito': 'chest.jpg',
+    'costas': 'back.jpg',
+    'pernas': 'legs.jpg',
+    'deltóides': 'deltoides.jpg',
+    'deltoides': 'deltoides.jpg',
+    'glúteos': 'gluteos.jpg',
+    'tríceps': 'triceps.jpg',
+    'bíceps': 'biceps.jpg',
+  };
+
   void _sortearCapa() {
     final grupos = _obterGruposUnicos();
     if (grupos.isEmpty) return;
-    final Map<String, String> grupoToFileName = {
-      'Peito': 'chest.jpg',
-      'Costas': 'back.jpg',
-      'Pernas': 'legs.jpg',
-      'Deltóides': 'deltoides.jpg',
-      'Glúteos': 'gluteos.jpg',
-      'Tríceps': 'triceps.jpg',
-      'Bíceps': 'biceps.jpg',
-    };
 
-    final gruposValidos = grupos.where((g) => grupoToFileName.containsKey(g.toLowerCase())).toList();
+    final gruposValidos = grupos.where((g) => _muscleImageMap.containsKey(g.toLowerCase())).toList();
 
     if (gruposValidos.isNotEmpty) {
       setState(() {
@@ -228,31 +233,20 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
   Color _getGrupoColor(String? grupo) {
     if (grupo == null) return AppColors.primary;
 
-    switch (grupo.toLowerCase()) {
-      case 'peito': return Colors.redAccent;
-      case 'costas': return Colors.blueAccent;
-      case 'pernas': return Colors.orangeAccent;
-      case 'deltoides': return Colors.purpleAccent;
-      case 'braços':
-      case 'triceps':
-      case 'biceps': return Colors.greenAccent;
-      default: return AppColors.primary;
-    }
+    final g = grupo.toLowerCase();
+    if (g.contains('peito')) return Colors.redAccent;
+    if (g.contains('costas')) return Colors.blueAccent;
+    if (g.contains('perna') || g.contains('glúteo')) return Colors.orangeAccent;
+    if (g.contains('deltoide')) return Colors.purpleAccent;
+    if (g.contains('braço') || g.contains('triceps') || g.contains('biceps')) return Colors.greenAccent;
+
+    return AppColors.primary;
   }
 
   String? _getCoverImageUrl(String? grupo) {
     if (grupo == null) return null;
 
-    final Map<String, String> grupoToFileName = {
-      'peito': 'chest.jpg',
-      'costas': 'back.jpg',
-      'pernas': 'legs.jpg',
-      'deltoides': 'deltoides.jpg',
-      'biceps': 'biceps.jpg',
-      'triceps': 'triceps.jpg',
-    };
-
-    final fileName = grupoToFileName[grupo.toLowerCase()];
+    final fileName = _muscleImageMap[grupo.toLowerCase()];
     if (fileName == null) return null;
 
     const supabaseUrl = 'https://rqsonrzagxvmmkjzshcl.supabase.co';
@@ -282,14 +276,13 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
               children: [
                 // 1. Imagem de Fundo (Se houver)
                 if (coverUrl != null)
-                  Image.network(
-                    coverUrl,
+                  CachedNetworkImage(
+                    imageUrl: coverUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Container(color: const Color(0xFF121212));
-                    },
+                    placeholder: (context, url) => Container(color: const Color(0xFF121212)),
+                    errorWidget: (context, url, error) => const SizedBox.shrink(),
+                    fadeOutDuration: const Duration(milliseconds: 300),
+                    fadeInDuration: const Duration(milliseconds: 600),
                   ),
 
                 // 2. Gradiente Spotify Style (Sempre presente para garantir leitura e fallback)
