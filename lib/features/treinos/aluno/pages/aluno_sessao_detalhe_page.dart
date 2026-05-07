@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/appfit_sliver_app_bar.dart';
 import '../../../../core/widgets/note_display_field.dart';
@@ -9,6 +10,7 @@ import '../../shared/widgets/executar_treino/exercicio_section_header.dart';
 import '../../shared/widgets/executar_treino/orientacao_personal_banner.dart';
 import '../../shared/widgets/executar_treino/serie_badge_info_dialog.dart';
 import '../../shared/widgets/exercicio_detalhe/exercicio_constants.dart';
+import '../../shared/widgets/executar_treino/swap_exercise_sheet.dart';
 import '../../../../core/services/treino_service.dart';
 import '../../shared/models/historico_treino_model.dart';
 import 'aluno_executar_treino_page.dart';
@@ -121,6 +123,43 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
       return '${hours}h ${minutes}m';
     }
     return '${minutes}m';
+  }
+
+  void _onSwapExercise(int index) async {
+    final exercicioAtual = widget.sessao.exercicios[index];
+    final todasOpcoes = [exercicioAtual, ...exercicioAtual.alternativas];
+
+    final selecionado = await showModalBottomSheet<ExercicioItem>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => SwapExerciseSheet(
+        selecionados: todasOpcoes,
+        atual: exercicioAtual,
+      ),
+    );
+
+    if (selecionado != null && selecionado != exercicioAtual) {
+      setState(() {
+        final altIndex = exercicioAtual.alternativas.indexOf(selecionado);
+        exercicioAtual.alternativas.removeAt(altIndex);
+
+        final anterior = exercicioAtual.clone();
+        final novo = selecionado.clone();
+
+        // Mantém a prescrição (séries) do Personal, mas clona para evitar referências mútuas
+        novo.series = exercicioAtual.series.map((s) => s.clone()).toList();
+
+        // Re-organiza a lista de alternativas para permitir a volta
+        novo.alternativas = [anterior, ...exercicioAtual.alternativas];
+
+        widget.sessao.exercicios[index] = novo;
+
+        // Recarrega o histórico para o novo exercício substituído
+        _carregarHistorico();
+      });
+      HapticFeedback.mediumImpact();
+    }
   }
 
   Future<void> _confirmarIniciarSessao(BuildContext context) async {
@@ -311,6 +350,7 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
                             _expandedStates[exIndex] = !_expandedStates[exIndex];
                           });
                         },
+                        onSwap: () => _onSwapExercise(exIndex),
                       );
                     },
                   ),
@@ -381,6 +421,7 @@ class _ExercicioCard extends StatelessWidget {
   final List<SerieHistorico> historico;
   final bool isExpanded;
   final VoidCallback onToggle;
+  final VoidCallback onSwap;
 
   const _ExercicioCard({
     required this.exercicio,
@@ -388,6 +429,7 @@ class _ExercicioCard extends StatelessWidget {
     required this.historico,
     required this.isExpanded,
     required this.onToggle,
+    required this.onSwap,
   });
 
   int _calcWorkIndex(int upToIdx) {
@@ -420,6 +462,7 @@ class _ExercicioCard extends StatelessWidget {
                 exercicio: exercicio,
                 exIdx: 0,
                 alunoId: alunoId,
+                onSwap: onSwap,
                 trailing: Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: Icon(
@@ -776,7 +819,7 @@ class _ReadOnlySetRow extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                ?trailingIcon,
+                if (trailingIcon != null) trailingIcon,
               ],
             ),
           ),
