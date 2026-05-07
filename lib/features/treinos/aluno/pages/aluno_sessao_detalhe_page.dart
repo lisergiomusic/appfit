@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
-import 'dart:ui';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/appfit_sliver_app_bar.dart';
 import '../../shared/models/rotina_model.dart';
@@ -728,16 +727,6 @@ class _ExercicioCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.lg),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          border: isLastOverall
-              ? Border(
-                  top: BorderSide(
-                    color: AppColors.labelPrimary.withAlpha(20),
-                    width: 0.5,
-                  ),
-                )
-              : null,
-        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -991,7 +980,7 @@ class _ReadOnlySetRow extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                if (trailingIcon case final icon?) icon,
+                ?trailingIcon,
               ],
             ),
           ),
