@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'dart:math';
 import '../../../../core/services/exercise_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/appfit_sliver_app_bar.dart';
@@ -24,6 +26,7 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
   final ExerciseService _exerciseService = ExerciseService();
   late final Future<ExercicioItem?>? _exercicioBaseFuture;
   late final Future<ExercicioItem?> _exercicioBaseParaMidiaFuture;
+  String? _selectedCoverGroup;
 
   @override
   void initState() {
@@ -38,6 +41,58 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
     _exercicioBaseParaMidiaFuture = hasLocalMedia
         ? Future.value(null)
         : _exerciseService.buscarExercicioPorNome(widget.exercicio.nome);
+
+    _sortearCapa();
+  }
+
+  static const Map<String, String> _muscleImageMap = {
+    'peito': 'chest.jpg',
+    'costas': 'back.jpg',
+    'pernas': 'legs.jpg',
+    'deltóides': 'deltoides.jpg',
+    'deltoides': 'deltoides.jpg',
+    'glúteos': 'gluteos.jpg',
+    'gluteos': 'gluteos.jpg',
+    'triceps': 'triceps.jpg',
+    'tríceps': 'triceps.jpg',
+    'biceps': 'biceps.jpg',
+    'bíceps': 'biceps.jpg',
+  };
+
+  void _sortearCapa() {
+    final grupos = widget.exercicio.grupoMuscular;
+    if (grupos.isEmpty) return;
+
+    final gruposValidos = grupos.where((g) => _muscleImageMap.containsKey(g.toLowerCase())).toList();
+
+    if (gruposValidos.isNotEmpty) {
+      setState(() {
+        _selectedCoverGroup = gruposValidos[Random().nextInt(gruposValidos.length)];
+      });
+    }
+  }
+
+  Color _getGrupoColor(String? grupo) {
+    if (grupo == null) return AppColors.primary;
+
+    final g = grupo.toLowerCase();
+    if (g.contains('peito')) return Colors.redAccent;
+    if (g.contains('costas')) return Colors.blueAccent;
+    if (g.contains('perna') || g.contains('glúteo')) return Colors.orangeAccent;
+    if (g.contains('deltoide')) return Colors.purpleAccent;
+    if (g.contains('braço') || g.contains('triceps') || g.contains('biceps')) return Colors.greenAccent;
+
+    return AppColors.primary;
+  }
+
+  String? _getCoverImageUrl(String? grupo) {
+    if (grupo == null) return null;
+
+    final fileName = _muscleImageMap[grupo.toLowerCase()];
+    if (fileName == null) return null;
+
+    const supabaseUrl = 'https://rqsonrzagxvmmkjzshcl.supabase.co';
+    return '$supabaseUrl/storage/v1/object/public/workout_covers/$fileName';
   }
 
   void _mostrarAvisoInstrucoes(BuildContext context) {
@@ -102,46 +157,53 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
   @override
   Widget build(BuildContext context) {
     final temMusculos = widget.exercicio.grupoMuscular.isNotEmpty;
-    final temImagem = widget.exercicio.mediaUrl != null && widget.exercicio.mediaUrl!.isNotEmpty;
+    final coverUrl = _getCoverImageUrl(_selectedCoverGroup);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final titlePainter = TextPainter(
-            text: TextSpan(text: widget.exercicio.nome, style: AppTheme.bigTitle),
-            textDirection: TextDirection.ltr,
-            maxLines: 2,
-          )..layout(maxWidth: constraints.maxWidth - (SpacingTokens.screenHorizontalPadding * 2));
-
-          final int titleLines = titlePainter.computeLineMetrics().length;
-          final double dynamicHeight = titleLines > 1 
-              ? (temMusculos ? 178.0 : 144.0) 
-              : (temMusculos ? 144.0 : 120.0);
-
-          return CustomScrollView(
-            slivers: [
-              AppFitSliverAppBar(
-                title: widget.exercicio.nome,
-                expandedHeight: dynamicHeight,
-                background: Align(
+      backgroundColor: const Color(0xFF121212),
+      body: CustomScrollView(
+        slivers: [
+          AppFitSliverAppBar(
+            title: widget.exercicio.nome,
+            expandedHeight: 180,
+            background: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (coverUrl != null)
+                  CachedNetworkImage(
+                    imageUrl: coverUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(color: const Color(0xFF121212)),
+                    errorWidget: (context, url, error) => const SizedBox.shrink(),
+                  ),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        (_getGrupoColor(_selectedCoverGroup)).withAlpha(coverUrl != null ? 100 : 40),
+                        const Color(0xFF121212),
+                      ],
+                      stops: const [0.0, 0.9],
+                    ),
+                  ),
+                ),
+                if (coverUrl != null)
+                  Container(color: Colors.black.withAlpha(40)),
+                Align(
                   alignment: Alignment.bottomLeft,
                   child: Padding(
                     padding: const EdgeInsets.only(
                       left: SpacingTokens.screenHorizontalPadding,
                       right: SpacingTokens.screenHorizontalPadding,
-                      bottom: SpacingTokens.sm,
+                      bottom: SpacingTokens.sectionGap,
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget.exercicio.nome,
-                          style: AppTheme.bigTitle,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        Text(widget.exercicio.nome, style: AppTheme.bigTitle),
                         if (temMusculos) ...[
                           const SizedBox(height: SpacingTokens.sm),
                           Wrap(
@@ -154,7 +216,9 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                                       horizontal: SpacingTokens.sm,
                                       vertical: SpacingTokens.xs,
                                     ),
-                                    decoration: PillTokens.decoration,
+                                    decoration: PillTokens.decoration.copyWith(
+                                      color: Colors.white.withAlpha(10),
+                                    ),
                                     child: Text(grupo, style: PillTokens.text),
                                   ),
                                 )
@@ -165,7 +229,9 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                     ),
                   ),
                 ),
-              ),
+              ],
+            ),
+          ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -174,8 +240,9 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: SpacingTokens.sm),
+                  const SizedBox(height: SpacingTokens.sectionGap),
 
+                  // Bloco de Vídeo
                   FutureBuilder<ExercicioItem?>(
                     future: _exercicioBaseParaMidiaFuture,
                     builder: (context, snapshot) {
@@ -201,24 +268,35 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
 
                   const SizedBox(height: SpacingTokens.sectionGap),
 
+                  // Cabeçalho de Instruções
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text('Instruções', style: AppTheme.sectionHeader),
+                      Text(
+                        'Instruções'.toUpperCase(),
+                        style: AppTheme.formLabel.copyWith(
+                          fontSize: 10,
+                          letterSpacing: 0.5,
+                          color: AppColors.labelSecondary,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
                       GestureDetector(
                         onTap: () => _mostrarAvisoInstrucoes(context),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          padding: const EdgeInsets.all(4),
                           child: Icon(
                             Icons.info_outline_rounded,
-                            size: 14,
-                            color: AppColors.labelTertiary,
+                            size: 11,
+                            color: AppColors.labelSecondary.withAlpha(120),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: SpacingTokens.labelToField),
+                  const SizedBox(height: 8),
+
+                  // Conteúdo de Instruções
                   FutureBuilder<ExercicioItem?>(
                     future: _exercicioBaseFuture,
                     builder: (context, snapshot) {
@@ -232,7 +310,21 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                       }
 
                       if (instrucoesPadrao != null) {
-                        return _InstructionCard(text: instrucoesPadrao);
+                        return Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(5),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            instrucoesPadrao,
+                            style: AppTheme.bodyText.copyWith(
+                              color: AppColors.labelPrimary.withAlpha(200),
+                              height: 1.4,
+                            ),
+                          ),
+                        );
                       }
 
                       return Container(
@@ -240,29 +332,19 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                         padding: const EdgeInsets.symmetric(
                           vertical: SpacingTokens.xl,
                         ),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceDark,
-                          borderRadius: BorderRadius.circular(
-                            AppTheme.radiusLG,
-                          ),
-                          border: Border.all(
-                            color: Colors.white.withAlpha(10),
-                            width: 0.5,
-                          ),
-                        ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               Icons.menu_book_rounded,
                               size: 32,
-                              color: AppColors.labelTertiary,
+                              color: AppColors.labelSecondary.withAlpha(80),
                             ),
                             const SizedBox(height: SpacingTokens.sm),
                             Text(
                               'Nenhuma instrução disponível',
-                              style: AppTheme.cardSubtitle.copyWith(
-                                color: AppColors.labelTertiary,
+                              style: AppTheme.caption.copyWith(
+                                color: AppColors.labelSecondary.withAlpha(120),
                               ),
                             ),
                           ],
@@ -270,30 +352,6 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                       );
                     },
                   ),
-                  const SizedBox(height: SpacingTokens.sectionGap),
-
-                  if (!temImagem && !temMusculos)
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 48),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.fitness_center_rounded,
-                              size: 48,
-                              color: AppColors.labelTertiary,
-                            ),
-                            const SizedBox(height: SpacingTokens.sm),
-                            Text(
-                              'Sem informações adicionais',
-                              style: AppTheme.cardSubtitle.copyWith(
-                                color: AppColors.labelTertiary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
 
                   const SizedBox(height: SpacingTokens.screenBottomPadding),
                 ],
@@ -301,10 +359,8 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
             ),
           ),
         ],
-      );
-    },
-  ),
-);
+      ),
+    );
   }
 }
 
@@ -315,13 +371,18 @@ class _VideoCardLoadingPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
+        color: Colors.white.withAlpha(5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
       ),
       child: AspectRatio(
         aspectRatio: ExercicioDetalheConstants.videoAspectRatio,
-        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        child: const Center(
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+          ),
+        ),
       ),
     );
   }
@@ -336,31 +397,16 @@ class _InstructionLoadingCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: SpacingTokens.xl),
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
+        color: Colors.white.withAlpha(5),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-    );
-  }
-}
-
-class _InstructionCard extends StatelessWidget {
-  final String text;
-
-  const _InstructionCard({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(SpacingTokens.cardPaddingH),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
+      child: const Center(
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+        ),
       ),
-      child: Text(text, style: AppTheme.bodyText),
     );
   }
 }
