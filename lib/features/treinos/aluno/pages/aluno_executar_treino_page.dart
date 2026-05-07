@@ -431,18 +431,18 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
       setState(() {
         final altIndex = exercicioAtual.alternativas.indexOf(selecionado);
         exercicioAtual.alternativas.removeAt(altIndex);
-        
+
         final anterior = exercicioAtual.clone();
         final novo = selecionado.clone();
-        
+
         // Mantém a prescrição (séries) do Personal, mas clona para evitar referências mútuas
         novo.series = exercicioAtual.series.map((s) => s.clone()).toList();
-        
+
         // Re-organiza a lista de alternativas para permitir a volta
         novo.alternativas = [anterior, ...exercicioAtual.alternativas];
 
         widget.sessao.exercicios[index] = novo;
-        
+
         // Recarrega o histórico para o novo exercício substituído
         _controller.carregarUltimoHistorico().then((_) {
           if (mounted) setState(() {});
@@ -983,104 +983,117 @@ class _SwapExerciseSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        decoration: BoxDecoration(
-          color: AppColors.background.withAlpha(235),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Trocar exercício',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close_rounded, color: Colors.white24),
-                ),
-              ],
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF121212),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 12),
+          // Handle
+          Container(
+            width: 32,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(20),
+              borderRadius: BorderRadius.circular(2),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Escolha uma das alternativas configuradas pelo seu treinador.',
-              style: TextStyle(
-                color: Colors.white.withAlpha(120),
-                fontSize: 14,
-              ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Trocar exercício',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.2,
             ),
-            const SizedBox(height: 24),
-            ...selecionados.map((ex) {
-              final isAtual = ex.nome == atual.nome;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: InkWell(
-                  onTap: isAtual ? null : () => Navigator.pop(context, ex),
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isAtual ? AppColors.primary.withAlpha(20) : Colors.white.withAlpha(10),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isAtual ? AppColors.primary.withAlpha(80) : Colors.white.withAlpha(10),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        ExercicioThumbnail(
-                          exercicio: ex,
-                          width: 50,
-                          height: 50,
-                          borderRadius: 12,
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          const SizedBox(height: 32),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                children: [
+                  ...selecionados.map((ex) {
+                    final isAtual = ex.nome == atual.nome;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: InkWell(
+                        onTap: isAtual ? null : () => Navigator.pop(context, ex),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
                             children: [
-                              Text(
-                                ex.nome,
-                                style: TextStyle(
-                                  color: isAtual ? AppColors.primary : Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
+                              ExercicioThumbnail(
+                                exercicio: ex,
+                                width: 48,
+                                height: 48,
+                                borderRadius: 4, // More technical corners
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      ex.nome,
+                                      style: TextStyle(
+                                        color: isAtual ? AppColors.primary : Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      ex.grupoMuscular.join(' • '),
+                                      style: TextStyle(
+                                        color: Colors.white.withAlpha(100),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                ex.grupoMuscular.join(' • '),
-                                style: TextStyle(
-                                  color: Colors.white.withAlpha(100),
-                                  fontSize: 12,
-                                ),
-                              ),
+                              if (isAtual)
+                                const Icon(Icons.check, color: AppColors.primary, size: 20),
                             ],
                           ),
                         ),
-                        if (isAtual)
-                          const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 24),
-                      ],
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 32),
+                  // Spotify "CANCELAR" Pill Button
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white.withAlpha(40), width: 1),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: const Text(
+                        'CANCELAR',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              );
-            }),
-            const SizedBox(height: 32),
-          ],
-        ),
+                  SizedBox(height: SpacingTokens.screenBottomPadding + 20),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1521,7 +1534,7 @@ class _WorkoutPreferencesSheet extends StatelessWidget {
               HapticFeedback.lightImpact();
               onChanged(val);
             },
-            activeColor: AppColors.primary,
+            activeThumbColor: AppColors.primary,
             activeTrackColor: AppColors.primary.withAlpha(100),
           ),
         ],
