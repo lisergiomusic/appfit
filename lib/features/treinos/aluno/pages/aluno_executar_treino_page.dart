@@ -1203,8 +1203,6 @@ class _UltimoTreinoSheet extends StatelessWidget {
     switch (tipo) {
       case TipoSerie.aquecimento:
         return 'Aquecimento';
-      case TipoSerie.feeder:
-        return 'Feeder';
       case TipoSerie.trabalho:
         return 'Série';
     }

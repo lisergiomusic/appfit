@@ -1,6 +1,6 @@
 import 'dart:math';
 
-enum TipoSerie { aquecimento, feeder, trabalho }
+enum TipoSerie { aquecimento, trabalho }
 
 class SerieItem {
   final String id;
@@ -156,7 +156,6 @@ class ExercicioItem {
     if (tipo == 'aquecimento' || tipo == 'TipoSerie.aquecimento') {
       return TipoSerie.aquecimento;
     }
-    if (tipo == 'feeder' || tipo == 'TipoSerie.feeder') return TipoSerie.feeder;
     return TipoSerie.trabalho;
   }
 

@@ -11,7 +11,7 @@ The application follows a modular, feature-based structure with a focus on "Staf
     *   **Rotinas:** Relational plans with specific objectives and durations.
     *   **Sessões:** Specific workout days (e.g., "Push Day") with day-of-week assignments.
     *   **Exercícios:** Relational library with a hierarchical instruction system (Global -> Personalized -> Session).
-    *   **Séries:** Complex structure supporting different types (Warm-up, Feeder, Work) with atomic persistence.
+    *   **Séries:** Complex structure supporting different types (Warm-up, Work) with atomic persistence.
 
 ## Tech Stack & Dependencies
 

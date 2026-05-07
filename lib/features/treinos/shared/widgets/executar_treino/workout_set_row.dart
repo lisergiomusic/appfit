@@ -32,7 +32,6 @@ class WorkoutSetRow extends StatelessWidget {
   String get _serieLabel {
     switch (serie.tipo) {
       case TipoSerie.aquecimento:
-      case TipoSerie.feeder:
         return '';
       case TipoSerie.trabalho:
         return visualIndex.toString();

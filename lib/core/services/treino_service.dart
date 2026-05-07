@@ -226,7 +226,6 @@ class TreinoService {
   TipoSerie _parsetipoSerie(String tipoStr) {
     return switch (tipoStr.toLowerCase().trim()) {
       'aquecimento' => TipoSerie.aquecimento,
-      'feeder' => TipoSerie.feeder,
       _ => TipoSerie.trabalho,
     };
   }

@@ -62,7 +62,6 @@ class SessaoTreinoModel {
     if (tipo == 'aquecimento' || tipo == 'TipoSerie.aquecimento') {
       return TipoSerie.aquecimento;
     }
-    if (tipo == 'feeder' || tipo == 'TipoSerie.feeder') return TipoSerie.feeder;
     return TipoSerie.trabalho;
   }
 }

@@ -840,7 +840,6 @@ class _OrderCircle extends StatelessWidget {
   Widget build(BuildContext context) {
     Color color = AppColors.primary;
     if (tipo == 'aquecimento') color = const Color(0xFF00B4D8);
-    if (tipo == 'feeder') color = const Color(0xFFFFB703);
 
     return Container(
       width: 32,

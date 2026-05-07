@@ -78,7 +78,6 @@ class _PersonalExercicioDetalheViewState
 
   final Map<TipoSerie, GlobalKey<AnimatedListState>> _animatedListKeys = {
     TipoSerie.aquecimento: GlobalKey<AnimatedListState>(),
-    TipoSerie.feeder: GlobalKey<AnimatedListState>(),
     TipoSerie.trabalho: GlobalKey<AnimatedListState>(),
   };
 
@@ -855,7 +854,6 @@ class _PersonalExercicioDetalheViewState
       fallback: 'Exercício',
     );
     final warmup = controller.entriesForTipo(TipoSerie.aquecimento);
-    final feeder = controller.entriesForTipo(TipoSerie.feeder);
     final work = controller.entriesForTipo(TipoSerie.trabalho);
     final muscleGroups = ex.grupoMuscular.isEmpty
         ? const ['Geral']
@@ -1007,7 +1005,6 @@ class _PersonalExercicioDetalheViewState
                           _buildEmptyState()
                         else ...[
                           _buildSliverSeries(context, warmup, TipoSerie.aquecimento),
-                          _buildSliverSeries(context, feeder, TipoSerie.feeder),
                           _buildSliverSeries(context, work, TipoSerie.trabalho),
                           const SliverToBoxAdapter(
                             child: SizedBox(height: SpacingTokens.screenBottomPadding),
@@ -1278,7 +1275,7 @@ class _PersonalExercicioDetalheViewState
             ),
             const SizedBox(height: 12),
             Text(
-              'Defina as séries de aquecimento,\naproximação ou trabalho para este exercício.',
+              'Defina as séries de aquecimento ou\ntrabalho para este exercício.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.labelSecondary,
@@ -1303,9 +1300,7 @@ class _PersonalExercicioDetalheViewState
 
     final title = tipo == TipoSerie.aquecimento
         ? 'Aquecimento'
-        : tipo == TipoSerie.feeder
-            ? 'Séries de aproximação'
-            : 'Séries de trabalho';
+        : 'Séries de trabalho';
 
     return SliverPadding(
       padding: const EdgeInsets.only(top: SpacingTokens.sectionGap),

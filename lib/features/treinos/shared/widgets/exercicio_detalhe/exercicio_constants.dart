@@ -46,19 +46,6 @@ const List<SerieTypeOption> serieTypeOptions = [
     color: Color(0xFF00B4D8),
   ),
   SerieTypeOption(
-    title: 'Série de aproximação',
-    subtitlePersonal:
-        'Progressão gradual de carga para preparar o SNC (Sistema Nervoso Central). '
-        'Repetições baixas para ambientação ao peso de trabalho.',
-    subtitleAluno:
-        'Aumente a carga gradualmente até chegar perto do peso que você vai '
-        'usar nas séries principais. Cada repetição deve ser controlada — '
-        'pare antes de sentir fadiga.',
-    type: TipoSerie.feeder,
-    icon: Icons.trending_up_rounded,
-    color: Color(0xFFFFB703),
-  ),
-  SerieTypeOption(
     title: 'Série de trabalho',
     subtitlePersonal:
         'Séries efetivas de treinamento. Foco em máxima intensidade, '

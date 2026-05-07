@@ -180,8 +180,8 @@ class ExercicioDetalheController extends ChangeNotifier {
   void undoClearAll() {
     if (_lastClearedSeries != null && _lastClearedTipo != null) {
       exercicio.series.addAll(_lastClearedSeries!);
-      // Re-ordena as séries para manter Aquecimento -> Feeder -> Trabalho
-      final order = {TipoSerie.aquecimento: 0, TipoSerie.feeder: 1, TipoSerie.trabalho: 2};
+      // Re-ordena as séries para manter Aquecimento -> Trabalho
+      final order = {TipoSerie.aquecimento: 0, TipoSerie.trabalho: 1};
       exercicio.series.sort((a, b) => order[a.tipo]!.compareTo(order[b.tipo]!));
       
       _lastClearedSeries = null;
