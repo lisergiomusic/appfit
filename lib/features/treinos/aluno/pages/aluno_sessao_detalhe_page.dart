@@ -370,31 +370,6 @@ class _ExercicioCard extends StatelessWidget {
               exIdx: 0,
               alunoId: alunoId,
             ),
-            // Exibição do descanso padrão no topo (Destaque em branco para manter a identidade do app)
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: SpacingTokens.lg,
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.timer_outlined,
-                    size: 16,
-                    color: AppColors.labelPrimary,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Tempo de Descanso: ${RegExp(r'^\d+$').hasMatch(standardRest) ? '${standardRest}s' : standardRest}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.labelPrimary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: SpacingTokens.xs),
             if (exercicio.instrucoesParaExibicao != null)
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -431,7 +406,45 @@ class _ExercicioCard extends StatelessWidget {
                 isSpecialRest: !isUniformRest && serie.descanso.trim() != standardRest,
               );
             }),
-            const SizedBox(height: SpacingTokens.sm),
+            const SizedBox(height: SpacingTokens.md),
+            // Rodapé com o tempo de descanso (Elegante e limpo)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: SpacingTokens.lg,
+              ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(
+                      color: AppColors.labelPrimary.withAlpha(20),
+                      width: 0.5,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.timer_outlined,
+                      size: 14,
+                      color: AppColors.labelSecondary.withAlpha(180),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Tempo de Descanso: ${RegExp(r'^\d+$').hasMatch(standardRest) ? '${standardRest}s' : standardRest}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.labelSecondary.withAlpha(180),
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: SpacingTokens.xs),
           ],
         ),
       ),
