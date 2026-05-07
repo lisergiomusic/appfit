@@ -55,7 +55,10 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
     'deltóides': 'deltoides.jpg',
     'deltoides': 'deltoides.jpg',
     'glúteos': 'gluteos.jpg',
+    'gluteos': 'gluteos.jpg',
+    'triceps': 'triceps.jpg',
     'tríceps': 'triceps.jpg',
+    'biceps': 'biceps.jpg',
     'bíceps': 'biceps.jpg',
   };
 
@@ -264,7 +267,7 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
     final coverUrl = _getCoverImageUrl(_selectedCoverGroup);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
           AppFitSliverAppBar(
@@ -470,30 +473,30 @@ class _FloatingPillButton extends StatelessWidget {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.primary,
           borderRadius: BorderRadius.circular(100),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withAlpha(100),
-              blurRadius: 15,
-              offset: const Offset(0, 5),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.black, size: 24),
+            Icon(icon, color: Colors.black, size: 20),
             const SizedBox(width: 8),
             Text(
               label.toUpperCase(),
               style: const TextStyle(
                 color: Colors.black,
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.5,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.0,
               ),
             ),
           ],

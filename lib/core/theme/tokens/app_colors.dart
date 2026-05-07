@@ -5,7 +5,7 @@ class AppColors {
 
   static const Color primary = Color(0xFF30D158);
   static const Color splash = primary;
-  static const Color background = Color(0xFF131314);
+  static const Color background = Color(0xFF121212);
   static const Color iosBlue = Color(0xFF00B4D8);
   static const Color silverGrey = Color.fromRGBO(255, 255, 255, 0.5);
   static const Color surfaceDark = Color(0xFF1E1F20);
