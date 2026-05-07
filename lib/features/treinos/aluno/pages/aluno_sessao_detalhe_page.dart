@@ -502,7 +502,7 @@ class _ColumnLabelsRow extends StatelessWidget {
                           borderRadius: BorderRadius.circular(AppTheme.radiusLG),
                         ),
                         title: const Text(
-                          'Carga Anterior',
+                          'Carga de Referência',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,
@@ -510,7 +510,7 @@ class _ColumnLabelsRow extends StatelessWidget {
                           ),
                         ),
                         content: const Text(
-                          'Este valor mostra o último peso que você registrou para esta série específica.',
+                          'Este valor mostra a carga planejada pelo seu personal ou o seu último peso registrado.\n\nO ícone ↗️ indica que seu personal aumentou o desafio para este treino!',
                           style: TextStyle(
                             color: AppColors.labelSecondary,
                             fontSize: 14,
@@ -567,10 +567,35 @@ class _ReadOnlySetRow extends StatelessWidget {
       serie.tipo != TipoSerie.trabalho ? _serieOption.icon : null;
 
   @override
-  Widget build(BuildContext context) {
-    final cargaAnterior = historico.pesoRealizado != null
-        ? '${historico.pesoRealizado}kg'
-        : '—';
+    Widget build(BuildContext context) {
+    // Lógica de Carga Inteligente (Personal vs Histórico)
+    final cargaPersonal = double.tryParse(serie.carga) ?? 0;
+    final double cargaAnterior = (historico.pesoRealizado as num?)?.toDouble() ?? 0;
+
+    String valorParaExibir;
+    Color corValor = AppColors.labelPrimary;
+    Widget? trailingIcon;
+
+    if (cargaPersonal > 0) {
+      // Prioridade: Personal definiu uma meta
+      valorParaExibir = '${serie.carga}kg';
+
+      if (cargaAnterior > 0 && cargaPersonal > cargaAnterior) {
+        // Progressão detectada! Personal aumentou a carga
+        trailingIcon = const Padding(
+          padding: EdgeInsets.only(left: 4),
+          child: Icon(
+            Icons.trending_up_rounded,
+            size: 14,
+            color: Colors.greenAccent,
+          ),
+        );
+      }
+    } else {
+      // Fallback: Mostrar histórico se o personal não estipulou nada
+      valorParaExibir = cargaAnterior > 0 ? '${cargaAnterior.toStringAsFixed(0)}kg' : '—';
+      if (cargaAnterior == 0) corValor = AppColors.labelSecondary;
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -638,16 +663,22 @@ class _ReadOnlySetRow extends StatelessWidget {
           ),
           const SizedBox(width: SpacingTokens.md),
           SizedBox(
-            width: 72, // Combinando com a largura do cabeçalho
-            child: Text(
-              cargaAnterior,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.iosBlue,
-                letterSpacing: -0.2,
-              ),
-              textAlign: TextAlign.center,
+            width: 72,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  valorParaExibir,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: corValor,
+                    letterSpacing: -0.2,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (trailingIcon != null) trailingIcon,
+              ],
             ),
           ),
         ],
