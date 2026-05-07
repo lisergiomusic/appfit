@@ -59,6 +59,8 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
   String? _restExerciseName;
   int? _restSetIndex;
 
+  bool _autoTimerHintShown = false;
+
   @override
   void initState() {
     super.initState();
@@ -82,8 +84,12 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
       CurvedAnimation(parent: _progressAnimController, curve: Curves.easeOut),
     );
 
-    // Carregamento não bloqueante para a tela ficar responsiva desde o início.
+    // Carregamento não bloqueante
     _controller.carregarUltimoHistorico().then((_) {
+      if (mounted) setState(() {});
+    });
+
+    _controller.loadPreferences().then((_) {
       if (mounted) setState(() {});
     });
 
@@ -306,13 +312,44 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
     final exercicio = widget.sessao.exercicios[exercicioIndex];
     final serie = exercicio.series[serieIndex];
     final seconds = _parseRestTime(serie.descanso);
-    if (seconds > 0) {
+    if (_controller.isAutoTimerEnabled && seconds > 0) {
       _startRestTimer(
         seconds,
         exerciseName: exercicio.nome,
         setIndex: serieIndex + 1,
       );
+      _showAutoTimerHint();
     }
+  }
+
+  void _showAutoTimerHint() {
+    if (_autoTimerHintShown) return;
+    _autoTimerHintShown = true;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.auto_awesome_rounded, color: AppColors.primary, size: 18),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Timer automático iniciado. Toque na engrenagem no topo para configurar.',
+                style: AppTheme.caption.copyWith(color: Colors.white, height: 1.2),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: AppColors.surfaceDark,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 110), // Acima do banner de descanso
+        duration: const Duration(seconds: 5),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: AppColors.primary.withAlpha(40), width: 1),
+        ),
+      ),
+    );
   }
 
   int _parseRestTime(String rest) {
@@ -467,6 +504,41 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
     }
   }
 
+  void _onManualRestTrigger(int exercicioIndex, String restTime) {
+    HapticFeedback.lightImpact();
+    final seconds = _parseRestTime(restTime);
+    if (seconds > 0) {
+      _startRestTimer(
+        seconds,
+        exerciseName: widget.sessao.exercicios[exercicioIndex].nome,
+        setIndex: 0, // 0 indica disparo manual/bloco
+      );
+    }
+  }
+
+  void _showWorkoutPreferences() {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) {
+          return _WorkoutPreferencesSheet(
+            isAutoTimerEnabled: _controller.isAutoTimerEnabled,
+            isKeepScreenOnEnabled: _controller.isKeepScreenOnEnabled,
+            isRestAlertsEnabled: _controller.isRestAlertsEnabled,
+            onPreferenceChanged: (key, val) async {
+              await _controller.savePreference(key, val);
+              setSheetState(() {});
+              if (mounted) setState(() {});
+            },
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final completed = _completedSeries;
@@ -487,6 +559,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
           progressAnim: _progressAnim,
           progressAnimController: _progressAnimController,
           hasProgress: _hasAnyProgress(),
+          onOpenPreferences: _showWorkoutPreferences,
           onFinalizar: _finalizarTreino,
           onCancelar: _confirmarCancelamento,
         ),
@@ -498,6 +571,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
               repsControllers: _repsControllers,
               pesoControllers: _pesoControllers,
               onSerieCompleted: _onSerieCompleted,
+              onManualRestTrigger: _onManualRestTrigger,
               onVerHistorico: _onVerHistorico,
               onSwapExercise: _onSwapExercise,
               alunoId: widget.alunoId,
@@ -692,6 +766,7 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Animation<double> progressAnim;
   final AnimationController progressAnimController;
   final bool hasProgress;
+  final VoidCallback onOpenPreferences;
   final VoidCallback onFinalizar;
   final VoidCallback onCancelar;
 
@@ -703,6 +778,7 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.progressAnim,
     required this.progressAnimController,
     required this.hasProgress,
+    required this.onOpenPreferences,
     required this.onFinalizar,
     required this.onCancelar,
   });
@@ -796,6 +872,24 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
                             ],
                           ),
                         ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Preferences Gear Button
+                    GestureDetector(
+                      onTap: onOpenPreferences,
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceLight,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.settings_outlined,
+                          size: 18,
+                          color: AppColors.labelSecondary,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -1277,6 +1371,159 @@ class _UltimoTreinoSheet extends StatelessWidget {
                 ),
               );
             }),
+        ],
+      ),
+    );
+  }
+}
+
+class _WorkoutPreferencesSheet extends StatelessWidget {
+  final bool isAutoTimerEnabled;
+  final bool isKeepScreenOnEnabled;
+  final bool isRestAlertsEnabled;
+  final Function(String, bool) onPreferenceChanged;
+
+  const _WorkoutPreferencesSheet({
+    required this.isAutoTimerEnabled,
+    required this.isKeepScreenOnEnabled,
+    required this.isRestAlertsEnabled,
+    required this.onPreferenceChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF121212), // Spotify Deep Black
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)), // Subtle Spotify corners
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 12),
+          // Spotify-style handle
+          Container(
+            width: 32,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(20),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Preferências do Treino',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: -0.2,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                children: [
+                  _buildSpotifyTile(
+                    title: 'Timer Automático',
+                    subtitle: 'Inicia o descanso ao concluir a série',
+                    value: isAutoTimerEnabled,
+                    onChanged: (val) => onPreferenceChanged('auto_timer', val),
+                    icon: Icons.timer_outlined,
+                  ),
+                  _buildSpotifyTile(
+                    title: 'Manter tela ligada',
+                    subtitle: 'Evita que o dispositivo entre em repouso',
+                    value: isKeepScreenOnEnabled,
+                    onChanged: (val) => onPreferenceChanged('keep_screen_on', val),
+                    icon: Icons.smartphone_rounded,
+                  ),
+                  _buildSpotifyTile(
+                    title: 'Alertas de Descanso',
+                    subtitle: 'Vibra quando o tempo está acabando',
+                    value: isRestAlertsEnabled,
+                    onChanged: (val) => onPreferenceChanged('rest_alerts', val),
+                    icon: Icons.vibration_rounded,
+                  ),
+                  const SizedBox(height: 32),
+                  // Spotify "CLOSE" Button
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white.withAlpha(40), width: 1),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: const Text(
+                        'FECHAR',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: SpacingTokens.screenBottomPadding + 20),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSpotifyTile({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required IconData icon,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white.withAlpha(140),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          Switch.adaptive(
+            value: value,
+            onChanged: (val) {
+              HapticFeedback.lightImpact();
+              onChanged(val);
+            },
+            activeColor: AppColors.primary,
+            activeTrackColor: AppColors.primary.withAlpha(100),
+          ),
         ],
       ),
     );

@@ -531,17 +531,18 @@ class _ExercicioCard extends StatelessWidget {
             Icon(
               Icons.timer_outlined,
               size: 14,
-              color: AppColors.labelSecondary.withAlpha(isLastOverall ? 180 : 120),
+              color: isLastOverall ? AppColors.primary : AppColors.labelSecondary.withAlpha(120),
             ),
             const SizedBox(width: 6),
             Text(
               textLabel,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isLastOverall ? FontWeight.w600 : FontWeight.w400,
-                color: AppColors.labelSecondary.withAlpha(isLastOverall ? 180 : 120),
-                letterSpacing: 0.2,
-              ),
+              style: isLastOverall
+                  ? AppTheme.sectionAction.copyWith(
+                      fontWeight: FontWeight.w600,
+                    )
+                  : AppTheme.caption2.copyWith(
+                      color: AppColors.labelSecondary.withAlpha(120),
+                    ),
             ),
           ],
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../models/rotina_model.dart';
 import '../../models/exercicio_model.dart';
 import '../../models/historico_treino_model.dart';
@@ -19,6 +20,7 @@ class TreinoScrollableBody extends StatelessWidget {
   final List<List<TextEditingController>> pesoControllers;
 
   final void Function(int exercicioIndex, int serieIndex) onSerieCompleted;
+  final void Function(int exercicioIndex, String restTime) onManualRestTrigger;
   final void Function(String exercicioNome, List<SerieHistorico> historico) onVerHistorico;
   final void Function(int exercicioIndex) onSwapExercise;
 
@@ -33,6 +35,7 @@ class TreinoScrollableBody extends StatelessWidget {
     required this.repsControllers,
     required this.pesoControllers,
     required this.onSerieCompleted,
+    required this.onManualRestTrigger,
     required this.onVerHistorico,
     required this.onSwapExercise,
     this.alunoId,
@@ -148,6 +151,7 @@ class TreinoScrollableBody extends StatelessWidget {
           serieAtual.descanso,
           isLastOverall,
           hasMultipleTypes ? serieAtual.tipo : null,
+          () => onManualRestTrigger(exIdx, serieAtual.descanso),
         ));
       }
     }
@@ -155,7 +159,7 @@ class TreinoScrollableBody extends StatelessWidget {
     return widgets;
   }
 
-  Widget _buildBlockRestFooter(String rest, bool isLastOverall, TipoSerie? tipo) {
+  Widget _buildBlockRestFooter(String rest, bool isLastOverall, TipoSerie? tipo, VoidCallback onTap) {
     final cleanRest = RegExp(r'^\d+$').hasMatch(rest) ? '${rest}s' : rest;
     String labelText;
 
@@ -168,37 +172,45 @@ class TreinoScrollableBody extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.lg),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          border: isLastOverall
-              ? Border(
-                  top: BorderSide(
-                    color: AppColors.labelPrimary.withAlpha(20),
-                    width: 0.5,
-                  ),
-                )
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.timer_outlined,
-              size: 14,
-              color: AppColors.labelSecondary.withAlpha(isLastOverall ? 180 : 120),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              labelText,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isLastOverall ? FontWeight.w600 : FontWeight.w400,
-                color: AppColors.labelSecondary.withAlpha(isLastOverall ? 180 : 120),
-                letterSpacing: 0.2,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            border: isLastOverall
+                ? Border(
+                    top: BorderSide(
+                      color: AppColors.labelPrimary.withAlpha(20),
+                      width: 0.5,
+                    ),
+                  )
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.timer_outlined,
+                size: 14,
+                color: isLastOverall ? AppColors.primary : AppColors.labelSecondary.withAlpha(180),
               ),
-            ),
-          ],
+              const SizedBox(width: 6),
+              Text(
+                labelText,
+                style: isLastOverall
+                    ? AppTheme.sectionAction.copyWith(
+                        fontWeight: FontWeight.w700,
+                      )
+                    : AppTheme.caption2.copyWith(
+                        color: AppColors.labelSecondary.withAlpha(180),
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:appfit/core/services/treino_service.dart';
 import 'package:appfit/core/services/workout_draft_service.dart';
 import 'package:appfit/features/treinos/shared/models/historico_treino_model.dart';
@@ -13,6 +14,11 @@ class ExecutarTreinoController {
   final WorkoutDraftService _draftService;
 
   Map<String, List<SerieHistorico>> ultimoHistorico = {};
+
+  // Preferências persistentes
+  bool isAutoTimerEnabled = true;
+  bool isKeepScreenOnEnabled = true;
+  bool isRestAlertsEnabled = true;
 
   ExecutarTreinoController({
     required this.sessao,
@@ -108,6 +114,25 @@ class ExecutarTreinoController {
       // Histórico é opcional; em erro mantemos estado vazio para não bloquear.
       ultimoHistorico = {};
     }
+  }
+
+  /// Carrega as preferências do usuário do armazenamento persistente.
+  Future<void> loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    isAutoTimerEnabled = prefs.getBool('pref_auto_timer') ?? true;
+    isKeepScreenOnEnabled = prefs.getBool('pref_keep_screen_on') ?? true;
+    isRestAlertsEnabled = prefs.getBool('pref_rest_alerts') ?? true;
+  }
+
+  /// Salva uma preferência específica.
+  Future<void> savePreference(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('pref_$key', value);
+
+    // Atualiza estado local
+    if (key == 'auto_timer') isAutoTimerEnabled = value;
+    if (key == 'keep_screen_on') isKeepScreenOnEnabled = value;
+    if (key == 'rest_alerts') isRestAlertsEnabled = value;
   }
 
   void dispose() {}
