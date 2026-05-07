@@ -36,33 +36,56 @@ class AppTheme {
 
   static const TextStyle bigTitle = TextStyle(
     fontSize: 34,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.37,
-    height: 1,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -1.0,
+    height: 1.1,
     color: AppColors.labelPrimary,
   );
 
   static const title1 = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w700,
-    letterSpacing: -0.36,
-    height: 1,
+    letterSpacing: -0.8,
+    height: 1.2,
     color: AppColors.labelPrimary,
   );
 
-  static TextStyle sectionHeader = TextStyle(
-    fontSize: 13,
-    fontWeight: FontWeight.w400,
-    letterSpacing: -0.08,
-    color: AppColors.labelSecondary,
-    height: 1,
+  static TextStyle sectionHeader = const TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.5,
+    color: AppColors.labelPrimary,
+    height: 1.2,
   );
 
   static const sectionAction = TextStyle(
     fontSize: 13,
-    fontWeight: FontWeight.w400,
-    letterSpacing: -0.08,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.1,
     color: AppColors.primary,
+  );
+
+  static const TextStyle premiumLabel = TextStyle(
+    fontSize: 10,
+    fontWeight: FontWeight.w800,
+    letterSpacing: 1.2,
+    color: AppColors.labelSecondary,
+  );
+
+  static final LinearGradient premiumGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      AppColors.surfaceDark.withAlpha(200),
+      AppColors.background,
+    ],
+    stops: const [0.0, 0.8],
+  );
+
+  static BoxDecoration get premiumCardDecoration => BoxDecoration(
+    color: AppColors.surfaceDark,
+    borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+    border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
   );
 
   static const TextStyle pageTitle = TextStyle(
