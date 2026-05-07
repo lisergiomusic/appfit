@@ -113,8 +113,6 @@ class TreinoScrollableBody extends StatelessWidget {
   List<Widget> _buildSetsWithContextualRest(ExercicioItem exercicio, int exIdx, List seriesList) {
     final List<Widget> widgets = [];
     final rests = exercicio.series.map((s) => s.descanso.trim()).toSet();
-    final isUniformRest = rests.length == 1;
-    final standardRestOverall = rests.isNotEmpty ? rests.first : '60s';
 
     // Identifica se o exercício tem múltiplos tipos de série
     final types = exercicio.series.map((s) => s.tipo).toSet();

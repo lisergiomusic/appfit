@@ -33,7 +33,12 @@ The project utilizes PostgreSQL's relational power:
 ## Developer Mindset and UI/UX Principles
 
 *   **Staff-level Engineering:** Prioritize maintainability, scalability, and type safety.
-*   **Premium UI/UX:** Every interface must feel professional. Use "glassmorphism" for action buttons, consistent spacing (SpacingTokens), and ergonomic touch targets (min 44px).
+*   **Premium UI/UX:** Every interface must feel professional. Use "Spotify-inspired" design language:
+    *   **Color Palette:** Deep black backgrounds (`0xFF121212`) for modals and surfaces, high-contrast white text, and `AppColors.primary` as the signature accent.
+    *   **Minimalism:** Prioritize "Flat/Industrial" over "Glassmorphism". Avoid excessive cards and borders; let information breathe on solid backgrounds.
+    *   **Geometry:** Technical corners (Radius 12-16) instead of organic/hyper-rounded shapes.
+    *   **Buttons:** Use the "Pill" shape for primary/secondary actions with tracked-out uppercase text for secondary closures.
+    *   **Atmospheric Design:** The UI should be a "silent tool" that disappears to let workout data shine. Use consistent spacing (SpacingTokens) and ergonomic touch targets (min 44px).
 *   **Dirty Check Pattern:** Always implement `hasChanges` logic in complex forms to disable "Save" buttons and optimize network calls.
 *   **Haptic Feedback:** Use `HapticFeedback.lightImpact()` for critical UI interactions (toggles, reorders, selections).
 
