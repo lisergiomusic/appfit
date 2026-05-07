@@ -50,6 +50,15 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
   late AnimationController _progressAnimController;
   late Animation<double> _progressAnim;
 
+  // Rest Timer State
+  Timer? _restTimer;
+  int _restRemainingSeconds = 0;
+  int _restTotalSeconds = 0;
+  bool _isRestTimerActive = false;
+  DateTime? _restEndTime;
+  String? _restExerciseName;
+  int? _restSetIndex;
+
   @override
   void initState() {
     super.initState();
@@ -122,6 +131,21 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       _saveDraft();
+    } else if (state == AppLifecycleState.resumed) {
+      _handleRestTimerResumed();
+    }
+  }
+
+  void _handleRestTimerResumed() {
+    if (!_isRestTimerActive || _restEndTime == null) return;
+
+    final now = DateTime.now();
+    if (now.isAfter(_restEndTime!)) {
+      _finishRestTimer();
+    } else {
+      setState(() {
+        _restRemainingSeconds = _restEndTime!.difference(now).inSeconds;
+      });
     }
   }
 
@@ -174,6 +198,7 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _elapsedTimer?.cancel();
+    _restTimer?.cancel();
     _progressAnimController.dispose();
     for (final row in _repsControllers) {
       for (final c in row) {
@@ -259,6 +284,79 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
     });
     _animateProgress();
     _saveDraft();
+
+    // Trigger rest timer
+    final exercicio = widget.sessao.exercicios[exercicioIndex];
+    final serie = exercicio.series[serieIndex];
+    final seconds = _parseRestTime(serie.descanso);
+    if (seconds > 0) {
+      _startRestTimer(
+        seconds,
+        exerciseName: exercicio.nome,
+        setIndex: serieIndex + 1,
+      );
+    }
+  }
+
+  int _parseRestTime(String rest) {
+    final clean = rest.toLowerCase().replaceAll('s', '').trim();
+    if (clean.contains(':')) {
+      final parts = clean.split(':');
+      if (parts.length == 2) {
+        final mins = int.tryParse(parts[0]) ?? 0;
+        final secs = int.tryParse(parts[1]) ?? 0;
+        return (mins * 60) + secs;
+      }
+    }
+    return int.tryParse(clean) ?? 0;
+  }
+
+  void _startRestTimer(int seconds, {required String exerciseName, required int setIndex}) {
+    _restTimer?.cancel();
+    setState(() {
+      _restTotalSeconds = seconds;
+      _restRemainingSeconds = seconds;
+      _isRestTimerActive = true;
+      _restEndTime = DateTime.now().add(Duration(seconds: seconds));
+      _restExerciseName = exerciseName;
+      _restSetIndex = setIndex;
+    });
+
+    _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_restRemainingSeconds > 1) {
+        setState(() {
+          _restRemainingSeconds--;
+        });
+      } else {
+        _finishRestTimer();
+      }
+    });
+  }
+
+  void _finishRestTimer() {
+    _restTimer?.cancel();
+    _restTimer = null;
+    HapticFeedback.heavyImpact();
+    setState(() {
+      _isRestTimerActive = false;
+      _restRemainingSeconds = 0;
+      _restEndTime = null;
+      _restExerciseName = null;
+      _restSetIndex = null;
+    });
+  }
+
+  void _skipRestTimer() {
+    _finishRestTimer();
+  }
+
+  void _addRestTime(int seconds) {
+    if (!_isRestTimerActive) return;
+    setState(() {
+      _restTotalSeconds += seconds;
+      _restRemainingSeconds += seconds;
+      _restEndTime = _restEndTime?.add(Duration(seconds: seconds));
+    });
   }
 
   void _onSwapExercise(int index) async {
@@ -388,6 +486,18 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
               alunoId: widget.alunoId,
               ultimoHistorico: _controller.ultimoHistorico,
             ),
+            if (_isRestTimerActive)
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: _RestTimerBanner(
+                  remainingSeconds: _restRemainingSeconds,
+                  totalSeconds: _restTotalSeconds,
+                  exerciseName: _restExerciseName ?? '',
+                  setIndex: _restSetIndex ?? 0,
+                  onSkip: _skipRestTimer,
+                  onAdd30s: () => _addRestTime(30),
+                ),
+              ),
             if (_isLoading)
               Container(
                 color: AppColors.background.withAlpha(200),
@@ -396,6 +506,161 @@ class _AlunoExecutarTreinoPageState extends State<AlunoExecutarTreinoPage>
                 ),
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RestTimerBanner extends StatelessWidget {
+  final int remainingSeconds;
+  final int totalSeconds;
+  final String exerciseName;
+  final int setIndex;
+  final VoidCallback onSkip;
+  final VoidCallback onAdd30s;
+
+  const _RestTimerBanner({
+    required this.remainingSeconds,
+    required this.totalSeconds,
+    required this.exerciseName,
+    required this.setIndex,
+    required this.onSkip,
+    required this.onAdd30s,
+  });
+
+  String _formatTime(int seconds) {
+    final mins = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = totalSeconds > 0 ? remainingSeconds / totalSeconds : 0.0;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceLight.withAlpha(200),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: Colors.white.withAlpha(20),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(100),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: CircularProgressIndicator(
+                        value: progress,
+                        strokeWidth: 4,
+                        backgroundColor: Colors.white.withAlpha(20),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppColors.primary,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      _formatTime(remainingSeconds),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Descanse',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      onTap: onAdd30s,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          '+30s',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: onSkip,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          'Pular',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
