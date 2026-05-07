@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:math';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/appfit_sliver_app_bar.dart';
-import '../../../../core/widgets/note_display_field.dart';
-import '../../../../core/widgets/app_primary_button.dart';
 import '../../shared/models/rotina_model.dart';
 import '../../shared/models/exercicio_model.dart';
 import '../../shared/widgets/executar_treino/exercicio_section_header.dart';
@@ -37,12 +36,36 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
   final TreinoService _treinoService = TreinoService();
   Map<String, List<SerieHistorico>> _historico = {};
   List<bool> _expandedStates = [];
+  String? _selectedCoverGroup;
 
   @override
   void initState() {
     super.initState();
     _expandedStates = List.generate(widget.sessao.exercicios.length, (_) => false);
     _carregarHistorico();
+    _sortearCapa();
+  }
+
+  void _sortearCapa() {
+    final grupos = _obterGruposUnicos();
+    if (grupos.isEmpty) return;
+    final Map<String, String> grupoToFileName = {
+      'Peito': 'chest.jpg',
+      'Costas': 'back.jpg',
+      'Pernas': 'legs.jpg',
+      'Deltóides': 'deltoides.jpg',
+      'Glúteos': 'gluteos.jpg',
+      'Tríceps': 'triceps.jpg',
+      'Bíceps': 'biceps.jpg',
+    };
+
+    final gruposValidos = grupos.where((g) => grupoToFileName.containsKey(g.toLowerCase())).toList();
+
+    if (gruposValidos.isNotEmpty) {
+      setState(() {
+        _selectedCoverGroup = gruposValidos[Random().nextInt(gruposValidos.length)];
+      });
+    }
   }
 
   void _toggleAll(bool expand) {
@@ -202,6 +225,40 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
     }
   }
 
+  Color _getGrupoColor(String? grupo) {
+    if (grupo == null) return AppColors.primary;
+
+    switch (grupo.toLowerCase()) {
+      case 'peito': return Colors.redAccent;
+      case 'costas': return Colors.blueAccent;
+      case 'pernas': return Colors.orangeAccent;
+      case 'deltoides': return Colors.purpleAccent;
+      case 'braços':
+      case 'triceps':
+      case 'biceps': return Colors.greenAccent;
+      default: return AppColors.primary;
+    }
+  }
+
+  String? _getCoverImageUrl(String? grupo) {
+    if (grupo == null) return null;
+
+    final Map<String, String> grupoToFileName = {
+      'peito': 'chest.jpg',
+      'costas': 'back.jpg',
+      'pernas': 'legs.jpg',
+      'deltoides': 'deltoides.jpg',
+      'biceps': 'biceps.jpg',
+      'triceps': 'triceps.jpg',
+    };
+
+    final fileName = grupoToFileName[grupo.toLowerCase()];
+    if (fileName == null) return null;
+
+    const supabaseUrl = 'https://rqsonrzagxvmmkjzshcl.supabase.co';
+    return '$supabaseUrl/storage/v1/object/public/workout_covers/$fileName';
+  }
+
   @override
   Widget build(BuildContext context) {
     // Mapa de seções da interface desta página:
@@ -211,48 +268,89 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
     final gruposUnicos = _obterGruposUnicos();
     final tempoEstimado = _calcularTempoEstimado();
     final totalSeries = _calcularTotalSeries();
+    final coverUrl = _getCoverImageUrl(_selectedCoverGroup);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFF121212),
       body: CustomScrollView(
         slivers: [
           AppFitSliverAppBar(
             title: widget.sessao.nome,
-            expandedHeight: 160,
-            background: Align(
-              alignment: Alignment.bottomLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  left: SpacingTokens.screenHorizontalPadding,
-                  right: SpacingTokens.screenHorizontalPadding,
-                  bottom: SpacingTokens.sectionGap,
+            expandedHeight: 180,
+            background: Stack(
+              fit: StackFit.expand,
+              children: [
+                // 1. Imagem de Fundo (Se houver)
+                if (coverUrl != null)
+                  Image.network(
+                    coverUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(color: const Color(0xFF121212));
+                    },
+                  ),
+
+                // 2. Gradiente Spotify Style (Sempre presente para garantir leitura e fallback)
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        // Se houver imagem, o topo é mais escuro para o título brilhar
+                        (_getGrupoColor(_selectedCoverGroup)).withAlpha(coverUrl != null ? 100 : 40),
+                        const Color(0xFF121212),
+                      ],
+                      stops: const [0.0, 0.9], // O fade para preto termina antes do final
+                    ),
+                  ),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(widget.sessao.nome, style: AppTheme.bigTitle),
-                    const SizedBox(height: SpacingTokens.sm),
-                    if (gruposUnicos.isNotEmpty)
-                      Wrap(
-                        spacing: SpacingTokens.xs,
-                        runSpacing: SpacingTokens.xs,
-                        children: gruposUnicos
-                            .map(
-                              (grupo) => Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: SpacingTokens.sm,
-                                  vertical: SpacingTokens.xs,
-                                ),
-                                decoration: PillTokens.decoration,
-                                child: Text(grupo, style: PillTokens.text),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                  ],
+
+                // 3. Camada de Escurecimento extra para o conteúdo (Opcional)
+                if (coverUrl != null)
+                  Container(color: Colors.black.withAlpha(40)),
+
+                // 4. Conteúdo (Título e Tags)
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: SpacingTokens.screenHorizontalPadding,
+                      right: SpacingTokens.screenHorizontalPadding,
+                      bottom: SpacingTokens.sectionGap,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(widget.sessao.nome, style: AppTheme.bigTitle),
+                        const SizedBox(height: SpacingTokens.sm),
+                        if (gruposUnicos.isNotEmpty)
+                          Wrap(
+                            spacing: SpacingTokens.xs,
+                            runSpacing: SpacingTokens.xs,
+                            children: gruposUnicos
+                                .map(
+                                  (grupo) => Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: SpacingTokens.sm,
+                                      vertical: SpacingTokens.xs,
+                                    ),
+                                    decoration: PillTokens.decoration.copyWith(
+                                      color: Colors.white.withAlpha(10),
+                                    ),
+                                    child: Text(grupo, style: PillTokens.text),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
           SliverToBoxAdapter(
@@ -263,41 +361,34 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
                         child: _MetricCard(
                           label: 'Exercícios',
                           value: '${widget.sessao.exercicios.length}',
-                          icon: Icons.fitness_center,
                         ),
                       ),
-                      const SizedBox(width: 8),
                       Expanded(
                         child: _MetricCard(
                           label: 'Séries',
                           value: '$totalSeries',
-                          icon: Icons.layers_outlined,
                         ),
                       ),
-                      const SizedBox(width: 8),
                       Expanded(
                         child: _MetricCard(
                           label: 'Estimado',
                           value: tempoEstimado,
-                          icon: Icons.timer_outlined,
+                          showSeparator: false,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: SpacingTokens.sectionGap),
-                  NoteDisplayField(
+                  _NoteDisplay(
                     text: widget.sessao.orientacoes,
                     label: 'Instruções do personal',
-                    addLabel: '',
-                    readOnly: true,
-                    showInsetShadow: true,
                   ),
                   if (widget.sessao.orientacoes != null &&
                       widget.sessao.orientacoes!.trim().isNotEmpty)
@@ -362,14 +453,58 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: SpacingTokens.screenHorizontalPadding,
+      floatingActionButton: _FloatingPillButton(
+        label: 'Iniciar sessão',
+        icon: Icons.play_arrow_rounded,
+        onPressed: () => _confirmarIniciarSessao(context),
+      ),
+    );
+  }
+}
+
+class _FloatingPillButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  const _FloatingPillButton({
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(100),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(100),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
-        child: AppPrimaryButton(
-          label: 'Iniciar sessão',
-          icon: Icons.play_arrow_rounded,
-          onPressed: () => _confirmarIniciarSessao(context),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: Colors.black, size: 24),
+            const SizedBox(width: 8),
+            Text(
+              label.toUpperCase(),
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -379,38 +514,91 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
 class _MetricCard extends StatelessWidget {
   final String label;
   final String value;
-  final IconData? icon;
+  final bool showSeparator;
 
-  const _MetricCard({required this.label, required this.value, this.icon});
+  const _MetricCard({
+    required this.label,
+    required this.value,
+    this.showSeparator = true,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      decoration: AppTheme.cardDecoration,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (icon != null) ...[
-                Icon(icon, size: 14, color: AppColors.labelSecondary),
-                const SizedBox(width: 4),
-              ],
-              Expanded(
-                child: Text(
-                  label,
-                  style: AppTheme.formLabel,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              Text(
+                value,
+                style: AppTheme.title1.copyWith(
+                  fontSize: 24,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                label.toUpperCase(),
+                style: AppTheme.formLabel.copyWith(
+                  fontSize: 10,
+                  letterSpacing: 0.5,
+                  color: AppColors.labelSecondary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: SpacingTokens.labelToField),
-          Text(value, style: AppTheme.title1.copyWith(fontSize: 24)),
-        ],
-      ),
+        ),
+        if (showSeparator)
+          Container(
+            height: 24,
+            width: 1,
+            color: Colors.white10,
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+          ),
+      ],
+    );
+  }
+}
+
+class _NoteDisplay extends StatelessWidget {
+  final String? text;
+  final String label;
+
+  const _NoteDisplay({this.text, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    if (text == null || text!.trim().isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: AppTheme.formLabel.copyWith(
+            fontSize: 10,
+            letterSpacing: 0.5,
+            color: AppColors.labelSecondary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white.withAlpha(5),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            text!,
+            style: AppTheme.bodyText.copyWith(
+              color: AppColors.labelPrimary.withAlpha(200),
+              height: 1.4,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -442,67 +630,56 @@ class _ExercicioCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Cálculo do descanso padrão
-    exercicio.series.map((s) => s.descanso.trim()).toSet();
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: SpacingTokens.listItemGap),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surfaceDark,
-          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: onToggle,
+          child: ExercicioSectionHeader(
+            exercicio: exercicio,
+            exIdx: 0,
+            alunoId: alunoId,
+            onSwap: onSwap,
+            trailing: Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Icon(
+                isExpanded
+                    ? Icons.keyboard_arrow_up_rounded
+                    : Icons.keyboard_arrow_down_rounded,
+                color: AppColors.labelSecondary.withAlpha(150),
+                size: 20,
+              ),
+            ),
+          ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            InkWell(
-              onTap: onToggle,
-              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-              child: ExercicioSectionHeader(
-                exercicio: exercicio,
-                exIdx: 0,
-                alunoId: alunoId,
-                onSwap: onSwap,
-                trailing: Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Icon(
-                    isExpanded
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
-                    color: AppColors.labelSecondary.withAlpha(150),
+        AnimatedCrossFade(
+          firstChild: const SizedBox(width: double.infinity),
+          secondChild: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (exercicio.instrucoesParaExibicao != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: SpacingTokens.lg,
+                  ),
+                  child: OrientacaoPersonalBanner(
+                    orientacao: exercicio.instrucoesParaExibicao,
                   ),
                 ),
-              ),
-            ),
-            AnimatedCrossFade(
-              firstChild: const SizedBox(width: double.infinity),
-              secondChild: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (exercicio.instrucoesParaExibicao != null)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: SpacingTokens.lg,
-                      ),
-                      child: OrientacaoPersonalBanner(
-                        orientacao: exercicio.instrucoesParaExibicao,
-                      ),
-                    ),
-                  const SizedBox(height: SpacingTokens.sm),
-                  _ColumnLabelsRow(),
-                  const SizedBox(height: SpacingTokens.xs),
-                  ..._buildSetsWithContextualRest(exercicio, historico),
-                  const SizedBox(height: SpacingTokens.xs),
-                ],
-              ),
-              crossFadeState: isExpanded
-                  ? CrossFadeState.showSecond
-                  : CrossFadeState.showFirst,
-              duration: const Duration(milliseconds: 300),
-            ),
-          ],
+              const SizedBox(height: SpacingTokens.sm),
+              _ColumnLabelsRow(),
+              const SizedBox(height: SpacingTokens.xs),
+              ..._buildSetsWithContextualRest(exercicio, historico),
+              const SizedBox(height: SpacingTokens.lg),
+            ],
+          ),
+          crossFadeState: isExpanded
+              ? CrossFadeState.showSecond
+              : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 300),
         ),
-      ),
+        const Divider(color: Colors.white10, height: 1, thickness: 0.5),
+      ],
     );
   }
 
@@ -709,7 +886,7 @@ class _ReadOnlySetRow extends StatelessWidget {
       serie.tipo != TipoSerie.trabalho ? _serieOption.icon : null;
 
   @override
-    Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     // Lógica de Carga Inteligente (Personal vs Histórico)
     final cargaPersonal = double.tryParse(serie.carga) ?? 0;
     final double cargaAnterior = (historico.pesoRealizado as num?)?.toDouble() ?? 0;
@@ -752,22 +929,22 @@ class _ReadOnlySetRow extends StatelessWidget {
               dimension: 32,
               child: Center(
                 child: Container(
-                  width: 28,
-                  height: 28,
+                  width: 24,
+                  height: 24,
                   decoration: BoxDecoration(
                     color: _serieColor.withAlpha(20),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                   child: Center(
                     child: _badgeIcon != null
-                        ? Icon(_badgeIcon, size: 14, color: _serieColor)
+                        ? Icon(_badgeIcon, size: 12, color: _serieColor)
                         : Text(
                             visualIndex.toString(),
                             style: TextStyle(
                               color: _serieColor,
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.w800,
-                              letterSpacing: -0.2,
+                              fontFeatures: const [FontFeature.tabularFigures()],
                             ),
                           ),
                   ),
@@ -787,6 +964,7 @@ class _ReadOnlySetRow extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: AppColors.labelPrimary,
                     letterSpacing: -0.2,
+                    fontFeatures: [FontFeature.tabularFigures()],
                   ),
                 ),
                 if (isSpecialRest) ...[
@@ -816,10 +994,11 @@ class _ReadOnlySetRow extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: corValor,
                     letterSpacing: -0.2,
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                   textAlign: TextAlign.center,
                 ),
-                ?trailingIcon,
+                if (trailingIcon case final icon?) icon,
               ],
             ),
           ),
