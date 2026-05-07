@@ -114,41 +114,18 @@ class WorkoutSetRow extends StatelessWidget {
           const SizedBox(width: SpacingTokens.md),
           SizedBox(
             width: 52,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  serie.alvo,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.labelSecondary,
-                    letterSpacing: -0.1,
-                    height: 1.1,
-                  ),
-                  textAlign: TextAlign.center,
+            child: Center(
+              child: Text(
+                serie.alvo,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.labelSecondary,
+                  letterSpacing: -0.1,
+                  height: 1.1,
                 ),
-                const SizedBox(height: 2),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.timer_outlined,
-                      size: 10,
-                      color: AppTheme.caption2.color,
-                    ),
-                    const SizedBox(width: 2),
-                    Text(
-                      RegExp(r'^\d+$').hasMatch(serie.descanso.trim())
-                          ? '${serie.descanso}s'
-                          : serie.descanso,
-                      style: AppTheme.caption2.copyWith(
-                        fontSize: 10,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
           const SizedBox(width: SpacingTokens.md),

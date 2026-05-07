@@ -469,6 +469,10 @@ class _ExercicioCard extends StatelessWidget {
     final isUniformRest = rests.length == 1;
     final standardRestOverall = rests.isNotEmpty ? rests.first : '60s';
 
+    // Identifica se o exercício tem múltiplos tipos de série para decidir se mostra o rótulo (Trabalho/Aquecimento)
+    final types = exercicio.series.map((s) => s.tipo).toSet();
+    final hasMultipleTypes = types.length > 1;
+
     for (int i = 0; i < exercicio.series.length; i++) {
       final serie = exercicio.series[i];
       final indexDentroDoTipo = exercicio.series.take(i).where((s) => s.tipo == serie.tipo).length;
@@ -492,15 +496,20 @@ class _ExercicioCard extends StatelessWidget {
 
       if (isLastOfBlock) {
         final bool isLastOverall = i == exercicio.series.length - 1;
-        widgets.add(_buildBlockRestFooter(serie.descanso, isLastOverall));
+        widgets.add(_buildBlockRestFooter(
+          serie.descanso,
+          isLastOverall,
+          hasMultipleTypes ? (serie.tipo == TipoSerie.aquecimento ? "Aquecimento" : "Trabalho") : null,
+        ));
       }
     }
 
     return widgets;
   }
 
-  Widget _buildBlockRestFooter(String rest, bool isLastOverall) {
+  Widget _buildBlockRestFooter(String rest, bool isLastOverall, String? label) {
     final cleanRest = RegExp(r'^\d+$').hasMatch(rest) ? '${rest}s' : rest;
+    final textLabel = label != null ? 'Descanso ($label): $cleanRest' : 'Descanso: $cleanRest';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.lg),
@@ -526,7 +535,7 @@ class _ExercicioCard extends StatelessWidget {
             ),
             const SizedBox(width: 6),
             Text(
-              'Descanso (${isLastOverall ? "Trabalho" : "Aquecimento"}): $cleanRest',
+              textLabel,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isLastOverall ? FontWeight.w600 : FontWeight.w400,

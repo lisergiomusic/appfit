@@ -113,6 +113,10 @@ class TreinoScrollableBody extends StatelessWidget {
     final isUniformRest = rests.length == 1;
     final standardRestOverall = rests.isNotEmpty ? rests.first : '60s';
 
+    // Identifica se o exercício tem múltiplos tipos de série
+    final types = exercicio.series.map((s) => s.tipo).toSet();
+    final hasMultipleTypes = types.length > 1;
+
     for (int i = 0; i < exercicio.series.length; i++) {
       final isCompleted = seriesList.length > i ? (seriesList[i] as Map)['completa'] == true : false;
       final serieAtual = exercicio.series[i];
@@ -140,16 +144,27 @@ class TreinoScrollableBody extends StatelessWidget {
 
       if (isLastOfBlock) {
         final bool isLastOverall = i == exercicio.series.length - 1;
-        widgets.add(_buildBlockRestFooter(serieAtual.descanso, isLastOverall, serieAtual.tipo));
+        widgets.add(_buildBlockRestFooter(
+          serieAtual.descanso,
+          isLastOverall,
+          hasMultipleTypes ? serieAtual.tipo : null,
+        ));
       }
     }
 
     return widgets;
   }
 
-  Widget _buildBlockRestFooter(String rest, bool isLastOverall, TipoSerie tipo) {
+  Widget _buildBlockRestFooter(String rest, bool isLastOverall, TipoSerie? tipo) {
     final cleanRest = RegExp(r'^\d+$').hasMatch(rest) ? '${rest}s' : rest;
-    final label = tipo == TipoSerie.aquecimento ? "Aquecimento" : "Trabalho";
+    String labelText;
+
+    if (tipo == null) {
+      labelText = 'Descanso: $cleanRest';
+    } else {
+      final label = tipo == TipoSerie.aquecimento ? "Aquecimento" : "Trabalho";
+      labelText = 'Descanso ($label): $cleanRest';
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.lg),
@@ -175,7 +190,7 @@ class TreinoScrollableBody extends StatelessWidget {
             ),
             const SizedBox(width: 6),
             Text(
-              'Descanso ($label): $cleanRest',
+              labelText,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isLastOverall ? FontWeight.w600 : FontWeight.w400,
