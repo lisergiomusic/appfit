@@ -42,7 +42,7 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
         ? Future.value(null)
         : _exerciseService.buscarExercicioPorNome(widget.exercicio.nome);
 
-    _sortearCapa();
+    _definirCapa();
   }
 
   static const Map<String, String> _muscleImageMap = {
@@ -59,19 +59,18 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
     'bíceps': 'biceps.jpg',
   };
 
-  void _sortearCapa() {
+  void _definirCapa() {
     final grupos = widget.exercicio.grupoMuscular;
     if (grupos.isEmpty) return;
 
-    final gruposValidos = grupos.where((g) => _muscleImageMap.containsKey(g.toLowerCase())).toList();
-
-    if (gruposValidos.isNotEmpty) {
+    // Sempre usa o primeiro grupo definido como primário
+    final primeiroGrupo = grupos.first;
+    if (_muscleImageMap.containsKey(primeiroGrupo.toLowerCase())) {
       setState(() {
-        _selectedCoverGroup = gruposValidos[Random().nextInt(gruposValidos.length)];
+        _selectedCoverGroup = primeiroGrupo;
       });
     }
   }
-
   Color _getGrupoColor(String? grupo) {
     if (grupo == null) return AppColors.primary;
 
