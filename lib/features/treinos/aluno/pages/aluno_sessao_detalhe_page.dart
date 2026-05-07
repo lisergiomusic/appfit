@@ -819,7 +819,7 @@ class _ReadOnlySetRow extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                if (trailingIcon != null) trailingIcon,
+                ?trailingIcon,
               ],
             ),
           ),
