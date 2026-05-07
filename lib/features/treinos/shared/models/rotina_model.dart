@@ -38,12 +38,9 @@ class SessaoTreinoModel {
         );
       }
 
-      List<String> grupos = ['Geral'];
       final rawGrupo = ex['grupo_muscular'] ?? ex['grupoMuscular'];
       if (rawGrupo is String) {
-        grupos = rawGrupo.split(',').map((e) => e.trim()).toList();
       } else if (rawGrupo is List) {
-        grupos = List<String>.from(rawGrupo);
       }
 
       exerciciosList.add(

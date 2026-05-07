@@ -9,9 +9,11 @@ import '../../shared/widgets/executar_treino/exercicio_section_header.dart';
 import '../../shared/widgets/executar_treino/orientacao_personal_banner.dart';
 import '../../shared/widgets/executar_treino/serie_badge_info_dialog.dart';
 import '../../shared/widgets/exercicio_detalhe/exercicio_constants.dart';
+import '../../../../core/services/treino_service.dart';
+import '../../shared/models/historico_treino_model.dart';
 import 'aluno_executar_treino_page.dart';
 
-class AlunoSessaoDetalhePage extends StatelessWidget {
+class AlunoSessaoDetalhePage extends StatefulWidget {
   final SessaoTreinoModel sessao;
   final String letra;
   final String rotinaId;
@@ -25,16 +27,45 @@ class AlunoSessaoDetalhePage extends StatelessWidget {
     required this.alunoId,
   });
 
+  @override
+  State<AlunoSessaoDetalhePage> createState() => _AlunoSessaoDetalhePageState();
+}
+
+class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
+  final TreinoService _treinoService = TreinoService();
+  Map<String, List<SerieHistorico>> _historico = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarHistorico();
+  }
+
+  Future<void> _carregarHistorico() async {
+    try {
+      final h = await _treinoService.fetchUltimoHistoricoSessao(
+        alunoId: widget.alunoId,
+        sessaoNome: widget.sessao.nome,
+      );
+      if (mounted) {
+        setState(() {
+          _historico = h;
+        });
+      }
+    } catch (_) {
+    }
+  }
+
   List<String> _obterGruposUnicos() {
     final grupos = <String>{};
-    for (final exercicio in sessao.exercicios) {
+    for (final exercicio in widget.sessao.exercicios) {
       grupos.addAll(exercicio.grupoMuscular);
     }
     return grupos.toList();
   }
 
   int _calcularTotalSeries() {
-    return sessao.exercicios.fold(0, (sum, e) => sum + e.series.length);
+    return widget.sessao.exercicios.fold(0, (sum, e) => sum + e.series.length);
   }
 
   static const int _kSecondsPerRep = 4;
@@ -57,7 +88,7 @@ class AlunoSessaoDetalhePage extends StatelessWidget {
 
   String _calcularTempoEstimado() {
     int totalSegundos = 0;
-    for (final exercicio in sessao.exercicios) {
+    for (final exercicio in widget.sessao.exercicios) {
       // Tempo de transição entre exercícios
       totalSegundos += _kTransitionSeconds;
 
@@ -91,7 +122,7 @@ class AlunoSessaoDetalhePage extends StatelessWidget {
         backgroundColor: AppColors.surfaceDark,
         title: Text('Iniciar sessão', style: AppTheme.title1),
         content: Text(
-          'Pronto para treinar? Você vai executar a sessão "${sessao.nome}" e o tempo de treino começará a contar imediatamente.',
+          'Pronto para treinar? Você vai executar a sessão "${widget.sessao.nome}" e o tempo de treino começará a contar imediatamente.',
           style: AppTheme.bodyText,
         ),
         actions: [
@@ -115,9 +146,9 @@ class AlunoSessaoDetalhePage extends StatelessWidget {
         context,
         MaterialPageRoute(
           builder: (context) => AlunoExecutarTreinoPage(
-            sessao: sessao,
-            rotinaId: rotinaId,
-            alunoId: alunoId,
+            sessao: widget.sessao,
+            rotinaId: widget.rotinaId,
+            alunoId: widget.alunoId,
           ),
         ),
       );
@@ -139,7 +170,7 @@ class AlunoSessaoDetalhePage extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           AppFitSliverAppBar(
-            title: sessao.nome,
+            title: widget.sessao.nome,
             expandedHeight: 160,
             background: Align(
               alignment: Alignment.bottomLeft,
@@ -153,7 +184,7 @@ class AlunoSessaoDetalhePage extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(sessao.nome, style: AppTheme.bigTitle),
+                    Text(widget.sessao.nome, style: AppTheme.bigTitle),
                     const SizedBox(height: SpacingTokens.sm),
                     if (gruposUnicos.isNotEmpty)
                       Wrap(
@@ -191,7 +222,7 @@ class AlunoSessaoDetalhePage extends StatelessWidget {
                       Expanded(
                         child: _MetricCard(
                           label: 'Exercícios',
-                          value: '${sessao.exercicios.length}',
+                          value: '${widget.sessao.exercicios.length}',
                           icon: Icons.fitness_center,
                         ),
                       ),
@@ -215,23 +246,27 @@ class AlunoSessaoDetalhePage extends StatelessWidget {
                   ),
                   const SizedBox(height: SpacingTokens.sectionGap),
                   NoteDisplayField(
-                    text: sessao.orientacoes,
+                    text: widget.sessao.orientacoes,
                     label: 'Instruções do personal',
                     addLabel: '',
                     readOnly: true,
                     showInsetShadow: true,
                   ),
-                  if (sessao.orientacoes != null &&
-                      sessao.orientacoes!.trim().isNotEmpty)
+                  if (widget.sessao.orientacoes != null &&
+                      widget.sessao.orientacoes!.trim().isNotEmpty)
                     const SizedBox(height: SpacingTokens.sectionGap),
                   Text('Exercícios', style: AppTheme.sectionHeader),
                   const SizedBox(height: SpacingTokens.labelToField),
                   ...List.generate(
-                    sessao.exercicios.length,
-                    (exIndex) => _ExercicioCard(
-                      exercicio: sessao.exercicios[exIndex],
-                      alunoId: alunoId,
-                    ),
+                    widget.sessao.exercicios.length,
+                    (exIndex) {
+                      final ex = widget.sessao.exercicios[exIndex];
+                      return _ExercicioCard(
+                        exercicio: ex,
+                        alunoId: widget.alunoId,
+                        historico: _historico[ex.nome] ?? [],
+                      );
+                    },
                   ),
                   const SizedBox(height: 96),
                 ],
@@ -297,8 +332,13 @@ class _MetricCard extends StatelessWidget {
 class _ExercicioCard extends StatelessWidget {
   final ExercicioItem exercicio;
   final String alunoId;
+  final List<SerieHistorico> historico;
 
-  const _ExercicioCard({required this.exercicio, required this.alunoId});
+  const _ExercicioCard({
+    required this.exercicio,
+    required this.alunoId,
+    required this.historico,
+  });
 
   int _calcWorkIndex(int upToIdx) {
     int count = 0;
@@ -310,6 +350,11 @@ class _ExercicioCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Cálculo do descanso padrão
+    final rests = exercicio.series.map((s) => s.descanso.trim()).toSet();
+    final isUniformRest = rests.length == 1;
+    final standardRest = isUniformRest ? rests.first : rests.first; // Simplificação inicial
+
     return Padding(
       padding: const EdgeInsets.only(bottom: SpacingTokens.listItemGap),
       child: Container(
@@ -325,6 +370,31 @@ class _ExercicioCard extends StatelessWidget {
               exIdx: 0,
               alunoId: alunoId,
             ),
+            // Exibição do descanso padrão no topo (Destaque em branco para manter a identidade do app)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: SpacingTokens.lg,
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.timer_outlined,
+                    size: 16,
+                    color: AppColors.labelPrimary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Tempo de Descanso: ${RegExp(r'^\d+$').hasMatch(standardRest) ? '${standardRest}s' : standardRest}',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.labelPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: SpacingTokens.xs),
             if (exercicio.instrucoesParaExibicao != null)
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -338,9 +408,27 @@ class _ExercicioCard extends StatelessWidget {
             _ColumnLabelsRow(),
             const SizedBox(height: SpacingTokens.xs),
             ...List.generate(exercicio.series.length, (sIdx) {
+              final serie = exercicio.series[sIdx];
+              final indexDentroDoTipo = exercicio.series
+                  .take(sIdx)
+                  .where((s) => s.tipo == serie.tipo)
+                  .length;
+
+              final historicoSerie = historico.firstWhere(
+                (h) =>
+                    h.tipo == serie.tipo &&
+                    h.indexDentroDoTipo == indexDentroDoTipo,
+                orElse: () => SerieHistorico(
+                  tipo: serie.tipo,
+                  indexDentroDoTipo: indexDentroDoTipo,
+                ),
+              );
+
               return _ReadOnlySetRow(
-                serie: exercicio.series[sIdx],
+                serie: serie,
                 visualIndex: _calcWorkIndex(sIdx),
+                historico: historicoSerie,
+                isSpecialRest: !isUniformRest && serie.descanso.trim() != standardRest,
               );
             }),
             const SizedBox(height: SpacingTokens.sm),
@@ -356,9 +444,9 @@ class _ColumnLabelsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     const labelStyle = TextStyle(
       fontSize: 10,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 0.8,
-      color: AppColors.labelTertiary,
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0.5,
+      color: AppColors.labelSecondary,
     );
 
     return Padding(
@@ -366,26 +454,74 @@ class _ColumnLabelsRow extends StatelessWidget {
         horizontal: SpacingTokens.screenHorizontalPadding,
       ),
       child: Row(
-        children: const [
-          SizedBox(
-            width: 36,
+        children: [
+          const SizedBox(
+            width: 32,
             child: Text(
               'SÉRIE',
               style: labelStyle,
               textAlign: TextAlign.center,
             ),
           ),
-          SizedBox(width: SpacingTokens.md),
+          const SizedBox(width: SpacingTokens.md),
           Expanded(
             child: Text('ALVO', style: labelStyle, textAlign: TextAlign.center),
           ),
-          SizedBox(width: SpacingTokens.md),
+          const SizedBox(width: SpacingTokens.md),
           SizedBox(
             width: 72,
-            child: Text(
-              'DESCANSO',
-              style: labelStyle,
-              textAlign: TextAlign.center,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'KG',
+                  style: labelStyle,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(width: 4),
+                GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        backgroundColor: AppColors.surfaceDark,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                        ),
+                        title: const Text(
+                          'Carga Anterior',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        content: const Text(
+                          'Este valor mostra o último peso que você registrou para esta série específica.',
+                          style: TextStyle(
+                            color: AppColors.labelSecondary,
+                            fontSize: 14,
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text(
+                              'Entendi',
+                              style: TextStyle(color: AppColors.primary),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: Icon(
+                    Icons.info_outline_rounded,
+                    size: 11,
+                    color: AppColors.labelSecondary.withAlpha(120),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -397,8 +533,15 @@ class _ColumnLabelsRow extends StatelessWidget {
 class _ReadOnlySetRow extends StatelessWidget {
   final SerieItem serie;
   final int visualIndex;
+  final SerieHistorico historico;
+  final bool isSpecialRest;
 
-  const _ReadOnlySetRow({required this.serie, required this.visualIndex});
+  const _ReadOnlySetRow({
+    required this.serie,
+    required this.visualIndex,
+    required this.historico,
+    this.isSpecialRest = false,
+  });
 
   SerieTypeOption get _serieOption => serieTypeOptions.firstWhere(
     (opt) => opt.type == serie.tipo,
@@ -412,33 +555,37 @@ class _ReadOnlySetRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cargaAnterior = historico.pesoRealizado != null
+        ? '${historico.pesoRealizado}kg'
+        : '—';
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: SpacingTokens.screenHorizontalPadding,
-        vertical: SpacingTokens.sm,
+        vertical: 4,
       ),
       child: Row(
         children: [
           GestureDetector(
             onTap: () => showSerieBadgeInfo(context, serie.tipo),
             child: SizedBox.square(
-              dimension: 36,
+              dimension: 32,
               child: Center(
                 child: Container(
-                  width: 32,
-                  height: 32,
+                  width: 28,
+                  height: 28,
                   decoration: BoxDecoration(
-                    color: _serieColor.withAlpha(22),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                    color: _serieColor.withAlpha(20),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: Center(
                     child: _badgeIcon != null
-                        ? Icon(_badgeIcon, size: 16, color: _serieColor)
+                        ? Icon(_badgeIcon, size: 14, color: _serieColor)
                         : Text(
                             visualIndex.toString(),
                             style: TextStyle(
                               color: _serieColor,
-                              fontSize: 13,
+                              fontSize: 12,
                               fontWeight: FontWeight.w800,
                               letterSpacing: -0.2,
                             ),
@@ -450,29 +597,42 @@ class _ReadOnlySetRow extends StatelessWidget {
           ),
           const SizedBox(width: SpacingTokens.md),
           Expanded(
-            child: Text(
-              '${serie.alvo} reps',
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: AppColors.labelPrimary,
-                letterSpacing: -0.1,
-              ),
-              textAlign: TextAlign.center,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '${serie.alvo} reps',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.labelPrimary,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                if (isSpecialRest) ...[
+                  const SizedBox(width: 4),
+                  Tooltip(
+                    message: 'Descanso especial: ${serie.descanso}',
+                    child: const Icon(
+                      Icons.timer_outlined,
+                      size: 12,
+                      color: Colors.orangeAccent,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
           const SizedBox(width: SpacingTokens.md),
           SizedBox(
-            width: 72,
+            width: 72, // Combinando com a largura do cabeçalho
             child: Text(
-              RegExp(r'^\d+$').hasMatch(serie.descanso.trim())
-                  ? '${serie.descanso}s'
-                  : serie.descanso,
+              cargaAnterior,
               style: const TextStyle(
                 fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: AppColors.labelPrimary,
-                letterSpacing: -0.1,
+                fontWeight: FontWeight.w600,
+                color: AppColors.iosBlue,
+                letterSpacing: -0.2,
               ),
               textAlign: TextAlign.center,
             ),
