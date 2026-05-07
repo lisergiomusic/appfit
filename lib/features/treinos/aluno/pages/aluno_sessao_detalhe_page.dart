@@ -34,11 +34,19 @@ class AlunoSessaoDetalhePage extends StatefulWidget {
 class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
   final TreinoService _treinoService = TreinoService();
   Map<String, List<SerieHistorico>> _historico = {};
+  List<bool> _expandedStates = [];
 
   @override
   void initState() {
     super.initState();
+    _expandedStates = List.generate(widget.sessao.exercicios.length, (_) => false);
     _carregarHistorico();
+  }
+
+  void _toggleAll(bool expand) {
+    setState(() {
+      _expandedStates = List.generate(widget.sessao.exercicios.length, (_) => expand);
+    });
   }
 
   Future<void> _carregarHistorico() async {
@@ -255,7 +263,39 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
                   if (widget.sessao.orientacoes != null &&
                       widget.sessao.orientacoes!.trim().isNotEmpty)
                     const SizedBox(height: SpacingTokens.sectionGap),
-                  Text('Exercícios', style: AppTheme.sectionHeader),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Exercícios', style: AppTheme.sectionHeader),
+                      GestureDetector(
+                        onTap: () {
+                          final allExpanded = _expandedStates.every((e) => e);
+                          _toggleAll(!allExpanded);
+                        },
+                        behavior: HitTestBehavior.opaque,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _expandedStates.every((e) => e)
+                                    ? Icons.unfold_less_rounded
+                                    : Icons.unfold_more_rounded,
+                                size: 14,
+                                color: AppColors.primary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _expandedStates.every((e) => e) ? 'Recolher' : 'Expandir',
+                                style: AppTheme.sectionAction,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: SpacingTokens.labelToField),
                   ...List.generate(
                     widget.sessao.exercicios.length,
@@ -265,6 +305,12 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
                         exercicio: ex,
                         alunoId: widget.alunoId,
                         historico: _historico[ex.nome] ?? [],
+                        isExpanded: _expandedStates[exIndex],
+                        onToggle: () {
+                          setState(() {
+                            _expandedStates[exIndex] = !_expandedStates[exIndex];
+                          });
+                        },
                       );
                     },
                   ),
@@ -333,11 +379,15 @@ class _ExercicioCard extends StatelessWidget {
   final ExercicioItem exercicio;
   final String alunoId;
   final List<SerieHistorico> historico;
+  final bool isExpanded;
+  final VoidCallback onToggle;
 
   const _ExercicioCard({
     required this.exercicio,
     required this.alunoId,
     required this.historico,
+    required this.isExpanded,
+    required this.onToggle,
   });
 
   int _calcWorkIndex(int upToIdx) {
@@ -351,9 +401,7 @@ class _ExercicioCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Cálculo do descanso padrão
-    final rests = exercicio.series.map((s) => s.descanso.trim()).toSet();
-    final isUniformRest = rests.length == 1;
-    final standardRest = isUniformRest ? rests.first : rests.first; // Simplificação inicial
+    exercicio.series.map((s) => s.descanso.trim()).toSet();
 
     return Padding(
       padding: const EdgeInsets.only(bottom: SpacingTokens.listItemGap),
@@ -365,86 +413,127 @@ class _ExercicioCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ExercicioSectionHeader(
-              exercicio: exercicio,
-              exIdx: 0,
-              alunoId: alunoId,
-            ),
-            if (exercicio.instrucoesParaExibicao != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: SpacingTokens.lg,
-                ),
-                child: OrientacaoPersonalBanner(
-                  orientacao: exercicio.instrucoesParaExibicao,
-                ),
-              ),
-            const SizedBox(height: SpacingTokens.sm),
-            _ColumnLabelsRow(),
-            const SizedBox(height: SpacingTokens.xs),
-            ...List.generate(exercicio.series.length, (sIdx) {
-              final serie = exercicio.series[sIdx];
-              final indexDentroDoTipo = exercicio.series
-                  .take(sIdx)
-                  .where((s) => s.tipo == serie.tipo)
-                  .length;
-
-              final historicoSerie = historico.firstWhere(
-                (h) =>
-                    h.tipo == serie.tipo &&
-                    h.indexDentroDoTipo == indexDentroDoTipo,
-                orElse: () => SerieHistorico(
-                  tipo: serie.tipo,
-                  indexDentroDoTipo: indexDentroDoTipo,
-                ),
-              );
-
-              return _ReadOnlySetRow(
-                serie: serie,
-                visualIndex: _calcWorkIndex(sIdx),
-                historico: historicoSerie,
-                isSpecialRest: !isUniformRest && serie.descanso.trim() != standardRest,
-              );
-            }),
-            const SizedBox(height: SpacingTokens.md),
-            // Rodapé com o tempo de descanso (Elegante e limpo)
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: SpacingTokens.lg,
-              ),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      color: AppColors.labelPrimary.withAlpha(20),
-                      width: 0.5,
-                    ),
+            InkWell(
+              onTap: onToggle,
+              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+              child: ExercicioSectionHeader(
+                exercicio: exercicio,
+                exIdx: 0,
+                alunoId: alunoId,
+                trailing: Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Icon(
+                    isExpanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    color: AppColors.labelSecondary.withAlpha(150),
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.timer_outlined,
-                      size: 14,
-                      color: AppColors.labelSecondary.withAlpha(180),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Tempo de Descanso: ${RegExp(r'^\d+$').hasMatch(standardRest) ? '${standardRest}s' : standardRest}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.labelSecondary.withAlpha(180),
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
-            const SizedBox(height: SpacingTokens.xs),
+            AnimatedCrossFade(
+              firstChild: const SizedBox(width: double.infinity),
+              secondChild: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (exercicio.instrucoesParaExibicao != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: SpacingTokens.lg,
+                      ),
+                      child: OrientacaoPersonalBanner(
+                        orientacao: exercicio.instrucoesParaExibicao,
+                      ),
+                    ),
+                  const SizedBox(height: SpacingTokens.sm),
+                  _ColumnLabelsRow(),
+                  const SizedBox(height: SpacingTokens.xs),
+                  ..._buildSetsWithContextualRest(exercicio, historico),
+                  const SizedBox(height: SpacingTokens.xs),
+                ],
+              ),
+              crossFadeState: isExpanded
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 300),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildSetsWithContextualRest(ExercicioItem exercicio, List<SerieHistorico> historico) {
+    final List<Widget> widgets = [];
+    final rests = exercicio.series.map((s) => s.descanso.trim()).toSet();
+    final isUniformRest = rests.length == 1;
+    final standardRestOverall = rests.isNotEmpty ? rests.first : '60s';
+
+    for (int i = 0; i < exercicio.series.length; i++) {
+      final serie = exercicio.series[i];
+      final indexDentroDoTipo = exercicio.series.take(i).where((s) => s.tipo == serie.tipo).length;
+
+      final historicoSerie = historico.firstWhere(
+        (h) => h.tipo == serie.tipo && h.indexDentroDoTipo == indexDentroDoTipo,
+        orElse: () => SerieHistorico(tipo: serie.tipo, indexDentroDoTipo: indexDentroDoTipo),
+      );
+
+      widgets.add(
+        _ReadOnlySetRow(
+          serie: serie,
+          visualIndex: _calcWorkIndex(i),
+          historico: historicoSerie,
+          isSpecialRest: !isUniformRest && serie.descanso.trim() != standardRestOverall,
+        ),
+      );
+
+      // Lógica de Bloco: Verifica se a próxima série é de tipo diferente ou se é a última
+      final bool isLastOfBlock = (i == exercicio.series.length - 1) || (exercicio.series[i + 1].tipo != serie.tipo);
+
+      if (isLastOfBlock) {
+        final bool isLastOverall = i == exercicio.series.length - 1;
+        widgets.add(_buildBlockRestFooter(serie.descanso, isLastOverall));
+      }
+    }
+
+    return widgets;
+  }
+
+  Widget _buildBlockRestFooter(String rest, bool isLastOverall) {
+    final cleanRest = RegExp(r'^\d+$').hasMatch(rest) ? '${rest}s' : rest;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.lg),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          border: isLastOverall
+              ? Border(
+                  top: BorderSide(
+                    color: AppColors.labelPrimary.withAlpha(20),
+                    width: 0.5,
+                  ),
+                )
+              : null,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.timer_outlined,
+              size: 14,
+              color: AppColors.labelSecondary.withAlpha(isLastOverall ? 180 : 120),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'Descanso (${isLastOverall ? "Trabalho" : "Aquecimento"}): $cleanRest',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isLastOverall ? FontWeight.w600 : FontWeight.w400,
+                color: AppColors.labelSecondary.withAlpha(isLastOverall ? 180 : 120),
+                letterSpacing: 0.2,
+              ),
+            ),
           ],
         ),
       ),
@@ -478,7 +567,7 @@ class _ColumnLabelsRow extends StatelessWidget {
           ),
           const SizedBox(width: SpacingTokens.md),
           Expanded(
-            child: Text('ALVO', style: labelStyle, textAlign: TextAlign.center),
+            child: Text('REPETIÇÕES', style: labelStyle, textAlign: TextAlign.center),
           ),
           const SizedBox(width: SpacingTokens.md),
           SizedBox(
@@ -639,7 +728,7 @@ class _ReadOnlySetRow extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '${serie.alvo} reps',
+                  serie.alvo,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -677,7 +766,7 @@ class _ReadOnlySetRow extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                if (trailingIcon != null) trailingIcon,
+                ?trailingIcon,
               ],
             ),
           ),

@@ -12,6 +12,7 @@ class ExercicioSectionHeader extends StatelessWidget {
   final String? alunoId;
   final void Function(ExercicioMenuAction)? onMenuAction;
   final VoidCallback? onSwap;
+  final Widget? trailing;
 
   const ExercicioSectionHeader({
     super.key,
@@ -20,6 +21,7 @@ class ExercicioSectionHeader extends StatelessWidget {
     this.onMenuAction,
     this.onSwap,
     this.alunoId,
+    this.trailing,
   });
 
   void _goToExercicioDetails(BuildContext context) {
@@ -111,16 +113,36 @@ class ExercicioSectionHeader extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          if (muscles.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 3),
-                              child: Text(
-                                muscles,
-                                style: AppTheme.caption,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 3),
+                            child: Row(
+                              children: [
+                                Text(
+                                  '${exercicio.series.length} séries',
+                                  style: AppTheme.caption.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (muscles.isNotEmpty) ...[
+                                  Text(
+                                    '  ·  ',
+                                    style: AppTheme.caption,
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      muscles,
+                                      style: AppTheme.caption,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
+                          ),
                         ],
                       ),
                     ),
@@ -129,6 +151,7 @@ class ExercicioSectionHeader extends StatelessWidget {
               ),
             ),
           ),
+          if (trailing != null) trailing!,
           if (onMenuAction != null)
             PopupMenuButton<ExercicioMenuAction>(
               icon: const Icon(
