@@ -232,18 +232,6 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
     }
   }
 
-  Color _getGrupoColor(String? grupo) {
-    if (grupo == null) return AppColors.primary;
-
-    final g = grupo.toLowerCase();
-    if (g.contains('peito')) return Colors.redAccent;
-    if (g.contains('costas')) return Colors.blueAccent;
-    if (g.contains('perna') || g.contains('glúteo')) return Colors.orangeAccent;
-    if (g.contains('deltoide')) return Colors.purpleAccent;
-    if (g.contains('braço') || g.contains('triceps') || g.contains('biceps')) return Colors.greenAccent;
-
-    return AppColors.primary;
-  }
 
   String? _getCoverImageUrl(String? grupo) {
     if (grupo == null) return null;
@@ -295,7 +283,7 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
                       end: Alignment.bottomCenter,
                       colors: [
                         // Se houver imagem, o topo é mais escuro para o título brilhar
-                        (_getGrupoColor(_selectedCoverGroup)).withAlpha(coverUrl != null ? 100 : 40),
+                        AppColors.primary.withAlpha(coverUrl != null ? 100 : 40),
                         const Color(0xFF121212),
                       ],
                       stops: const [0.0, 0.9], // O fade para preto termina antes do final
@@ -391,7 +379,7 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Exercícios', style: AppTheme.sectionHeader),
+                      Text('LISTA DE EXERCÍCIOS', style: AppTheme.sectionHeader),
                       GestureDetector(
                         onTap: () {
                           final allExpanded = _expandedStates.every((e) => e);

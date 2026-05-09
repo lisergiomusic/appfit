@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'dart:math';
+import 'package:flutter/services.dart';
 import '../../../../core/services/exercise_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/appfit_sliver_app_bar.dart';
@@ -70,18 +70,6 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
         _selectedCoverGroup = primeiroGrupo;
       });
     }
-  }
-  Color _getGrupoColor(String? grupo) {
-    if (grupo == null) return AppColors.primary;
-
-    final g = grupo.toLowerCase();
-    if (g.contains('peito')) return Colors.redAccent;
-    if (g.contains('costas')) return Colors.blueAccent;
-    if (g.contains('perna') || g.contains('glúteo')) return Colors.orangeAccent;
-    if (g.contains('deltoide')) return Colors.purpleAccent;
-    if (g.contains('braço') || g.contains('triceps') || g.contains('biceps')) return Colors.greenAccent;
-
-    return AppColors.primary;
   }
 
   String? _getCoverImageUrl(String? grupo) {
@@ -181,7 +169,7 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        (_getGrupoColor(_selectedCoverGroup)).withAlpha(coverUrl != null ? 100 : 40),
+                        AppColors.primary.withAlpha(coverUrl != null ? 100 : 40),
                         const Color(0xFF121212),
                       ],
                       stops: const [0.0, 0.9],
@@ -271,17 +259,14 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        'Instruções'.toUpperCase(),
-                        style: AppTheme.formLabel.copyWith(
-                          fontSize: 10,
-                          letterSpacing: 0.5,
-                          color: AppColors.labelSecondary,
-                        ),
-                      ),
+                      Text('INSTRUÇÕES', style: AppTheme.sectionHeader),
                       const SizedBox(width: 4),
                       GestureDetector(
-                        onTap: () => _mostrarAvisoInstrucoes(context),
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          _mostrarAvisoInstrucoes(context);
+                        },
+                        behavior: HitTestBehavior.opaque,
                         child: Padding(
                           padding: const EdgeInsets.all(4),
                           child: Icon(
@@ -311,16 +296,18 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                       if (instrucoesPadrao != null) {
                         return Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: Colors.white.withAlpha(5),
                             borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white.withAlpha(5), width: 0.5),
                           ),
                           child: Text(
                             instrucoesPadrao,
                             style: AppTheme.bodyText.copyWith(
-                              color: AppColors.labelPrimary.withAlpha(200),
-                              height: 1.4,
+                              color: AppColors.labelPrimary.withAlpha(180),
+                              height: 1.5,
+                              fontSize: 13,
                             ),
                           ),
                         );
@@ -329,7 +316,11 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                       return Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(
-                          vertical: SpacingTokens.xl,
+                          vertical: SpacingTokens.xxl,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(3),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -337,13 +328,13 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                             Icon(
                               Icons.menu_book_rounded,
                               size: 32,
-                              color: AppColors.labelSecondary.withAlpha(80),
+                              color: AppColors.labelSecondary.withAlpha(40),
                             ),
                             const SizedBox(height: SpacingTokens.sm),
                             Text(
                               'Nenhuma instrução disponível',
-                              style: AppTheme.caption.copyWith(
-                                color: AppColors.labelSecondary.withAlpha(120),
+                              style: AppTheme.premiumLabel.copyWith(
+                                color: AppColors.labelSecondary.withAlpha(100),
                               ),
                             ),
                           ],
