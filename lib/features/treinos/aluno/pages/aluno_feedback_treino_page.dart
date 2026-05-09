@@ -78,10 +78,27 @@ class _AlunoFeedbackTreinoPageState extends State<AlunoFeedbackTreinoPage> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
         automaticallyImplyLeading: false,
         title: Text('Treino concluído', style: AppTheme.pageTitle),
         centerTitle: true,
-        actions: [AppBarTextButton(label: 'Pular', onPressed: _pular)],
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: TextButton(
+              onPressed: _pular,
+              child: Text(
+                'PULAR',
+                style: AppTheme.navBarAction.copyWith(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -99,7 +116,7 @@ class _AlunoFeedbackTreinoPageState extends State<AlunoFeedbackTreinoPage> {
                   duracao: widget.duracaoMinutos,
                 ),
                 const SizedBox(height: SpacingTokens.sectionGap),
-                _SectionLabel(text: 'Como foi o esforço?'),
+                _SectionLabel(text: 'COMO FOI O ESFORÇO?'),
                 const SizedBox(height: SpacingTokens.labelToField),
                 _EsforcoGrid(
                   selecionado: esforcoSelecionado,
@@ -110,21 +127,21 @@ class _AlunoFeedbackTreinoPageState extends State<AlunoFeedbackTreinoPage> {
                   colorMapper: _getEsforcoColor,
                 ),
                 if (temEsforco) ...[
-                  const SizedBox(height: SpacingTokens.sm),
+                  const SizedBox(height: 12),
                   _EsforcoIndicador(
                     valor: esforcoSelecionado,
                     label: _esforcoLabel(esforcoSelecionado),
                     color: _getEsforcoColor(esforcoSelecionado),
                   ),
                 ],
-                const SizedBox(height: SpacingTokens.xxl),
-                _SectionLabel(text: 'Observações (Opcional)'),
+                const SizedBox(height: 40),
+                _SectionLabel(text: 'OBSERVAÇÕES (OPCIONAL)'),
                 const SizedBox(height: SpacingTokens.labelToField),
                 _ObservacoesField(
                   controller: _obsController,
                   maxChars: _maxChars,
                 ),
-                const SizedBox(height: SpacingTokens.xxl),
+                const SizedBox(height: 40),
                 _ConfirmarButton(onPressed: _confirmar),
                 const SizedBox(height: SpacingTokens.screenBottomPadding),
               ],
@@ -144,36 +161,44 @@ class _SessaoResumo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withAlpha(20),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.check_circle_rounded,
+              color: AppColors.primary,
+              size: 24,
+            ),
           ),
-          child: const Icon(
-            Icons.check_circle_rounded,
-            color: AppColors.primary,
-            size: 24,
+          const SizedBox(width: SpacingTokens.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(nome, style: AppTheme.cardTitle),
+                const SizedBox(height: 4),
+                Text(
+                  '$duracao minutos de atividade',
+                  style: AppTheme.cardSubtitle.copyWith(fontSize: 13),
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: SpacingTokens.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(nome, style: AppTheme.cardTitle),
-              const SizedBox(height: SpacingTokens.xs),
-              Text(
-                '$duracao min',
-                style: AppTheme.cardSubtitle,
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -186,11 +211,9 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        letterSpacing: -0.08,
-        color: AppColors.labelSecondary,
+      style: AppTheme.sectionHeader.copyWith(
+        fontSize: 11,
+        letterSpacing: 1.5,
       ),
     );
   }
@@ -219,21 +242,25 @@ class _EsforcoGrid extends StatelessWidget {
           child: GestureDetector(
             onTap: () => onSelect(valor),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              margin: EdgeInsets.only(right: i < 9 ? 4 : 0),
-              height: 40,
+              duration: const Duration(milliseconds: 200),
+              margin: EdgeInsets.only(right: i < 9 ? 6 : 0),
+              height: 44,
               decoration: BoxDecoration(
                 color: abaixo
-                    ? colorMapper(selecionado!).withValues(alpha: ativo ? 1.0 : 0.45)
-                    : AppColors.surfaceLight,
-                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                    ? colorMapper(selecionado!).withAlpha(ativo ? 255 : 80)
+                    : AppColors.surfaceLight.withAlpha(100),
+                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                border: Border.all(
+                  color: ativo ? Colors.white.withAlpha(50) : Colors.white.withAlpha(10),
+                  width: 0.5,
+                ),
               ),
               alignment: Alignment.center,
               child: Text(
                 '$valor',
                 style: TextStyle(
                   fontSize: 13,
-                  fontWeight: ativo ? FontWeight.w700 : FontWeight.w500,
+                  fontWeight: ativo ? FontWeight.w800 : FontWeight.w600,
                   color: abaixo ? Colors.white : AppColors.labelTertiary,
                 ),
               ),
@@ -258,27 +285,40 @@ class _EsforcoIndicador extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          '$valor/10',
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: color,
-          ),
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withAlpha(20),
+          borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+          border: Border.all(color: color.withAlpha(40), width: 0.5),
         ),
-        const SizedBox(width: SpacingTokens.xs),
-        Text(
-          '· $label',
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w400,
-            color: color.withValues(alpha: 0.8),
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '$valor/10',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: color,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(width: 1, height: 10, color: color.withAlpha(60)),
+            const SizedBox(width: 8),
+            Text(
+              label.toUpperCase(),
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.0,
+                color: color,
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -316,6 +356,7 @@ class _ObservacoesFieldState extends State<_ObservacoesField> {
           decoration: BoxDecoration(
             color: AppColors.surfaceDark,
             borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+            border: Border.all(color: Colors.white.withAlpha(15), width: 0.5),
           ),
           child: TextField(
             controller: widget.controller,
@@ -327,26 +368,25 @@ class _ObservacoesFieldState extends State<_ObservacoesField> {
                     required isFocused,
                     maxLength}) =>
                 null,
-            style: AppTheme.bodyText,
+            style: AppTheme.bodyText.copyWith(fontSize: 15),
             decoration: InputDecoration(
-              hintText: 'Como foi o treino de hoje?',
-              hintStyle: const TextStyle(
+              hintText: 'Como você se sentiu hoje?',
+              hintStyle: TextStyle(
                 fontSize: 15,
-                color: AppColors.labelTertiary,
+                color: AppColors.labelTertiary.withAlpha(150),
                 fontWeight: FontWeight.w400,
               ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: SpacingTokens.cardPaddingH,
-                vertical: SpacingTokens.cardPaddingV,
-              ),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMD), borderSide: BorderSide.none),
+              contentPadding: const EdgeInsets.all(16),
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
             ),
           ),
         ),
-        const SizedBox(height: SpacingTokens.xs),
+        const SizedBox(height: 8),
         Text(
           '$_count/${widget.maxChars}',
-          style: AppTheme.caption,
+          style: AppTheme.caption.copyWith(fontSize: 11),
         ),
       ],
     );
@@ -362,22 +402,22 @@ class _ConfirmarButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 50,
-      child: FilledButton(
+      height: 52,
+      child: TextButton(
         onPressed: onPressed,
-        style: FilledButton.styleFrom(
+        style: TextButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.black,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+            borderRadius: BorderRadius.circular(AppTheme.radiusFull),
           ),
         ),
         child: const Text(
-          'Salvar',
+          'SALVAR FEEDBACK',
           style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.41,
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.5,
           ),
         ),
       ),
