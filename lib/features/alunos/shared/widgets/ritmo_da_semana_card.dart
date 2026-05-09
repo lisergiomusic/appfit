@@ -39,15 +39,18 @@ class RitmoDaSemanaCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text('Ritmo da semana', style: AppTheme.sectionHeader),
-            const Spacer(),
-          ],
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(
+            'RITMO DA SEMANA',
+            style: AppTheme.premiumLabel.copyWith(
+              color: AppColors.labelPrimary.withAlpha(180),
+              letterSpacing: 1.5,
+            ),
+          ),
         ),
-        const SizedBox(height: SpacingTokens.labelToField),
         Container(
-          padding: CardTokens.padding,
+          padding: const EdgeInsets.all(16),
           decoration: AppTheme.cardDecoration,
           child: Column(
             children: [
@@ -63,44 +66,36 @@ class RitmoDaSemanaCard extends StatelessWidget {
                       Text(
                         d['dia']!,
                         style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          color: isFuturo || isCarregando
-                              ? AppColors.labelSecondary.withAlpha(100)
-                              : AppColors.labelSecondary,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: isFeito 
+                              ? AppColors.primary 
+                              : AppColors.labelSecondary.withAlpha(120),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       Container(
-                        width: 36,
-                        height: 36,
+                        width: 38,
+                        height: 38,
                         decoration: BoxDecoration(
                           color: isFeito
                               ? AppColors.primary
-                              : Colors.transparent,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isFeito
-                                ? AppColors.primary
-                                : AppColors.labelSecondary.withAlpha(30),
-                            width: 1.5,
-                          ),
+                              : AppColors.labelSecondary.withAlpha(20),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: Center(
                           child: isFeito
                               ? const Icon(
                                   Icons.check,
                                   color: Colors.black,
-                                  size: 18,
+                                  size: 20,
                                 )
                               : Container(
                                   width: 4,
                                   height: 4,
                                   decoration: BoxDecoration(
-                                    color: AppColors.labelSecondary.withAlpha(
-                                      50,
-                                    ),
-                                    shape: BoxShape.circle,
+                                    color: AppColors.labelSecondary.withAlpha(40),
+                                    borderRadius: BorderRadius.circular(2),
                                   ),
                                 ),
                         ),
@@ -113,14 +108,12 @@ class RitmoDaSemanaCard extends StatelessWidget {
               Builder(
                 builder: (context) {
                   if (diasTreinados == null) {
-                    return Center(
-                      child: Text(
-                        'Carregando...',
-                        style: TextStyle(
-                          color: AppColors.labelSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
+                    return const SizedBox(
+                      height: 14,
+                      width: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation(AppColors.primary),
                       ),
                     );
                   }
@@ -133,20 +126,19 @@ class RitmoDaSemanaCard extends StatelessWidget {
 
                   final String textoResumo = count == 0
                       ? (isAlunoView
-                            ? 'Você não treinou essa semana'
-                            : '$primeiroNome não treinou essa semana')
+                            ? 'Você ainda não treinou esta semana'
+                            : '$primeiroNome ainda não treinou esta semana')
                       : (isAlunoView
-                            ? 'Você treinou $count $diaSingularPlural essa semana'
-                            : '$primeiroNome treinou $count $diaSingularPlural essa semana');
+                            ? 'Você treinou $count $diaSingularPlural esta semana'
+                            : '$primeiroNome treinou $count $diaSingularPlural esta semana');
 
-                  return Center(
-                    child: Text(
-                      textoResumo,
-                      style: TextStyle(
-                        color: AppColors.labelSecondary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
+                  return Text(
+                    textoResumo.toUpperCase(),
+                    style: TextStyle(
+                      color: AppColors.labelSecondary.withAlpha(150),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
                     ),
                   );
                 },
