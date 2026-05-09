@@ -1,9 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/services/exercise_service.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/appfit_sliver_app_bar.dart';
 import '../../shared/models/exercicio_model.dart';
 import '../../shared/widgets/exercicio_detalhe/exercicio_constants.dart';
 import '../../shared/widgets/exercicio_detalhe/exercise_video_card.dart';
@@ -26,7 +24,6 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
   final ExerciseService _exerciseService = ExerciseService();
   late final Future<ExercicioItem?>? _exercicioBaseFuture;
   late final Future<ExercicioItem?> _exercicioBaseParaMidiaFuture;
-  String? _selectedCoverGroup;
 
   @override
   void initState() {
@@ -41,45 +38,6 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
     _exercicioBaseParaMidiaFuture = hasLocalMedia
         ? Future.value(null)
         : _exerciseService.buscarExercicioPorNome(widget.exercicio.nome);
-
-    _definirCapa();
-  }
-
-  static const Map<String, String> _muscleImageMap = {
-    'peito': 'chest.jpg',
-    'costas': 'back.jpg',
-    'pernas': 'legs.jpg',
-    'deltóides': 'deltoides.jpg',
-    'deltoides': 'deltoides.jpg',
-    'glúteos': 'gluteos.jpg',
-    'gluteos': 'gluteos.jpg',
-    'triceps': 'triceps.jpg',
-    'tríceps': 'triceps.jpg',
-    'biceps': 'biceps.jpg',
-    'bíceps': 'biceps.jpg',
-  };
-
-  void _definirCapa() {
-    final grupos = widget.exercicio.grupoMuscular;
-    if (grupos.isEmpty) return;
-
-    // Sempre usa o primeiro grupo definido como primário
-    final primeiroGrupo = grupos.first;
-    if (_muscleImageMap.containsKey(primeiroGrupo.toLowerCase())) {
-      setState(() {
-        _selectedCoverGroup = primeiroGrupo;
-      });
-    }
-  }
-
-  String? _getCoverImageUrl(String? grupo) {
-    if (grupo == null) return null;
-
-    final fileName = _muscleImageMap[grupo.toLowerCase()];
-    if (fileName == null) return null;
-
-    const supabaseUrl = 'https://rqsonrzagxvmmkjzshcl.supabase.co';
-    return '$supabaseUrl/storage/v1/object/public/workout_covers/$fileName';
   }
 
   void _mostrarAvisoInstrucoes(BuildContext context) {
@@ -88,7 +46,8 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surfaceDark,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+          side: BorderSide(color: Colors.white.withAlpha(15), width: 0.5),
         ),
         title: Row(
           children: [
@@ -118,21 +77,28 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
         ),
         actionsAlignment: MainAxisAlignment.center,
         actions: [
-          SizedBox(
-            width: double.infinity,
-            child: TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              style: TextButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
+            child: SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                style: TextButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: SpacingTokens.sm),
-              ),
-              child: const Text(
-                'Entendi',
-                style: TextStyle(fontWeight: FontWeight.w600),
+                child: const Text(
+                  'ENTENDI',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
+                    letterSpacing: 1.2,
+                  ),
+                ),
               ),
             ),
           ),
@@ -144,79 +110,92 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
   @override
   Widget build(BuildContext context) {
     final temMusculos = widget.exercicio.grupoMuscular.isNotEmpty;
-    final coverUrl = _getCoverImageUrl(_selectedCoverGroup);
+
+    // Lógica para ajustar a altura do header com base no tamanho do nome
+    // Um nome com mais de ~22 caracteres geralmente quebra para 2 linhas com fontSize 18
+    final bool isLongTitle = widget.exercicio.nome.length > 22;
+    final double expandedHeight = isLongTitle ? 120 : 90;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: AppColors.background,
       body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
         slivers: [
-          AppFitSliverAppBar(
-            title: widget.exercicio.nome,
-            expandedHeight: 180,
-            background: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (coverUrl != null)
-                  CachedNetworkImage(
-                    imageUrl: coverUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(color: const Color(0xFF121212)),
-                    errorWidget: (context, url, error) => const SizedBox.shrink(),
-                  ),
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        AppColors.primary.withAlpha(coverUrl != null ? 100 : 40),
-                        const Color(0xFF121212),
-                      ],
-                      stops: const [0.0, 0.9],
+          SliverAppBar(
+            expandedHeight: expandedHeight,
+            pinned: true,
+            stretch: true,
+            backgroundColor: AppColors.background,
+            elevation: 0,
+            surfaceTintColor: Colors.transparent,
+            centerTitle: true,
+            leading: Container(
+              margin: const EdgeInsets.only(left: 8),
+              child: Center(
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceLight.withAlpha(150),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      size: 14,
+                      color: Colors.white,
                     ),
                   ),
                 ),
-                if (coverUrl != null)
-                  Container(color: Colors.black.withAlpha(40)),
-                Align(
-                  alignment: Alignment.bottomLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      left: SpacingTokens.screenHorizontalPadding,
-                      right: SpacingTokens.screenHorizontalPadding,
-                      bottom: SpacingTokens.sectionGap,
+              ),
+            ),
+            // O título da AppBar (colapsado) agora é controlado pelo FlexibleSpace para sincronia perfeita
+            flexibleSpace: LayoutBuilder(
+              builder: (context, constraints) {
+                final double expandedH = constraints.maxHeight;
+                final double collapsedH = MediaQuery.of(context).padding.top + kToolbarHeight;
+                // Threshold para considerar colapsado (quando falta ~20px para atingir a altura mínima)
+                final bool isCollapsed = expandedH <= collapsedH + 20;
+
+                return FlexibleSpaceBar(
+                  stretchModes: const [StretchMode.zoomBackground],
+                  centerTitle: true,
+                  title: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 200),
+                    opacity: isCollapsed ? 1.0 : 0.0,
+                    child: Text(
+                      widget.exercicio.nome,
+                      style: AppTheme.pageTitle,
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(widget.exercicio.nome, style: AppTheme.bigTitle),
-                        if (temMusculos) ...[
-                          const SizedBox(height: SpacingTokens.sm),
-                          Wrap(
-                            spacing: SpacingTokens.xs,
-                            runSpacing: SpacingTokens.xs,
-                            children: widget.exercicio.grupoMuscular
-                                .map(
-                                  (grupo) => Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: SpacingTokens.sm,
-                                      vertical: SpacingTokens.xs,
-                                    ),
-                                    decoration: PillTokens.decoration.copyWith(
-                                      color: Colors.white.withAlpha(10),
-                                    ),
-                                    child: Text(grupo, style: PillTokens.text),
-                                  ),
-                                )
-                                .toList(),
+                  ),
+                  background: Container(
+                    decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: isCollapsed ? 0.0 : 1.0,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          SpacingTokens.screenHorizontalPadding,
+                          0,
+                          SpacingTokens.screenHorizontalPadding,
+                          12,
+                        ),
+                        child: Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Text(
+                            widget.exercicio.nome,
+                            style: AppTheme.title1,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      ],
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                );
+              },
             ),
           ),
           SliverToBoxAdapter(
@@ -227,6 +206,37 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (temMusculos) ...[
+
+                    Wrap(
+                      spacing: SpacingTokens.xs,
+                      runSpacing: SpacingTokens.xs,
+                      children: widget.exercicio.grupoMuscular
+                          .map(
+                            (grupo) => Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: SpacingTokens.sm,
+                                vertical: SpacingTokens.xs,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withAlpha(10),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                                border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
+                              ),
+                              child: Text(
+                                grupo.toUpperCase(),
+                                style: PillTokens.text.copyWith(
+                                  letterSpacing: 1.0,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ],
+
                   const SizedBox(height: SpacingTokens.sectionGap),
 
                   // Bloco de Vídeo
@@ -259,7 +269,13 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text('INSTRUÇÕES', style: AppTheme.sectionHeader),
+                      Text(
+                        'INSTRUÇÕES',
+                        style: AppTheme.sectionHeader.copyWith(
+                          fontSize: 11,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
                       const SizedBox(width: 4),
                       GestureDetector(
                         onTap: () {
@@ -278,7 +294,7 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
 
                   // Conteúdo de Instruções
                   FutureBuilder<ExercicioItem?>(
@@ -296,18 +312,18 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                       if (instrucoesPadrao != null) {
                         return Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(SpacingTokens.lg),
                           decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(5),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white.withAlpha(5), width: 0.5),
+                            color: AppColors.surfaceDark,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                            border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
                           ),
                           child: Text(
                             instrucoesPadrao,
                             style: AppTheme.bodyText.copyWith(
-                              color: AppColors.labelPrimary.withAlpha(180),
-                              height: 1.5,
-                              fontSize: 13,
+                              color: AppColors.labelPrimary.withAlpha(200),
+                              height: 1.6,
+                              fontSize: 14,
                             ),
                           ),
                         );
@@ -319,8 +335,9 @@ class _AlunoExercicioViewPageState extends State<AlunoExercicioViewPage> {
                           vertical: SpacingTokens.xxl,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(3),
-                          borderRadius: BorderRadius.circular(12),
+                          color: AppColors.surfaceDark,
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                          border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
                         ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -361,8 +378,9 @@ class _VideoCardLoadingPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(5),
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
       ),
       child: AspectRatio(
         aspectRatio: ExercicioDetalheConstants.videoAspectRatio,
@@ -387,8 +405,9 @@ class _InstructionLoadingCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: SpacingTokens.xl),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(5),
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
       ),
       child: const Center(
         child: SizedBox(
