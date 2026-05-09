@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../theme/app_theme.dart';
 
 class SettingsItem {
@@ -30,21 +31,18 @@ class SettingsGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-      ),
+      decoration: AppTheme.premiumCardDecoration,
       clipBehavior: Clip.hardEdge,
       child: Column(
         children: [
           for (int i = 0; i < items.length; i++) ...[
             _SettingsRow(item: items[i]),
             if (i < items.length - 1)
-              const Divider(
+              Divider(
                 height: 1,
-                thickness: 1,
+                thickness: 0.5,
                 indent: 52,
-                color: Color(0x14EBEBF5),
+                color: Colors.white.withAlpha(15),
               ),
           ],
         ],
@@ -65,16 +63,20 @@ class _SettingsRow extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: item.onTap,
-        splashColor: isLogout ? AppColors.systemRed.withAlpha(60) : AppColors.splash,
+        onTap: () {
+          HapticFeedback.lightImpact();
+          item.onTap();
+        },
+        splashColor: isLogout ? AppColors.systemRed.withAlpha(40) : Colors.white.withAlpha(10),
+        highlightColor: Colors.white.withAlpha(5),
         child: Padding(
           padding: EdgeInsets.symmetric(
             horizontal: SpacingTokens.cardPaddingH,
-            vertical: item.subtitle != null ? 12 : 15,
+            vertical: item.subtitle != null ? 14 : 16,
           ),
           child: Row(
             children: [
-              Icon(item.icon, size: 19, color: item.iconColor),
+              Icon(item.icon, size: 20, color: item.iconColor),
               const SizedBox(width: SpacingTokens.md),
               Expanded(
                 child: Column(
@@ -84,22 +86,28 @@ class _SettingsRow extends StatelessWidget {
                       item.label,
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w400,
+                        fontWeight: FontWeight.w500,
                         letterSpacing: -0.2,
                         color: item.labelColor ?? AppColors.labelPrimary,
                       ),
                     ),
                     if (item.subtitle != null) ...[
                       const SizedBox(height: 2),
-                      Text(item.subtitle!, style: AppTheme.caption),
+                      Text(
+                        item.subtitle!, 
+                        style: AppTheme.caption.copyWith(
+                          color: AppColors.labelSecondary.withAlpha(140),
+                          fontSize: 12,
+                        )
+                      ),
                     ],
                   ],
                 ),
               ),
               Icon(
                 Icons.chevron_right_rounded,
-                size: 20,
-                color: AppColors.labelSecondary.withAlpha(80),
+                size: 18,
+                color: AppColors.labelSecondary.withAlpha(60),
               ),
             ],
           ),

@@ -7,7 +7,6 @@ import '../../../../core/services/media_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../../../core/widgets/app_bar_text_button.dart';
-import '../../shared/widgets/app_avatar.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:intl_phone_field/country_picker_dialog.dart';
 import 'package:image_picker/image_picker.dart';
@@ -84,7 +83,7 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
       var data = await _service
           .getProfile(widget.uid)
           .timeout(const Duration(seconds: 12));
-      
+
       // Fallback: Se não encontrou pelo ID (widget.uid), tenta pelo e-mail do usuário atual
       // Isso resolve casos onde o ID no banco difere do Auth UID (comum em migrações ou cadastros manuais)
       if (data.isEmpty) {
@@ -95,13 +94,13 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
               .select()
               .ilike('email', currentUser.email!.trim())
               .maybeSingle();
-          
+
           if (response != null) {
             data = response;
           }
         }
       }
-      
+
       if (data.isEmpty) throw Exception('Dados não encontrados');
 
       _nomeOriginal = data['nome'] ?? '';
@@ -238,6 +237,9 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       centerTitle: true,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
+      ),
       leading: AppNavBackButton(
         onPressed: () async {
           if (_isSaving) return;
@@ -409,8 +411,8 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
               fillColor: AppColors.background,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                borderSide: BorderSide(color: Colors.white.withAlpha(15), width: 0.5),
               ),
             ),
           ),
@@ -435,15 +437,15 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
               vertical: 14,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: BorderSide(color: Colors.white.withAlpha(10), width: 0.5),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: BorderSide(color: Colors.white.withAlpha(10), width: 0.5),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               borderSide: const BorderSide(color: AppColors.primary, width: 1),
             ),
           ),
@@ -492,26 +494,26 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
               vertical: 12,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: BorderSide(color: Colors.white.withAlpha(10), width: 0.5),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: BorderSide(color: Colors.white.withAlpha(10), width: 0.5),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               borderSide: const BorderSide(color: AppColors.primary, width: 1),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               borderSide: BorderSide(
                 color: Colors.redAccent.withAlpha(100),
                 width: 1,
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               borderSide: const BorderSide(color: Colors.redAccent, width: 1),
             ),
             errorStyle: const TextStyle(
@@ -565,12 +567,13 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
             }
           },
           splashColor: AppColors.splash,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLG),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
               color: AppColors.surfaceDark,
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
             ),
             child: Row(
               children: [
@@ -612,9 +615,27 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
         DropdownButtonFormField<String>(
           isExpanded: true,
           initialValue: _generoSelecionado,
+          alignment: AlignmentDirectional.centerStart,
+          icon: Icon(
+            Icons.unfold_more_rounded,
+            color: AppColors.labelSecondary.withAlpha(100),
+            size: 20,
+          ),
           hint: Text('Selecione o gênero', style: AppTheme.inputPlaceHolder),
+          style: AppTheme.inputText,
+          selectedItemBuilder: (BuildContext context) {
+            return _generos.map<Widget>((String item) {
+              return Text(
+                item,
+                style: AppTheme.inputText,
+              );
+            }).toList();
+          },
           items: _generos
-              .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+              .map((g) => DropdownMenuItem(
+                    value: g,
+                    child: Text(g, style: AppTheme.inputText.copyWith(fontSize: 15)),
+                  ))
               .toList(),
           onChanged: (value) {
             setState(() {
@@ -632,24 +653,23 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
-              vertical: 10,
+              vertical: 12,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: BorderSide(color: Colors.white.withAlpha(10), width: 0.5),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: BorderSide(color: Colors.white.withAlpha(10), width: 0.5),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               borderSide: const BorderSide(color: AppColors.primary, width: 1),
             ),
           ),
-          style: AppTheme.inputText,
           dropdownColor: AppColors.surfaceDark,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLG),
         ),
       ],
     );
