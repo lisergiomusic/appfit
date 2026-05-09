@@ -55,6 +55,53 @@ class SessaoTreinoModel {
     );
   }
 
+  String calcularTempoEstimado() {
+    int totalSegundos = 0;
+    const int kSecondsPerRep = 4;
+    const int kTransitionSeconds = 120;
+
+    for (final exercicio in exercicios) {
+      // Tempo de transição entre exercícios
+      totalSegundos += kTransitionSeconds;
+
+      for (final serie in exercicio.series) {
+        // Tempo de execução (Reps * 4s ou Tempo direto)
+        final execTime = exercicio.tipoAlvo == 'Tempo'
+            ? _parseDurationString(serie.alvo)
+            : (int.tryParse(serie.alvo) ?? 0) * kSecondsPerRep;
+
+        // Tempo de descanso
+        final restTime = _parseDurationString(serie.descanso);
+
+        totalSegundos += execTime + restTime;
+      }
+    }
+
+    final d = Duration(seconds: totalSegundos);
+    final hours = d.inHours;
+    final minutes = d.inMinutes.remainder(60);
+
+    if (hours > 0) {
+      return '${hours}h ${minutes}m';
+    }
+    return '${minutes}m';
+  }
+
+  static int _parseDurationString(String value) {
+    final v = value.trim().toLowerCase();
+    final mMatch = RegExp(r'^(\d+)m$').firstMatch(v);
+    if (mMatch != null) return int.parse(mMatch.group(1)!) * 60;
+    final sMatch = RegExp(r'^(\d+)s$').firstMatch(v);
+    if (sMatch != null) return int.parse(sMatch.group(1)!);
+    final msMatch = RegExp(r'^(\d+)m(\d+)s$').firstMatch(v);
+    if (msMatch != null) {
+      return int.parse(msMatch.group(1)!) * 60 + int.parse(msMatch.group(2)!);
+    }
+    final plainNumber = RegExp(r'^(\d+)$').firstMatch(v);
+    if (plainNumber != null) return int.parse(plainNumber.group(1)!);
+    return 0;
+  }
+
   static TipoSerie _parseTipoSerie(String? tipo) {
     if (tipo == 'aquecimento' || tipo == 'TipoSerie.aquecimento') {
       return TipoSerie.aquecimento;

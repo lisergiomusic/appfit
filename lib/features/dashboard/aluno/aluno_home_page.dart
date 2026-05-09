@@ -29,6 +29,7 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
 
   WorkoutDraft? _activeDraft;
   String? _selectedCoverGroup;
+  String? _manualSessaoOverrideName;
 
   static const Map<String, String> _muscleImageMap = {
     'peito': 'chest.jpg',
@@ -160,12 +161,12 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
                         _buildResumeWorkoutCard(),
                       ],
                       const SizedBox(height: SpacingTokens.xxl),
-                      _buildWeeklyRhythmSection(nome),
-                      const SizedBox(height: SpacingTokens.xxl),
                       if (rotina != null) ...[
                         _buildNextWorkoutSection(rotina, rotinaId!, widget.uid),
                         const SizedBox(height: SpacingTokens.xxl),
                       ],
+                      _buildWeeklyRhythmSection(nome),
+                      const SizedBox(height: SpacingTokens.xxl),
                       Text('Planilha atual', style: AppTheme.sectionHeader),
                       const SizedBox(height: SpacingTokens.labelToField),
                       rotina != null ? _buildRotinaCard(context, rotina, rotinaId) : _buildSemTreinoCard(),
@@ -286,7 +287,10 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
         if (sessoes.isEmpty) return const SizedBox.shrink();
 
         SessaoTreinoModel proxSessao = sessoes.first;
-        if (ultimoLogSnap.hasData && ultimoLogSnap.data is List && (ultimoLogSnap.data as List).isNotEmpty) {
+
+        if (_manualSessaoOverrideName != null) {
+          proxSessao = sessoes.firstWhere((s) => s.nome == _manualSessaoOverrideName, orElse: () => sessoes.first);
+        } else if (ultimoLogSnap.hasData && ultimoLogSnap.data is List && (ultimoLogSnap.data as List).isNotEmpty) {
           final lastLog = (ultimoLogSnap.data as List).first as Map<String, dynamic>;
           final ultimoNome = lastLog['sessaoNome'] as String? ?? '';
           final idx = sessoes.indexWhere((s) => s.nome == ultimoNome);
@@ -303,10 +307,48 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
           alunoId: alunoId,
           rotinaData: rotina,
           coverUrl: _getCoverUrl(_selectedCoverGroup),
+          tempoEstimado: proxSessao.calcularTempoEstimado(),
+          onSwitchRequested: () => _mostrarModalSessoes(context, sessoes, proxSessao),
           onStart: () =>
               _confirmarIniciarSessao(context, proxSessao, rotinaId, alunoId),
         );
       },
+    );
+  }
+
+  void _mostrarModalSessoes(BuildContext context, List<SessaoTreinoModel> sessoes, SessaoTreinoModel atual) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surfaceDark,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusXL)),
+        title: Text('Próximo treino', style: AppTheme.title1),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: sessoes.length,
+            separatorBuilder: (_, __) => Divider(color: Colors.white.withAlpha(20), height: 1),
+            itemBuilder: (context, index) {
+              final s = sessoes[index];
+              final isSelected = s.nome == atual.nome;
+              return ListTile(
+                onTap: () {
+                  setState(() => _manualSessaoOverrideName = s.nome);
+                  Navigator.pop(context);
+                },
+                contentPadding: EdgeInsets.zero,
+                title: Text(s.nome, style: TextStyle(color: isSelected ? AppColors.primary : Colors.white70, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400)),
+                trailing: isSelected ? const Icon(Icons.check_circle, color: AppColors.primary, size: 20) : null,
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('FECHAR', style: AppTheme.premiumLabel)),
+        ],
+      ),
     );
   }
 
@@ -407,9 +449,21 @@ class _NextWorkoutCard extends StatelessWidget {
   final String alunoId;
   final Map<String, dynamic> rotinaData;
   final String? coverUrl;
+  final String tempoEstimado;
   final VoidCallback onStart;
+  final VoidCallback onSwitchRequested;
 
-  const _NextWorkoutCard({required this.sessao, required this.sessaoIndex, required this.rotinaId, required this.alunoId, required this.rotinaData, this.coverUrl, required this.onStart});
+  const _NextWorkoutCard({
+    required this.sessao,
+    required this.sessaoIndex,
+    required this.rotinaId,
+    required this.alunoId,
+    required this.rotinaData,
+    this.coverUrl,
+    required this.tempoEstimado,
+    required this.onStart,
+    required this.onSwitchRequested,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -473,10 +527,36 @@ class _NextWorkoutCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 24),
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          _Stat(icon: Icons.fitness_center, value: '${sessao.exercicios.length}', label: 'Exs'),
-                          _Stat(icon: Icons.repeat, value: '$totalSeries', label: 'Séries'),
-                          _Stat(icon: Icons.timer_outlined, value: '45m', label: 'Est'),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                _Stat(icon: Icons.fitness_center, value: '${sessao.exercicios.length}', label: 'Exs'),
+                                _Stat(icon: Icons.repeat, value: '$totalSeries', label: 'Séries'),
+                                _Stat(icon: Icons.timer_outlined, value: tempoEstimado, label: 'Est'),
+                              ],
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: onSwitchRequested,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withAlpha(30),
+                                borderRadius: BorderRadius.circular(100),
+                                border: Border.all(color: Colors.white.withAlpha(40), width: 0.5),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.swap_horiz_rounded, size: 14, color: Colors.white),
+                                  const SizedBox(width: 6),
+                                  Text('TROCAR', style: AppTheme.premiumLabel.copyWith(color: Colors.white, fontSize: 10, letterSpacing: 1)),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ],
