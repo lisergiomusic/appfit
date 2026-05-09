@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/supabase_auth_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/glass_bottom_nav.dart';
 import '../aluno/aluno_home_page.dart';
 import '../personal/personal_home_page.dart';
 import '../../alunos/aluno/pages/aluno_conta_page.dart';
@@ -78,46 +79,55 @@ class _DashboardPageState extends State<DashboardPage> {
     final isAluno = widget.userType == 'aluno';
     final paginas = _getPaginas();
 
-    final List<BottomNavigationBarItem> items = isAluno
+    final List<GlassBottomNavItem> items = isAluno
         ? const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.grid_view_rounded),
+            GlassBottomNavItem(
+              icon: Icons.grid_view_outlined,
+              activeIcon: Icons.grid_view_rounded,
               label: 'Início',
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart_rounded),
+            GlassBottomNavItem(
+              icon: Icons.bar_chart_outlined,
+              activeIcon: Icons.bar_chart_rounded,
               label: 'Histórico',
             ),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Conta'),
+            GlassBottomNavItem(
+              icon: Icons.person_outline_rounded,
+              activeIcon: Icons.person_rounded,
+              label: 'Conta',
+            ),
           ]
         : const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.grid_view_rounded),
+            GlassBottomNavItem(
+              icon: Icons.grid_view_outlined,
+              activeIcon: Icons.grid_view_rounded,
               label: 'Início',
             ),
-            BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Alunos'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.fitness_center),
+            GlassBottomNavItem(
+              icon: Icons.group_outlined,
+              activeIcon: Icons.group_rounded,
+              label: 'Alunos',
+            ),
+            GlassBottomNavItem(
+              icon: Icons.fitness_center_outlined,
+              activeIcon: Icons.fitness_center_rounded,
               label: 'Rotinas',
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
+            GlassBottomNavItem(
+              icon: Icons.settings_outlined,
+              activeIcon: Icons.settings_rounded,
               label: 'Ajustes',
             ),
           ];
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      extendBody: true,
       body: IndexedStack(index: _indiceAtual, children: paginas),
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: GlassBottomNav(
         currentIndex: _indiceAtual,
-        onTap: (index) => setState(() => _indiceAtual = index),
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: AppColors.surfaceDark,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.labelSecondary,
-        elevation: 16,
         items: items,
+        onTap: (index) => setState(() => _indiceAtual = index),
       ),
     );
   }

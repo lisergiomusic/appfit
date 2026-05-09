@@ -33,14 +33,13 @@ The project utilizes PostgreSQL's relational power:
 ## Developer Mindset and UI/UX Principles
 
 *   **Staff-level Engineering:** Prioritize maintainability, scalability, and type safety.
-*   **Premium UI/UX:** Every interface must feel professional. Use "Spotify-inspired" design language:
-    *   **Color Palette:** Deep black backgrounds (`0xFF121212`) for modals and surfaces, high-contrast white text, and `AppColors.primary` as the signature accent.
-    *   **Minimalism:** Prioritize "Flat/Industrial" over "Glassmorphism". Avoid excessive cards and borders; let information breathe on solid backgrounds.
-    *   **Geometry:** Technical corners (Radius 12-16) instead of organic/hyper-rounded shapes.
-    *   **Buttons:** Use the "Pill" shape for primary/secondary actions with tracked-out uppercase text for secondary closures.
-    *   **Atmospheric Design:** The UI should be a "silent tool" that disappears to let workout data shine. Use consistent spacing (SpacingTokens) and ergonomic touch targets (min 44px).
+*   **Premium Hybrid Aesthetic:** Our design language is an evolution of high-performance interfaces.
+    *   **Spotify Inspiration:** We use Spotify as a reference for strong visual hierarchy, absolute contrast (Deep Black backgrounds), and pragmatic typography. We do not copy its flat layout; we use it as a benchmark for clarity and speed.
+    *   **Modern Glassmorphism:** For top-level navigation (Bottom Nav) and critical floating actions, we adopt a hybrid approach using frosted glass effects (Blur + Translucency). This adds a layer of depth and technical sophistication (Apple/iOS style) over our solid industrial foundation.
+    *   **Geometry:** Technical corners (Radius 12-16) for cards, and full pílula (pill) shapes (Radius 999) for floating navigation and main buttons.
+    *   **Atmospheric Design:** The UI should be a "silent tool". Use consistent spacing (SpacingTokens) and ergonomic touch targets (min 44px).
 *   **Dirty Check Pattern:** Always implement `hasChanges` logic in complex forms to disable "Save" buttons and optimize network calls.
-*   **Haptic Feedback:** Use `HapticFeedback.lightImpact()` for critical UI interactions (toggles, reorders, selections).
+*   **Haptic Feedback:** Use `HapticFeedback.lightImpact()` for critical UI interactions (toggles, navigation, selections) to provide immediate tactile response.
 
 ## Development Conventions
 
