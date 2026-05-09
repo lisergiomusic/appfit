@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_swipe_to_delete.dart';
 import '../models/rotina_model.dart';
@@ -32,9 +33,12 @@ class RotinaSessaoCard extends StatelessWidget {
       decoration: AppTheme.cardDecoration,
       child: InkWell(
         borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-        onTap: isReordering ? null : onOpen,
+        onTap: isReordering ? null : () {
+          HapticFeedback.lightImpact();
+          onOpen();
+        },
         child: Padding(
-          padding: CardTokens.padding,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           child: Row(
             children: [
               _SessaoIndexBadge(index: index),
@@ -45,14 +49,18 @@ class RotinaSessaoCard extends StatelessWidget {
                   children: [
                     Text(
                       sessao.nome,
-                      style: CardTokens.cardTitle,
+                      style: AppTheme.title1.copyWith(fontSize: 18),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: SpacingTokens.titleToSubtitle),
+                    const SizedBox(height: 6),
                     Text(
-                      '${sessao.exercicios.length} ${sessao.exercicios.length == 1 ? 'exercício' : 'exercícios'}',
-                      style: CardTokens.cardSubtitle,
+                      '${sessao.exercicios.length} EXERCÍCIOS',
+                      style: AppTheme.premiumLabel.copyWith(
+                        color: AppColors.primary,
+                        fontSize: 9,
+                        letterSpacing: 1.0,
+                      ),
                     ),
                   ],
                 ),
@@ -60,8 +68,8 @@ class RotinaSessaoCard extends StatelessWidget {
               isReordering
                   ? ReorderableDragStartListener(
                       index: index,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4),
                         child: Icon(
                           Icons.drag_handle_rounded,
                           color: AppColors.labelSecondary,
@@ -98,7 +106,7 @@ class RotinaSessaoCard extends StatelessWidget {
                     )
                   : Icon(
                       Icons.chevron_right_rounded,
-                      color: AppColors.labelSecondary,
+                      color: AppColors.labelSecondary.withAlpha(100),
                     ),
             ],
           ),
@@ -134,19 +142,19 @@ class _SessaoIndexBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 48,
-      height: 48,
+      width: 44,
+      height: 44,
       decoration: BoxDecoration(
-        color: Colors.black.withAlpha(40),
-        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+        color: AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Center(
         child: Text(
           String.fromCharCode(65 + index),
           style: const TextStyle(
             color: AppColors.primary,
-            fontSize: 26,
-            fontWeight: FontWeight.w800,
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
           ),
         ),
       ),

@@ -69,13 +69,18 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(
+                horizontal: SpacingTokens.screenHorizontalPadding,
+              ),
+              child: Text('PROGRESSO', style: AppTheme.sectionHeader),
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: SpacingTokens.labelToField)),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
                 horizontal: AppTheme.paddingScreen,
-                vertical: 0,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [_buildProgressSection()],
-              ),
+              child: _buildProgressSection(),
             ),
           ),
           SliverToBoxAdapter(
@@ -83,7 +88,7 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
               padding: const EdgeInsets.symmetric(
                 horizontal: SpacingTokens.screenHorizontalPadding,
               ),
-              child: Text('Sessões de Treino', style: AppTheme.sectionHeader),
+              child: Text('SESSÕES DE TREINO', style: AppTheme.sectionHeader),
             ),
           ),
           const SliverToBoxAdapter(
@@ -150,24 +155,51 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Progresso', style: AppTheme.sectionHeader),
             Text(
-              legenda,
-              style: AppTheme.caption2.copyWith(color: AppColors.primary),
+              legenda.toUpperCase(),
+              style: AppTheme.premiumLabel.copyWith(
+                color: AppColors.primary,
+                letterSpacing: 1.0,
+              ),
+            ),
+            Text(
+              '${(progresso * 100).toInt()}%',
+              style: AppTheme.premiumLabel.copyWith(
+                color: AppColors.labelSecondary,
+              ),
             ),
           ],
         ),
-        const SizedBox(height: SpacingTokens.sm),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: progresso,
-            minHeight: 6,
-            backgroundColor: AppColors.primary.withAlpha(15),
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
-          ),
+        const SizedBox(height: 12),
+        Stack(
+          children: [
+            Container(
+              height: 4,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withAlpha(20),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            FractionallySizedBox(
+              widthFactor: progresso,
+              child: Container(
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withAlpha(100),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: SpacingTokens.sectionGap),
+        const SizedBox(height: SpacingTokens.xxl),
       ],
     );
   }
