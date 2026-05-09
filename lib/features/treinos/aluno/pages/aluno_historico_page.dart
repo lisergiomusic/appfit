@@ -20,56 +20,23 @@ class AlunoHistoricoPage extends StatelessWidget {
           physics: const BouncingScrollPhysics(),
           slivers: [
             SliverAppBar(
-              expandedHeight: 120,
-              collapsedHeight: 60,
+              expandedHeight: 85,
               pinned: true,
               stretch: true,
               backgroundColor: AppColors.background,
               elevation: 0,
               surfaceTintColor: Colors.transparent,
               automaticallyImplyLeading: false,
-              flexibleSpace: LayoutBuilder(
-                builder: (context, constraints) {
-                  final isCollapsed = constraints.biggest.height <= (MediaQuery.of(context).padding.top + kToolbarHeight + 10);
-                  
-                  return FlexibleSpaceBar(
-                    stretchModes: const [StretchMode.zoomBackground],
-                    centerTitle: true,
-                    title: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 200),
-                      opacity: isCollapsed ? 1.0 : 0.0,
-                      child: Text(
-                        'Meu histórico',
-                        style: AppTheme.pageTitle.copyWith(fontSize: 16),
-                      ),
-                    ),
-                    background: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
-                        ),
-                        AnimatedOpacity(
-                          duration: const Duration(milliseconds: 200),
-                          opacity: isCollapsed ? 0.0 : 1.0,
-                          child: Align(
-                            alignment: Alignment.bottomLeft,
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                left: SpacingTokens.screenHorizontalPadding,
-                                bottom: 16,
-                              ),
-                              child: Text(
-                                'Meu histórico',
-                                style: AppTheme.title1.copyWith(fontSize: 28),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+              centerTitle: false,
+              title: Text(
+                'Meu histórico',
+                style: AppTheme.pageTitle.copyWith(fontSize: 18),
+              ),
+              flexibleSpace: FlexibleSpaceBar(
+                stretchModes: const [StretchMode.zoomBackground],
+                background: Container(
+                  decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
+                ),
               ),
             ),
             const SliverToBoxAdapter(
@@ -117,7 +84,6 @@ class _HistoricoContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: SpacingTokens.lg),
           const _CalendarioFrequenciaCard(),
           const SizedBox(height: SpacingTokens.xxl),
           StreamBuilder<dynamic>(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/services/supabase_auth_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
@@ -23,6 +24,9 @@ class _AlunoSegurancaPageState extends State<AlunoSegurancaPage> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
+        ),
         leading: const AppNavBackButton(),
         title: const Text('Segurança'),
       ),
@@ -60,10 +64,11 @@ class _AlunoSegurancaPageState extends State<AlunoSegurancaPage> {
         Text('E-mail de acesso', style: AppTheme.formLabel),
         const SizedBox(height: SpacingTokens.labelToField),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             color: AppColors.surfaceDark,
-            borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+            borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+            border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
           ),
           child: Row(
             children: [
@@ -78,6 +83,7 @@ class _AlunoSegurancaPageState extends State<AlunoSegurancaPage> {
                   _email ?? '—',
                   style: AppTheme.inputText.copyWith(
                     color: AppColors.labelSecondary,
+                    fontSize: 15,
                   ),
                 ),
               ),
@@ -95,21 +101,18 @@ class _AlunoSegurancaPageState extends State<AlunoSegurancaPage> {
 
   Widget _buildGroup(List<Widget> items) {
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-      ),
+      decoration: AppTheme.premiumCardDecoration,
       clipBehavior: Clip.hardEdge,
       child: Column(
         children: [
           for (int i = 0; i < items.length; i++) ...[
             items[i],
             if (i < items.length - 1)
-              const Divider(
+              Divider(
                 height: 1,
-                thickness: 1,
+                thickness: 0.5,
                 indent: 52,
-                color: Color(0x14EBEBF5),
+                color: Colors.white.withAlpha(15),
               ),
           ],
         ],
@@ -125,23 +128,27 @@ class _AlunoSegurancaPageState extends State<AlunoSegurancaPage> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
-        splashColor: AppColors.splash,
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        splashColor: Colors.white.withAlpha(10),
+        highlightColor: Colors.white.withAlpha(5),
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: SpacingTokens.cardPaddingH,
-            vertical: 15,
+            vertical: 16,
           ),
           child: Row(
             children: [
-              Icon(icon, size: 19, color: AppColors.labelSecondary),
+              Icon(icon, size: 20, color: AppColors.labelSecondary),
               const SizedBox(width: SpacingTokens.md),
               Expanded(
                 child: Text(
                   label,
                   style: const TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.w400,
+                    fontWeight: FontWeight.w500,
                     letterSpacing: -0.2,
                     color: AppColors.labelPrimary,
                   ),
@@ -149,8 +156,8 @@ class _AlunoSegurancaPageState extends State<AlunoSegurancaPage> {
               ),
               Icon(
                 Icons.chevron_right_rounded,
-                size: 20,
-                color: AppColors.labelSecondary.withAlpha(80),
+                size: 18,
+                color: AppColors.labelSecondary.withAlpha(60),
               ),
             ],
           ),
@@ -322,23 +329,23 @@ class _AlterarSenhaSheetState extends State<_AlterarSenhaSheet> {
             fillColor: AppColors.surfaceDark,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: BorderSide(color: Colors.white.withAlpha(10), width: 0.5),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: BorderSide(color: Colors.white.withAlpha(10), width: 0.5),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               borderSide: const BorderSide(color: AppColors.primary, width: 1),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               borderSide: BorderSide(color: Colors.redAccent.withAlpha(100), width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               borderSide: const BorderSide(color: Colors.redAccent, width: 1),
             ),
             errorStyle: const TextStyle(
@@ -356,29 +363,55 @@ class _AlterarSenhaSheetState extends State<_AlterarSenhaSheet> {
     return Row(
       children: [
         Expanded(
-          child: ElevatedButton(
+          child: TextButton(
             onPressed: _isSaving ? null : () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.fillSecondary,
-              disabledBackgroundColor: AppColors.fillSecondary.withAlpha(100),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: const StadiumBorder(),
             ),
-            child: const Text('Cancelar'),
+            child: Text(
+              'CANCELAR',
+              style: AppTheme.navBarAction.copyWith(
+                fontSize: 12,
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.w700,
+                color: AppColors.labelSecondary,
+              ),
+            ),
           ),
         ),
         const SizedBox(width: SpacingTokens.md),
         Expanded(
           child: ElevatedButton(
-            onPressed: _isSaving ? null : _salvar,
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              _isSaving ? null : _salvar();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: const StadiumBorder(),
+              elevation: 0,
+            ),
             child: _isSaving
                 ? const SizedBox(
                     height: 20,
                     width: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.labelSecondary),
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
                     ),
                   )
-                : const Text('Salvar'),
+                : Text(
+                    'SALVAR',
+                    style: AppTheme.navBarAction.copyWith(
+                      fontSize: 12,
+                      letterSpacing: 1.2,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black,
+                    ),
+                  ),
           ),
         ),
       ],

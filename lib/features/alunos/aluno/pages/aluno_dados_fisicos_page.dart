@@ -192,6 +192,9 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       centerTitle: true,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
+      ),
       leading: AppNavBackButton(
         onPressed: () async {
           if (_isSaving) return;
@@ -209,7 +212,6 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
           ),
         ),
       ],
-      bottom: const AppBarDivider(),
     );
   }
 
@@ -327,41 +329,38 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
           ),
         ),
         const SizedBox(height: SpacingTokens.labelToField),
-        Stack(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceDark.withAlpha(120),
-                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceDark.withAlpha(120),
+            borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+            border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                field.icon,
+                size: 20,
+                color: AppColors.labelSecondary.withAlpha(50),
               ),
-              child: Row(
-                children: [
-                  Icon(
-                    field.icon,
-                    size: 20,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  field.hint,
+                  style: AppTheme.inputPlaceHolder.copyWith(
                     color: AppColors.labelSecondary.withAlpha(50),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      field.hint,
-                      style: AppTheme.inputPlaceHolder.copyWith(
-                        color: AppColors.labelSecondary.withAlpha(50),
-                      ),
-                    ),
-                  ),
-                  Text(
-                    field.suffix,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.labelSecondary.withAlpha(50),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+              Text(
+                field.suffix,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.labelSecondary.withAlpha(50),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -414,26 +413,26 @@ class _AlunoDadosFisicosPageState extends State<AlunoDadosFisicosPage> {
               vertical: 12,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: BorderSide(color: Colors.white.withAlpha(10), width: 0.5),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+              borderSide: BorderSide(color: Colors.white.withAlpha(10), width: 0.5),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               borderSide: const BorderSide(color: AppColors.primary, width: 1),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               borderSide: BorderSide(
                 color: Colors.redAccent.withAlpha(100),
                 width: 1,
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLG),
               borderSide: const BorderSide(color: Colors.redAccent, width: 1),
             ),
             errorStyle: const TextStyle(
