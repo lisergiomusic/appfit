@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
+import 'dart:ui';
 import '../../../core/services/aluno_service.dart';
 import '../../../core/services/workout_draft_service.dart';
 import '../../../core/utils/app_ui_utils.dart';
@@ -226,32 +227,29 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
 
   Widget _buildResumeWorkoutCard() {
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-        boxShadow: [BoxShadow(color: AppColors.primary.withAlpha(60), blurRadius: 10, offset: const Offset(0, 4))],
-      ),
+      decoration: AppTheme.premiumCardDecoration,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: _resumeWorkout,
           borderRadius: BorderRadius.circular(AppTheme.radiusLG),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
               children: [
-                const Icon(Icons.play_circle_fill, color: Colors.black, size: 28),
-                const SizedBox(width: 12),
+                const Icon(Icons.play_circle_fill, color: AppColors.primary, size: 36),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('TREINO EM ANDAMENTO', style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
-                      Text(_activeDraft!.sessao.nome, style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text('TREINO EM ANDAMENTO', style: AppTheme.premiumLabel.copyWith(color: AppColors.primary, letterSpacing: 1.0)),
+                      const SizedBox(height: 4),
+                      Text(_activeDraft!.sessao.nome, style: AppTheme.title1.copyWith(fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: Colors.black54),
+                const Icon(Icons.chevron_right_rounded, color: AppColors.labelSecondary),
               ],
             ),
           ),
@@ -543,20 +541,26 @@ class _NextWorkoutCard extends StatelessWidget {
                           ),
                           GestureDetector(
                             onTap: onSwitchRequested,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withAlpha(30),
-                                borderRadius: BorderRadius.circular(100),
-                                border: Border.all(color: Colors.white.withAlpha(40), width: 0.5),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.swap_horiz_rounded, size: 14, color: Colors.white),
-                                  const SizedBox(width: 6),
-                                  Text('TROCAR', style: AppTheme.premiumLabel.copyWith(color: Colors.white, fontSize: 10, letterSpacing: 1)),
-                                ],
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(100),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withAlpha(20),
+                                    borderRadius: BorderRadius.circular(100),
+                                    border: Border.all(color: Colors.white.withAlpha(40), width: 0.5),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.swap_horiz_rounded, size: 14, color: Colors.white),
+                                      const SizedBox(width: 6),
+                                      Text('TROCAR', style: AppTheme.premiumLabel.copyWith(color: Colors.white, fontSize: 10, letterSpacing: 1)),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -587,14 +591,22 @@ class _Stat extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(icon, size: 12, color: Colors.white54),
-              const SizedBox(width: 4),
-              Text(value, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
-            ],
+          Text(
+            value,
+            style: AppTheme.title1.copyWith(
+              fontSize: 20,
+              color: Colors.white,
+            ),
           ),
-          Text(label.toUpperCase(), style: AppTheme.premiumLabel.copyWith(fontSize: 8, color: Colors.white38)),
+          const SizedBox(height: 2),
+          Text(
+            label.toUpperCase(),
+            style: AppTheme.formLabel.copyWith(
+              fontSize: 10,
+              letterSpacing: 0.5,
+              color: AppColors.labelSecondary,
+            ),
+          ),
         ],
       ),
     );
