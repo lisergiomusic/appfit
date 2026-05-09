@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../models/exercicio_model.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../exercicio_thumbnail.dart';
@@ -53,8 +54,11 @@ class ExercicioSectionHeader extends StatelessWidget {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-                onTap: () => _goToExercicioDetails(context),
+                borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  _goToExercicioDetails(context);
+                },
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -65,7 +69,7 @@ class ExercicioSectionHeader extends StatelessWidget {
                           exercicio: exercicio,
                           width: 56,
                           height: 56,
-                          borderRadius: AppTheme.radiusSM,
+                          borderRadius: AppTheme.radiusLG,
                           iconSize: 22,
                           backgroundColor: AppColors.surfaceLight,
                         ),
@@ -74,7 +78,10 @@ class ExercicioSectionHeader extends StatelessWidget {
                             right: -4,
                             bottom: -4,
                             child: GestureDetector(
-                              onTap: onSwap,
+                              onTap: () {
+                                HapticFeedback.mediumImpact();
+                                onSwap?.call();
+                              },
                               child: Container(
                                 padding: const EdgeInsets.all(4),
                                 decoration: BoxDecoration(
@@ -82,7 +89,7 @@ class ExercicioSectionHeader extends StatelessWidget {
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                     color: AppColors.surfaceDark,
-                                    width: 2,
+                                    width: 1.5,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
@@ -160,13 +167,20 @@ class ExercicioSectionHeader extends StatelessWidget {
                 size: 22,
               ),
               color: AppColors.surfaceLight,
+              surfaceTintColor: Colors.transparent,
+              elevation: 4,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                side: BorderSide(color: Colors.white.withAlpha(15), width: 0.5),
               ),
-              onOpened: () => FocusScope.of(context).unfocus(),
+              onOpened: () {
+                HapticFeedback.lightImpact();
+                FocusScope.of(context).unfocus();
+              },
               onCanceled: () => FocusScope.of(context).unfocus(),
               onSelected: (action) {
                 FocusScope.of(context).unfocus();
+                HapticFeedback.lightImpact();
                 if (action == ExercicioMenuAction.detalhes) {
                   _goToExercicioDetails(context);
                 } else if (action == ExercicioMenuAction.trocar) {

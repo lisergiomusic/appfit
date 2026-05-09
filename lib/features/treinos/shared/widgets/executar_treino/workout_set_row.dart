@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../models/exercicio_model.dart';
 import '../../models/historico_treino_model.dart';
 import '../../../../../core/theme/app_theme.dart';
@@ -75,7 +76,10 @@ class WorkoutSetRow extends StatelessWidget {
             dimension: 36,
             child: Center(
               child: GestureDetector(
-                onTap: () => _showBadgeInfo(context),
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  _showBadgeInfo(context);
+                },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 280),
                   width: 32,
@@ -225,8 +229,8 @@ class _SetInputFieldState extends State<_SetInputField> {
 
   OutlineInputBorder _inputBorder(Color color) {
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppTheme.radiusSM),
-      borderSide: BorderSide(color: color, width: 1),
+      borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+      borderSide: BorderSide(color: color, width: 0.5),
     );
   }
 
@@ -248,18 +252,25 @@ class _SetInputFieldState extends State<_SetInputField> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onLongPress: widget.tooltipText != null
-          ? () => ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  widget.tooltipText!,
-                  style: const TextStyle(fontSize: 13),
+          ? () {
+              HapticFeedback.lightImpact();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    widget.tooltipText!,
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  duration: const Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor: AppColors.surfaceDark,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                    side: BorderSide(color: Colors.white.withAlpha(15), width: 0.5),
+                  ),
                 ),
-                duration: const Duration(seconds: 2),
-                behavior: SnackBarBehavior.floating,
-                backgroundColor: AppColors.surfaceDark,
-                elevation: 2,
-              ),
-            )
+              );
+            }
           : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
@@ -270,7 +281,7 @@ class _SetInputFieldState extends State<_SetInputField> {
               : _focused
               ? AppColors.surfaceLight
               : AppColors.background.withAlpha(200),
-          borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLG),
         ),
         child: TextField(
           controller: widget.controller,
@@ -287,10 +298,10 @@ class _SetInputFieldState extends State<_SetInputField> {
             letterSpacing: -0.2,
           ),
           decoration: InputDecoration(
-            border: _inputBorder(Colors.white.withAlpha(10)),
-            enabledBorder: _inputBorder(Colors.white.withAlpha(10)),
+            border: _inputBorder(Colors.white.withAlpha(15)),
+            enabledBorder: _inputBorder(Colors.white.withAlpha(15)),
             focusedBorder: _inputBorder(AppColors.primary.withAlpha(160)),
-            disabledBorder: _inputBorder(Colors.white.withAlpha(10)),
+            disabledBorder: _inputBorder(Colors.white.withAlpha(15)),
             filled: false,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 4,

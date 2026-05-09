@@ -642,8 +642,8 @@ class _RestTimerBanner extends StatelessWidget {
               color: AppColors.surfaceLight.withAlpha(200),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: Colors.white.withAlpha(20),
-                width: 1,
+                color: Colors.white.withAlpha(15),
+                width: 0.5,
               ),
               boxShadow: [
                 BoxShadow(
@@ -705,7 +705,10 @@ class _RestTimerBanner extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     GestureDetector(
-                      onTap: onAdd30s,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        onAdd30s();
+                      },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
@@ -713,7 +716,7 @@ class _RestTimerBanner extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: Colors.white.withAlpha(15),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                         ),
                         child: const Text(
                           '+30s',
@@ -727,7 +730,10 @@ class _RestTimerBanner extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     GestureDetector(
-                      onTap: onSkip,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        onSkip();
+                      },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -735,7 +741,7 @@ class _RestTimerBanner extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                         ),
                         child: const Text(
                           'Pular',
@@ -803,7 +809,10 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     GestureDetector(
-                      onTap: onCancelar,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        onCancelar();
+                      },
                       behavior: HitTestBehavior.opaque,
                       child: Container(
                         width: 32,
@@ -811,6 +820,7 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
                         decoration: BoxDecoration(
                           color: AppColors.surfaceLight,
                           shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
                         ),
                         child: const Icon(
                           Icons.close_rounded,
@@ -877,13 +887,17 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
                     const SizedBox(width: 8),
                     // Preferences Gear Button
                     GestureDetector(
-                      onTap: onOpenPreferences,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        onOpenPreferences();
+                      },
                       child: Container(
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
                           color: AppColors.surfaceLight,
                           shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
                         ),
                         child: const Icon(
                           Icons.settings_outlined,
@@ -897,7 +911,12 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
                       duration: const Duration(milliseconds: 220),
                       child: GestureDetector(
                         key: ValueKey(hasProgress),
-                        onTap: hasProgress ? onFinalizar : null,
+                        onTap: () {
+                          if (hasProgress) {
+                            HapticFeedback.mediumImpact();
+                            onFinalizar();
+                          }
+                        },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 220),
                           curve: Curves.easeOut,
@@ -912,13 +931,16 @@ class _WorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
                             borderRadius: BorderRadius.circular(
                               AppTheme.radiusFull,
                             ),
+                            border: !hasProgress
+                                ? Border.all(color: Colors.white.withAlpha(10), width: 0.5)
+                                : null,
                           ),
                           child: Text(
-                            'Finalizar',
+                            'FINALIZAR',
                             style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.2,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.2,
                               color: hasProgress
                                   ? AppColors.background
                                   : AppColors.labelTertiary,
@@ -978,7 +1000,8 @@ class _FinalizarDialog extends StatelessWidget {
     return Dialog(
       backgroundColor: AppColors.surfaceDark,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        side: BorderSide(color: Colors.white.withAlpha(15), width: 0.5),
       ),
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -1019,20 +1042,25 @@ class _FinalizarDialog extends StatelessWidget {
               children: [
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => Navigator.pop(context, false),
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.pop(context, false);
+                    },
                     child: Container(
-                      height: 46,
+                      height: 48,
                       decoration: BoxDecoration(
                         color: AppColors.surfaceLight,
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
                       ),
                       child: const Center(
                         child: Text(
-                          'Continuar',
+                          'CONTINUAR',
                           style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.labelPrimary,
+                            letterSpacing: 1.2,
                           ),
                         ),
                       ),
@@ -1042,20 +1070,24 @@ class _FinalizarDialog extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => Navigator.pop(context, true),
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
+                      Navigator.pop(context, true);
+                    },
                     child: Container(
-                      height: 46,
+                      height: 48,
                       decoration: BoxDecoration(
                         color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                       ),
                       child: const Center(
                         child: Text(
-                          'Finalizar',
+                          'FINALIZAR',
                           style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
                             color: Colors.black,
+                            letterSpacing: 1.2,
                           ),
                         ),
                       ),
@@ -1077,7 +1109,8 @@ class _CancelarDialog extends StatelessWidget {
     return Dialog(
       backgroundColor: AppColors.surfaceDark,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        side: BorderSide(color: Colors.white.withAlpha(15), width: 0.5),
       ),
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -1118,20 +1151,25 @@ class _CancelarDialog extends StatelessWidget {
               children: [
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => Navigator.pop(context, false),
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.pop(context, false);
+                    },
                     child: Container(
-                      height: 46,
+                      height: 48,
                       decoration: BoxDecoration(
                         color: AppColors.surfaceLight,
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
                       ),
                       child: const Center(
                         child: Text(
-                          'Continuar treino',
+                          'CONTINUAR',
                           style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.labelPrimary,
+                            letterSpacing: 1.2,
                           ),
                         ),
                       ),
@@ -1141,20 +1179,24 @@ class _CancelarDialog extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => Navigator.pop(context, true),
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
+                      Navigator.pop(context, true);
+                    },
                     child: Container(
-                      height: 46,
+                      height: 48,
                       decoration: BoxDecoration(
                         color: AppColors.systemRed.withAlpha(220),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                       ),
                       child: const Center(
                         child: Text(
-                          'Cancelar',
+                          'CANCELAR',
                           style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
                             color: Colors.white,
+                            letterSpacing: 1.2,
                           ),
                         ),
                       ),
@@ -1194,8 +1236,9 @@ class _UltimoTreinoSheet extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceDark,
         borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppTheme.radiusXL),
+          top: Radius.circular(AppTheme.radiusLG),
         ),
+        border: Border(top: BorderSide(color: Colors.white.withAlpha(15), width: 0.5)),
       ),
       padding: const EdgeInsets.fromLTRB(
         SpacingTokens.lg,
@@ -1279,9 +1322,10 @@ class _WorkoutPreferencesSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF121212), // Spotify Deep Black
-        borderRadius: BorderRadius.vertical(top: Radius.circular(12)), // Subtle Spotify corners
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppTheme.radiusLG)),
+        border: Border(top: BorderSide(color: Colors.white.withAlpha(15), width: 0.5)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1337,12 +1381,15 @@ class _WorkoutPreferencesSheet extends StatelessWidget {
                   const SizedBox(height: 32),
                   // Spotify "CLOSE" Button
                   GestureDetector(
-                    onTap: () => Navigator.pop(context),
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.pop(context);
+                    },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.white.withAlpha(40), width: 1),
-                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(color: Colors.white.withAlpha(40), width: 0.5),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                       ),
                       child: const Text(
                         'FECHAR',

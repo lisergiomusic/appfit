@@ -68,7 +68,11 @@ class TreinoScrollableBody extends StatelessWidget {
               duration: const Duration(milliseconds: 300),
               decoration: BoxDecoration(
                 color: AppColors.surfaceDark,
-                borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                border: Border.all(
+                  color: Colors.white.withAlpha(15),
+                  width: 0.5,
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
