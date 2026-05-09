@@ -182,16 +182,6 @@ class TreinoScrollableBody extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppTheme.radiusMD),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            border: isLastOverall
-                ? Border(
-                    top: BorderSide(
-                      color: AppColors.labelPrimary.withAlpha(20),
-                      width: 0.5,
-                    ),
-                  )
-                : null,
-          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
