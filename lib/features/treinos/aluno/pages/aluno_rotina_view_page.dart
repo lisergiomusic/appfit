@@ -40,29 +40,48 @@ class _AlunoRotinaViewPageState extends State<AlunoRotinaViewPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
         slivers: [
-          AppFitSliverAppBar(
-            title: _rotina.nome,
-            expandedHeight: _rotina.objetivo.isNotEmpty ? 148 : 120,
-            background: Align(
-              alignment: Alignment.bottomLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  left: SpacingTokens.screenHorizontalPadding,
-                  right: SpacingTokens.screenHorizontalPadding,
-                  bottom: SpacingTokens.sectionGap,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(_rotina.nome, style: AppTheme.title1),
-                    if (_rotina.objetivo.isNotEmpty) ...[
-                      const SizedBox(height: SpacingTokens.titleToSubtitle),
-                      Text(_rotina.objetivo, style: AppTheme.cardSubtitle),
-                    ],
-                  ],
-                ),
+          SliverAppBar(
+            expandedHeight: _rotina.objetivo.isNotEmpty ? 140 : 120,
+            collapsedHeight: 70,
+            pinned: true,
+            stretch: true,
+            backgroundColor: AppColors.background,
+            elevation: 0,
+            surfaceTintColor: Colors.transparent,
+            leading: const Padding(
+              padding: EdgeInsets.only(left: 8),
+              child: BackButton(color: AppColors.labelPrimary),
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              stretchModes: const [StretchMode.zoomBackground, StretchMode.fadeTitle],
+              background: Container(
+                decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
+              ),
+              titlePadding: const EdgeInsets.only(left: SpacingTokens.screenHorizontalPadding, bottom: 16),
+              centerTitle: false,
+              title: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _rotina.nome,
+                    style: AppTheme.pageTitle.copyWith(fontSize: 18),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (_rotina.objetivo.isNotEmpty)
+                    Text(
+                      _rotina.objetivo.toUpperCase(),
+                      style: AppTheme.premiumLabel.copyWith(
+                        fontSize: 7,
+                        color: AppColors.labelSecondary.withAlpha(150),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
               ),
             ),
           ),

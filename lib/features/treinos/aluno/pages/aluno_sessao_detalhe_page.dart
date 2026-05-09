@@ -275,7 +275,7 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
                     fadeInDuration: const Duration(milliseconds: 600),
                   ),
 
-                // 2. Gradiente Spotify Style (Sempre presente para garantir leitura e fallback)
+                // 2. Gradiente
                 Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(

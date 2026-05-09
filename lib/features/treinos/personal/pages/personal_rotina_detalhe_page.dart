@@ -128,7 +128,7 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
           nomeTreino: sessao.nome,
           exercicios: sessao.exercicios,
           sessaoNote: sessao.orientacoes ?? '',
-          onSaveToFirebase: _controller.rotinaId != null
+          onSave: _controller.rotinaId != null
               ? (exercicios, nome, note) async {
                   final idx = indexNoMomento;
                   if (idx >= _controller.treinos.length) return false;

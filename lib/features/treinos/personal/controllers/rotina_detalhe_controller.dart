@@ -39,7 +39,7 @@ class RotinaDetalheController extends ChangeNotifier {
 
 final Map<String, dynamic>? initialData;
 
-  // Baseline para comparação de alterações — atualizado quando dados frescos chegam do Firestore.
+  // Baseline para comparação de alterações — atualizado quando dados frescos chegam do banco.
   Map<String, dynamic>? _loadedData;
 
   RotinaDetalheController({
@@ -308,7 +308,7 @@ final Map<String, dynamic>? initialData;
   }
 
   /// Save bloqueante — aguarda o write completar e retorna true/false.
-  /// Usado pelo onSaveToFirebase da SessaoDetalhePage para garantir que
+  /// Usado pelo onSave da SessaoDetalhePage para garantir que
   /// o spinner da sessão só desaparece quando o dado foi persistido.
   Future<bool> salvarRotinaAgora() async {
     if (rotinaId == null || isSaving) return false;
@@ -471,7 +471,7 @@ final Map<String, dynamic>? initialData;
   bool get saveFlushed => _saveFlushed;
 
   /// Força o save imediatamente, cancelando o debounce pendente.
-  /// Não bloqueia — o write Firestore completa em background.
+  /// Não bloqueia — o write no banco de dados completa em background.
   void flushPendingSave() {
     _debounceTimer?.cancel();
     _debounceTimer = null;

@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class SupabaseAuthService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
-  /// Stream para monitorar o estado da autenticação (similar ao Firebase authStateChanges)
+  /// Stream para monitorar o estado da autenticação
   Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
 
   /// Retorna o usuário logado atualmente

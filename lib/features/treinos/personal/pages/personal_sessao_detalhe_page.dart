@@ -29,14 +29,14 @@ class PersonalSessaoDetalhePage extends StatelessWidget {
     List<ExercicioItem> exercicios,
     String nome,
     String sessaoNote,
-  )? onSaveToFirebase;
+  )? onSave;
 
   const PersonalSessaoDetalhePage({
     super.key,
     required this.nomeTreino,
     required this.exercicios,
     this.sessaoNote = '',
-    this.onSaveToFirebase,
+    this.onSave,
   });
 
   @override
@@ -49,7 +49,7 @@ class PersonalSessaoDetalhePage extends StatelessWidget {
       ),
       child: _SessaoDetalhePersonalView(
         originalExercicios: exercicios,
-        onSaveToFirebase: onSaveToFirebase,
+        onSave: onSave,
       ),
     );
   }
@@ -61,11 +61,11 @@ class _SessaoDetalhePersonalView extends StatefulWidget {
     List<ExercicioItem> exercicios,
     String nome,
     String sessaoNote,
-  )? onSaveToFirebase;
+  )? onSave;
 
   const _SessaoDetalhePersonalView({
     required this.originalExercicios,
-    this.onSaveToFirebase,
+    this.onSave,
   });
 
   @override
@@ -120,8 +120,8 @@ class _SessaoDetalhePersonalViewState
       final nome = controller.nomeTreinoController.text.trim();
       final note = controller.sessaoNote;
 
-      if (widget.onSaveToFirebase != null) {
-        final salvo = await widget.onSaveToFirebase!(
+      if (widget.onSave != null) {
+        final salvo = await widget.onSave!(
           finalExercicios,
           nome,
           note,
@@ -945,12 +945,12 @@ class _SessaoDetalhePersonalViewState
                     ),
                   );
                   if (!mounted) return;
-                  if (widget.onSaveToFirebase != null && controller.hasChanges) {
+                  if (widget.onSave != null && controller.hasChanges) {
                     final finalExercicios = controller.getFinalExercicios();
                     final nome = controller.nomeTreinoController.text.trim();
                     final note = controller.sessaoNote;
 
-                    final salvo = await widget.onSaveToFirebase!(finalExercicios, nome, note);
+                    final salvo = await widget.onSave!(finalExercicios, nome, note);
 
                     if (!mounted) return;
 
