@@ -401,18 +401,27 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
           style: AppTheme.inputText,
           pickerDialogStyle: PickerDialogStyle(
             backgroundColor: AppColors.surfaceDark,
-            countryCodeStyle: const TextStyle(color: Colors.white),
-            countryNameStyle: const TextStyle(color: Colors.white),
+            countryCodeStyle: const TextStyle(color: Colors.white, fontSize: 14),
+            countryNameStyle: const TextStyle(color: Colors.white, fontSize: 14),
+            padding: const EdgeInsets.all(20),
             searchFieldInputDecoration: InputDecoration(
               hintText: 'Buscar país',
               hintStyle: AppTheme.inputPlaceHolder,
-              prefixIcon: const Icon(Icons.search, color: AppColors.labelSecondary),
+              prefixIcon: const Icon(Icons.search_rounded, color: AppColors.labelSecondary, size: 20),
               filled: true,
               fillColor: AppColors.background,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-                borderSide: BorderSide(color: Colors.white.withAlpha(15), width: 0.5),
+                borderSide: BorderSide(color: Colors.white.withAlpha(10), width: 0.5),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                borderSide: BorderSide(color: Colors.white.withAlpha(10), width: 0.5),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                borderSide: const BorderSide(color: AppColors.primary, width: 1),
               ),
             ),
           ),
@@ -552,6 +561,15 @@ class _AlunoEditarPerfilPageState extends State<AlunoEditarPerfilPage> {
                     textButtonTheme: TextButtonThemeData(
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.primary,
+                      ),
+                    ),
+                    datePickerTheme: DatePickerThemeData(
+                      backgroundColor: AppColors.surfaceDark,
+                      headerBackgroundColor: AppColors.surfaceDark,
+                      surfaceTintColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+                        side: BorderSide(color: Colors.white.withAlpha(15), width: 0.5),
                       ),
                     ),
                   ),
