@@ -51,11 +51,10 @@ class AppTheme {
   );
 
   static TextStyle sectionHeader = const TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.5,
-    color: AppColors.labelPrimary,
-    height: 1.2,
+    fontSize: 10,
+    fontWeight: FontWeight.w800,
+    letterSpacing: 1.5,
+    color: AppColors.labelSecondary,
   );
 
   static const sectionAction = TextStyle(

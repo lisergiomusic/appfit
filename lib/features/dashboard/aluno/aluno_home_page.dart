@@ -167,7 +167,7 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
                       ],
                       _buildWeeklyRhythmSection(nome),
                       const SizedBox(height: SpacingTokens.xxl),
-                      Text('Planilha atual', style: AppTheme.sectionHeader),
+                      Text('PLANILHA ATUAL', style: AppTheme.sectionHeader),
                       const SizedBox(height: SpacingTokens.labelToField),
                       rotina != null ? _buildRotinaCard(context, rotina, rotinaId) : _buildSemTreinoCard(),
                       const SizedBox(height: SpacingTokens.screenBottomPadding + 80),
@@ -379,8 +379,11 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
             children: [
               Container(
                 width: 48, height: 48,
-                decoration: BoxDecoration(color: AppColors.primary.withAlpha(15), shape: BoxShape.circle),
-                child: const Icon(Icons.auto_awesome_motion_rounded, color: AppColors.primary, size: 20),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withAlpha(20), 
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.auto_awesome_motion_rounded, color: AppColors.primary, size: 24),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -477,7 +480,7 @@ class _NextWorkoutCard extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Próximo treino', style: AppTheme.sectionHeader),
+            Text('PRÓXIMO TREINO', style: AppTheme.sectionHeader),
             GestureDetector(
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AlunoSessaoDetalhePage(sessao: sessao, letra: letra, rotinaId: rotinaId, alunoId: alunoId))),
               child: const Text('DETALHES', style: AppTheme.premiumLabel),

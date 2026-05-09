@@ -39,16 +39,13 @@ class RitmoDaSemanaCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 8),
-          child: Text(
-            'RITMO DA SEMANA',
-            style: AppTheme.premiumLabel.copyWith(
-              color: AppColors.labelPrimary.withAlpha(180),
-              letterSpacing: 1.5,
-            ),
-          ),
+        Row(
+          children: [
+            Text('RITMO DA SEMANA', style: AppTheme.sectionHeader),
+            const Spacer(),
+          ],
         ),
+        const SizedBox(height: SpacingTokens.labelToField),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: AppTheme.cardDecoration,
@@ -68,8 +65,8 @@ class RitmoDaSemanaCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
-                          color: isFeito 
-                              ? AppColors.primary 
+                          color: isFeito
+                              ? AppColors.primary
                               : AppColors.labelSecondary.withAlpha(120),
                         ),
                       ),
@@ -121,7 +118,7 @@ class RitmoDaSemanaCard extends StatelessWidget {
                   final int count = dias
                       .where((d) => d['status'] == 'feito')
                       .length;
-                  
+
                   final String diaSingularPlural = count == 1 ? 'dia' : 'dias';
 
                   final String textoResumo = count == 0
