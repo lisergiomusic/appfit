@@ -59,7 +59,7 @@ class PesoHistoricoCard extends StatelessWidget {
         const SizedBox(height: SpacingTokens.labelToField),
         Container(
           width: double.infinity,
-          decoration: AppTheme.cardDecoration,
+          decoration: AppTheme.premiumCardDecoration,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

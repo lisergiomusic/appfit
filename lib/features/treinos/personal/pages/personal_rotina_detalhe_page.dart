@@ -491,31 +491,86 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
                       parent: BouncingScrollPhysics(),
                     ),
                     slivers: [
-                      AppFitSliverAppBar(
-                        title: _controller.nomeRotinaExibicao,
-                        expandedHeight: 148,
-                        onBackPressed: () => Navigator.of(context).maybePop(),
+                      SliverAppBar(
+                        expandedHeight: 140,
+                        collapsedHeight: 70,
+                        pinned: true,
+                        stretch: true,
+                        backgroundColor: AppColors.background,
+                        elevation: 0,
+                        surfaceTintColor: Colors.transparent,
+                        leading: const Padding(
+                          padding: EdgeInsets.only(left: 8),
+                          child: BackButton(color: AppColors.labelPrimary),
+                        ),
                         actions: [
                           AppBarTextButton(
                             label: 'Salvar',
                             onPressed: _executarSalvamentoManual,
                           ),
                         ],
-                        background: Align(
-                          alignment: Alignment.bottomLeft,
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                              left: SpacingTokens.screenHorizontalPadding,
-                              right: SpacingTokens.screenHorizontalPadding,
-                              bottom: 0,
-                            ),
-                            child: RotinaDetalheHeader(
-                              title: _controller.nomeRotinaExibicao,
-                              subtitle: _controller.objetivoExibicao,
-                              vencimentoLabel: _controller.vencimentoLabel,
-                              showVencimento: !_controller.isGlobalTemplate,
-                              onEdit: () => _exibirModalInfo(context),
-                            ),
+                        flexibleSpace: FlexibleSpaceBar(
+                          stretchModes: const [
+                            StretchMode.zoomBackground,
+                            StretchMode.fadeTitle
+                          ],
+                          background: Container(
+                            decoration:
+                                BoxDecoration(gradient: AppTheme.premiumGradient),
+                          ),
+                          titlePadding:
+                              const EdgeInsets.only(left: 20, bottom: 16),
+                          centerTitle: false,
+                          title: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _controller.nomeRotinaExibicao,
+                                      style: AppTheme.pageTitle
+                                          .copyWith(fontSize: 18),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    if (_controller
+                                        .objetivoExibicao.isNotEmpty)
+                                      Text(
+                                        _controller.objetivoExibicao
+                                            .toUpperCase(),
+                                        style: AppTheme.premiumLabel.copyWith(
+                                          fontSize: 7,
+                                          color: AppColors.labelSecondary
+                                              .withAlpha(150),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 16),
+                                child: GestureDetector(
+                                  onTap: () => _exibirModalInfo(context),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withAlpha(15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(
+                                      CupertinoIcons.pencil,
+                                      color: AppColors.labelPrimary,
+                                      size: 14,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),

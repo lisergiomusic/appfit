@@ -20,7 +20,15 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   int _indiceAtual = 0;
+  int _indiceAnterior = 0;
   final SupabaseAuthService _authService = SupabaseAuthService();
+  late List<Widget> _paginas;
+
+  @override
+  void initState() {
+    super.initState();
+    _paginas = _getPaginas();
+  }
 
   List<Widget> _getPaginas() {
     final uid = _authService.currentUser?.id ?? '';
@@ -54,30 +62,45 @@ class _DashboardPageState extends State<DashboardPage> {
 
   void _abrirCadastroAlunoPeloAtalhoHome() {
     setState(() {
+      _indiceAnterior = _indiceAtual;
       _indiceAtual = 1;
       _abrirCadastroPendente = true;
+      // Atualiza a página com o novo estado de abertura pendente
+      _paginas = _getPaginas();
     });
     // Resetar flag após o frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _abrirCadastroPendente = false;
+      if (mounted) {
+        setState(() {
+          _paginas = _getPaginas();
+        });
+      }
     });
   }
 
   void _abrirCriacaoRotinaPeloAtalhoHome() {
     setState(() {
+      _indiceAnterior = _indiceAtual;
       _indiceAtual = 2;
       _abrirCriacaoPendente = true;
+      // Atualiza a página com o novo estado de abertura pendente
+      _paginas = _getPaginas();
     });
     // Resetar flag após o frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _abrirCriacaoPendente = false;
+      if (mounted) {
+        setState(() {
+          _paginas = _getPaginas();
+        });
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final isAluno = widget.userType == 'aluno';
-    final paginas = _getPaginas();
 
     final List<GlassBottomNavItem> items = isAluno
         ? const [
@@ -123,11 +146,45 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       extendBody: true,
-      body: IndexedStack(index: _indiceAtual, children: paginas),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 400),
+        switchInCurve: Curves.easeOutQuart,
+        switchOutCurve: Curves.easeInQuart,
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          final isIncoming = child.key == ValueKey<int>(_indiceAtual);
+          final slidingRight = _indiceAtual > _indiceAnterior;
+          
+          Offset beginOffset;
+          if (isIncoming) {
+            beginOffset = slidingRight ? const Offset(1.0, 0.0) : const Offset(-1.0, 0.0);
+          } else {
+            beginOffset = slidingRight ? const Offset(-1.0, 0.0) : const Offset(1.0, 0.0);
+          }
+
+          return SlideTransition(
+            position: animation.drive(Tween<Offset>(begin: beginOffset, end: Offset.zero)),
+            child: FadeTransition(
+              opacity: animation,
+              child: child,
+            ),
+          );
+        },
+        child: Container(
+          key: ValueKey<int>(_indiceAtual),
+          child: _paginas[_indiceAtual],
+        ),
+      ),
       bottomNavigationBar: GlassBottomNav(
         currentIndex: _indiceAtual,
         items: items,
-        onTap: (index) => setState(() => _indiceAtual = index),
+        onTap: (index) {
+          if (index != _indiceAtual) {
+            setState(() {
+              _indiceAnterior = _indiceAtual;
+              _indiceAtual = index;
+            });
+          }
+        },
       ),
     );
   }

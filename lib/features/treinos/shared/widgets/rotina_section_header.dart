@@ -19,7 +19,7 @@ class RotinaSectionHeader extends StatelessWidget {
     return Row(
       children: [
         const SizedBox(width: 4),
-        Text('Lista de treinos', style: AppTheme.sectionHeader),
+        Text('SESSÕES DE TREINO', style: AppTheme.sectionHeader),
         const Spacer(),
         AppSectionLinkButton(
           label: isReordering ? 'Concluir' : 'Reorganizar',
