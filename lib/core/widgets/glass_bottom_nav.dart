@@ -32,7 +32,7 @@ class GlassBottomNav extends StatelessWidget {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     
     return Padding(
-      padding: EdgeInsets.fromLTRB(24, 0, 24, bottomPadding > 0 ? bottomPadding : 24),
+      padding: EdgeInsets.fromLTRB(24, 0, 24, bottomPadding > 0 ? bottomPadding : 12),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(999),
         child: BackdropFilter(
