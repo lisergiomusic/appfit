@@ -36,92 +36,110 @@ class _AlunoContaPageState extends State<AlunoContaPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        centerTitle: false,
-        title: const Padding(
-          padding: EdgeInsets.only(left: 4),
-          child: Text('Minha Conta'),
-        ),
-        actions: [
-          IconButton(
-            icon: Stack(
-              children: [
-                const Icon(
-                  Icons.notifications_rounded,
-                  color: AppColors.labelSecondary,
-                  size: 26,
+    return StreamBuilder<AlunoPerfilData>(
+      stream: _service.getAlunoPerfilCompletoStream(widget.uid),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            body: const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          );
+        }
+
+        if (snapshot.hasError || !snapshot.hasData) {
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            body: const Center(child: Text('Erro ao carregar perfil', style: TextStyle(color: AppColors.labelSecondary))),
+          );
+        }
+
+        final data = snapshot.data!;
+        final alunoData = data.aluno;
+
+        final nome = alunoData['nome'] as String? ?? 'Aluno';
+        final sobrenome = alunoData['sobrenome'] as String? ?? '';
+        final nomeCompleto = '$nome $sobrenome'.trim();
+        final photoUrl = (alunoData['photo_url'] ?? alunoData['photoUrl']) as String?;
+
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          body: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverAppBar(
+                expandedHeight: 220,
+                collapsedHeight: 60,
+                pinned: true,
+                stretch: true,
+                backgroundColor: AppColors.background,
+                elevation: 0,
+                surfaceTintColor: Colors.transparent,
+                automaticallyImplyLeading: false,
+                title: Text(
+                  'Minha conta',
+                  style: AppTheme.pageTitle.copyWith(fontSize: 18),
                 ),
-                Positioned(
-                  right: 2,
-                  top: 2,
-                  child: Container(
-                    width: 9,
-                    height: 9,
-                    decoration: BoxDecoration(
-                      color: AppColors.systemRed,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppColors.background,
-                        width: 1.5,
-                      ),
+                centerTitle: false,
+                actions: [
+                  IconButton(
+                    icon: Stack(
+                      children: [
+                        const Icon(
+                          Icons.notifications_rounded,
+                          color: AppColors.labelSecondary,
+                          size: 26,
+                        ),
+                        Positioned(
+                          right: 2,
+                          top: 2,
+                          child: Container(
+                            width: 9,
+                            height: 9,
+                            decoration: BoxDecoration(
+                              color: AppColors.systemRed,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.background,
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                    onPressed: () => AppUIUtils.showFutureFeatureWarning(context),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                flexibleSpace: FlexibleSpaceBar(
+                  stretchModes: const [StretchMode.zoomBackground],
+                  background: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
+                      ),
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: _buildHero(
+                          nomeCompleto: nomeCompleto,
+                          photoUrl: photoUrl,
+                          isInsideHeader: true,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-            onPressed: () => AppUIUtils.showFutureFeatureWarning(context),
-          ),
-          const SizedBox(width: 8),
-        ],
-
-      ),
-      body: StreamBuilder<AlunoPerfilData>(
-        stream: _service.getAlunoPerfilCompletoStream(widget.uid),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            );
-          }
-
-          if (snapshot.hasError || !snapshot.hasData) {
-            return const Center(
-              child: Text(
-                'Erro ao carregar perfil',
-                style: TextStyle(color: AppColors.labelSecondary),
               ),
-            );
-          }
-
-          final data = snapshot.data!;
-          final alunoData = data.aluno;
-
-          final nome = alunoData['nome'] as String? ?? 'Aluno';
-          final sobrenome = alunoData['sobrenome'] as String? ?? '';
-          final nomeCompleto = '$nome $sobrenome'.trim();
-          final photoUrl = (alunoData['photo_url'] ?? alunoData['photoUrl']) as String?;
-
-          return SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Hero ──────────────────────────────────────────
-                _buildHero(
-                  nomeCompleto: nomeCompleto,
-                  photoUrl: photoUrl,
-                ),
-                const SizedBox(height: SpacingTokens.sectionGap + 8),
-
-                Padding(
+              SliverToBoxAdapter(
+                child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: SpacingTokens.screenHorizontalPadding,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const SizedBox(height: SpacingTokens.sectionGap),
                       // ── Personal ──────────────────────────────────────────
                       if (data.nomePersonal != null) ...[
                         Padding(
@@ -210,15 +228,15 @@ class _AlunoContaPageState extends State<AlunoContaPage> {
                         ),
                       ]),
 
-                      const SizedBox(height: SpacingTokens.screenBottomPadding),
+                      const SizedBox(height: SpacingTokens.screenBottomPadding + 80),
                     ],
                   ),
                 ),
-              ],
-            ),
-          );
-        },
-      ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -227,32 +245,32 @@ class _AlunoContaPageState extends State<AlunoContaPage> {
   Widget _buildHero({
     required String nomeCompleto,
     required String? photoUrl,
+    bool isInsideHeader = false,
   }) {
-    return SizedBox(
+    return Container(
       width: double.infinity,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          SpacingTokens.screenHorizontalPadding,
-          SpacingTokens.screenTopPadding,
-          SpacingTokens.screenHorizontalPadding,
-          0,
-        ),
-        child: Column(
-          children: [
-            AppAvatar(
-              name: nomeCompleto,
-              photoUrl: photoUrl,
-              radius: AvatarTokens.lg,
-              showBorder: false,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              nomeCompleto,
-              style: AppTheme.title1,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+      padding: EdgeInsets.only(
+        left: SpacingTokens.screenHorizontalPadding,
+        right: SpacingTokens.screenHorizontalPadding,
+        top: isInsideHeader ? SpacingTokens.screenTopPadding + 65 : SpacingTokens.screenTopPadding,
+        bottom: isInsideHeader ? 20 : 0,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppAvatar(
+            name: nomeCompleto,
+            photoUrl: photoUrl,
+            radius: AvatarTokens.lg,
+            showBorder: false,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            nomeCompleto,
+            style: AppTheme.title1,
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
