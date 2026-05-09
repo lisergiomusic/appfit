@@ -55,7 +55,7 @@ class PesoHistoricoCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Peso corporal', style: AppTheme.sectionHeader),
+        Text('PESO CORPORAL', style: AppTheme.sectionHeader),
         const SizedBox(height: SpacingTokens.labelToField),
         Container(
           width: double.infinity,
