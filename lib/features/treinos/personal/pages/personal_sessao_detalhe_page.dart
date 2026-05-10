@@ -549,7 +549,7 @@ class _SessaoDetalhePersonalViewState
                 slivers: [
                   SliverAppBar(
                     pinned: true,
-                    expandedHeight: 110,
+                    expandedHeight: 150,
                     backgroundColor: AppColors.background,
                     surfaceTintColor: Colors.transparent,
                     elevation: 0,
@@ -568,8 +568,8 @@ class _SessaoDetalhePersonalViewState
                     flexibleSpace: LayoutBuilder(
                       builder: (context, constraints) {
                         final double topPadding = MediaQuery.of(context).padding.top;
-                        final double expandedHeight = 110.0 - kToolbarHeight - topPadding;
-                        final double currentHeight = constraints.maxHeight - kToolbarHeight - topPadding;
+                        final double expandedHeight = 150.0 - kToolbarHeight - topPadding;
+                        final double currentHeight = (constraints.maxHeight - kToolbarHeight - topPadding).clamp(0.0, expandedHeight);
                         final double percentage = (currentHeight / expandedHeight).clamp(0.0, 1.0);
 
                         return FlexibleSpaceBar(
@@ -582,10 +582,46 @@ class _SessaoDetalhePersonalViewState
                                   left: SpacingTokens.screenHorizontalPadding,
                                   bottom: 16,
                                   child: Opacity(
-                                    opacity: percentage.clamp(0.0, 1.0),
-                                    child: Text(
-                                      safeTreinoTitle,
-                                      style: AppTheme.bigTitle,
+                                    opacity: percentage,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          safeTreinoTitle,
+                                          style: AppTheme.bigTitle,
+                                        ),
+                                        Builder(
+                                          builder: (context) {
+                                            final grupos = <String>{};
+                                            for (final wrapper in controller.exercicios) {
+                                              grupos.addAll(wrapper.item.grupoMuscular);
+                                            }
+                                            if (grupos.isEmpty) return const SizedBox.shrink();
+
+                                            return Padding(
+                                              padding: const EdgeInsets.only(top: 8),
+                                              child: Wrap(
+                                                spacing: 6,
+                                                runSpacing: 6,
+                                                children: grupos.map((grupo) {
+                                                  return Container(
+                                                    padding: const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 4,
+                                                    ),
+                                                    decoration: PillTokens.decoration,
+                                                    child: Text(
+                                                      grupo.toUpperCase(),
+                                                      style: PillTokens.text,
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),

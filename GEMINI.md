@@ -1,4 +1,4 @@
-This is a Flutter project named `appfit`. It's a high-performance mobile application for personal trainers to manage their clients' workouts, currently transitioned to a **Supabase-backed** architecture.
+This is a Flutter project named `appfit`. It's a high-performance mobile application for personal trainers to manage their clients' workouts, powered by a **Supabase (PostgreSQL)** backend.
 
 ## Project Overview
 
@@ -7,8 +7,8 @@ The application follows a modular, feature-based structure with a focus on "Staf
 ### Main User Flow
 1.  **Authentication:** Powered by Supabase Auth (Email/Password, Google).
 2.  **Dashboard:** Centralized hub for trainers to manage multiple students.
-3.  **Treinos (Workouts):** 
-    *   **Rotinas:** Relational plans with specific objectives and durations.
+3.  **Modelos & Biblioteca (Workouts):** 
+    *   **Modelos:** Relational plans with specific objectives and durations (formerly 'Rotinas').
     *   **Sessões:** Specific workout days (e.g., "Push Day") with day-of-week assignments.
     *   **Exercícios:** Relational library with a hierarchical instruction system (Global -> Personalized -> Session).
     *   **Séries:** Complex structure supporting different types (Warm-up, Work) with atomic persistence.
@@ -25,42 +25,42 @@ The application follows a modular, feature-based structure with a focus on "Staf
 The project utilizes PostgreSQL's relational power:
 - **RLS (Row Level Security):** Policies are strictly enforced. Trainers can only modify their own exercises or their `instrucoes_personalizadas` on global exercises.
 - **Atomic Persistence:** Each exercise session handles its own state updates to ensure data integrity during complex edits.
-- **Instruction Hierarchy:**
-    1. `instrucoes`: Global default from the exercise library.
-    2. `instrucoes_personalizadas`: Trainer's persistent override for that specific exercise across all clients.
-    3. `sessao_instrucoes`: Specific instruction for a single session instance.
+- **Relational Integrity:** We do not use "docs" (Firebase). We work with typed Models and PostgreSQL JSONB for complex structures.
 
-## Developer Mindset and UI/UX Principles
+## Developer Mindset and UI/UX Principles (Premium Hybrid)
 
-*   **Staff-level Engineering:** Prioritize maintainability, scalability, and type safety.
-*   **Premium Hybrid Aesthetic:** Our design language is an evolution of high-performance interfaces.
-    *   **Spotify Inspiration:** We use Spotify as a reference for strong visual hierarchy, absolute contrast (Deep Black backgrounds), and pragmatic typography. We do not copy its flat layout; we use it as a benchmark for clarity and speed.
-    *   **Modern Glassmorphism:** For top-level navigation (Bottom Nav) and critical floating actions, we adopt a hybrid approach using frosted glass effects (Blur + Translucency). This adds a layer of depth and technical sophistication (Apple/iOS style) over our solid industrial foundation.
-    *   **Geometry:** Technical corners (Radius 12-16) for cards, and full pílula (pill) shapes (Radius 999) for floating navigation and main buttons.
-    *   **SliverAppBar Header Standards (Staff-level):**
-        *   **Dimensions:** Always use `expandedHeight: 110`. This height is calibrated to eliminate dead space while providing a high-density, professional look.
-        *   **Typography:** Expanded headers MUST use `AppTheme.bigTitle` (Spotify-inspired: 28px, w900, -1.0 letter spacing). Collapsed headers MUST use `AppTheme.pageTitle` (Centered: 15px, w700, -0.5 letter spacing).
-        *   **Casing:** Never use full UPPERCASE for page titles; use proper casing (e.g., 'Biblioteca de rotinas') for a more sophisticated look.
-        *   **Clarity:** Always set `fadeTitle: false` in `FlexibleSpaceBar` and manage opacities manually using a `Stack` and `LayoutBuilder`. Expanded titles must have 100% opacity at the top to ensure high contrast and zero "foggy" effect.
-        *   **Transition:** Use a clean cross-fade (Opacity) driven by scroll percentage. Avoid sliding or scaling animations. Expanded titles are fixed bottom-left (Positioned: left 20, bottom 16); collapsed titles are centered.
-    *   **Atmospheric Design:** The UI should be a "silent tool". Use consistent spacing (SpacingTokens) and ergonomic touch targets (min 44px).
-*   **Dirty Check Pattern:** Always implement `hasChanges` logic in complex forms to disable "Save" buttons and optimize network calls.
-*   **Haptic Feedback:** Use `HapticFeedback.lightImpact()` for critical UI interactions (toggles, navigation, selections) to provide immediate tactile response.
+### Visual Identity
+*   **Industrial Background:** Pure Deep Black (`#121212`) is the standard background.
+*   **Minimalist Cards:** Avoid excessive use of cards. Use `AppTheme.premiumCardDecoration` (0.5px border, radiusXL/16px) only for complex grouping. Prefer metrics and text flutuando directly on the black background.
+*   **Geometry:** Mandatory 16px (`radiusXL`) for cards and inputs. Full pill shape (`radiusFull`) for buttons.
+*   **Typography Hierarchy:**
+    *   **Page Titles:** Proper Casing (e.g., 'Gerenciar alunos') for sophistication.
+    *   **Section Headers:** UPPERCASE with letter spacing (e.g., 'LISTA DE EXERCÍCIOS').
+    *   **Tags/Pills:** UPPERCASE, small font, semi-bold (`PillTokens`).
+
+### Frictionless UX (Auto-Save Pattern)
+*   **Auto-save on Pop:** Page detail views MUST NOT have "Salvar" buttons. Implement `PopScope` logic to trigger saving when the user leaves the page.
+*   **Frictionless Actions:** Use `CupertinoIcons.settings` (gear) in the AppBar to toggle configuration modals, never inline edit fields in headers.
+*   **Feedback:** Use a translucent Blur Overlay ("Salvando...") during async persistence.
+*   **Tactile Response:** `HapticFeedback.lightImpact()` is mandatory for all primary interactions (toggles, nav, selections).
+
+### SliverAppBar Header Standards (Staff-level)
+*   **Dimensions:** `expandedHeight: 110` for title only; `expandedHeight: 150` for title + subtitle/pills.
+*   **Header Content:** MUST use `AppTheme.premiumGradient` background.
+*   **Transition:** Manual cross-fade (Opacity) using `LayoutBuilder`. Expanded title at `bottom: 16`, `left: 20`. Collapsed title centered.
 
 ## Development Conventions
 
 ### Code Structure
 - Feature-based folder organization (e.g., `lib/features/treinos/personal/`).
-- Separation of concerns: Controllers for logic, Widgets for UI.
-- No business logic inside widgets.
-- Mandatory error handling (never ignore exceptions).
+- Use `Color.withValues(alpha: ...)` instead of `withOpacity` or `withAlpha`.
+- Dirty Check Pattern: Use internal `hasChanges` to optimize network calls during Auto-save.
 
 ### Git & Commits
-When requested to **"gere um commit"**, follow this standard:
-- **Format:** `type(scope): description` (e.g., `feat(treinos): implement dirty check for session details`)
-- **Action:** Generate the message and display it. **Do not execute the commit.**
+Format: `type(scope): description` (e.g., `feat(treinos): implement auto-save for session details`). Generate the message but do not execute the commit unless asked.
 
 ### Quality Standards
 - `flutter_lints` rules must always pass.
 - Use `ChangeNotifier` for complex view states.
-- Follow the established `AppTheme` and `CardTokens` for visual consistency.
+- No business logic inside widgets.
+- Mandatory error handling (never ignore exceptions).
