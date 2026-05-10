@@ -35,7 +35,7 @@ class AppTheme {
   static const Radius pill = Radius.circular(9999);
 
   static const TextStyle bigTitle = TextStyle(
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: FontWeight.w900,
     letterSpacing: -1.0,
     height: 1.0,

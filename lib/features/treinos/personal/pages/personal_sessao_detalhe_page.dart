@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:appfit/core/widgets/app_bar_text_button.dart';
+import 'package:appfit/core/widgets/app_nav_back_button.dart';
 import 'package:appfit/core/widgets/app_section_link_button.dart';
-import 'package:appfit/core/widgets/appfit_sliver_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_premium_fab.dart';
 import '../../../../core/widgets/app_primary_button.dart';
 import '../../../../core/widgets/app_swipe_to_delete.dart';
 import '../../../../core/widgets/sliver_safe_title.dart';
@@ -408,6 +409,90 @@ class _SessaoDetalhePersonalViewState
     );
   }
 
+  void _showRenameModal(BuildContext context) async {
+    final controller = context.read<ConfigurarTreinoController>();
+    var nomeDigitado = controller.nomeTreinoController.text;
+    var mostrarErroNome = false;
+
+    final novoNome = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          final nomeValido = nomeDigitado.trim().isNotEmpty;
+
+          return AlertDialog(
+            backgroundColor: AppColors.surfaceDark,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            title: const Text(
+              'Editar nome do treino',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            content: TextFormField(
+              initialValue: nomeDigitado,
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Nome do treino',
+                labelStyle: const TextStyle(color: Colors.white70),
+                filled: true,
+                fillColor: Colors.black.withValues(alpha: 0.2),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                errorText: mostrarErroNome && !nomeValido
+                    ? 'Informe um nome para o treino'
+                    : null,
+              ),
+              onChanged: (value) {
+                nomeDigitado = value;
+                if (mostrarErroNome) {
+                  setDialogState(() => mostrarErroNome = false);
+                }
+              },
+              onFieldSubmitted: (value) {
+                if (value.trim().isEmpty) {
+                  setDialogState(() => mostrarErroNome = true);
+                  return;
+                }
+                Navigator.of(dialogContext).pop(value);
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text(
+                  'CANCELAR',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  if (!nomeValido) {
+                    setDialogState(() => mostrarErroNome = true);
+                    return;
+                  }
+                  Navigator.of(dialogContext).pop(nomeDigitado);
+                },
+                child: const Text(
+                  'SALVAR',
+                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    if (novoNome != null && novoNome.trim().isNotEmpty) {
+      HapticFeedback.mediumImpact();
+      controller.nomeTreinoController.text = novoNome.trim();
+      controller.onExercicioChanged(); // Trigger hasChanges
+    }
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -424,7 +509,7 @@ class _SessaoDetalhePersonalViewState
       fallback: 'Treino',
     );
     final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
-    final shouldShowFab = !controller.isEditingTitle && !isKeyboardVisible;
+    final shouldShowFab = !isKeyboardVisible;
 
     return PopScope(
       canPop: !controller.hasChanges || _canPopNow,
@@ -438,242 +523,103 @@ class _SessaoDetalhePersonalViewState
           children: [
             Scaffold(
               backgroundColor: AppColors.background,
+              floatingActionButton: IgnorePointer(
+                ignoring: !shouldShowFab,
+                child: AnimatedScale(
+                  scale: shouldShowFab ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOutCubic,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: AppPremiumFAB(
+                      label: 'Adicionar Exercícios',
+                      icon: CupertinoIcons.add_circled,
+                      isFullWidth: true,
+                      onPressed: () => _openLibrary(context),
+                    ),
+                  ),
+                ),
+              ),
+              floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
               body: CustomScrollView(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(
                   parent: BouncingScrollPhysics(),
                 ),
                 slivers: [
-                  AppFitSliverAppBar(
-                    title: safeTreinoTitle,
-                    expandedHeight: controller.isEditingTitle ? 140 : 150,
-                    onBackPressed: () => Navigator.of(context).maybePop(),
-                    leading: controller.isEditingTitle
-                        ? const SizedBox.shrink()
-                        : null,
+                  SliverAppBar(
+                    pinned: true,
+                    expandedHeight: 110,
+                    backgroundColor: AppColors.background,
+                    surfaceTintColor: Colors.transparent,
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                    leading: const AppNavBackButton(),
                     actions: [
-                      AppBarTextButton(
-                        label: 'Salvar',
-                        isLoading: _isSaving,
-                        onPressed: _isSaving
-                            ? null
-                            : () => _concluirESalvar(context),
+                      IconButton(
+                        icon: const Icon(
+                          CupertinoIcons.settings,
+                          color: AppColors.labelSecondary,
+                          size: 22,
+                        ),
+                        onPressed: () => _showRenameModal(context),
                       ),
                     ],
-                    background: Container(
-                      decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
-                      child: Align(
-                        alignment: Alignment.bottomLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            left: 16,
-                            right: 16,
-                            bottom: 12,
-                          ),
-                          child: Row(
-                          crossAxisAlignment: controller.isEditingTitle
-                              ? CrossAxisAlignment.start
-                              : CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: controller.isEditingTitle
-                                  ? TextField(
-                                      controller: controller.nomeTreinoController,
-                                      focusNode: controller.titleFocusNode,
-                                      maxLines: 1,
-                                      maxLength: 35,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 32,
-                                        letterSpacing: -0.5,
-                                      ),
-                                      buildCounter:
-                                          (
-                                            context, {
-                                            required currentLength,
-                                            required isFocused,
-                                            maxLength,
-                                          }) {
-                                            final isLimit =
-                                                currentLength == maxLength;
-                                            return Text(
-                                              '$currentLength / $maxLength',
-                                              style: TextStyle(
-                                                color: isLimit
-                                                    ? Colors.redAccent
-                                                    : AppColors.labelSecondary,
-                                                fontSize: 12,
-                                                fontWeight: isLimit
-                                                    ? FontWeight.bold
-                                                    : FontWeight.w500,
-                                              ),
-                                            );
-                                          },
-                                      decoration: InputDecoration(
-                                        filled: true,
-                                        fillColor: Colors.black.withValues(alpha: 0.235),
-                                        contentPadding: const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 12,
-                                        ),
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(16),
-                                          borderSide: BorderSide.none,
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(16),
-                                          borderSide: BorderSide(
-                                            color: AppColors.primary.withAlpha(120),
-                                            width: 1.5,
-                                          ),
-                                        ),
-                                      ),
-                                      cursorColor: AppColors.primary,
-                                      textCapitalization: TextCapitalization.words,
-                                      onSubmitted: (_) =>
-                                          controller.toggleEditTitle(),
-                                    )
-                                  : GestureDetector(
-                                      onTap: () {
-                                        HapticFeedback.lightImpact();
-                                        controller.toggleEditTitle();
-                                      },
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            safeTreinoTitle,
-                                            style: AppTheme.bigTitle,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          Builder(
-                                            builder: (context) {
-                                              final grupos = <String>{};
-                                              for (final w
-                                                  in controller.exercicios) {
-                                                grupos.addAll(w.item.grupoMuscular);
-                                              }
-                                              if (grupos.isEmpty) {
-                                                return const SizedBox.shrink();
-                                              }
-                                              return Padding(
-                                                padding: const EdgeInsets.only(
-                                                  top: SpacingTokens.sm,
-                                                ),
-                                                child: Wrap(
-                                                  spacing: SpacingTokens.xs,
-                                                  runSpacing: SpacingTokens.xs,
-                                                  children: grupos
-                                                      .map(
-                                                        (grupo) => Container(
-                                                          padding:
-                                                              const EdgeInsets.symmetric(
-                                                                horizontal:
-                                                                    SpacingTokens
-                                                                        .sm,
-                                                                vertical:
-                                                                    SpacingTokens
-                                                                        .xs,
-                                                              ),
-                                                          decoration:
-                                                              PillTokens.decoration,
-                                                          child: Text(
-                                                            grupo,
-                                                            style: PillTokens.text,
-                                                          ),
-                                                        ),
-                                                      )
-                                                      .toList(),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              margin: controller.isEditingTitle
-                                  ? const EdgeInsets.only(top: 10)
-                                  : EdgeInsets.zero,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    HapticFeedback.lightImpact();
-                                    controller.toggleEditTitle();
-                                  },
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withAlpha(12),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: Colors.white.withAlpha(20),
-                                        width: 0.5,
-                                      ),
-                                    ),
-                                    child: Icon(
-                                      controller.isEditingTitle
-                                          ? CupertinoIcons.check_mark
-                                          : CupertinoIcons.pencil,
-                                      color: controller.isEditingTitle
-                                          ? AppColors.primary
-                                          : AppColors.labelPrimary,
-                                      size: 18,
+                    flexibleSpace: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final double topPadding = MediaQuery.of(context).padding.top;
+                        final double expandedHeight = 110.0 - kToolbarHeight - topPadding;
+                        final double currentHeight = constraints.maxHeight - kToolbarHeight - topPadding;
+                        final double percentage = (currentHeight / expandedHeight).clamp(0.0, 1.0);
+
+                        return FlexibleSpaceBar(
+                          stretchModes: const [StretchMode.zoomBackground],
+                          background: Container(
+                            decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
+                            child: Stack(
+                              children: [
+                                Positioned(
+                                  left: SpacingTokens.screenHorizontalPadding,
+                                  bottom: 16,
+                                  child: Opacity(
+                                    opacity: percentage.clamp(0.0, 1.0),
+                                    child: Text(
+                                      safeTreinoTitle,
+                                      style: AppTheme.bigTitle,
                                     ),
                                   ),
                                 ),
-                              ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
+                          centerTitle: true,
+                          title: Opacity(
+                            opacity: (1.0 - percentage - 0.7).clamp(0.0, 1.0) * 3.3,
+                            child: Text(
+                              safeTreinoTitle,
+                              style: AppTheme.pageTitle,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
-                  ),
-                  if (controller.exercicios.isNotEmpty)
                     SliverOpacity(
-                      opacity: controller.isEditingTitle ? 0.3 : 1.0,
+                      opacity: 1.0,
                       sliver: SliverToBoxAdapter(
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            AppTheme.paddingScreen,
-                            4,
-                            AppTheme.paddingScreen,
-                            0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: SpacingTokens.screenHorizontalPadding,
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              const SizedBox(height: 16),
                               Row(
                                 children: [
-                                  Expanded(
-                                    child: _MetricCard(
-                                      label: 'Exercícios',
-                                      value: '${controller.exercicios.length}',
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: _MetricCard(
-                                      label: 'Séries',
-                                      value: '${controller.totalSeries}',
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: _MetricCard(
-                                      label: 'Estimado',
-                                      value: controller.estimatedDurationLabel,
-                                    ),
-                                  ),
+                                  _buildMinimalistMetric('Exercícios', '${controller.exercicios.length}'),
+                                  _buildMinimalistMetric('Séries', '${controller.totalSeries}'),
+                                  _buildMinimalistMetric('Estimado', controller.estimatedDurationLabel, showSeparator: false),
                                 ],
                               ),
                               const SizedBox(height: SpacingTokens.sectionGap),
@@ -752,23 +698,8 @@ class _SessaoDetalhePersonalViewState
                       ),
                     ),
                   if (controller.exercicios.isNotEmpty)
-                    SliverOpacity(
-                      opacity: controller.isEditingTitle ? 0.3 : 1.0,
-                      sliver: SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            AppTheme.paddingScreen,
-                            24,
-                            AppTheme.paddingScreen,
-                            24,
-                          ),
-                          child: AppPrimaryButton(
-                            label: 'Adicionar Exercícios',
-                            icon: CupertinoIcons.add_circled,
-                            onPressed: () => _openLibrary(context),
-                          ),
-                        ),
-                      ),
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: 120), // Espaço para o FAB não cobrir o último item
                     ),
                 ],
               ),
@@ -898,6 +829,54 @@ class _SessaoDetalhePersonalViewState
     );
   }
 
+  Widget _buildMinimalistMetric(String label, String value, {bool showSeparator = true}) {
+    return Expanded(
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: AppTheme.title1.copyWith(
+                    fontSize: 24,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label.toUpperCase(),
+                  style: AppTheme.formLabel.copyWith(
+                    fontSize: 10,
+                    letterSpacing: 0.5,
+                    color: AppColors.labelSecondary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          if (showSeparator)
+            Container(
+              height: 24,
+              width: 1,
+              margin: const EdgeInsets.symmetric(horizontal: 12),
+              color: Colors.white.withValues(alpha: 0.078),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVerticalDivider() {
+    return const SizedBox.shrink();
+  }
+
   Widget _buildCardContent(
     BuildContext context,
     int exIndex, {
@@ -915,8 +894,8 @@ class _SessaoDetalhePersonalViewState
     final Widget card = Container(
       decoration: AppTheme.premiumCardDecoration.copyWith(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(isConnectedToPrev ? 0 : AppTheme.radiusLarge),
-          bottom: Radius.circular(isConnectedToNext ? 0 : AppTheme.radiusLarge),
+          top: Radius.circular(isConnectedToPrev ? 0 : AppTheme.radiusXL),
+          bottom: Radius.circular(isConnectedToNext ? 0 : AppTheme.radiusXL),
         ),
       ),
       child: Material(
@@ -924,8 +903,8 @@ class _SessaoDetalhePersonalViewState
         elevation: 0,
         child: InkWell(
           borderRadius: BorderRadius.vertical(
-            top: Radius.circular(isConnectedToPrev ? 0 : AppTheme.radiusLarge),
-            bottom: Radius.circular(isConnectedToNext ? 0 : AppTheme.radiusLarge),
+            top: Radius.circular(isConnectedToPrev ? 0 : AppTheme.radiusXL),
+            bottom: Radius.circular(isConnectedToNext ? 0 : AppTheme.radiusXL),
           ),
           splashColor: AppColors.splash.withAlpha(50),
           highlightColor: AppColors.splash.withValues(alpha: 0.117),
@@ -1203,49 +1182,5 @@ class _SessaoDetalhePersonalViewState
     }
 
     return finalCard;
-  }
-}
-
-class _MetricCard extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _MetricCard({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    final bool isEstimado = label == 'Estimado';
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      decoration: AppTheme.premiumCardDecoration,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              if (isEstimado) ...[
-                Icon(
-                  Icons.timer_outlined,
-                  size: 14,
-                  color: AppColors.labelSecondary,
-                ),
-                const SizedBox(width: 4),
-              ],
-              Expanded(
-                child: Text(
-                  label,
-                  style: AppTheme.formLabel,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: SpacingTokens.labelToField),
-          Text(value, style: AppTheme.title1),
-        ],
-      ),
-    );
   }
 }
