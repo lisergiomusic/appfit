@@ -1,9 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_bar_text_button.dart';
-import 'rotina_modern_input.dart';
-import 'rotina_input_decoration.dart';
 
 class PlanilhaSettingsModal extends StatefulWidget {
   final String? rotinaId;
@@ -42,6 +42,7 @@ class _PlanilhaSettingsModalState extends State<PlanilhaSettingsModal> {
   late TextEditingController localObjCtrl;
   late FocusNode nomeFocus;
   late FocusNode objFocus;
+  late FocusNode sessoesFocus;
   late String tipoTemp;
   late String sessoesInput;
   late DateTime dataTemp;
@@ -72,14 +73,14 @@ class _PlanilhaSettingsModalState extends State<PlanilhaSettingsModal> {
 
     nomeFocus = FocusNode();
     objFocus = FocusNode();
+    sessoesFocus = FocusNode();
 
     nomeFocus.addListener(() => setState(() {}));
     objFocus.addListener(() => setState(() {}));
+    sessoesFocus.addListener(() => setState(() {}));
 
     tipoTemp = widget.tipoVencimento;
-    sessoesInput = widget.rotinaId == null
-        ? ''
-        : widget.vencimentoSessoes.toString();
+    sessoesInput = widget.rotinaId == null ? '' : widget.vencimentoSessoes.toString();
     dataTemp = widget.vencimentoData;
   }
 
@@ -89,7 +90,23 @@ class _PlanilhaSettingsModalState extends State<PlanilhaSettingsModal> {
     localObjCtrl.dispose();
     nomeFocus.dispose();
     objFocus.dispose();
+    sessoesFocus.dispose();
     super.dispose();
+  }
+
+  void _handleSave() {
+    if (_formKey.currentState!.validate()) {
+      HapticFeedback.lightImpact();
+      final sessoes = int.tryParse(sessoesInput) ?? 0;
+      widget.onSave(
+        localNomeCtrl.text.trim(),
+        localObjCtrl.text.trim(),
+        tipoTemp,
+        sessoes,
+        dataTemp,
+      );
+      Navigator.pop(context);
+    }
   }
 
   @override
@@ -99,11 +116,12 @@ class _PlanilhaSettingsModalState extends State<PlanilhaSettingsModal> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: AppColors.primary),
+          icon: const Icon(CupertinoIcons.xmark, color: AppColors.labelSecondary, size: 22),
           onPressed: () async {
-            if (localNomeCtrl.text.trim().isNotEmpty &&
-                localObjCtrl.text.trim().isNotEmpty) {
+            if (localNomeCtrl.text.trim().isNotEmpty && localObjCtrl.text.trim().isNotEmpty) {
               Navigator.pop(context);
               return;
             }
@@ -116,184 +134,86 @@ class _PlanilhaSettingsModalState extends State<PlanilhaSettingsModal> {
         actions: [
           AppBarTextButton(
             label: 'Salvar',
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                final sessoes = int.tryParse(sessoesInput) ?? 0;
-                widget.onSave(
-                  localNomeCtrl.text.trim(),
-                  localObjCtrl.text.trim(),
-                  tipoTemp,
-                  sessoes,
-                  dataTemp,
-                );
-                Navigator.pop(context);
-              }
-            },
+            onPressed: _handleSave,
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppTheme.paddingScreen),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              RotinaModernInput(
-                label: 'Nome da Planilha',
+              _buildSectionLabel('NOME DA PLANILHA'),
+              const SizedBox(height: 8),
+              _buildFieldContainer(
+                isFocused: nomeFocus.hasFocus,
                 child: TextFormField(
                   controller: localNomeCtrl,
                   focusNode: nomeFocus,
-                  autofocus: true,
+                  autofocus: widget.nomeInicial.isEmpty,
                   maxLength: 40,
                   style: const TextStyle(
                     color: AppColors.labelPrimary,
-                    fontSize: 15,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.3,
                   ),
-                  decoration: rotinaInputDecoration(
-                    hintText: 'Ex: Protocolo Y',
-                  ).copyWith(counterText: nomeFocus.hasFocus ? null : ""),
-                  validator: (value) => (value == null || value.trim().isEmpty)
-                      ? 'Campo obrigatório'
-                      : null,
+                  decoration: const InputDecoration(
+                    hintText: 'Ex: Protocolo Alpha',
+                    hintStyle: TextStyle(color: AppColors.labelTertiary, fontWeight: FontWeight.w400),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 14),
+                    counterText: '',
+                  ),
+                  validator: (value) => (value == null || value.trim().isEmpty) ? 'Obrigatório' : null,
                 ),
               ),
-              const SizedBox(height: 20),
-              RotinaModernInput(
-                label: 'Objetivo Principal',
+              const SizedBox(height: 24),
+              _buildSectionLabel('OBJETIVO PRINCIPAL'),
+              const SizedBox(height: 8),
+              _buildFieldContainer(
+                isFocused: objFocus.hasFocus,
                 child: DropdownButtonFormField<String>(
-                  initialValue: _objetivos.contains(localObjCtrl.text)
-                      ? localObjCtrl.text
-                      : null,
+                  value: _objetivos.contains(localObjCtrl.text) ? localObjCtrl.text : null,
+                  focusNode: objFocus,
                   dropdownColor: AppColors.surfaceDark,
-                  icon: const Icon(
-                    Icons.keyboard_arrow_down,
-                    color: AppColors.labelSecondary,
-                  ),
+                  icon: const Icon(CupertinoIcons.chevron_down, color: AppColors.labelSecondary, size: 16),
                   style: const TextStyle(
                     color: AppColors.labelPrimary,
-                    fontSize: 15,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.3,
                   ),
-                  decoration: rotinaInputDecoration(
-                    hintText: 'Selecione o objetivo',
+                  decoration: const InputDecoration(
+                    hintText: 'Selecione...',
+                    hintStyle: TextStyle(color: AppColors.labelTertiary, fontWeight: FontWeight.w400),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 14),
                   ),
-                  items: _objetivos.map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        localObjCtrl.text = newValue;
-                      });
-                    }
+                  items: _objetivos.map((val) => DropdownMenuItem(value: val, child: Text(val))).toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => localObjCtrl.text = val);
                   },
-                  validator: (value) => (value == null || value.trim().isEmpty)
-                      ? 'Campo obrigatório'
-                      : null,
+                  validator: (val) => (val == null || val.trim().isEmpty) ? 'Obrigatório' : null,
                 ),
               ),
               if (!widget.isGlobalTemplate) ...[
-                const SizedBox(height: SpacingTokens.sectionGap),
-                Row(
-                  children: [
-                    const SizedBox(width: AppTheme.space8),
-                    const Text('Vencimento', style: AppTheme.formLabel),
-                  ],
-                ),
-                const SizedBox(height: SpacingTokens.labelToField),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceLight,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          _buildTabOption(
-                            'Sessões',
-                            tipoTemp == 'sessoes',
-                            () => setState(() => tipoTemp = 'sessoes'),
-                          ),
-                          _buildTabOption(
-                            'Data Fixa',
-                            tipoTemp == 'data',
-                            () => setState(() => tipoTemp = 'data'),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: tipoTemp == 'sessoes'
-                            ? TextFormField(
-                                key: const ValueKey('inputSessoes'),
-                                keyboardType: TextInputType.number,
-                                initialValue: sessoesInput,
-                                decoration: rotinaInputDecoration(
-                                  hintText: 'Quantas sessões?',
-                                ),
-                                onChanged: (v) => sessoesInput = v,
-                              )
-                            : ListTile(
-                                key: const ValueKey('inputData'),
-                                tileColor: AppColors.surfaceDark,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppTheme.radiusSM,
-                                  ),
-                                ),
-                                leading: const Icon(
-                                  Icons.calendar_month,
-                                  color: AppColors.primary,
-                                ),
-                                title: Text(
-                                  DateFormat('dd/MM/yyyy').format(dataTemp),
-                                ),
-                                onTap: () async {
-                                  final picked = await showDatePicker(
-                                    context: context,
-                                    initialDate: dataTemp,
-                                    firstDate: DateTime.now(),
-                                    lastDate: DateTime.now().add(
-                                      const Duration(days: 365),
-                                    ),
-                                  );
-                                  if (picked != null) {
-                                    setState(() => dataTemp = picked);
-                                  }
-                                },
-                              ),
-                      ),
-                    ],
-                  ),
-                ),
+                const SizedBox(height: 32),
+                _buildSectionLabel('VENCIMENTO'),
+                const SizedBox(height: 12),
+                _buildVencimentoCard(),
               ],
               if (widget.rotinaId != null) ...[
-                const SizedBox(height: 40),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: OutlinedButton(
-                    onPressed: widget.onDelete,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.redAccent,
-                      side: const BorderSide(color: Colors.redAccent),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'REMOVER PLANILHA',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
+                const SizedBox(height: 48),
+                Center(
+                  child: _buildDeleteButton(),
                 ),
               ],
+              const SizedBox(height: 60),
             ],
           ),
         ),
@@ -301,25 +221,273 @@ class _PlanilhaSettingsModalState extends State<PlanilhaSettingsModal> {
     );
   }
 
-  Widget _buildTabOption(String label, bool isSelected, VoidCallback onTap) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.background : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isSelected ? AppColors.primary : Colors.white38,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+  Widget _buildSectionLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(text, style: AppTheme.sectionHeader),
+    );
+  }
+
+  Widget _buildFieldContainer({required Widget child, required bool isFocused}) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isFocused ? AppColors.primary.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.06),
+          width: 0.5,
+        ),
+        boxShadow: isFocused
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : [],
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildVencimentoCard() {
+    final bool isFocused = sessoesFocus.hasFocus && tipoTemp == 'sessoes';
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isFocused ? AppColors.primary.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.06),
+          width: 0.5,
+        ),
+        boxShadow: isFocused
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : [],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Selector
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Stack(
+              children: [
+                AnimatedAlign(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  alignment: tipoTemp == 'sessoes' ? Alignment.centerLeft : Alignment.centerRight,
+                  child: FractionallySizedBox(
+                    widthFactor: 0.5,
+                    child: Container(
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceLight,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 0.5),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    _buildTab('SESSÕES', tipoTemp == 'sessoes', () => setState(() => tipoTemp = 'sessoes')),
+                    _buildTab('DATA FIXA', tipoTemp == 'data', () => setState(() => tipoTemp = 'data')),
+                  ],
+                ),
+              ],
             ),
           ),
+          const SizedBox(height: 8),
+          // Content Switcher
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
+              return Stack(
+                alignment: Alignment.center,
+                children: <Widget>[
+                  ...previousChildren,
+                  if (currentChild != null) currentChild,
+                ],
+              );
+            },
+            child: tipoTemp == 'sessoes' ? _buildSessoesInput() : _buildDataInput(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSessoesInput() {
+    return Container(
+      key: const ValueKey('sessoes_input_container'),
+      width: double.infinity,
+      height: 52,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 0.5),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          const Icon(CupertinoIcons.number, color: AppColors.primary, size: 18),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextFormField(
+              focusNode: sessoesFocus,
+              keyboardType: TextInputType.number,
+              initialValue: sessoesInput,
+              style: const TextStyle(
+                color: AppColors.labelPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
+              ),
+              decoration: const InputDecoration(
+                hintText: 'Quantidade...',
+                hintStyle: TextStyle(color: AppColors.labelTertiary, fontSize: 14, fontWeight: FontWeight.w400),
+                border: InputBorder.none,
+                isDense: true,
+                filled: false,
+                fillColor: Colors.transparent,
+                contentPadding: EdgeInsets.symmetric(vertical: 14),
+              ),
+              onChanged: (v) => sessoesInput = v,
+            ),
+          ),
+          Text(
+            'TREINOS',
+            style: TextStyle(
+              color: AppColors.primary.withValues(alpha: 0.9),
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDataInput() {
+    return Container(
+      key: const ValueKey('data_input_container'),
+      width: double.infinity,
+      height: 52,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 0.5),
+      ),
+      child: InkWell(
+        onTap: () async {
+          HapticFeedback.lightImpact();
+          final picked = await showDatePicker(
+            context: context,
+            initialDate: dataTemp,
+            firstDate: DateTime.now(),
+            lastDate: DateTime.now().add(const Duration(days: 365)),
+          );
+          if (picked != null) setState(() => dataTemp = picked);
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              const Icon(CupertinoIcons.calendar, color: AppColors.primary, size: 18),
+              const SizedBox(width: 12),
+              Text(
+                DateFormat('dd/MM/yyyy').format(dataTemp),
+                style: const TextStyle(
+                  color: AppColors.labelPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.2,
+                ),
+              ),
+              const Spacer(),
+              Icon(
+                CupertinoIcons.chevron_right,
+                color: AppColors.labelTertiary.withValues(alpha: 0.5),
+                size: 14,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTab(String label, bool isActive, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          if (!isActive) {
+            HapticFeedback.selectionClick();
+            onTap();
+          }
+        },
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          height: 32,
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isActive ? AppColors.labelPrimary : AppColors.labelSecondary,
+              fontSize: 10,
+              fontWeight: isActive ? FontWeight.w900 : FontWeight.w600,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeleteButton() {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.heavyImpact();
+        widget.onDelete();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.redAccent.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3), width: 0.5),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(CupertinoIcons.trash, color: Colors.redAccent, size: 16),
+            const SizedBox(width: 8),
+            Text(
+              'REMOVER PLANILHA',
+              style: AppTheme.sectionHeader.copyWith(color: Colors.redAccent, fontSize: 11),
+            ),
+          ],
         ),
       ),
     );
