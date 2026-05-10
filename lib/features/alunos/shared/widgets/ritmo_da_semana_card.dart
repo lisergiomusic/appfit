@@ -39,24 +39,17 @@ class RitmoDaSemanaCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text('RITMO DA SEMANA', style: AppTheme.sectionHeader),
-            const Spacer(),
-          ],
-        ),
+        Text('RITMO DA SEMANA', style: AppTheme.sectionHeader),
         const SizedBox(height: SpacingTokens.labelToField),
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: AppTheme.cardDecoration,
+          decoration: AppTheme.premiumCardDecoration,
           child: Column(
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: dias.map((d) {
                   final isFeito = d['status'] == 'feito';
-                  final isFuturo = d['status'] == 'futuro';
-                  final isCarregando = d['status'] == 'carregando';
 
                   return Column(
                     children: [
@@ -77,8 +70,14 @@ class RitmoDaSemanaCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: isFeito
                               ? AppColors.primary
-                              : AppColors.labelSecondary.withAlpha(20),
-                          borderRadius: BorderRadius.circular(10),
+                              : AppColors.surfaceDark,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isFeito 
+                                ? AppColors.primary 
+                                : Colors.white.withAlpha(10),
+                            width: 0.5,
+                          ),
                         ),
                         child: Center(
                           child: isFeito
@@ -119,23 +118,21 @@ class RitmoDaSemanaCard extends StatelessWidget {
                       .where((d) => d['status'] == 'feito')
                       .length;
 
-                  final String diaSingularPlural = count == 1 ? 'dia' : 'dias';
+                  final String diaSingularPlural = count == 1 ? 'DIA' : 'DIAS';
 
                   final String textoResumo = count == 0
                       ? (isAlunoView
-                            ? 'Você ainda não treinou esta semana'
-                            : '$primeiroNome ainda não treinou esta semana')
+                            ? 'VOCÊ AINDA NÃO TREINOU ESTA SEMANA'
+                            : '$primeiroNome AINDA NÃO TREINOU ESTA SEMANA')
                       : (isAlunoView
-                            ? 'Você treinou $count $diaSingularPlural esta semana'
-                            : '$primeiroNome treinou $count $diaSingularPlural esta semana');
+                            ? 'VOCÊ TREINOU $count $diaSingularPlural ESTA SEMANA'
+                            : '$primeiroNome TREINOU $count $diaSingularPlural ESTA SEMANA');
 
                   return Text(
-                    textoResumo.toUpperCase(),
-                    style: TextStyle(
-                      color: AppColors.labelSecondary.withAlpha(150),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
+                    textoResumo,
+                    style: AppTheme.premiumLabel.copyWith(
+                      color: dias.hasAnyFeito ? AppColors.primary : AppColors.labelSecondary,
+                      fontSize: 9,
                     ),
                   );
                 },
@@ -146,4 +143,9 @@ class RitmoDaSemanaCard extends StatelessWidget {
       ],
     );
   }
+}
+
+// Auxiliar para detectar se houve algum treino
+extension _ListTreinos on List<Map<String, String>> {
+  bool get hasAnyFeito => any((d) => d['status'] == 'feito');
 }

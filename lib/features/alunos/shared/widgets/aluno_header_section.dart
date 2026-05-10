@@ -28,21 +28,30 @@ class AlunoHeaderSection extends StatelessWidget {
         AppAvatar(
           name: alunoNome,
           photoUrl: photoUrl,
-          radius: AvatarTokens.lg,
+          radius: 36,
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 20),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(alunoNome, style: AppTheme.title1),
-              const SizedBox(height: SpacingTokens.titleToSubtitle),
+              Text(
+                alunoNome.toUpperCase(),
+                style: AppTheme.pageTitle.copyWith(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
               Row(
                 children: [
-                  _buildBadge(Icons.calendar_today_rounded, '$idade anos'),
+                  _buildBadge(Icons.calendar_today_rounded, '$idade ANOS'),
                   const SizedBox(width: 8),
-                  _buildBadge(Icons.fitness_center_rounded, '$peso kg'),
+                  _buildBadge(Icons.fitness_center_rounded, '$peso KG'),
                 ],
               ),
               if (actions != null) ...[const SizedBox(height: 12), actions!],
@@ -53,20 +62,26 @@ class AlunoHeaderSection extends StatelessWidget {
     );
   }
 
-
   Widget _buildBadge(IconData icon, String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: AppColors.surfaceDark,
-        borderRadius: PillTokens.radius,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: AppColors.labelSecondary),
+          Icon(icon, size: 10, color: AppColors.labelSecondary),
           const SizedBox(width: 6),
-          Text(label, style: PillTokens.text),
+          Text(
+            label,
+            style: AppTheme.premiumLabel.copyWith(
+              fontSize: 10,
+              color: AppColors.labelPrimary,
+            ),
+          ),
         ],
       ),
     );

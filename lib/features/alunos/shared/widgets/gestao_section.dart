@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/app_ui_utils.dart';
 import '../../personal/pages/personal_feedback_historico_page.dart';
@@ -27,36 +28,40 @@ class GestaoSection extends StatelessWidget {
       children: [
         Align(
           alignment: Alignment.centerLeft,
-          child: Text('Gestão', style: AppTheme.sectionHeader),
+          child: Text('GESTÃO', style: AppTheme.sectionHeader),
         ),
         const SizedBox(height: 8),
         Container(
-          decoration: BoxDecoration(
-            color: AppColors.surfaceDark,
-            borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-          ),
+          decoration: AppTheme.premiumCardDecoration,
           clipBehavior: Clip.antiAlias,
           child: Column(
             children: [
               _buildManagementItem(
                 context,
                 icon: CupertinoIcons.graph_square,
-                title: 'Progressão de Cargas',
-                onTap: () => AppUIUtils.showFutureFeatureWarning(context),
+                title: 'PROGRESSÃO DE CARGAS',
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  AppUIUtils.showFutureFeatureWarning(context);
+                },
                 showBorder: true,
               ),
               _buildManagementItem(
                 context,
                 icon: CupertinoIcons.chart_bar_alt_fill,
-                title: 'Avaliação Física',
-                onTap: () => AppUIUtils.showFutureFeatureWarning(context),
+                title: 'AVALIAÇÃO FÍSICA',
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  AppUIUtils.showFutureFeatureWarning(context);
+                },
                 showBorder: true,
               ),
               _buildManagementItem(
                 context,
                 icon: CupertinoIcons.doc_text,
-                title: 'Histórico de Feedbacks',
+                title: 'HISTÓRICO DE FEEDBACKS',
                 onTap: () {
+                  HapticFeedback.lightImpact();
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -89,17 +94,17 @@ class GestaoSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: SpacingTokens.lg,
-              vertical: 13,
+              vertical: 16,
             ),
             child: Row(
               children: [
-                Icon(icon, color: AppColors.labelTertiary, size: 22),
+                Icon(icon, color: AppColors.labelTertiary, size: 20),
                 const SizedBox(width: SpacingTokens.md),
-                Expanded(child: Text(title, style: AppTheme.bodyText)),
+                Expanded(child: Text(title, style: AppTheme.sectionAction.copyWith(fontSize: 11, color: AppColors.labelPrimary))),
                 Icon(
                   CupertinoIcons.chevron_forward,
-                  color: AppColors.labelQuaternary,
-                  size: 16,
+                  color: AppColors.labelQuaternary.withAlpha(100),
+                  size: 14,
                 ),
               ],
             ),
@@ -107,7 +112,7 @@ class GestaoSection extends StatelessWidget {
           if (showBorder)
             Padding(
               padding: const EdgeInsets.only(left: 52),
-              child: Container(height: 0.5, color: AppColors.separator),
+              child: Container(height: 0.5, color: Colors.white.withAlpha(10)),
             ),
         ],
       ),

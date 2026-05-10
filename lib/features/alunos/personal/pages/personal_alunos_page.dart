@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/personal_service.dart';
 import '../../../../core/widgets/app_swipe_to_delete.dart';
-import '../../../../core/widgets/app_bar_icon_button.dart';
 import '../../shared/widgets/app_avatar.dart';
 import '../../shared/widgets/cadastro_aluno_modal.dart';
 import 'personal_aluno_perfil_page.dart';
@@ -100,7 +100,6 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
 
   Future<void> _updateSummaryCounts() async {
     try {
-      // Tenta buscar as contagens com um timeout generoso, mas sem travar o resto
       final contagens = await _personalService.fetchContagens().timeout(
         const Duration(seconds: 10),
       );
@@ -113,9 +112,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
         });
       }
     } catch (e) {
-      // Se der erro nas contagens (timeout ou falta de índice), apenas logamos.
-      // A lista de alunos abaixo continuará tentando carregar.
-      debugPrint("Aviso: Falha ao carregar contagens (resumo), mas continuando... Erro: $e");
+      debugPrint("Aviso: Falha ao carregar contagens: $e");
     }
   }
 
@@ -153,6 +150,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
   }
 
   Future<void> _deletarAluno(String id) async {
+    HapticFeedback.mediumImpact();
     final bool? confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -160,9 +158,9 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         ),
-        title: const Text(
-          'Remover Aluno',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          'REMOVER ALUNO',
+          style: AppTheme.sectionHeader.copyWith(color: Colors.white, fontSize: 16),
         ),
         content: const Text(
           'Deseja realmente remover este aluno? Todos os dados vinculados serão perdidos.',
@@ -171,22 +169,19 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'CANCELAR',
-              style: TextStyle(
-                color: AppColors.labelSecondary,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTheme.sectionHeader.copyWith(color: AppColors.labelSecondary),
             ),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text(
+            onPressed: () {
+              HapticFeedback.heavyImpact();
+              Navigator.pop(context, true);
+            },
+            child: Text(
               'REMOVER',
-              style: TextStyle(
-                color: Colors.redAccent,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTheme.sectionHeader.copyWith(color: AppColors.systemRed),
             ),
           ),
         ],
@@ -220,6 +215,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
         dataNascimento: dataNascimento,
       );
       if (context.mounted) {
+        HapticFeedback.mediumImpact();
         Navigator.pop(context);
         _fetchInitialData();
       }
@@ -229,6 +225,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
   }
 
   void _exibirModalCadastro() {
+    HapticFeedback.lightImpact();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -239,10 +236,6 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Mapa de seções da interface desta página:
-    // 1) Estrutura superior: AppBar, título e ações de navegação.
-    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
-    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     return Scaffold(
       backgroundColor: AppColors.background,
       body: RefreshIndicator(
@@ -309,49 +302,26 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
       pinned: true,
       expandedHeight: 120,
       backgroundColor: AppColors.background,
-      surfaceTintColor: AppColors.background,
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
-      scrolledUnderElevation: 0.5,
+      scrolledUnderElevation: 0,
       leading: const SizedBox.shrink(),
       leadingWidth: 0,
-      centerTitle: true,
       actions: [
-        AppBarIconButton(
-          icon: CupertinoIcons.add,
-          padding: const EdgeInsets.only(right: 16, top: 4),
+        IconButton(
+          icon: const Icon(CupertinoIcons.add, color: AppColors.primary, size: 24),
           onPressed: _exibirModalCadastro,
+          padding: const EdgeInsets.only(right: 16),
         ),
       ],
-      flexibleSpace: LayoutBuilder(
-        builder: (context, constraints) {
-          final bool isCollapsed =
-              constraints.biggest.height <=
-              (kToolbarHeight + MediaQuery.of(context).padding.top + 10);
-
-          return FlexibleSpaceBar(
-            title: AnimatedOpacity(
-              duration: const Duration(milliseconds: 200),
-              opacity: isCollapsed ? 1.0 : 0.0,
-              child: const Text('Meus Alunos', style: AppTheme.pageTitle),
-            ),
-            centerTitle: true,
-            titlePadding: const EdgeInsets.only(bottom: 14),
-            background: AnimatedOpacity(
-              duration: const Duration(milliseconds: 200),
-              opacity: isCollapsed ? 0.0 : 1.0,
-              child: Container(
-                color: AppColors.background,
-                padding: const EdgeInsets.only(
-                  left: SpacingTokens.screenHorizontalPadding,
-                  right: SpacingTokens.screenHorizontalPadding,
-                  bottom: 20,
-                ),
-                alignment: Alignment.bottomLeft,
-                child: Text('Meus Alunos', style: AppTheme.bigTitle),
-              ),
-            ),
-          );
-        },
+      flexibleSpace: FlexibleSpaceBar(
+        stretchModes: const [StretchMode.zoomBackground, StretchMode.fadeTitle],
+        background: Container(
+          decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
+        ),
+        titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
+        centerTitle: false,
+        title: Text('Meus Alunos', style: AppTheme.pageTitle),
       ),
     );
   }
@@ -361,11 +331,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
       child: Container(
         height: 44,
-        decoration: BoxDecoration(
-          color: AppColors.surfaceDark,
-          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-          border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
-        ),
+        decoration: AppTheme.premiumCardDecoration,
         child: TextField(
           controller: _searchController,
           onChanged: (val) {
@@ -425,6 +391,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
         },
         onValueChanged: (value) {
           if (value != null) {
+            HapticFeedback.lightImpact();
             setState(() => _statusFilter = value);
             _fetchInitialData();
           }
@@ -484,6 +451,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
             photoUrl: aluno['photo_url'],
             ultimoTreino: aluno['ultimo_treino'],
             onTap: () {
+              HapticFeedback.lightImpact();
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -532,7 +500,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
     }
 
     return Container(
-      decoration: AppTheme.cardDecoration,
+      decoration: AppTheme.premiumCardDecoration,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -615,13 +583,9 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
             color: AppColors.labelSecondary.withAlpha(30),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Nenhum aluno ainda',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-            ),
+          Text(
+            'NENHUM ALUNO AINDA',
+            style: AppTheme.sectionHeader.copyWith(color: Colors.white, fontSize: 16),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -647,12 +611,9 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Nenhum resultado para os filtros aplicados',
+              'NENHUM RESULTADO PARA OS FILTROS APLICADOS',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.labelSecondary,
-                fontSize: 14,
-              ),
+              style: AppTheme.sectionHeader.copyWith(fontSize: 10),
             ),
           ],
         ),

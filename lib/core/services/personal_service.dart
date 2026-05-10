@@ -223,6 +223,40 @@ class PersonalService {
     );
   }
 
+  /// Cria uma rotina vazia para um aluno
+  Future<String?> criarRotinaVazia({
+    required String alunoId,
+    required String alunoNome,
+  }) async {
+    final personalId = _currentPersonalId;
+    if (personalId == null) throw Exception('Personal não autenticado');
+
+    try {
+      final res = await _supabase.from('rotinas').insert({
+        'aluno_id': alunoId,
+        'personal_id': personalId,
+        'nome': 'Nova Planilha',
+        'objetivo': 'Objetivo do treino',
+        'ativa': true,
+        'tipo_vencimento': 'data',
+        'data_criacao': DateTime.now().toIso8601String(),
+        'data_vencimento': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+      }).select('id').single();
+
+      // Desativa outras rotinas do aluno
+      await _supabase
+          .from('rotinas')
+          .update({'ativa': false})
+          .eq('aluno_id', alunoId)
+          .eq('ativa', true)
+          .neq('id', res['id']);
+
+      return res['id'].toString();
+    } catch (e) {
+      throw Exception('Erro ao criar rotina vazia: $e');
+    }
+  }
+
   /// Busca os modelos de rotinas (biblioteca do personal)
   Stream<List<Map<String, dynamic>>> getRotinasTemplates() {
     final personalId = _currentPersonalId;

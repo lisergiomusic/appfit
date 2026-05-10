@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/widgets/app_section_link_button.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -83,11 +84,12 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
       children: [
         Row(
           children: [
-            Text('Planilha atual', style: AppTheme.sectionHeader),
+            Text('PLANILHA ATUAL', style: AppTheme.sectionHeader),
             const Spacer(),
             AppSectionLinkButton(
               label: 'Ver todas',
               onPressed: () {
+                HapticFeedback.lightImpact();
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -106,9 +108,10 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
         ),
         const SizedBox(height: 8),
         Container(
-          decoration: AppTheme.cardDecoration,
+          decoration: AppTheme.premiumCardDecoration,
           child: InkWell(
             onTap: () {
+              HapticFeedback.lightImpact();
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -155,21 +158,24 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          rotina['nome'] ?? 'Ficha de Treino',
-                          style: CardTokens.cardTitle,
+                          (rotina['nome'] ?? 'Ficha de Treino').toString().toUpperCase(),
+                          style: AppTheme.cardTitle.copyWith(fontSize: 14, fontWeight: FontWeight.w900),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        const SizedBox(height: 2),
                         Text(
                           objetivo,
                           style: AppTheme.caption,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        const SizedBox(height: 4),
                         Text(
-                          legendaVencimento,
-                          style: AppTheme.caption2.copyWith(
+                          legendaVencimento.toUpperCase(),
+                          style: AppTheme.premiumLabel.copyWith(
                             color: AppColors.primary,
+                            fontSize: 9,
                           ),
                         ),
                       ],
@@ -185,10 +191,13 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
                     color: AppColors.surfaceDark,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(
-                        AppTheme.radiusLarge,
+                        AppTheme.radiusXL,
                       ),
+                      side: BorderSide(color: Colors.white.withAlpha(10), width: 0.5),
                     ),
+                    onOpened: () => HapticFeedback.lightImpact(),
                     onSelected: (value) {
+                      HapticFeedback.lightImpact();
                       if (value == 'editar') {
                         Navigator.push(
                           context,
@@ -205,14 +214,14 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
                         _confirmarRemoverRotina(context, rotinaId);
                       }
                     },
-                    itemBuilder: (context) => const [
+                    itemBuilder: (context) => [
                       PopupMenuItem<String>(
                         value: 'editar',
                         child: Row(
                           children: [
-                            Icon(Icons.edit_rounded, size: 18),
-                            SizedBox(width: 10),
-                            Text('Editar'),
+                            const Icon(Icons.edit_rounded, size: 18),
+                            const SizedBox(width: 10),
+                            Text('EDITAR', style: AppTheme.sectionHeader.copyWith(fontSize: 10)),
                           ],
                         ),
                       ),
@@ -220,15 +229,15 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
                         value: 'remover',
                         child: Row(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.delete_outline_rounded,
                               size: 18,
                               color: Colors.redAccent,
                             ),
-                            SizedBox(width: 10),
+                            const SizedBox(width: 10),
                             Text(
-                              'Remover',
-                              style: TextStyle(color: Colors.redAccent),
+                              'REMOVER',
+                              style: AppTheme.sectionHeader.copyWith(color: Colors.redAccent, fontSize: 10),
                             ),
                           ],
                         ),
@@ -272,7 +281,10 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
             ),
           ),
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
+            onPressed: () {
+              HapticFeedback.heavyImpact();
+              Navigator.of(ctx).pop(true);
+            },
             child: const Text(
               'Remover',
               style: TextStyle(
@@ -301,19 +313,19 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Planilha atual', style: AppTheme.sectionHeader),
+        Text('PLANILHA ATUAL', style: AppTheme.sectionHeader),
         const SizedBox(height: SpacingTokens.labelToField),
         Container(
           width: double.infinity,
-          decoration: BoxDecoration(
-            color: AppColors.surfaceDark,
-            borderRadius: CardTokens.cardRadius,
-          ),
+          decoration: AppTheme.premiumCardDecoration,
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: widget.onPrescreverTreino,
-              borderRadius: BorderRadius.circular(24),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                widget.onPrescreverTreino();
+              },
+              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   vertical: 32,
@@ -334,14 +346,9 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Prescrever novo treino',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        letterSpacing: -0.2,
-                      ),
+                    Text(
+                      'PRESCREVER NOVO TREINO',
+                      style: AppTheme.sectionHeader.copyWith(fontSize: 14, color: Colors.white),
                     ),
                     const SizedBox(height: 4),
                     Text(
