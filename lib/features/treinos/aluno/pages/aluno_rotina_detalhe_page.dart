@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/appfit_sliver_app_bar.dart';
 import '../../shared/models/rotina_model.dart';
 import '../../shared/widgets/rotina_sessao_card.dart';
 import 'aluno_sessao_detalhe_page.dart';

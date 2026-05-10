@@ -7,7 +7,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/services/personal_service.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/app_bar_divider.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../../../core/widgets/app_primary_button.dart';
 import '../../../../core/widgets/app_tappable.dart';
@@ -44,8 +43,6 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
   late Stream<AlunoPerfilData> _perfilStream;
   late Stream<dynamic> _logsSemanaStream;
 
-  bool _isManualLoading = false;
-
   @override
   void initState() {
     super.initState();
@@ -59,16 +56,6 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
       _perfilStream = _alunoService.getAlunoPerfilCompletoStream(widget.alunoId);
       _logsSemanaStream = _alunoService.getLogsDaSemanaStream(widget.alunoId);
     });
-  }
-
-  /// Força o recarregamento dos dados (Trigger manual)
-  Future<void> _refresh() async {
-    HapticFeedback.mediumImpact();
-    setState(() => _isManualLoading = true);
-    _carregarDados();
-    // Pequeno delay para garantir que o spinner seja percebido e o banco processado
-    await Future.delayed(const Duration(milliseconds: 500));
-    if (mounted) setState(() => _isManualLoading = false);
   }
 
   Future<void> _abrirWhatsApp(BuildContext context, String? telefone) async {
@@ -105,41 +92,44 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        centerTitle: true,
+        leading: const AppNavBackButton(),
+        title: const Text('Perfil do Aluno', style: AppTheme.pageTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(CupertinoIcons.settings,
+                color: AppColors.labelSecondary, size: 22),
+            onPressed: () => _irParaGerenciarAluno(context),
+            padding: const EdgeInsets.only(right: 16),
+          ),
+        ],
+      ),
+      extendBodyBehindAppBar: true,
       body: Stack(
         children: [
+          // Background Gradient
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 200, // Altura fixa para o gradiente no topo
+            child: Container(
+              decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
+            ),
+          ),
           StreamBuilder<AlunoPerfilData>(
             stream: _perfilStream,
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting && !_isManualLoading) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
                 return _buildShimmerLoading();
               }
 
               if (snapshot.hasError) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.error_outline,
-                            color: AppColors.systemRed, size: 48),
-                        const SizedBox(height: 16),
-                        const Text(
-                          "Erro ao carregar perfil.",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 24),
-                        AppPrimaryButton(
-                          label: "Tentar Novamente",
-                          onPressed: _carregarDados,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
+                return _buildErrorState();
               }
 
               final data = snapshot.data;
@@ -162,114 +152,107 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                   ? _calcularIdade(dataNascimento).toString()
                   : '--';
 
-              return RefreshIndicator(
-                onRefresh: _refresh,
-                color: AppColors.primary,
-                backgroundColor: AppColors.surfaceDark,
-                edgeOffset: 120,
-                child: CustomScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(
-                    parent: BouncingScrollPhysics(),
-                  ),
-                  slivers: [
-                    _buildSliverAppBar(nomeExibicao),
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: SpacingTokens.screenHorizontalPadding,
-                        vertical: SpacingTokens.screenTopPadding,
-                      ),
-                      sliver: SliverList(
-                        delegate: SliverChildListDelegate([
-                          AlunoHeaderSection(
-                            alunoId: widget.alunoId,
-                            alunoNome: nomeExibicao,
-                            photoUrl: widget.photoUrl ?? photoUrl,
-                            idade: idade,
-                            peso: peso.toString(),
-                          ),
-                          const SizedBox(height: 24),
-                          _buildActions(context, telefone),
-                          const SizedBox(height: SpacingTokens.sectionGap),
-                          StreamBuilder<dynamic>(
-                            stream: _logsSemanaStream,
-                            builder: (context, logsSnapshot) {
-                              List<DateTime>? treinados;
-                              if (logsSnapshot.hasData) {
-                                final list = logsSnapshot.data as List;
-                                treinados = list
-                                    .map((d) => DateTime.tryParse(d['dataHora'].toString()))
-                                    .whereType<DateTime>()
-                                    .toList();
-                              }
-                              return RitmoDaSemanaCard(
-                                alunoNome: nomeExibicao,
-                                diasTreinados: treinados,
-                              );
-                            },
-                          ),
-                          const SizedBox(height: SpacingTokens.xxl),
-                          FichaAtivaHeroCard(
-                            alunoId: widget.alunoId,
-                            alunoNome: nomeExibicao,
-                            photoUrl: widget.photoUrl ?? photoUrl,
-                            peso: peso.toString(),
-                            idade: idade,
-                            rotinaAtiva: data.rotinaAtiva,
-                            rotinaId: data.rotinaId,
-                            onPrescreverTreino: () async {
-                              HapticFeedback.lightImpact();
-                              await _exibirOpcoesVincularTreino(context);
-                              _refresh();
-                            },
-                          ),
-                          const SizedBox(height: SpacingTokens.xxl),
-                          GestaoSection(
-                            alunoId: widget.alunoId,
-                            alunoNome: nomeExibicao,
-                            photoUrl: photoUrl,
-                            peso: peso.toString(),
-                            idade: idade,
-                          ),
-                          const SizedBox(height: 64),
-                        ]),
-                      ),
+              return SafeArea(
+                bottom: false,
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: SpacingTokens.screenHorizontalPadding,
+                      right: SpacingTokens.screenHorizontalPadding,
+                      top: SpacingTokens.screenTopPadding,
+                      bottom: 64,
                     ),
-                  ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AlunoHeaderSection(
+                          alunoId: widget.alunoId,
+                          alunoNome: nomeExibicao,
+                          photoUrl: widget.photoUrl ?? photoUrl,
+                          idade: idade,
+                          peso: peso.toString(),
+                        ),
+                        const SizedBox(height: 24),
+                        _buildActions(context, telefone),
+                        const SizedBox(height: SpacingTokens.sectionGap),
+                        StreamBuilder<dynamic>(
+                          stream: _logsSemanaStream,
+                          builder: (context, logsSnapshot) {
+                            List<DateTime>? treinados;
+                            if (logsSnapshot.hasData) {
+                              final list = logsSnapshot.data as List;
+                              treinados = list
+                                  .map((d) => DateTime.tryParse(d['dataHora'].toString()))
+                                  .whereType<DateTime>()
+                                  .toList();
+                            }
+                            return RitmoDaSemanaCard(
+                              alunoNome: nomeExibicao,
+                              diasTreinados: treinados,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: SpacingTokens.xxl),
+                        FichaAtivaHeroCard(
+                          alunoId: widget.alunoId,
+                          alunoNome: nomeExibicao,
+                          photoUrl: widget.photoUrl ?? photoUrl,
+                          peso: peso.toString(),
+                          idade: idade,
+                          rotinaAtiva: data.rotinaAtiva,
+                          rotinaId: data.rotinaId,
+                          onPrescreverTreino: () async {
+                            HapticFeedback.lightImpact();
+                            await _exibirOpcoesVincularTreino(context);
+                            _carregarDados();
+                          },
+                        ),
+                        const SizedBox(height: SpacingTokens.xxl),
+                        GestaoSection(
+                          alunoId: widget.alunoId,
+                          alunoNome: nomeExibicao,
+                          photoUrl: photoUrl,
+                          peso: peso.toString(),
+                          idade: idade,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               );
             },
           ),
-          if (_isManualLoading)
-            Container(
-              color: Colors.black.withAlpha(150),
-              child: const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              ),
-            ),
         ],
       ),
     );
   }
 
-  Widget _buildSliverAppBar(String nome) {
-    return SliverAppBar(
-      pinned: true,
-      backgroundColor: AppColors.background,
-      surfaceTintColor: Colors.transparent,
-      elevation: 0,
-      scrolledUnderElevation: 0,
-      centerTitle: true,
-      leading: const AppNavBackButton(),
-      title: const Text('Perfil do Aluno', style: AppTheme.pageTitle),
-      actions: [
-        IconButton(
-          icon: const Icon(CupertinoIcons.settings,
-              color: AppColors.labelSecondary, size: 22),
-          onPressed: () => _irParaGerenciarAluno(context),
-          padding: const EdgeInsets.only(right: 16),
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline,
+                color: AppColors.systemRed, size: 48),
+            const SizedBox(height: 16),
+            const Text(
+              "Erro ao carregar perfil.",
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 24),
+            AppPrimaryButton(
+              label: "Tentar Novamente",
+              onPressed: _carregarDados,
+            ),
+          ],
         ),
-      ],
-      bottom: const AppBarDivider(),
+      ),
     );
   }
 
@@ -322,7 +305,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                     idade: '--',
                   ),
                 ),
-              ).then((_) => _refresh());
+              ).then((_) => _carregarDados());
             },
             child: const Text('Usar um Template'),
           ),
@@ -363,7 +346,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
               rotinaData: const {'nome': 'Nova Planilha', 'objetivo': ''},
             ),
           ),
-        ).then((_) => _refresh());
+        ).then((_) => _carregarDados());
       }
     } catch (e) {
       if (context.mounted) {

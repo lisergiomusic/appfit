@@ -8,7 +8,7 @@ import '../../../core/services/workout_draft_service.dart';
 import '../../../core/utils/app_ui_utils.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_section_link_button.dart';
-import '../../treinos/aluno/pages/aluno_rotina_view_page.dart';
+import '../../treinos/aluno/pages/aluno_rotina_detalhe_page.dart';
 import '../../treinos/shared/models/rotina_model.dart';
 import '../../treinos/aluno/pages/aluno_executar_treino_page.dart';
 import '../../alunos/shared/widgets/ritmo_da_semana_card.dart';
