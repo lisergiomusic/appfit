@@ -193,12 +193,12 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                             stream: _logsSemanaStream,
                             builder: (context, logsSnapshot) {
                               List<DateTime>? treinados;
-                              if (logsSnapshot.hasData && logsSnapshot.data is List) {
+                              if (logsSnapshot.hasData) {
                                 final list = logsSnapshot.data as List;
-                                treinados = list.map((d) {
-                                  final tsRaw = d['dataHora'];
-                                  return DateTime.tryParse(tsRaw.toString()) ?? DateTime.now();
-                                }).toList();
+                                treinados = list
+                                    .map((d) => DateTime.tryParse(d['dataHora'].toString()))
+                                    .whereType<DateTime>()
+                                    .toList();
                               }
                               return RitmoDaSemanaCard(
                                 alunoNome: nomeExibicao,

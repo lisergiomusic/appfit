@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/aluno_service.dart';
 import '../../../core/services/personal_service.dart';
@@ -31,11 +32,13 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
   final UserService _userService = UserService();
   final PersonalService _personalService = PersonalService();
   Future<ContagemAlunos>? _contagensFuture;
+  Future<Map<String, dynamic>>? _profileFuture;
 
   @override
   void initState() {
     super.initState();
     _refreshContagens();
+    _profileFuture = _userService.getProfile(_authService.currentUser?.id ?? '');
   }
 
   void _refreshContagens() {
@@ -49,13 +52,14 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: FutureBuilder<Map<String, dynamic>>(
-        future: _userService.getProfile(_authService.currentUser?.id ?? ''),
-        builder: (context, snapshot) {
+        future: _profileFuture,
+        builder: (context, profileSnapshot) {
+          final bool isProfileLoading = profileSnapshot.connectionState == ConnectionState.waiting;
           String nome = "Personal";
           String? photoUrl;
 
-          if (snapshot.hasData && snapshot.data != null) {
-            final data = snapshot.data!;
+          if (profileSnapshot.hasData && profileSnapshot.data != null) {
+            final data = profileSnapshot.data!;
             nome = data['nome']?.toString().split(' ')[0] ?? "Personal";
             photoUrl = (data['photo_url'] ?? data['photoUrl'])?.toString();
           }
@@ -63,7 +67,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
           return CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              _buildSliverAppBar(nome, photoUrl),
+              _buildSliverAppBar(nome, photoUrl, isProfileLoading),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
@@ -77,6 +81,10 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                             child: FutureBuilder<ContagemAlunos>(
                               future: _contagensFuture,
                               builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return _buildStatShimmer('Alunos ativos');
+                                }
+
                                 String trendText = 'Calculando...';
                                 IconData trendIcon = Icons.pie_chart_rounded;
                                 Color trendColor = AppColors.primary;
@@ -95,7 +103,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
 
                                 final ativosCount = snapshot.hasData
                                     ? snapshot.data!.ativos.toString()
-                                    : snapshot.hasError ? '--' : '...';
+                                    : snapshot.hasError ? '--' : '0';
 
                                 return _buildStatCard(
                                   label: 'Alunos ativos',
@@ -113,9 +121,13 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                             child: FutureBuilder<ContagemAlunos>(
                               future: _contagensFuture,
                               builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return _buildStatShimmer('Atenção necessária');
+                                }
+
                                 final count = snapshot.hasData
                                     ? snapshot.data!.risco.toString()
-                                    : snapshot.hasError ? '--' : '...';
+                                    : snapshot.hasError ? '--' : '0';
 
                                 return _buildStatCard(
                                   label: 'Atenção necessária',
@@ -163,7 +175,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
     );
   }
 
-  Widget _buildSliverAppBar(String nome, String? photoUrl) {
+  Widget _buildSliverAppBar(String nome, String? photoUrl, bool isLoading) {
     return SliverAppBar(
       expandedHeight: 120,
       collapsedHeight: 70,
@@ -179,21 +191,46 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
         ),
         titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
         centerTitle: false,
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AppAvatar(name: nome, photoUrl: photoUrl, radius: 18, showBorder: false),
-            const SizedBox(width: 12),
-            Column(
+        title: isLoading 
+          ? Shimmer.fromColors(
+              baseColor: Colors.white.withAlpha(20),
+              highlightColor: Colors.white.withAlpha(40),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(width: 40, height: 8, color: Colors.white),
+                      const SizedBox(height: 4),
+                      Container(width: 80, height: 14, color: Colors.white),
+                    ],
+                  ),
+                ],
+              ),
+            )
+          : Row(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${_getSaudacao()},', style: AppTheme.premiumLabel.copyWith(fontSize: 8)),
-                Text(nome, style: AppTheme.pageTitle.copyWith(fontSize: 18)),
+                AppAvatar(name: nome, photoUrl: photoUrl, radius: 18, showBorder: false),
+                const SizedBox(width: 12),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('${_getSaudacao()},', style: AppTheme.premiumLabel.copyWith(fontSize: 8)),
+                    Text(nome, style: AppTheme.pageTitle.copyWith(fontSize: 18)),
+                  ],
+                ),
               ],
             ),
-          ],
-        ),
       ),
       actions: [
         IconButton(
@@ -202,6 +239,29 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
         ),
         const SizedBox(width: 8),
       ],
+    );
+  }
+
+  Widget _buildStatShimmer(String label) {
+    return Shimmer.fromColors(
+      baseColor: Colors.white.withAlpha(20),
+      highlightColor: Colors.white.withAlpha(40),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: AppTheme.premiumCardDecoration.copyWith(
+          color: Colors.white.withAlpha(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: AppTheme.formLabel.copyWith(fontSize: 12)),
+            const SizedBox(height: 8),
+            Container(width: 40, height: 24, color: Colors.white),
+            const SizedBox(height: 8),
+            Container(width: 80, height: 12, color: Colors.white),
+          ],
+        ),
+      ),
     );
   }
 

@@ -35,10 +35,10 @@ class AppTheme {
   static const Radius pill = Radius.circular(9999);
 
   static const TextStyle bigTitle = TextStyle(
-    fontSize: 34,
-    fontWeight: FontWeight.w800,
+    fontSize: 28,
+    fontWeight: FontWeight.w900,
     letterSpacing: -1.0,
-    height: 1.1,
+    height: 1.0,
     color: AppColors.labelPrimary,
   );
 
@@ -88,9 +88,9 @@ class AppTheme {
   );
 
   static const TextStyle pageTitle = TextStyle(
-    fontSize: 17,
-    fontWeight: FontWeight.w600,
-    letterSpacing: -0.41,
+    fontSize: 15,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.5,
     color: AppColors.labelPrimary,
   );
 
@@ -343,9 +343,9 @@ class AppBarTokens {
     color: AppColors.primary,
   );
   static const TextStyle pageTitle = TextStyle(
-    fontSize: 17,
-    fontWeight: FontWeight.w600,
-    letterSpacing: -0.41,
+    fontSize: 15,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.5,
     color: AppColors.labelPrimary,
   );
 }

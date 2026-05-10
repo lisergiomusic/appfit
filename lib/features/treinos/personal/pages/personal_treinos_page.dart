@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/personal_service.dart';
 import '../../../../core/services/rotina_service.dart';
 import '../../../../core/widgets/app_swipe_to_delete.dart';
-import '../../../../core/widgets/app_bar_icon_button.dart';
+import '../../../../core/widgets/app_premium_fab.dart';
 import 'personal_rotina_detalhe_page.dart';
 
 class PersonalTreinosPage extends StatefulWidget {
@@ -71,6 +72,7 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
   }
 
   Future<void> _confirmarExcluir(String id) async {
+    HapticFeedback.mediumImpact();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -78,9 +80,9 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         ),
-        title: const Text(
-          'Excluir template?',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          'EXCLUIR TEMPLATE?',
+          style: AppTheme.sectionHeader.copyWith(color: Colors.white, fontSize: 16),
         ),
         content: const Text(
           'Isso removerá a ficha da sua biblioteca permanentemente.',
@@ -89,19 +91,19 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text(
-              'Cancelar',
-              style: TextStyle(color: AppColors.labelSecondary),
+            child: Text(
+              'CANCELAR',
+              style: AppTheme.sectionHeader.copyWith(color: AppColors.labelSecondary),
             ),
           ),
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text(
-              'Excluir',
-              style: TextStyle(
-                color: Colors.redAccent,
-                fontWeight: FontWeight.bold,
-              ),
+            onPressed: () {
+              HapticFeedback.heavyImpact();
+              Navigator.pop(ctx, true);
+            },
+            child: Text(
+              'EXCLUIR',
+              style: AppTheme.sectionHeader.copyWith(color: AppColors.systemRed),
             ),
           ),
         ],
@@ -121,24 +123,51 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
   }
 
   Future<void> _renomearTreino(String id, String nomeAtual) async {
+    HapticFeedback.lightImpact();
     final controller = TextEditingController(text: nomeAtual);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Renomear treino'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(hintText: 'Nome do treino'),
+        backgroundColor: AppColors.surfaceDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        ),
+        title: Text(
+          'RENOMEAR TREINO',
+          style: AppTheme.sectionHeader.copyWith(color: Colors.white, fontSize: 16),
+        ),
+        content: Container(
+          decoration: AppTheme.premiumCardDecoration,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: TextField(
+            controller: controller,
+            autofocus: true,
+            style: AppTheme.inputText,
+            cursorColor: AppColors.primary,
+            decoration: InputDecoration(
+              hintText: 'Nome do treino',
+              hintStyle: AppTheme.inputPlaceHolder,
+              border: InputBorder.none,
+            ),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(
+              'CANCELAR',
+              style: AppTheme.sectionHeader.copyWith(color: AppColors.labelSecondary),
+            ),
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Salvar'),
+          TextButton(
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              Navigator.pop(ctx, true);
+            },
+            child: Text(
+              'SALVAR',
+              style: AppTheme.sectionHeader.copyWith(color: AppColors.primary),
+            ),
           ),
         ],
       ),
@@ -173,6 +202,15 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: isSelecting
+          ? null
+          : AppPremiumFAB(
+              label: 'NOVO MODELO',
+              icon: CupertinoIcons.add,
+              onPressed: _abrirCriarRotina,
+              bottomPadding: 80,
+            ),
       body: CustomScrollView(
         controller: _scrollController,
         physics: const BouncingScrollPhysics(
@@ -248,15 +286,15 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
   }
 
   Widget _buildSliverAppBar(bool isSelecting) {
-    final String titleStr = isSelecting ? 'Templates' : 'Biblioteca de Rotinas';
+    final String titleStr = isSelecting ? 'Biblioteca' : 'Biblioteca de treinos';
 
     return SliverAppBar(
       pinned: true,
-      expandedHeight: 120,
+      expandedHeight: 110,
       backgroundColor: AppColors.background,
-      surfaceTintColor: AppColors.background,
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
-      scrolledUnderElevation: 0.5,
+      scrolledUnderElevation: 0,
       leading: widget.alunoId != null
           ? IconButton(
               icon: const Icon(
@@ -264,46 +302,47 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
                 color: AppColors.primary,
                 size: 20,
               ),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                Navigator.pop(context);
+              },
             )
           : const SizedBox.shrink(),
       leadingWidth: widget.alunoId != null ? 56 : 0,
-      centerTitle: true,
-      actions: [
-        if (!isSelecting)
-          AppBarIconButton(
-            icon: CupertinoIcons.add,
-            size: 26,
-            onPressed: _abrirCriarRotina,
-          ),
-      ],
+      actions: const [],
       flexibleSpace: LayoutBuilder(
         builder: (context, constraints) {
-          final bool isCollapsed =
-              constraints.biggest.height <=
-              (kToolbarHeight + MediaQuery.of(context).padding.top + 10);
-
+          final double topPadding = MediaQuery.of(context).padding.top;
+          final double expandedHeight = 110.0 - kToolbarHeight - topPadding;
+          final double currentHeight = constraints.maxHeight - kToolbarHeight - topPadding;
+          final double percentage = (currentHeight / expandedHeight).clamp(0.0, 1.0);
+          
           return FlexibleSpaceBar(
-            title: AnimatedOpacity(
-              duration: const Duration(milliseconds: 200),
-              opacity: isCollapsed ? 1.0 : 0.0,
-              child: Text(titleStr, style: AppTheme.pageTitle),
+            stretchModes: const [StretchMode.zoomBackground],
+            background: Container(
+              decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: 20,
+                    bottom: 16,
+                    child: Opacity(
+                      opacity: percentage.clamp(0.0, 1.0),
+                      child: Text(
+                        titleStr, 
+                        style: AppTheme.bigTitle,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             centerTitle: true,
-            titlePadding: const EdgeInsets.only(bottom: 14),
-            background: AnimatedOpacity(
-              duration: const Duration(milliseconds: 200),
-              opacity: isCollapsed ? 0.0 : 1.0,
-              child: Container(
-                color: AppColors.background,
-                padding: const EdgeInsets.fromLTRB(
-                  SpacingTokens.screenHorizontalPadding,
-                  SpacingTokens.screenTopPadding,
-                  SpacingTokens.screenHorizontalPadding,
-                  20,
-                ),
-                alignment: Alignment.bottomLeft,
-                child: Text(titleStr, style: AppTheme.bigTitle),
+            title: Opacity(
+              opacity: (1.0 - percentage - 0.7).clamp(0.0, 1.0) * 3.3,
+              child: Text(
+                titleStr,
+                style: AppTheme.pageTitle,
               ),
             ),
           );
@@ -314,38 +353,22 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        SpacingTokens.screenHorizontalPadding,
-        0,
-        SpacingTokens.screenHorizontalPadding,
-        SpacingTokens.sectionGap,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
       child: Container(
-        height: 36,
-        decoration: BoxDecoration(
-          color: AppColors.surfaceDark,
-          borderRadius: BorderRadius.circular(10),
-        ),
+        height: 48,
+        decoration: AppTheme.premiumCardDecoration,
         child: TextField(
           controller: _searchController,
-          onChanged: (val) => setState(() => _searchQuery = val),
-          style: const TextStyle(
-            color: AppColors.labelPrimary,
-            fontSize: 16,
-            letterSpacing: -0.41,
-            fontWeight: FontWeight.w400,
-          ),
+          onChanged: (val) {
+            setState(() => _searchQuery = val);
+          },
+          style: AppTheme.inputText,
           cursorColor: AppColors.primary,
           textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
             isDense: true,
-            hintText: 'Buscar templates...',
-            hintStyle: TextStyle(
-              color: AppColors.labelTertiary,
-              fontSize: 17,
-              letterSpacing: -0.41,
-              fontWeight: FontWeight.w400,
-            ),
+            hintText: 'Buscar modelos...',
+            hintStyle: AppTheme.inputPlaceHolder,
             prefixIcon: Icon(
               Icons.search_rounded,
               color: AppColors.labelSecondary.withAlpha(120),
@@ -359,6 +382,7 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
                       color: AppColors.labelSecondary,
                     ),
                     onPressed: () {
+                      HapticFeedback.lightImpact();
                       _searchController.clear();
                       setState(() => _searchQuery = "");
                     },
@@ -368,7 +392,7 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
             filled: false,
-            contentPadding: EdgeInsets.zero,
+            contentPadding: const EdgeInsets.symmetric(vertical: 11),
           ),
         ),
       ),
@@ -382,9 +406,9 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
     bool isSelecting,
   ) {
     return Container(
-      margin: const EdgeInsets.only(bottom: SpacingTokens.listItemGap),
+      margin: const EdgeInsets.only(bottom: SpacingTokens.sm),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         child: AppSwipeToDelete(
           dismissibleKey: Key(id),
           direction: isSelecting
@@ -392,6 +416,7 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
               : DismissDirection.endToStart,
           label: 'Excluir',
           confirmDismiss: (direction) async {
+            HapticFeedback.mediumImpact();
             return await showDialog(
               context: context,
               builder: (BuildContext context) {
@@ -400,33 +425,30 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                   ),
-                  title: const Text(
-                    'Excluir template?',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  title: Text(
+                    'EXCLUIR MODELO?',
+                    style: AppTheme.sectionHeader.copyWith(color: Colors.white, fontSize: 16),
                   ),
                   content: const Text(
-                    'Isso removerá a ficha da sua biblioteca permanentemente.',
+                    'Isso removerá este modelo da sua biblioteca permanentemente.',
                     style: TextStyle(color: AppColors.labelSecondary),
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text(
-                        'Cancelar',
-                        style: TextStyle(color: AppColors.labelSecondary),
+                      child: Text(
+                        'CANCELAR',
+                        style: AppTheme.sectionHeader.copyWith(color: AppColors.labelSecondary),
                       ),
                     ),
                     TextButton(
-                      onPressed: () => Navigator.of(context).pop(true),
-                      child: const Text(
-                        'Excluir',
-                        style: TextStyle(
-                          color: Colors.redAccent,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      onPressed: () {
+                        HapticFeedback.heavyImpact();
+                        Navigator.of(context).pop(true);
+                      },
+                      child: Text(
+                        'EXCLUIR',
+                        style: AppTheme.sectionHeader.copyWith(color: AppColors.systemRed),
                       ),
                     ),
                   ],
@@ -436,140 +458,164 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
           },
           onDismissed: (direction) => _deletarTreino(id),
           child: Container(
-            decoration: AppTheme.cardDecoration,
-            child: Material(
-              color: Colors.transparent,
-              elevation: 0,
-              child: InkWell(
-                borderRadius: CardTokens.cardRadius,
-                onTap: () {
-                  if (isSelecting) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PersonalRotinaDetalhePage(
-                          rotinaData: rotina,
-                          alunoId: widget.alunoId,
-                          alunoNome: widget.alunoNome,
-                          rotinaService: _rotinaService,
+            decoration: AppTheme.premiumCardDecoration,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                if (isSelecting) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PersonalRotinaDetalhePage(
+                        rotinaData: rotina,
+                        alunoId: widget.alunoId,
+                        alunoNome: widget.alunoNome,
+                        rotinaService: _rotinaService,
+                      ),
+                    ),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PersonalRotinaDetalhePage(
+                        rotinaData: rotina,
+                        rotinaId: id,
+                        rotinaService: _rotinaService,
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: Padding(
+                padding: CardTokens.padding,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withAlpha(40),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSelecting ? AppColors.iosBlue : AppColors.primary,
+                          width: 1,
                         ),
                       ),
-                    );
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PersonalRotinaDetalhePage(
-                          rotinaData: rotina,
-                          rotinaId: id,
-                          rotinaService: _rotinaService,
-                        ),
+                      child: Icon(
+                        isSelecting ? Icons.add_task : Icons.fitness_center,
+                        color: isSelecting
+                            ? AppColors.iosBlue
+                            : AppColors.primary,
+                        size: 18,
                       ),
-                    );
-                  }
-                },
-                child: Padding(
-                  padding: CardTokens.padding,
-                  child: Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: Colors.black.withAlpha(40),
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusSM,
-                            ),
-                          ),
-                          child: Icon(
-                            isSelecting ? Icons.add_task : Icons.fitness_center,
-                            color: isSelecting
-                                ? AppColors.iosBlue
-                                : AppColors.primary,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              rotina['nome'] ?? 'Sem título',
-                              style: AppTheme.cardTitle,
-                            ),
-                            const SizedBox(height: SpacingTokens.xs),
-                            Text(
-                              rotina['objetivo'] ?? '',
-                              style: AppTheme.cardSubtitle,
-                            ),
-                          ],
-                        ),
-                      ),
-                      PopupMenuButton<String>(
-                        icon: Icon(
-                          Icons.more_vert,
-                          color: AppColors.labelSecondary,
-                          size: 22,
-                        ),
-                        padding: EdgeInsets.zero,
-                        color: AppColors.surfaceDark,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppTheme.radiusMD,
-                          ),
-                        ),
-                        onSelected: (value) {
-                          if (value == 'editar') {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => PersonalRotinaDetalhePage(
-                                  rotinaData: rotina,
-                                  rotinaId: isSelecting ? null : id,
-                                  alunoId: isSelecting ? widget.alunoId : null,
-                                  alunoNome: isSelecting
-                                      ? widget.alunoNome
-                                      : null,
-                                  rotinaService: _rotinaService,
-                                ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                (rotina['nome'] ?? 'Sem título').toString().toUpperCase(),
+                                style: AppTheme.cardTitle,
                               ),
-                            );
-                          } else if (value == 'renomear') {
-                            _renomearTreino(id, rotina['nome'] ?? '');
-                          } else if (value == 'excluir') {
-                            _confirmarExcluir(id);
-                          }
-                        },
-                        itemBuilder: (_) => [
-                          const PopupMenuItem(
-                            value: 'editar',
-                            child: Text(
-                              'Editar',
-                              style: TextStyle(color: AppColors.labelPrimary),
-                            ),
+                              if (qtdSessoes > 0) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withAlpha(40),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    '$qtdSessoes SESSÕES',
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ]
+                            ],
                           ),
-                          const PopupMenuItem(
-                            value: 'renomear',
-                            child: Text(
-                              'Renomear',
-                              style: TextStyle(color: AppColors.labelPrimary),
-                            ),
-                          ),
-                          const PopupMenuItem(
-                            value: 'excluir',
-                            child: Text(
-                              'Excluir',
-                              style: TextStyle(color: Colors.redAccent),
-                            ),
+                          const SizedBox(height: 2),
+                          Text(
+                            rotina['objetivo'] ?? 'Sem objetivo definido',
+                            style: AppTheme.cardSubtitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                    PopupMenuButton<String>(
+                      icon: Icon(
+                        Icons.more_vert,
+                        color: AppColors.labelSecondary,
+                        size: 22,
+                      ),
+                      padding: EdgeInsets.zero,
+                      color: AppColors.surfaceDark,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusMD,
+                        ),
+                      ),
+                      onSelected: (value) {
+                        HapticFeedback.lightImpact();
+                        if (value == 'editar') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PersonalRotinaDetalhePage(
+                                rotinaData: rotina,
+                                rotinaId: isSelecting ? null : id,
+                                alunoId: isSelecting ? widget.alunoId : null,
+                                alunoNome: isSelecting
+                                    ? widget.alunoNome
+                                    : null,
+                                rotinaService: _rotinaService,
+                              ),
+                            ),
+                          );
+                        } else if (value == 'renomear') {
+                          _renomearTreino(id, rotina['nome'] ?? '');
+                        } else if (value == 'excluir') {
+                          _confirmarExcluir(id);
+                        }
+                      },
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(
+                          value: 'editar',
+                          child: Text(
+                            'Editar',
+                            style: TextStyle(color: AppColors.labelPrimary),
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'renomear',
+                          child: Text(
+                            'Renomear',
+                            style: TextStyle(color: AppColors.labelPrimary),
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'excluir',
+                          child: Text(
+                            'Excluir',
+                            style: TextStyle(color: Colors.redAccent),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -585,24 +631,19 @@ class _PersonalTreinosPageState extends State<PersonalTreinosPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.dashboard_customize_outlined,
+            Icons.dashboard_customize_rounded,
             size: 64,
-            color: AppColors.labelSecondary.withAlpha(80),
+            color: AppColors.labelSecondary.withAlpha(30),
           ),
-          const SizedBox(height: 20),
-          const Text(
-            'Biblioteca vazia',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: AppColors.labelPrimary,
-            ),
+          const SizedBox(height: 24),
+          Text(
+            'BIBLIOTECA VAZIA',
+            style: AppTheme.sectionHeader.copyWith(color: Colors.white, fontSize: 16),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Crie templates para atribuir\naos seus alunos.',
-            textAlign: TextAlign.center,
-            style: AppTheme.bodyText.copyWith(color: AppColors.labelSecondary),
+          const Text(
+            'Crie modelos para atribuir aos seus alunos.',
+            style: TextStyle(color: AppColors.labelSecondary, fontSize: 14),
           ),
         ],
       ),

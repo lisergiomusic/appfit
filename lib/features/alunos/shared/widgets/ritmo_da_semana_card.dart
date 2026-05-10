@@ -123,15 +123,15 @@ class RitmoDaSemanaCard extends StatelessWidget {
                   final String textoResumo = count == 0
                       ? (isAlunoView
                             ? 'VOCÊ AINDA NÃO TREINOU ESTA SEMANA'
-                            : '$primeiroNome AINDA NÃO TREINOU ESTA SEMANA')
+                            : '${primeiroNome.toUpperCase()} AINDA NÃO TREINOU ESTA SEMANA')
                       : (isAlunoView
                             ? 'VOCÊ TREINOU $count $diaSingularPlural ESTA SEMANA'
-                            : '$primeiroNome TREINOU $count $diaSingularPlural ESTA SEMANA');
+                            : '${primeiroNome.toUpperCase()} TREINOU $count $diaSingularPlural ESTA SEMANA');
 
                   return Text(
                     textoResumo,
                     style: AppTheme.premiumLabel.copyWith(
-                      color: dias.hasAnyFeito ? AppColors.primary : AppColors.labelSecondary,
+                      color: AppColors.labelSecondary,
                       fontSize: 9,
                     ),
                   );
@@ -145,7 +145,7 @@ class RitmoDaSemanaCard extends StatelessWidget {
   }
 }
 
-// Auxiliar para detectar se houve algum treino
+// Auxiliar para detectar se houve algum treino (mantido para outros usos se necessário, ou pode ser removido se não houver)
 extension _ListTreinos on List<Map<String, String>> {
   bool get hasAnyFeito => any((d) => d['status'] == 'feito');
 }

@@ -306,23 +306,54 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
   }
 
   Widget _buildSliverAppBar() {
+    const String titleStr = 'Meus alunos';
+
     return SliverAppBar(
       pinned: true,
-      expandedHeight: 120,
+      expandedHeight: 110,
       backgroundColor: AppColors.background,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
       leading: const SizedBox.shrink(),
       leadingWidth: 0,
-      flexibleSpace: FlexibleSpaceBar(
-        stretchModes: const [StretchMode.zoomBackground, StretchMode.fadeTitle],
-        background: Container(
-          decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
-        ),
-        titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-        centerTitle: false,
-        title: Text('MEUS ALUNOS', style: AppTheme.pageTitle.copyWith(letterSpacing: 1.5, fontWeight: FontWeight.w900)),
+      flexibleSpace: LayoutBuilder(
+        builder: (context, constraints) {
+          final double topPadding = MediaQuery.of(context).padding.top;
+          final double expandedHeight = 110.0 - kToolbarHeight - topPadding;
+          final double currentHeight = constraints.maxHeight - kToolbarHeight - topPadding;
+          final double percentage = (currentHeight / expandedHeight).clamp(0.0, 1.0);
+
+          return FlexibleSpaceBar(
+            stretchModes: const [StretchMode.zoomBackground],
+            background: Container(
+              decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: 20,
+                    bottom: 16,
+                    child: Opacity(
+                      opacity: percentage.clamp(0.0, 1.0),
+                      child: const Text(
+                        titleStr, 
+                        style: AppTheme.bigTitle,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            centerTitle: true,
+            title: Opacity(
+              opacity: (1.0 - percentage - 0.7).clamp(0.0, 1.0) * 3.3,
+              child: const Text(
+                titleStr,
+                style: AppTheme.pageTitle,
+              ),
+            ),
+          );
+        },
       ),
     );
   }

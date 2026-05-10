@@ -37,6 +37,12 @@ The project utilizes PostgreSQL's relational power:
     *   **Spotify Inspiration:** We use Spotify as a reference for strong visual hierarchy, absolute contrast (Deep Black backgrounds), and pragmatic typography. We do not copy its flat layout; we use it as a benchmark for clarity and speed.
     *   **Modern Glassmorphism:** For top-level navigation (Bottom Nav) and critical floating actions, we adopt a hybrid approach using frosted glass effects (Blur + Translucency). This adds a layer of depth and technical sophistication (Apple/iOS style) over our solid industrial foundation.
     *   **Geometry:** Technical corners (Radius 12-16) for cards, and full pílula (pill) shapes (Radius 999) for floating navigation and main buttons.
+    *   **SliverAppBar Header Standards (Staff-level):**
+        *   **Dimensions:** Always use `expandedHeight: 110`. This height is calibrated to eliminate dead space while providing a high-density, professional look.
+        *   **Typography:** Expanded headers MUST use `AppTheme.bigTitle` (Spotify-inspired: 28px, w900, -1.0 letter spacing). Collapsed headers MUST use `AppTheme.pageTitle` (Centered: 15px, w700, -0.5 letter spacing).
+        *   **Casing:** Never use full UPPERCASE for page titles; use proper casing (e.g., 'Biblioteca de rotinas') for a more sophisticated look.
+        *   **Clarity:** Always set `fadeTitle: false` in `FlexibleSpaceBar` and manage opacities manually using a `Stack` and `LayoutBuilder`. Expanded titles must have 100% opacity at the top to ensure high contrast and zero "foggy" effect.
+        *   **Transition:** Use a clean cross-fade (Opacity) driven by scroll percentage. Avoid sliding or scaling animations. Expanded titles are fixed bottom-left (Positioned: left 20, bottom 16); collapsed titles are centered.
     *   **Atmospheric Design:** The UI should be a "silent tool". Use consistent spacing (SpacingTokens) and ergonomic touch targets (min 44px).
 *   **Dirty Check Pattern:** Always implement `hasChanges` logic in complex forms to disable "Save" buttons and optimize network calls.
 *   **Haptic Feedback:** Use `HapticFeedback.lightImpact()` for critical UI interactions (toggles, navigation, selections) to provide immediate tactile response.
