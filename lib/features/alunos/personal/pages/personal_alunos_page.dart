@@ -240,11 +240,15 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: AppPremiumFAB(
-        label: 'NOVO ALUNO',
-        icon: CupertinoIcons.add,
-        onPressed: _exibirModalCadastro,
-        bottomPadding: 80,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: AppPremiumFAB(
+          label: 'NOVO ALUNO',
+          icon: CupertinoIcons.add,
+          onPressed: _exibirModalCadastro,
+          isFullWidth: true,
+          bottomPadding: 72,
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: _fetchInitialData,

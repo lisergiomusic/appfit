@@ -31,7 +31,10 @@ The project utilizes PostgreSQL's relational power:
 
 ### Visual Identity
 *   **Industrial Background:** Pure Deep Black (`#121212`) is the standard background.
-*   **Minimalist Cards:** Avoid excessive use of cards. Use `AppTheme.premiumCardDecoration` (0.5px border, radiusXL/16px) only for complex grouping. Prefer metrics and text flutuando directly on the black background.
+*   **Minimalist Cards & Mode-Specific UI:** Avoid excessive use of cards. We follow a 'Mode-Specific UI' philosophy:
+    *   **Creation/Editing (Personal Trainer):** Use tactile, floating cards (`AppTheme.premiumCardDecoration` with `radiusXL`) to signify draggable, editable objects (e.g., configuring a workout).
+    *   **Consumption (Aluno):** Do NOT use cards. Use flat lists blending into the deep black background, separated only by subtle dividers (`alpha 0.08`), to create a distraction-free, "playlist-like" experience during execution.
+    *   **General Rule:** Prefer metrics and text floating directly on the black background over wrapping everything in a card.
 *   **Geometry:** Mandatory 16px (`radiusXL`) for cards and inputs. Full pill shape (`radiusFull`) for buttons.
 *   **Typography Hierarchy:**
     *   **Page Titles:** Proper Casing (e.g., 'Gerenciar alunos') for sophistication.
