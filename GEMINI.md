@@ -59,6 +59,19 @@ The project utilizes PostgreSQL's relational power:
 - Use `Color.withValues(alpha: ...)` instead of `withOpacity` or `withAlpha`.
 - Dirty Check Pattern: Use internal `hasChanges` to optimize network calls during Auto-save.
 
+### UI/UX Conventions (Standardized)
+
+#### Premium AppBar Pattern
+When a page does not use a dynamic `BigTitle` (Sliver header), use the standard `AppBar` with the premium gradient to maintain atmospheric depth:
+- `backgroundColor: Colors.transparent`
+- `elevation: 0`
+- `flexibleSpace: Container(decoration: BoxDecoration(gradient: AppTheme.premiumGradient))`
+- `title: Text('Title', style: AppBarTokens.pageTitle)`
+
+#### Spacing & Margins
+- **ALWAYS** use `SpacingTokens.screenHorizontalPadding` (16px) for main horizontal page margins. Never hardcode values like 20 or 24 for screen-level padding.
+- Use `SpacingTokens` for all internal gaps (`sectionGap`, `listItemGap`, etc.).
+
 ### Git & Commits
 Format: `type(scope): description` (e.g., `feat(treinos): implement auto-save for session details`). Generate the message but do not execute the commit unless asked.
 

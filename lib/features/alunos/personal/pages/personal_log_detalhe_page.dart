@@ -22,35 +22,38 @@ class PersonalLogDetalhePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        centerTitle: true,
+        title: const Text(
+          'Resumo do Treino',
+          style: AppTheme.pageTitle,
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
           onPressed: () => Navigator.of(context).pop(),
         ),
-      ),
-      extendBodyBehindAppBar: true,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: AppTheme.premiumGradient,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: AppTheme.premiumGradient,
+          ),
         ),
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.only(
-            bottom: 60, 
-            top: MediaQuery.of(context).padding.top + kToolbarHeight + 20,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context),
-              const SizedBox(height: 32),
-              _buildStatsRow(),
-              const SizedBox(height: 32),
-              if (item.observacoes != null && item.observacoes!.isNotEmpty)
-                _buildNotesSection(),
-              const SizedBox(height: 32),
-              _buildExercisesSection(),
-            ],
-          ),
+      ),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 60, top: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(context),
+            const SizedBox(height: 32),
+            _buildStatsRow(),
+            const SizedBox(height: 32),
+            if (item.observacoes != null && item.observacoes!.isNotEmpty)
+              _buildNotesSection(),
+            const SizedBox(height: 32),
+            _buildExercisesSection(),
+          ],
         ),
       ),
     );
@@ -66,27 +69,6 @@ class PersonalLogDetalhePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '$dateStr • $timeStr',
-            style: const TextStyle(
-              color: AppColors.primary,
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.5,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            sessionName,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.w900,
-              height: 1.1,
-              letterSpacing: -1.0,
-            ),
-          ),
-          const SizedBox(height: 24),
           GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
@@ -103,7 +85,7 @@ class PersonalLogDetalhePage extends StatelessWidget {
             },
             child: Row(
               children: [
-                AppAvatar(name: item.alunoNome, photoUrl: item.alunoPhotoUrl, radius: 20, showBorder: false),
+                AppAvatar(name: item.alunoNome, photoUrl: item.alunoPhotoUrl, radius: 24, showBorder: false),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -113,24 +95,46 @@ class PersonalLogDetalhePage extends StatelessWidget {
                         item.alunoNome,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
                           letterSpacing: -0.5,
                         ),
                       ),
                       Text(
-                        'Ver perfil do aluno',
+                        'VER PERFIL DO ALUNO',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.5),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                          color: AppColors.primary,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.0,
                         ),
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded, color: Colors.white.withValues(alpha: 0.3)),
+                Icon(Icons.chevron_right_rounded, color: Colors.white.withValues(alpha: 0.2)),
               ],
+            ),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            sessionName,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 32,
+              fontWeight: FontWeight.w900,
+              height: 1.1,
+              letterSpacing: -1.0,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$dateStr • $timeStr',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
             ),
           ),
         ],
@@ -139,21 +143,14 @@ class PersonalLogDetalhePage extends StatelessWidget {
   }
 
   Widget _buildStatsRow() {
-    double volume = 0;
     int sets = 0;
     for (var ex in item.exercicios) {
       final s = (ex['series'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       sets += s.length;
-      for (var sItem in s) {
-        final p = double.tryParse(sItem['pesoRealizado']?.toString() ?? '0') ?? 0;
-        final r = int.tryParse(sItem['repsRealizadas']?.toString() ?? '0') ?? 0;
-        volume += p * r;
-      }
     }
 
-    final volStr = volume >= 1000 ? (volume / 1000).toStringAsFixed(1) : volume.toInt().toString();
-    final volUnit = volume >= 1000 ? 't' : 'kg';
-    final effortStr = item.esforco != null && item.esforco! > 0 ? '${item.esforco}' : '-';
+    final effortVal = item.esforco != null && item.esforco! > 0 ? '${item.esforco}' : '-';
+    final effortStr = effortVal == '-' ? '-' : '$effortVal/10';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
@@ -164,8 +161,6 @@ class PersonalLogDetalhePage extends StatelessWidget {
           _StatItem(value: '${item.duracaoMinutos}', label: 'MINUTOS'),
           _StatDivider(),
           _StatItem(value: '$sets', label: 'SÉRIES'),
-          _StatDivider(),
-          _StatItem(value: volStr, label: 'VOLUME ($volUnit)'),
           _StatDivider(),
           _StatItem(value: effortStr, label: 'ESFORÇO', valueColor: AppColors.primary),
         ],
