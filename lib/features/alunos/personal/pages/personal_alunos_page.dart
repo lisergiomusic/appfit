@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/personal_service.dart';
 import '../../../../core/widgets/app_swipe_to_delete.dart';
+import '../../../../core/widgets/app_premium_fab.dart';
 import '../../shared/widgets/app_avatar.dart';
 import '../../shared/widgets/cadastro_aluno_modal.dart';
 import 'personal_aluno_perfil_page.dart';
@@ -238,6 +239,13 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: AppPremiumFAB(
+        label: 'NOVO ALUNO',
+        icon: CupertinoIcons.add,
+        onPressed: _exibirModalCadastro,
+        bottomPadding: 80,
+      ),
       body: RefreshIndicator(
         onRefresh: _fetchInitialData,
         color: AppColors.primary,
@@ -251,7 +259,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
           slivers: [
             _buildSliverAppBar(),
             SliverToBoxAdapter(child: _buildSearchBar()),
-            SliverToBoxAdapter(child: _buildFilterChips()),
+            SliverToBoxAdapter(child: _buildMinimalistTabs()),
             if (_isLoading)
               const SliverFillRemaining(
                 child: Center(
@@ -270,7 +278,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
               )
             else
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 140),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate((context, index) {
                     if (index == _alunosDocs.length) {
@@ -307,13 +315,6 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
       scrolledUnderElevation: 0,
       leading: const SizedBox.shrink(),
       leadingWidth: 0,
-      actions: [
-        IconButton(
-          icon: const Icon(CupertinoIcons.add, color: AppColors.primary, size: 24),
-          onPressed: _exibirModalCadastro,
-          padding: const EdgeInsets.only(right: 16),
-        ),
-      ],
       flexibleSpace: FlexibleSpaceBar(
         stretchModes: const [StretchMode.zoomBackground, StretchMode.fadeTitle],
         background: Container(
@@ -321,16 +322,16 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
         ),
         titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
         centerTitle: false,
-        title: Text('Meus Alunos', style: AppTheme.pageTitle),
+        title: Text('MEUS ALUNOS', style: AppTheme.pageTitle.copyWith(letterSpacing: 1.5, fontWeight: FontWeight.w900)),
       ),
     );
   }
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
       child: Container(
-        height: 44,
+        height: 48,
         decoration: AppTheme.premiumCardDecoration,
         child: TextField(
           controller: _searchController,
@@ -375,58 +376,72 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
     );
   }
 
-  Widget _buildFilterChips() {
+  Widget _buildMinimalistTabs() {
+    final filters = [
+      {'label': 'TODOS', 'value': 'todos', 'count': _totalCount},
+      {'label': 'ATIVOS', 'value': 'ativo', 'count': _ativosCount},
+      {'label': 'RISCO', 'value': 'risco', 'count': _riscoCount},
+      {'label': 'INATIVOS', 'value': 'inativo', 'count': _inativosCount},
+    ];
+
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      child: CupertinoSlidingSegmentedControl<String>(
-        backgroundColor: AppColors.surfaceDark,
-        thumbColor: const Color(0xFF3A3A3C),
-        groupValue: _statusFilter,
-        children: {
-          'todos': _buildSegment('Todos', _totalCount, 'todos'),
-          'ativo': _buildSegment('Ativos', _ativosCount, 'ativo'),
-          'risco': _buildSegment('Risco', _riscoCount, 'risco'),
-          'inativo': _buildSegment('Inativos', _inativosCount, 'inativo'),
-        },
-        onValueChanged: (value) {
-          if (value != null) {
-            HapticFeedback.lightImpact();
-            setState(() => _statusFilter = value);
-            _fetchInitialData();
-          }
-        },
-      ),
-    );
-  }
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: filters.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 24),
+        itemBuilder: (context, index) {
+          final filter = filters[index];
+          final bool isSelected = _statusFilter == filter['value'];
 
-  Widget _buildSegment(String label, int count, String value) {
-    final bool isSelected = _statusFilter == value;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              letterSpacing: -0.08,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              color: isSelected ? Colors.white : AppColors.labelSecondary,
+          return GestureDetector(
+            onTap: () {
+              if (!isSelected) {
+                HapticFeedback.lightImpact();
+                setState(() => _statusFilter = filter['value'] as String);
+                _fetchInitialData();
+              }
+            },
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      filter['label'] as String,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                        letterSpacing: 1.2,
+                        color: isSelected ? Colors.white : AppColors.labelSecondary,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${filter['count']}',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: isSelected ? AppColors.primary : AppColors.labelTertiary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  height: 2,
+                  width: isSelected ? 20 : 0,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            '($count)',
-            style: TextStyle(
-              fontSize: 11,
-              color: isSelected ? AppColors.primary : AppColors.labelTertiary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
