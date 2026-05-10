@@ -253,6 +253,194 @@ class _SessaoDetalhePersonalViewState
     }
   }
 
+  void _showExerciseActionsSheet(
+    BuildContext context,
+    ExercicioItem ex,
+    int exIndex,
+    ConfigurarTreinoController controller,
+  ) {
+    HapticFeedback.lightImpact();
+    final hasAlternative = ex.alternativas.isNotEmpty;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          decoration: BoxDecoration(
+            color: AppColors.background.withValues(alpha: 0.92),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.392),
+                blurRadius: 40,
+                spreadRadius: 10,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header do Bottom Sheet
+              Row(
+                children: [
+                  ExercicioThumbnail(
+                    exercicio: ex,
+                    width: 48,
+                    height: 48,
+                    borderRadius: 8,
+                    iconSize: 24,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          ex.nome,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -0.5,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (ex.grupoMuscular.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            ex.grupoMuscular.join(' • ').toUpperCase(),
+                            style: AppTheme.formLabel.copyWith(
+                              fontSize: 10,
+                              color: AppColors.primary,
+                              letterSpacing: 0.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ]
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(CupertinoIcons.xmark, color: Colors.white70, size: 18),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceDark,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    if (hasAlternative) ...[
+                      _buildActionSheetItem(
+                        icon: CupertinoIcons.eye,
+                        label: 'Ver exercícios alternativos',
+                        onTap: () {
+                          Navigator.pop(context);
+                          _showAlternativesModal(context, ex, exIndex, controller);
+                        },
+                      ),
+                      _buildActionSheetDivider(),
+                    ],
+                    if (!hasAlternative) ...[
+                      _buildActionSheetItem(
+                        icon: CupertinoIcons.plus_circle,
+                        label: 'Adicionar alternativa',
+                        onTap: () {
+                          Navigator.pop(context);
+                          _addAlternative(context, exIndex);
+                        },
+                      ),
+                      _buildActionSheetDivider(),
+                    ],
+                    _buildActionSheetItem(
+                      icon: CupertinoIcons.doc_on_clipboard,
+                      label: 'Copiar séries para...',
+                      onTap: () {
+                        Navigator.pop(context);
+                        _copySeriesToOthers(context, exIndex);
+                      },
+                    ),
+                    if (exIndex < controller.exercicios.length - 1) ...[
+                      _buildActionSheetDivider(),
+                      _buildActionSheetItem(
+                        icon: ex.isSupersetWithNext ? CupertinoIcons.link_circle : CupertinoIcons.link,
+                        label: ex.isSupersetWithNext ? 'Desmembrar Bi-set' : 'Agrupar com o próximo (Bi-set)',
+                        onTap: () {
+                          Navigator.pop(context);
+                          controller.toggleSuperset(exIndex);
+                          HapticFeedback.lightImpact();
+                        },
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionSheetItem({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            children: [
+              Icon(icon, size: 22, color: Colors.white70),
+              const SizedBox(width: 16),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionSheetDivider() {
+    return Container(
+      height: 1,
+      width: double.infinity,
+      color: Colors.white.withValues(alpha: 0.05),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+    );
+  }
+
   void _showAlternativesModal(
     BuildContext context,
     ExercicioItem exPrincipal,
@@ -1040,95 +1228,13 @@ class _SessaoDetalhePersonalViewState
                 ),
                 const SizedBox(width: 8),
                 if (!isReordering)
-                  PopupMenuButton<String>(
-                    onSelected: (value) {
-                      if (value == 'add_alt') {
-                        _addAlternative(context, exIndex);
-                      } else if (value == 'view_alt') {
-                        _showAlternativesModal(context, ex, exIndex, controller);
-                      } else if (value == 'copy_to') {
-                        _copySeriesToOthers(context, exIndex);
-                      } else if (value == 'toggle_superset') {
-                        controller.toggleSuperset(exIndex);
-                        HapticFeedback.lightImpact();
-                      }
-                    },
-                    color: AppColors.surfaceDark,
-                    surfaceTintColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(color: Colors.white.withAlpha(10), width: 1),
-                    ),
+                  IconButton(
+                    onPressed: () => _showExerciseActionsSheet(context, ex, exIndex, controller),
                     icon: Icon(
                       Icons.more_vert_rounded,
                       color: hasAlternative ? AppColors.primary : AppColors.labelSecondary,
                       size: 20,
                     ),
-                    itemBuilder: (context) => [
-                      if (hasAlternative)
-                        const PopupMenuItem(
-                          value: 'view_alt',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.visibility_outlined,
-                                size: 18,
-                                color: Colors.white70,
-                              ),
-                              SizedBox(width: 12),
-                              Text('Ver exercícios alternativos'),
-                            ],
-                          ),
-                        ),
-                      const PopupMenuItem(
-                        value: 'copy_to',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.copy_all_rounded,
-                              size: 18,
-                              color: Colors.white70,
-                            ),
-                            SizedBox(width: 12),
-                            Text('Copiar séries para...'),
-                          ],
-                        ),
-                      ),
-                      if (exIndex < controller.exercicios.length - 1)
-                        PopupMenuItem(
-                          value: 'toggle_superset',
-                          child: Row(
-                            children: [
-                              Icon(
-                                ex.isSupersetWithNext
-                                    ? Icons.link_off_rounded
-                                    : Icons.link_rounded,
-                                size: 18,
-                                color: Colors.white70,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(ex.isSupersetWithNext
-                                  ? 'Desmembrar Bi-set'
-                                  : 'Agrupar com o próximo (Bi-set)'),
-                            ],
-                          ),
-                        ),
-                      if (!hasAlternative)
-                        PopupMenuItem(
-                          value: 'add_alt',
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.add_circle_outline_rounded,
-                                size: 18,
-                                color: Colors.white70,
-                              ),
-                              const SizedBox(width: 12),
-                              const Text('Add exercício alternativo'),
-                            ],
-                          ),
-                        ),
-                    ],
                   ),
                 if (isReordering)
                   ReorderableDragStartListener(
