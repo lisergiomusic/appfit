@@ -387,61 +387,61 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
     return Container(
       height: 50,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: filters.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 24),
-        itemBuilder: (context, index) {
-          final filter = filters[index];
+      child: Row(
+        children: filters.map((filter) {
           final bool isSelected = _statusFilter == filter['value'];
 
-          return GestureDetector(
-            onTap: () {
-              if (!isSelected) {
-                HapticFeedback.lightImpact();
-                setState(() => _statusFilter = filter['value'] as String);
-                _fetchInitialData();
-              }
-            },
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      filter['label'] as String,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                        letterSpacing: 1.2,
-                        color: isSelected ? Colors.white : AppColors.labelSecondary,
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (!isSelected) {
+                  HapticFeedback.lightImpact();
+                  setState(() => _statusFilter = filter['value'] as String);
+                  _fetchInitialData();
+                }
+              },
+              behavior: HitTestBehavior.opaque,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        filter['label'] as String,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                          letterSpacing: 0.5,
+                          color: isSelected ? Colors.white : AppColors.labelSecondary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${filter['count']}',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: isSelected ? AppColors.primary : AppColors.labelTertiary,
+                      const SizedBox(width: 4),
+                      Text(
+                        '${filter['count']}',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: isSelected ? AppColors.primary : AppColors.labelTertiary,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  height: 2,
-                  width: isSelected ? 20 : 0,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(2),
+                    ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    height: 2,
+                    width: isSelected ? 16 : 0,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
-        },
+        }).toList(),
       ),
     );
   }
