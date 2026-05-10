@@ -1115,214 +1115,236 @@ class _SessaoDetalhePersonalViewState
     final isConnectedToNext = ex.isSupersetWithNext;
     final isConnectedToPrev = exIndex > 0 && controller.exercicios[exIndex - 1].item.isSupersetWithNext;
 
-    final Widget card = Container(
-      decoration: AppTheme.premiumCardDecoration.copyWith(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(isConnectedToPrev ? 0 : AppTheme.radiusXL),
-          bottom: Radius.circular(isConnectedToNext ? 0 : AppTheme.radiusXL),
-        ),
-      ),
-      child: Material(
-        type: MaterialType.transparency,
-        elevation: 0,
-        child: InkWell(
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(isConnectedToPrev ? 0 : AppTheme.radiusXL),
-            bottom: Radius.circular(isConnectedToNext ? 0 : AppTheme.radiusXL),
-          ),
-          splashColor: AppColors.splash.withAlpha(50),
-          highlightColor: AppColors.splash.withValues(alpha: 0.117),
-          onTap: isReordering
-              ? null
-              : () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PersonalExercicioDetalhePage(
-                        exercicio: ex,
-                        otherExercisesInSession: controller.exercicios
-                            .where((w) => w.item != ex)
-                            .map((w) => w.item)
-                            .toList(),
-                        onChanged: () {
-                          controller.onExercicioChanged();
-                        },
-                      ),
+    return _TactileCard(
+      key: Key(wrapper.id),
+      isConnectedToPrev: isConnectedToPrev,
+      isConnectedToNext: isConnectedToNext,
+      isReordering: isReordering,
+      onTap: isReordering
+          ? null
+          : () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PersonalExercicioDetalhePage(
+                    exercicio: ex,
+                    otherExercisesInSession: controller.exercicios
+                        .where((w) => w.item != ex)
+                        .map((w) => w.item)
+                        .toList(),
+                    onChanged: () {
+                      controller.onExercicioChanged();
+                    },
+                  ),
+                ),
+              );
+              if (!mounted) return;
+              if (widget.onSave != null && controller.hasChanges) {
+                final finalExercicios = controller.getFinalExercicios();
+                final nome = controller.nomeTreinoController.text.trim();
+                final note = controller.sessaoNote;
+
+                final salvo = await widget.onSave!(finalExercicios, nome, note);
+
+                if (!mounted) return;
+
+                if (salvo) {
+                  widget.originalExercicios.clear();
+                  widget.originalExercicios.addAll(finalExercicios);
+                } else {
+                  _scaffoldMessengerKey.currentState?.showSnackBar(
+                    const SnackBar(
+                      content: Text('Falha ao auto-salvar alterações.'),
+                      backgroundColor: Colors.redAccent,
                     ),
                   );
-                  if (!mounted) return;
-                  if (widget.onSave != null && controller.hasChanges) {
-                    final finalExercicios = controller.getFinalExercicios();
-                    final nome = controller.nomeTreinoController.text.trim();
-                    final note = controller.sessaoNote;
-
-                    final salvo = await widget.onSave!(finalExercicios, nome, note);
-
-                    if (!mounted) return;
-
-                    if (salvo) {
-                      widget.originalExercicios.clear();
-                      widget.originalExercicios.addAll(finalExercicios);
-                    } else {
-                      _scaffoldMessengerKey.currentState?.showSnackBar(
-                        const SnackBar(
-                          content: Text('Falha ao auto-salvar alterações.'),
-                          backgroundColor: Colors.redAccent,
-                        ),
-                      );
-                    }
-                  }
-                },
-          child: Padding(
-            padding: CardTokens.padding,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ExercicioThumbnail(
-                  exercicio: ex,
-                  width: 48,
-                  height: 48,
-                  borderRadius: 8,
-                  iconSize: 24,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        ex.nome,
-                        style: CardTokens.cardTitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: SpacingTokens.xs),
-                      Row(
-                        children: [
-                          Flexible(
-                            child: RichText(
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              text: TextSpan(
-                                style: CardTokens.cardSubtitle,
-                                children: [
+                }
+              }
+            },
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ExercicioThumbnail(
+                exercicio: ex,
+                width: 48,
+                height: 48,
+                borderRadius: 8,
+                iconSize: 24,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      ex.nome,
+                      style: CardTokens.cardTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: SpacingTokens.xs),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: RichText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            text: TextSpan(
+                              style: CardTokens.cardSubtitle,
+                              children: [
+                                TextSpan(
+                                  text: '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
+                                  style: const TextStyle(color: AppColors.primary),
+                                ),
+                                if (ex.grupoMuscular.isNotEmpty)
                                   TextSpan(
-                                    text:
-                                        '${ex.series.length} ${ex.series.length == 1 ? 'Série' : 'Séries'}',
-                                    style: const TextStyle(color: AppColors.primary),
+                                    text: ' • ${ex.grupoMuscular.join(' • ')}',
+                                    style: const TextStyle(),
                                   ),
-                                  if (ex.grupoMuscular.isNotEmpty)
-                                    TextSpan(
-                                      text: ' • ${ex.grupoMuscular.join(' • ')}',
-                                      style: const TextStyle(),
-                                    ),
-                                ],
-                              ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              if (!isReordering)
+                IconButton(
+                  onPressed: () => _showExerciseActionsSheet(context, ex, exIndex, controller),
+                  icon: Icon(
+                    Icons.more_vert_rounded,
+                    color: hasAlternative ? AppColors.primary : AppColors.labelSecondary,
+                    size: 20,
                   ),
                 ),
-                const SizedBox(width: 8),
-                if (!isReordering)
-                  IconButton(
-                    onPressed: () => _showExerciseActionsSheet(context, ex, exIndex, controller),
-                    icon: Icon(
-                      Icons.more_vert_rounded,
-                      color: hasAlternative ? AppColors.primary : AppColors.labelSecondary,
-                      size: 20,
+              if (isReordering)
+                ReorderableDragStartListener(
+                  index: exIndex,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Icon(
+                      Icons.drag_handle_rounded,
+                      color: AppColors.labelSecondary,
+                      size: 24,
                     ),
                   ),
-                if (isReordering)
-                  ReorderableDragStartListener(
-                    index: exIndex,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Icon(
-                        Icons.drag_handle_rounded,
-                        color: AppColors.labelSecondary,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-              ],
+                ),
+            ],
+          ),
+          if (isConnectedToNext)
+            Container(
+              height: 12,
+              width: 2,
+              margin: const EdgeInsets.only(left: 24, top: 12, bottom: 0),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.primary,
+                    AppColors.primary.withValues(alpha: 0.1),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(1),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TactileCard extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+  final bool isConnectedToPrev;
+  final bool isConnectedToNext;
+  final bool isReordering;
+
+  const _TactileCard({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.isConnectedToPrev = false,
+    this.isConnectedToNext = false,
+    this.isReordering = false,
+  });
+
+  @override
+  State<_TactileCard> createState() => _TactileCardState();
+}
+
+class _TactileCardState extends State<_TactileCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTapDown(TapDownDetails details) {
+    if (widget.onTap != null && !widget.isReordering) {
+      _controller.forward();
+      HapticFeedback.lightImpact();
+    }
+  }
+
+  void _handleTapUp(TapUpDetails details) {
+    _controller.reverse();
+  }
+
+  void _handleTapCancel() {
+    _controller.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final gap = widget.isConnectedToNext ? 0.0 : SpacingTokens.listItemGap;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: gap),
+      child: GestureDetector(
+        onTapDown: _handleTapDown,
+        onTapUp: _handleTapUp,
+        onTapCancel: _handleTapCancel,
+        onTap: widget.onTap,
+        child: ScaleTransition(
+          scale: _scaleAnimation,
+          child: Container(
+            decoration: AppTheme.premiumCardDecoration.copyWith(
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(widget.isConnectedToPrev ? 0 : AppTheme.radiusXL),
+                bottom: Radius.circular(widget.isConnectedToNext ? 0 : AppTheme.radiusXL),
+              ),
+            ),
+            child: Padding(
+              padding: CardTokens.padding,
+              child: widget.child,
             ),
           ),
         ),
       ),
     );
-
-    final gap = isConnectedToNext ? 0.0 : SpacingTokens.listItemGap;
-
-    Widget finalCard = isReordering
-        ? Padding(
-            key: Key(wrapper.id),
-            padding: EdgeInsets.only(bottom: gap),
-            child: card,
-          )
-        : Padding(
-            key: Key(wrapper.id),
-            padding: EdgeInsets.only(bottom: gap),
-            child: AppSwipeToDelete(
-              dismissibleKey: ValueKey('dismiss_${wrapper.id}'),
-              onDismissed: (direction) {
-                final removedItemName = controller.exercicios[exIndex].item.nome;
-                controller.deleteExercicio(exIndex);
-
-                controller.cancelSnackBarTimer();
-                _scaffoldMessengerKey.currentState?.removeCurrentSnackBar();
-
-                final snackBar = SnackBar(
-                  content: Text('$removedItemName removido'),
-                  action: SnackBarAction(
-                    label: 'DESFAZER',
-                    textColor: AppColors.primary,
-                    onPressed: () {
-                      controller.cancelSnackBarTimer();
-                      _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
-                      controller.undoDelete();
-                    },
-                  ),
-                  duration: const Duration(days: 365),
-                  behavior: SnackBarBehavior.floating,
-                );
-
-                final snackBarController =
-                    _scaffoldMessengerKey.currentState?.showSnackBar(snackBar);
-
-                if (snackBarController != null) {
-                  controller.startSnackBarTimer(() {
-                    snackBarController.close();
-                    controller.clearUndoState();
-                  });
-                }
-              },
-              child: card,
-            ),
-          );
-
-    if (isConnectedToNext) {
-      return Column(
-        key: Key('${wrapper.id}_group'),
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          finalCard,
-          Container(
-            height: 12,
-            width: 2,
-            margin: const EdgeInsets.only(left: 40), // 16 (pad) + 24 (half thumb)
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.392),
-              borderRadius: BorderRadius.circular(1),
-            ),
-          ),
-        ],
-      );
-    }
-
-    return finalCard;
   }
 }
