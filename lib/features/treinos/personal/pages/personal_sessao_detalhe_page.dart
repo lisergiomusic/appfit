@@ -272,7 +272,7 @@ class _SessaoDetalhePersonalViewState
             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withAlpha(100),
+                color: Colors.black.withValues(alpha: 0.392),
                 blurRadius: 40,
                 spreadRadius: 10,
               ),
@@ -366,7 +366,7 @@ class _SessaoDetalhePersonalViewState
                                     Text(
                                       alt.grupoMuscular.join(' • '),
                                       style: TextStyle(
-                                        color: Colors.white.withAlpha(100),
+                                        color: Colors.white.withValues(alpha: 0.392),
                                         fontSize: 12,
                                       ),
                                     ),
@@ -460,15 +460,17 @@ class _SessaoDetalhePersonalViewState
                             : () => _concluirESalvar(context),
                       ),
                     ],
-                    background: Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: 16,
-                          right: 16,
-                          bottom: 12,
-                        ),
-                        child: Row(
+                    background: Container(
+                      decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
+                      child: Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            bottom: 12,
+                          ),
+                          child: Row(
                           crossAxisAlignment: controller.isEditingTitle
                               ? CrossAxisAlignment.start
                               : CrossAxisAlignment.center,
@@ -510,7 +512,7 @@ class _SessaoDetalhePersonalViewState
                                           },
                                       decoration: InputDecoration(
                                         filled: true,
-                                        fillColor: Colors.black.withAlpha(60),
+                                        fillColor: Colors.black.withValues(alpha: 0.235),
                                         contentPadding: const EdgeInsets.symmetric(
                                           horizontal: 16,
                                           vertical: 12,
@@ -635,6 +637,7 @@ class _SessaoDetalhePersonalViewState
                       ),
                     ),
                   ),
+                  ),
                   if (controller.exercicios.isNotEmpty)
                     SliverOpacity(
                       opacity: controller.isEditingTitle ? 0.3 : 1.0,
@@ -679,7 +682,7 @@ class _SessaoDetalhePersonalViewState
                               Row(
                                 children: [
                                   Text(
-                                    'Lista de exercícios',
+                                    'LISTA DE EXERCÍCIOS',
                                     style: AppTheme.sectionHeader,
                                   ),
                                   const Spacer(),
@@ -727,7 +730,7 @@ class _SessaoDetalhePersonalViewState
                               ).animate(curvedAnimation),
                               child: Material(
                                 elevation: 2.0,
-                                shadowColor: Colors.black.withAlpha(60),
+                                shadowColor: Colors.black.withValues(alpha: 0.235),
                                 color: Colors.transparent,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(
@@ -779,7 +782,7 @@ class _SessaoDetalhePersonalViewState
 
   Widget _buildSavingOverlay() {
     return Container(
-      color: Colors.black.withAlpha(100),
+      color: Colors.black.withValues(alpha: 0.392),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
         child: Center(
@@ -790,7 +793,7 @@ class _SessaoDetalhePersonalViewState
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withAlpha(100),
+                  color: Colors.black.withValues(alpha: 0.392),
                   blurRadius: 20,
                   spreadRadius: 5,
                 ),
@@ -910,7 +913,7 @@ class _SessaoDetalhePersonalViewState
     final isConnectedToPrev = exIndex > 0 && controller.exercicios[exIndex - 1].item.isSupersetWithNext;
 
     final Widget card = Container(
-      decoration: AppTheme.cardDecoration.copyWith(
+      decoration: AppTheme.premiumCardDecoration.copyWith(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(isConnectedToPrev ? 0 : AppTheme.radiusLarge),
           bottom: Radius.circular(isConnectedToNext ? 0 : AppTheme.radiusLarge),
@@ -925,7 +928,7 @@ class _SessaoDetalhePersonalViewState
             bottom: Radius.circular(isConnectedToNext ? 0 : AppTheme.radiusLarge),
           ),
           splashColor: AppColors.splash.withAlpha(50),
-          highlightColor: AppColors.splash.withAlpha(30),
+          highlightColor: AppColors.splash.withValues(alpha: 0.117),
           onTap: isReordering
               ? null
               : () async {
@@ -1191,7 +1194,7 @@ class _SessaoDetalhePersonalViewState
             width: 2,
             margin: const EdgeInsets.only(left: 40), // 16 (pad) + 24 (half thumb)
             decoration: BoxDecoration(
-              color: AppColors.primary.withAlpha(100),
+              color: AppColors.primary.withValues(alpha: 0.392),
               borderRadius: BorderRadius.circular(1),
             ),
           ),
@@ -1215,7 +1218,7 @@ class _MetricCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      decoration: AppTheme.cardDecoration,
+      decoration: AppTheme.premiumCardDecoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

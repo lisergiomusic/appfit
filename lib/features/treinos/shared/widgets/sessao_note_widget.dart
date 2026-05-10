@@ -41,7 +41,7 @@ class _SessaoNoteWidgetState extends State<SessaoNoteWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Instruções da Sessão',
+              'INSTRUÇÕES DA SESSÃO',
               style: AppTheme.sectionHeader,
             ),
             if (hasFocus)
