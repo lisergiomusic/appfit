@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
 
-class AppPremiumFAB extends StatelessWidget {
+class AppPremiumFAB extends StatefulWidget {
   final String label;
   final IconData icon;
   final VoidCallback onPressed;
   final double bottomPadding;
+  final bool isFullWidth;
 
   const AppPremiumFAB({
     super.key,
@@ -14,22 +15,35 @@ class AppPremiumFAB extends StatelessWidget {
     required this.icon,
     required this.onPressed,
     this.bottomPadding = 0,
+    this.isFullWidth = false,
   });
+
+  @override
+  State<AppPremiumFAB> createState() => _AppPremiumFABState();
+}
+
+class _AppPremiumFABState extends State<AppPremiumFAB> {
+  bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: bottomPadding),
+      padding: EdgeInsets.only(bottom: widget.bottomPadding),
       child: AnimatedScale(
-        duration: const Duration(milliseconds: 300),
-        scale: 1.0,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOutCubic,
+        scale: _isPressed ? 0.95 : 1.0,
         child: GestureDetector(
-          onTap: () {
+          onTapDown: (_) => setState(() => _isPressed = true),
+          onTapUp: (_) {
+            setState(() => _isPressed = false);
             HapticFeedback.lightImpact();
-            onPressed();
+            widget.onPressed();
           },
+          onTapCancel: () => setState(() => _isPressed = false),
           child: Container(
             height: 56,
+            width: widget.isFullWidth ? double.infinity : null,
             padding: const EdgeInsets.symmetric(horizontal: 24),
             decoration: BoxDecoration(
               color: AppColors.primary,
@@ -43,12 +57,13 @@ class AppPremiumFAB extends StatelessWidget {
               ],
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: widget.isFullWidth ? MainAxisSize.max : MainAxisSize.min,
               children: [
-                Icon(icon, color: Colors.black, size: 20),
+                Icon(widget.icon, color: Colors.black, size: 20),
                 const SizedBox(width: 10),
                 Text(
-                  label.toUpperCase(),
+                  widget.label.toUpperCase(),
                   style: AppTheme.sectionHeader.copyWith(
                     color: Colors.black,
                     fontSize: 14,

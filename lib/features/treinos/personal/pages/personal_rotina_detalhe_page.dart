@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/rotina_service.dart';
-import '../../../../core/widgets/app_primary_button.dart';
+import '../../../../core/widgets/app_premium_fab.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../controllers/rotina_detalhe_controller.dart';
 import '../../shared/models/rotina_model.dart';
@@ -485,6 +485,16 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
               children: [
                 Scaffold(
                   backgroundColor: AppColors.background,
+                  floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+                  floatingActionButton: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: AppPremiumFAB(
+                      icon: CupertinoIcons.add,
+                      label: 'NOVA SESSÃO',
+                      isFullWidth: true,
+                      onPressed: () => _exibirModalSessao(),
+                    ),
+                  ),
                   body: CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(
                       parent: BouncingScrollPhysics(),
@@ -579,11 +589,9 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
                         )
                       else ...[
                         if (_controller.treinos.isEmpty)
-                          SliverFillRemaining(
+                          const SliverFillRemaining(
                             hasScrollBody: false,
-                            child: RotinaEmptyState(
-                              onCreateSession: () => _exibirModalSessao(),
-                            ),
+                            child: RotinaEmptyState(),
                           )
                         else ...[
                           SliverToBoxAdapter(
@@ -661,20 +669,8 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
                               },
                             ),
                           ),
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                AppTheme.paddingScreen,
-                                SpacingTokens.sectionGap,
-                                AppTheme.paddingScreen,
-                                SpacingTokens.screenBottomPadding,
-                              ),
-                              child: AppPrimaryButton(
-                                label: 'Nova sessão',
-                                icon: CupertinoIcons.add_circled,
-                                onPressed: () => _exibirModalSessao(),
-                              ),
-                            ),
+                          const SliverToBoxAdapter(
+                            child: SizedBox(height: 120),
                           ),
                         ],
                       ],

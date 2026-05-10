@@ -4,9 +4,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_primary_button.dart';
 
 class RotinaEmptyState extends StatelessWidget {
-  final VoidCallback onCreateSession;
-
-  const RotinaEmptyState({super.key, required this.onCreateSession});
+  const RotinaEmptyState({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -53,13 +51,7 @@ class RotinaEmptyState extends StatelessWidget {
               height: 1.4,
             ),
           ),
-          const Spacer(flex: 2),
-          AppPrimaryButton(
-            label: 'Criar Primeira Sessão',
-            icon: CupertinoIcons.add_circled,
-            onPressed: onCreateSession,
-          ),
-          const Spacer(flex: 3),
+          const Spacer(flex: 5),
         ],
       ),
     );
