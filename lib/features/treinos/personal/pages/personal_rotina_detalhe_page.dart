@@ -1,15 +1,14 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/rotina_service.dart';
-import '../../../../core/widgets/appfit_sliver_app_bar.dart';
 import '../../../../core/widgets/app_primary_button.dart';
-import '../../../../core/widgets/app_bar_text_button.dart';
+import '../../../../core/widgets/app_nav_back_button.dart';
 import '../controllers/rotina_detalhe_controller.dart';
 import '../../shared/models/rotina_model.dart';
 import '../../shared/widgets/planilha_settings_modal.dart';
-import '../../shared/widgets/rotina_detalhe_header.dart';
 import '../../shared/widgets/rotina_empty_state.dart';
 import '../../shared/widgets/rotina_section_header.dart';
 import '../../shared/widgets/rotina_sessao_card.dart';
@@ -493,85 +492,80 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
                     slivers: [
                       SliverAppBar(
                         expandedHeight: 140,
-                        collapsedHeight: 70,
                         pinned: true,
                         stretch: true,
                         backgroundColor: AppColors.background,
                         elevation: 0,
                         surfaceTintColor: Colors.transparent,
-                        leading: const Padding(
-                          padding: EdgeInsets.only(left: 8),
-                          child: BackButton(color: AppColors.labelPrimary),
-                        ),
+                        leading: const AppNavBackButton(),
                         actions: [
-                          AppBarTextButton(
-                            label: 'Salvar',
-                            onPressed: _executarSalvamentoManual,
+                          IconButton(
+                            icon: const Icon(
+                              CupertinoIcons.settings,
+                              color: AppColors.labelSecondary,
+                              size: 22,
+                            ),
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              _exibirModalInfo(context);
+                            },
+                            padding: const EdgeInsets.only(right: 16),
                           ),
                         ],
-                        flexibleSpace: FlexibleSpaceBar(
-                          stretchModes: const [
-                            StretchMode.zoomBackground,
-                            StretchMode.fadeTitle
-                          ],
-                          background: Container(
-                            decoration:
-                                BoxDecoration(gradient: AppTheme.premiumGradient),
-                          ),
-                          titlePadding:
-                              const EdgeInsets.only(left: 20, bottom: 16),
-                          centerTitle: false,
-                          title: Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                        flexibleSpace: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final double topPadding = MediaQuery.of(context).padding.top;
+                            final double expandedHeight = 140.0 - kToolbarHeight - topPadding;
+                            final double currentHeight = (constraints.maxHeight - kToolbarHeight - topPadding).clamp(0.0, expandedHeight);
+                            final double percentage = currentHeight / expandedHeight;
+
+                            return FlexibleSpaceBar(
+                              expandedTitleScale: 1.0,
+                              stretchModes: const [StretchMode.zoomBackground],
+                              background: Container(
+                                decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
+                                child: Stack(
                                   children: [
-                                    Text(
-                                      _controller.nomeRotinaExibicao,
-                                      style: AppTheme.pageTitle
-                                          .copyWith(fontSize: 18),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    if (_controller
-                                        .objetivoExibicao.isNotEmpty)
-                                      Text(
-                                        _controller.objetivoExibicao
-                                            .toUpperCase(),
-                                        style: AppTheme.premiumLabel.copyWith(
-                                          fontSize: 7,
-                                          color: AppColors.labelSecondary
-                                              .withAlpha(150),
+                                    Positioned(
+                                      left: 20,
+                                      right: 20,
+                                      bottom: 16,
+                                      child: Opacity(
+                                        opacity: percentage.clamp(0.0, 1.0),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              _controller.nomeRotinaExibicao,
+                                              style: AppTheme.bigTitle,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            if (_controller.objetivoExibicao.isNotEmpty)
+                                              Text(
+                                                _controller.objetivoExibicao.toUpperCase(),
+                                                style: AppTheme.overTitle,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                          ],
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
                                       ),
+                                    ),
                                   ],
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 16),
-                                child: GestureDetector(
-                                  onTap: () => _exibirModalInfo(context),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withAlpha(15),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Icon(
-                                      CupertinoIcons.pencil,
-                                      color: AppColors.labelPrimary,
-                                      size: 14,
-                                    ),
-                                  ),
+                              centerTitle: true,
+                              title: Opacity(
+                                opacity: (1.0 - percentage - 0.7).clamp(0.0, 1.0) * 3.3,
+                                child: Text(
+                                  _controller.nomeRotinaExibicao,
+                                  style: AppTheme.pageTitle,
                                 ),
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
                       ),
                       if (_controller.isDeleting)

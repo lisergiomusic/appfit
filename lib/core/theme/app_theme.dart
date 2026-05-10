@@ -71,6 +71,13 @@ class AppTheme {
     color: AppColors.labelSecondary,
   );
 
+  static const TextStyle overTitle = TextStyle(
+    fontSize: 10,
+    fontWeight: FontWeight.w800,
+    letterSpacing: 1.2,
+    color: AppColors.labelSecondary,
+  );
+
   static final LinearGradient premiumGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,

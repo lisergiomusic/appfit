@@ -51,7 +51,6 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
     final rotina = widget.rotinaAtiva!;
     final rotinaId = widget.rotinaId!;
 
-    String objetivo = rotina['objetivo'] ?? 'Objetivo não definido';
 
     String tipoVencimento = rotina['tipoVencimento'] ?? 'data';
     double progressoAtual = 0.0;
@@ -67,7 +66,7 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
       DateTime hoje = DateTime.now();
       final dataCriacaoRaw = rotina['dataCriacao'];
       final dataVencimentoRaw = rotina['dataVencimento'];
-      
+
       DateTime dataCriacao = dataCriacaoRaw != null ? DateTime.tryParse(dataCriacaoRaw.toString()) ?? hoje : hoje;
       DateTime dataVencimento = dataVencimentoRaw != null ? DateTime.tryParse(dataVencimentoRaw.toString()) ?? hoje.add(const Duration(days: 30)) : hoje.add(const Duration(days: 30));
 
