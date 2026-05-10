@@ -471,6 +471,84 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
     );
   }
 
+  Widget _buildProgressSection() {
+    final tipoVencimento = _controller.tipoVencimento;
+    String legenda = '';
+    double progresso = 0.0;
+
+    if (tipoVencimento == 'sessoes') {
+      final total = _controller.vencimentoSessoes;
+      final concluidas = _controller.sessoesConcluidas;
+      progresso = (concluidas / total).clamp(0.0, 1.0);
+      legenda = '$concluidas de $total ${total == 1 ? 'sessão' : 'sessões'}';
+    } else {
+      final hoje = DateTime.now();
+      final dataCriacao = _controller.dataCriacao;
+      final dataVencimento = _controller.vencimentoData;
+
+      int totalDias = dataVencimento.difference(dataCriacao).inDays;
+      if (totalDias <= 0) totalDias = 1;
+      final diasPassados = hoje.difference(dataCriacao).inDays;
+      progresso = (diasPassados / totalDias).clamp(0.0, 1.0);
+      legenda =
+          'Vencimento em ${dataVencimento.day.toString().padLeft(2, '0')}/${dataVencimento.month.toString().padLeft(2, '0')}';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              legenda.toUpperCase(),
+              style: AppTheme.premiumLabel.copyWith(
+                color: AppColors.primary,
+                letterSpacing: 1.0,
+              ),
+            ),
+            Text(
+              '${(progresso * 100).toInt()}%',
+              style: AppTheme.premiumLabel.copyWith(
+                color: AppColors.labelSecondary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Stack(
+          children: [
+            Container(
+              height: 4,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withAlpha(20),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            FractionallySizedBox(
+              widthFactor: progresso,
+              child: Container(
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withAlpha(100),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: SpacingTokens.xxl),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -596,9 +674,25 @@ class _PersonalRotinaDetalhePageState extends State<PersonalRotinaDetalhePage> {
                         else ...[
                           SliverToBoxAdapter(
                             child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppTheme.paddingScreen,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: SpacingTokens.sectionGap),
+                                  Text('PROGRESSO', style: AppTheme.sectionHeader),
+                                  const SizedBox(height: SpacingTokens.labelToField),
+                                  _buildProgressSection(),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SliverToBoxAdapter(
+                            child: Padding(
                               padding: const EdgeInsets.fromLTRB(
                                 AppTheme.paddingScreen,
-                                SpacingTokens.sectionGap,
+                                0,
                                 AppTheme.paddingScreen,
                                 0,
                               ),

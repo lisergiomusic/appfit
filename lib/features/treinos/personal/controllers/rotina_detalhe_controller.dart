@@ -20,6 +20,16 @@ class RotinaDetalheController extends ChangeNotifier {
 
   bool get isGlobalTemplate => alunoId == null;
 
+  int get sessoesConcluidas => initialData?['sessoes_concluidas'] ?? initialData?['sessoesConcluidas'] ?? 0;
+
+  DateTime get dataCriacao {
+    final raw = initialData?['data_criacao'] ?? initialData?['dataCriacao'];
+    if (raw != null) {
+      return DateTime.tryParse(raw.toString()) ?? DateTime.now();
+    }
+    return DateTime.now();
+  }
+
   late TextEditingController nomeCtrl;
   late TextEditingController objCtrl;
   String tipoVencimento = 'sessoes';
