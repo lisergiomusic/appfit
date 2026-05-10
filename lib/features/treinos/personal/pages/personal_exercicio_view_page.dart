@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/services/exercise_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_section_link_button.dart';
 import '../../../../core/widgets/appfit_sliver_app_bar.dart';
 import '../../shared/models/exercicio_model.dart';
 import '../../shared/widgets/exercicio_detalhe/exercicio_constants.dart';
@@ -250,8 +251,8 @@ class _PersonalExercicioViewPageState extends State<PersonalExercicioViewPage> {
           )..layout(maxWidth: constraints.maxWidth - (SpacingTokens.screenHorizontalPadding * 2));
 
           final int titleLines = titlePainter.computeLineMetrics().length;
-          final double dynamicHeight = titleLines > 1 
-              ? (temMusculos ? 178.0 : 144.0) 
+          final double dynamicHeight = titleLines > 1
+              ? (temMusculos ? 178.0 : 144.0)
               : (temMusculos ? 144.0 : 120.0);
 
           return Column(
@@ -359,12 +360,9 @@ class _PersonalExercicioViewPageState extends State<PersonalExercicioViewPage> {
                                 ),
                               ],
                             ),
-                            GestureDetector(
-                              onTap: _abrirEditorInstrucoes,
-                              child: Text(
-                                'Editar',
-                                style: AppTheme.sectionAction,
-                              ),
+                            AppSectionLinkButton(
+                              label: 'Editar',
+                              onPressed: _abrirEditorInstrucoes,
                             ),
                           ],
                         ),

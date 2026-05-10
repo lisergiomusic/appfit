@@ -165,11 +165,11 @@ class TreinoScrollableBody extends StatelessWidget {
     final cleanRest = RegExp(r'^\d+$').hasMatch(rest) ? '${rest}s' : rest;
     String labelText;
 
-    if (tipo == null) {
-      labelText = 'Descanso: $cleanRest';
+    if (isLastOverall) {
+      labelText = 'Descanso: $cleanRest'.toUpperCase();
     } else {
       final label = tipo == TipoSerie.aquecimento ? "Aquecimento" : "Trabalho";
-      labelText = 'Descanso ($label): $cleanRest';
+      labelText = 'Descanso ($label): $cleanRest'.toUpperCase();
     }
 
     return Padding(

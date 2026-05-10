@@ -46,220 +46,162 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Mapa de seções da interface desta página:
-    // 1) Estrutura superior: AppBar, título e ações de navegação.
-    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
-    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        centerTitle: false,
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _userService.getProfile(_authService.currentUser?.id ?? ''),
+        builder: (context, snapshot) {
+          String nome = "Personal";
+          String? photoUrl;
 
-        actions: [
-          IconButton(
-            icon: Stack(
-              children: [
-                const Icon(
-                  Icons.notifications_rounded,
-                  color: AppColors.labelSecondary,
-                  size: 26,
-                ),
-                Positioned(
-                  right: 2,
-                  top: 2,
-                  child: Container(
-                    width: 9,
-                    height: 9,
-                    decoration: BoxDecoration(
-                      color: AppColors.systemRed,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppColors.background,
-                        width: 1.5,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const PersonalNotificationsPage(),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
+          if (snapshot.hasData && snapshot.data != null) {
+            final data = snapshot.data!;
+            nome = data['nome']?.toString().split(' ')[0] ?? "Personal";
+            photoUrl = (data['photo_url'] ?? data['photoUrl'])?.toString();
+          }
 
-      ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            FutureBuilder<Map<String, dynamic>>(
-              future: _userService.getProfile(_authService.currentUser?.id ?? ''),
-              builder: (context, snapshot) {
-                String nome = "...";
-                String? photoUrl;
-
-                if (snapshot.hasData && snapshot.data != null) {
-                  final data = snapshot.data!;
-                  nome = data['nome']?.toString().split(' ')[0] ?? "Personal";
-                  photoUrl = data['photoUrl'] as String?;
-                }
-
-                return Padding(
-                  padding: const EdgeInsets.only(
-                    left: SpacingTokens.screenHorizontalPadding,
-                    right: SpacingTokens.screenHorizontalPadding,
-                    top: 0,
-                  ),
-                  child: Row(
+          return CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              _buildSliverAppBar(nome, photoUrl),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      AppAvatar(
-                        name: nome,
-                        photoUrl: photoUrl,
-                        radius: AvatarTokens.lg,
-                        showBorder: false,
-                      ),
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      const SizedBox(height: SpacingTokens.xxl),
+                      Row(
                         children: [
-                          Text(
-                            '${_getSaudacao()},',
-                            style: AppTheme.caption.copyWith(
-                              color: AppColors.labelSecondary,
-                              fontWeight: FontWeight.w500,
+                          Expanded(
+                            child: FutureBuilder<ContagemAlunos>(
+                              future: _contagensFuture,
+                              builder: (context, snapshot) {
+                                String trendText = 'Calculando...';
+                                IconData trendIcon = Icons.pie_chart_rounded;
+                                Color trendColor = AppColors.primary;
+
+                                if (snapshot.hasData) {
+                                  final contagens = snapshot.data!;
+                                  final percentualAtivos = contagens.total > 0
+                                      ? ((contagens.ativos / contagens.total) * 100).round()
+                                      : 0;
+                                  trendText = '$percentualAtivos% da base ativa';
+                                } else if (snapshot.hasError) {
+                                  trendText = 'Indisponível';
+                                  trendIcon = Icons.info_outline_rounded;
+                                  trendColor = AppColors.labelSecondary;
+                                }
+
+                                final ativosCount = snapshot.hasData
+                                    ? snapshot.data!.ativos.toString()
+                                    : snapshot.hasError ? '--' : '...';
+
+                                return _buildStatCard(
+                                  label: 'Alunos ativos',
+                                  value: ativosCount,
+                                  trendText: trendText,
+                                  trendIcon: trendIcon,
+                                  trendColor: trendColor,
+                                  onTap: () {},
+                                );
+                              },
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          Text(nome, style: AppTheme.title1),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: FutureBuilder<ContagemAlunos>(
+                              future: _contagensFuture,
+                              builder: (context, snapshot) {
+                                final count = snapshot.hasData
+                                    ? snapshot.data!.risco.toString()
+                                    : snapshot.hasError ? '--' : '...';
+
+                                return _buildStatCard(
+                                  label: 'Atenção necessária',
+                                  value: count,
+                                  trendText: 'Novos alertas',
+                                  trendIcon: Icons.error_rounded,
+                                  trendColor: (snapshot.data?.risco ?? 0) > 0
+                                      ? AppColors.systemRed
+                                      : AppColors.accentMetrics,
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => PersonalAtencaoPage(personalService: _personalService)),
+                                  ).then((_) => _refreshContagens()),
+                                );
+                              },
+                            ),
+                          ),
                         ],
                       ),
+                      const SizedBox(height: SpacingTokens.xxl),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('ATIVIDADE RECENTE', style: AppTheme.sectionHeader),
+                          AppSectionLinkButton(
+                            label: 'VER MAIS',
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => PersonalAtividadeRecentePage(personalService: _personalService)),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: SpacingTokens.labelToField),
+                      _AtividadeRecenteSection(personalService: _personalService),
+                      const SizedBox(height: SpacingTokens.screenBottomPadding + 80),
                     ],
                   ),
-                );
-              },
-            ),
-            const SizedBox(height: SpacingTokens.xxl),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.paddingScreen,
+                ),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: FutureBuilder<ContagemAlunos>(
-                      future: _contagensFuture,
-                      builder: (context, snapshot) {
-                        String trendText = 'Calculando...';
-                        IconData trendIcon = Icons.pie_chart_rounded;
-                        Color trendColor = AppColors.primary;
+            ],
+          );
+        },
+      ),
+    );
+  }
 
-                        if (snapshot.hasData) {
-                          final contagens = snapshot.data!;
-                          final percentualAtivos = contagens.total > 0
-                              ? ((contagens.ativos / contagens.total) * 100)
-                                    .round()
-                              : 0;
-                          trendText = '$percentualAtivos% da base ativa';
-                        } else if (snapshot.hasError) {
-                          trendText = 'Indicador indisponivel';
-                          trendIcon = Icons.info_outline_rounded;
-                          trendColor = AppColors.labelSecondary;
-                        }
-
-                        final ativosCount = snapshot.hasData
-                            ? snapshot.data!.ativos.toString()
-                            : snapshot.hasError
-                            ? '--'
-                            : '...';
-
-                        return _buildStatCard(
-                          label: 'Alunos ativos',
-                          value: ativosCount,
-                          trendText: trendText,
-                          trendIcon: trendIcon,
-                          trendColor: trendColor,
-                          onTap: () {},
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FutureBuilder<ContagemAlunos>(
-                      future: _contagensFuture,
-                      builder: (context, snapshot) {
-                        final count = snapshot.hasData
-                            ? snapshot.data!.risco.toString()
-                            : snapshot.hasError
-                                ? '--'
-                                : '...';
-
-                        return _buildStatCard(
-                          label: 'Atenção necessária',
-                          value: count,
-                          trendText: 'Novos alertas',
-                          trendIcon: Icons.error_rounded,
-                          trendColor: (snapshot.data?.risco ?? 0) > 0
-                              ? AppColors.systemRed
-                              : AppColors.accentMetrics,
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PersonalAtencaoPage(
-                                personalService: _personalService,
-                              ),
-                            ),
-                          ).then((_) => _refreshContagens()),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
+  Widget _buildSliverAppBar(String nome, String? photoUrl) {
+    return SliverAppBar(
+      expandedHeight: 120,
+      collapsedHeight: 70,
+      pinned: true,
+      stretch: true,
+      backgroundColor: AppColors.background,
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      flexibleSpace: FlexibleSpaceBar(
+        stretchModes: const [StretchMode.zoomBackground, StretchMode.fadeTitle],
+        background: Container(
+          decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
+        ),
+        titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
+        centerTitle: false,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppAvatar(name: nome, photoUrl: photoUrl, radius: 18, showBorder: false),
+            const SizedBox(width: 12),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${_getSaudacao()},', style: AppTheme.premiumLabel.copyWith(fontSize: 8)),
+                Text(nome, style: AppTheme.pageTitle.copyWith(fontSize: 18)),
+              ],
             ),
-            const SizedBox(height: SpacingTokens.sectionGap),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.paddingScreen,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Atividade recente', style: AppTheme.sectionHeader),
-                  AppSectionLinkButton(
-                    label: 'Ver tudo',
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => PersonalAtividadeRecentePage(
-                          personalService: _personalService,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: SpacingTokens.labelToField),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.paddingScreen,
-              ),
-              child: _AtividadeRecenteSection(personalService: _personalService),
-            ),
-            const SizedBox(height: 48),
           ],
         ),
       ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.notifications_outlined, color: AppColors.labelSecondary, size: 24),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PersonalNotificationsPage())),
+        ),
+        const SizedBox(width: 8),
+      ],
     );
   }
 
@@ -279,53 +221,38 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
     VoidCallback? onTap,
   }) {
     return Container(
-      decoration: AppTheme.cardDecoration,
+      decoration: AppTheme.premiumCardDecoration,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         child: Padding(
-          padding: CardTokens.padding,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: AppTheme.formLabel,
+              Text(
+                label,
+                style: AppTheme.formLabel.copyWith(fontSize: 12),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: SpacingTokens.labelToField),
+              Text(value, style: AppTheme.title1.copyWith(fontSize: 24)),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(trendIcon, size: 14, color: trendColor),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      trendText,
+                      style: AppTheme.caption.copyWith(color: trendColor, fontWeight: FontWeight.w600),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: SpacingTokens.labelToField),
-                    Text(value, style: AppTheme.title1),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(trendIcon, size: 12, color: trendColor),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            trendText,
-                            style: AppTheme.caption.copyWith(color: trendColor),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              if (onTap != null) ...[
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 18,
-                  color: AppColors.labelSecondary.withAlpha(80),
-                ),
-              ],
             ],
           ),
         ),
@@ -359,11 +286,7 @@ class _AtividadeRecenteSection extends StatelessWidget {
         }
 
         return Container(
-          decoration: BoxDecoration(
-            color: AppColors.surfaceDark,
-            borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-            border: Border.all(color: Colors.white.withAlpha(5)),
-          ),
+          decoration: AppTheme.premiumCardDecoration,
           clipBehavior: Clip.antiAlias,
           child: Column(
             children: [
@@ -381,17 +304,24 @@ class _AtividadeRecenteSection extends StatelessWidget {
 
   Widget _buildEmpty() {
     return Container(
-      padding: CardTokens.padding,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-        border: Border.all(color: Colors.white.withAlpha(5)),
-      ),
-      child: Center(
-        child: Text(
-          'Nenhum treino concluído ainda.',
-          style: AppTheme.cardSubtitle,
-        ),
+      padding: const EdgeInsets.all(24),
+      decoration: AppTheme.premiumCardDecoration,
+      width: double.infinity,
+      child: Column(
+        children: [
+          Icon(Icons.history_rounded, size: 40, color: AppColors.labelSecondary.withAlpha(50)),
+          const SizedBox(height: 12),
+          Text(
+            'Nenhuma atividade',
+            style: AppTheme.cardTitle,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Os treinos concluídos aparecerão aqui.',
+            style: AppTheme.caption,
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -399,10 +329,7 @@ class _AtividadeRecenteSection extends StatelessWidget {
   Widget _buildShimmer() {
     return Container(
       height: 160,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-      ),
+      decoration: AppTheme.premiumCardDecoration,
     );
   }
 }
@@ -433,13 +360,13 @@ class _AtividadeItem extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: CardTokens.padding,
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 AppAvatar(
                   name: item.alunoNome,
                   photoUrl: item.alunoPhotoUrl,
-                  radius: AvatarTokens.md,
+                  radius: 20,
                   showBorder: false,
                 ),
                 const SizedBox(width: 14),
@@ -448,12 +375,12 @@ class _AtividadeItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(item.alunoNome, style: AppTheme.cardTitle),
-                      const SizedBox(height: SpacingTokens.titleToSubtitle),
+                      const SizedBox(height: 4),
                       Text(
                         item.sessaoNome.isEmpty
                             ? 'Concluiu um treino'
                             : 'Concluiu o treino "${item.sessaoNome}"',
-                        style: AppTheme.cardSubtitle,
+                        style: AppTheme.caption,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -464,12 +391,12 @@ class _AtividadeItem extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(_tempoRelativo(item.dataHora), style: AppTheme.caption),
+                    Text(_tempoRelativo(item.dataHora), style: AppTheme.premiumLabel.copyWith(fontSize: 10)),
                     const SizedBox(width: 4),
-                    Icon(
+                    const Icon(
                       Icons.chevron_right_rounded,
-                      size: 18,
-                      color: AppColors.labelSecondary.withAlpha(80),
+                      size: 16,
+                      color: AppColors.labelSecondary,
                     ),
                   ],
                 ),
@@ -478,11 +405,11 @@ class _AtividadeItem extends StatelessWidget {
           ),
           if (showDivider)
             Padding(
-              padding: const EdgeInsets.only(left: 68),
+              padding: const EdgeInsets.only(left: 70),
               child: Divider(
                 height: 1,
                 thickness: 0.5,
-                color: AppColors.separator,
+                color: Colors.white.withAlpha(10),
               ),
             ),
         ],

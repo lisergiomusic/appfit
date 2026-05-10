@@ -400,7 +400,7 @@ class _AlunoSessaoDetalhePageState extends State<AlunoSessaoDetalhePage> {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                _expandedStates.every((e) => e) ? 'Recolher' : 'Expandir',
+                                (_expandedStates.every((e) => e) ? 'Recolher' : 'Expandir').toUpperCase(),
                                 style: AppTheme.sectionAction,
                               ),
                             ],

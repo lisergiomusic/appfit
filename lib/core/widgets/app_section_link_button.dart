@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
 
 class AppSectionLinkButton extends StatelessWidget {
@@ -10,10 +11,16 @@ class AppSectionLinkButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoButton(
-      padding: const EdgeInsets.only(left: 8, right: 4, top: 4, bottom: 0),
+      padding: const EdgeInsets.only(left: 8, right: 0, top: 4, bottom: 0),
       minimumSize: const Size(0, 0),
-      onPressed: onPressed,
-      child: Text(label, style: AppTheme.sectionAction),
+      onPressed: onPressed != null ? () {
+        HapticFeedback.lightImpact();
+        onPressed!();
+      } : null,
+      child: Text(
+        label.toUpperCase(),
+        style: AppTheme.sectionAction,
+      ),
     );
   }
 }

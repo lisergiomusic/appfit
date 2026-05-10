@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
@@ -6,6 +7,7 @@ import '../../../core/services/aluno_service.dart';
 import '../../../core/services/workout_draft_service.dart';
 import '../../../core/utils/app_ui_utils.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_section_link_button.dart';
 import '../../treinos/aluno/pages/aluno_rotina_view_page.dart';
 import '../../treinos/shared/models/rotina_model.dart';
 import '../../treinos/aluno/pages/aluno_executar_treino_page.dart';
@@ -378,7 +380,7 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
               Container(
                 width: 48, height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withAlpha(20), 
+                  color: AppColors.primary.withAlpha(20),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.auto_awesome_motion_rounded, color: AppColors.primary, size: 24),
@@ -479,9 +481,9 @@ class _NextWorkoutCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('PRÓXIMO TREINO', style: AppTheme.sectionHeader),
-            GestureDetector(
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AlunoSessaoDetalhePage(sessao: sessao, letra: letra, rotinaId: rotinaId, alunoId: alunoId))),
-              child: const Text('DETALHES', style: AppTheme.premiumLabel),
+            AppSectionLinkButton(
+              label: 'DETALHES',
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AlunoSessaoDetalhePage(sessao: sessao, letra: letra, rotinaId: rotinaId, alunoId: alunoId))),
             ),
           ],
         ),

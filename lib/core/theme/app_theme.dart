@@ -58,9 +58,9 @@ class AppTheme {
   );
 
   static const sectionAction = TextStyle(
-    fontSize: 13,
-    fontWeight: FontWeight.w600,
-    letterSpacing: -0.1,
+    fontSize: 10,
+    fontWeight: FontWeight.w800,
+    letterSpacing: 1.5,
     color: AppColors.primary,
   );
 

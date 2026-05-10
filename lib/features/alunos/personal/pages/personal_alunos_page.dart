@@ -358,12 +358,13 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
       child: Container(
-        height: 36,
+        height: 44,
         decoration: BoxDecoration(
           color: AppColors.surfaceDark,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+          border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
         ),
         child: TextField(
           controller: _searchController,
@@ -371,23 +372,13 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
             setState(() => _searchQuery = val);
             _fetchInitialData();
           },
-          style: const TextStyle(
-            color: AppColors.labelPrimary,
-            fontSize: 16,
-            letterSpacing: -0.41,
-            fontWeight: FontWeight.w400,
-          ),
+          style: AppTheme.inputText,
           cursorColor: AppColors.primary,
           textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
             isDense: true,
             hintText: 'Buscar por nome...',
-            hintStyle: TextStyle(
-              color: AppColors.labelTertiary,
-              fontSize: 17,
-              letterSpacing: -0.41,
-              fontWeight: FontWeight.w400,
-            ),
+            hintStyle: AppTheme.inputPlaceHolder,
             prefixIcon: Icon(
               Icons.search_rounded,
               color: AppColors.labelSecondary.withAlpha(120),
@@ -411,7 +402,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
             filled: false,
-            contentPadding: EdgeInsets.zero,
+            contentPadding: const EdgeInsets.symmetric(vertical: 11),
           ),
         ),
       ),
