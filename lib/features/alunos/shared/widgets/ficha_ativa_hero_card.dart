@@ -129,53 +129,36 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      SizedBox(
-                        width: 60,
-                        height: 60,
-                        child: CircularProgressIndicator(
-                          value: progressoAtual,
-                          strokeWidth: 6,
-                          backgroundColor: AppColors.primary.withAlpha(15),
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            AppColors.primary,
-                          ),
-                          strokeCap: StrokeCap.round,
-                        ),
-                      ),
-                      const Icon(
-                        Icons.fitness_center_rounded,
-                        color: AppColors.primary,
-                        size: 22,
-                      ),
-                    ],
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withAlpha(20),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.auto_awesome_motion_rounded,
+                      color: AppColors.primary,
+                      size: 24,
+                    ),
                   ),
-                  const SizedBox(width: 20),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          (rotina['nome'] ?? 'Ficha de Treino').toString().toUpperCase(),
-                          style: AppTheme.cardTitle.copyWith(fontSize: 14, fontWeight: FontWeight.w900),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          objetivo,
-                          style: AppTheme.caption,
+                          (rotina['nome'] ?? 'Ficha de Treino').toString(),
+                          style: AppTheme.cardTitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          legendaVencimento.toUpperCase(),
-                          style: AppTheme.premiumLabel.copyWith(
+                          legendaVencimento,
+                          style: AppTheme.caption.copyWith(
                             color: AppColors.primary,
-                            fontSize: 9,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],

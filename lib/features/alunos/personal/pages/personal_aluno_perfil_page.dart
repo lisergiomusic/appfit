@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/services/personal_service.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_bar_divider.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../../../core/widgets/app_primary_button.dart';
 import '../../../../core/widgets/app_tappable.dart';
@@ -253,28 +254,22 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
   Widget _buildSliverAppBar(String nome) {
     return SliverAppBar(
       pinned: true,
-      expandedHeight: 120,
       backgroundColor: AppColors.background,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
+      centerTitle: true,
       leading: const AppNavBackButton(),
+      title: const Text('Perfil do Aluno', style: AppTheme.pageTitle),
       actions: [
         IconButton(
-          icon: const Icon(CupertinoIcons.settings, color: AppColors.labelSecondary, size: 22),
+          icon: const Icon(CupertinoIcons.settings,
+              color: AppColors.labelSecondary, size: 22),
           onPressed: () => _irParaGerenciarAluno(context),
           padding: const EdgeInsets.only(right: 16),
         ),
       ],
-      flexibleSpace: FlexibleSpaceBar(
-        stretchModes: const [StretchMode.zoomBackground, StretchMode.fadeTitle],
-        background: Container(
-          decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
-        ),
-        titlePadding: const EdgeInsets.only(left: 52, bottom: 16),
-        centerTitle: false,
-        title: Text('Perfil do Aluno', style: AppTheme.pageTitle),
-      ),
+      bottom: const AppBarDivider(),
     );
   }
 
