@@ -82,30 +82,10 @@ class _AlunoContaPageState extends State<AlunoContaPage> {
                 centerTitle: false,
                 actions: [
                   IconButton(
-                    icon: Stack(
-                      children: [
-                        const Icon(
-                          Icons.notifications_rounded,
-                          color: AppColors.labelSecondary,
-                          size: 26,
-                        ),
-                        Positioned(
-                          right: 2,
-                          top: 2,
-                          child: Container(
-                            width: 9,
-                            height: 9,
-                            decoration: BoxDecoration(
-                              color: AppColors.systemRed,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.background,
-                                width: 1.5,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                    icon: const Icon(
+                      Icons.notifications_outlined,
+                      color: AppColors.labelSecondary,
+                      size: 24,
                     ),
                     onPressed: () => AppUIUtils.showFutureFeatureWarning(context),
                   ),

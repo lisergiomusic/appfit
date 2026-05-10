@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/services/user_service.dart';
 import '../../../../core/services/media_service.dart';
 import '../../../../core/theme/app_theme.dart';

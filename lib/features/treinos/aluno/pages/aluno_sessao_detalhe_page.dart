@@ -862,7 +862,7 @@ class _ReadOnlySetRow extends StatelessWidget {
   Widget build(BuildContext context) {
     // Lógica de Carga Inteligente (Personal vs Histórico)
     final cargaPersonal = double.tryParse(serie.carga) ?? 0;
-    final double cargaAnterior = (historico.pesoRealizado as num?)?.toDouble() ?? 0;
+    final double cargaAnterior = double.tryParse(historico.pesoRealizado ?? '') ?? 0;
 
     String valorParaExibir;
     Color corValor = AppColors.labelPrimary;

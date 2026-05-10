@@ -489,7 +489,7 @@ class _NextWorkoutCard extends StatelessWidget {
         Container(
           decoration: AppTheme.premiumCardDecoration.copyWith(
             image: coverUrl != null ? DecorationImage(
-              image: NetworkImage(coverUrl!),
+              image: CachedNetworkImageProvider(coverUrl!),
               fit: BoxFit.cover,
               colorFilter: ColorFilter.mode(Colors.black.withAlpha(160), BlendMode.darken),
             ) : null,
