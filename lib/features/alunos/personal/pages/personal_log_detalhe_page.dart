@@ -243,24 +243,17 @@ class PersonalLogDetalhePage extends StatelessWidget {
           const SizedBox(height: SpacingTokens.labelToField),
           if (hasObservacoes) ...[
             Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  left: BorderSide(
-                    color: AppColors.primary.withValues(alpha: 0.2),
-                    width: 2,
-                  ),
-                ),
-              ),
-              padding: const EdgeInsets.only(left: 12, top: 4, bottom: 4),
+
+              padding: const EdgeInsets.only( top: 4, bottom: 4),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
                     Icons.format_quote_rounded,
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    size: 20,
+                    color: AppColors.labelSecondary,
+                    size: 18,
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       item.observacoes!,
