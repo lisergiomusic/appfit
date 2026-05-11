@@ -62,7 +62,6 @@ class PersonalLogDetalhePage extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     final dateStr = DateFormat("dd MMM yyyy", 'pt_BR').format(item.dataHora).toUpperCase();
     final timeStr = DateFormat("HH:mm").format(item.dataHora);
-    final sessionName = item.sessaoNome.isEmpty ? 'TREINO CONCLUÍDO' : item.sessaoNome.toUpperCase();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
@@ -117,25 +116,72 @@ class PersonalLogDetalhePage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 32),
-          Text(
-            sessionName,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.w900,
-              height: 1.1,
-              letterSpacing: -1.0,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '$dateStr • $timeStr',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.5),
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 4,
+                height: 52,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.primary,
+                      AppColors.primary.withValues(alpha: 0.3),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(SpacingTokens.xs),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'TREINO REALIZADO',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.4),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '•',
+                          style: TextStyle(color: Colors.white.withValues(alpha: 0.2), fontSize: 10),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '$dateStr • $timeStr',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      item.sessaoNome.isEmpty ? 'Sessão Individual' : item.sessaoNome,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        height: 1.1,
+                        letterSpacing: -0.8,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -152,8 +198,14 @@ class PersonalLogDetalhePage extends StatelessWidget {
     final effortVal = item.esforco != null && item.esforco! > 0 ? '${item.esforco}' : '-';
     final effortStr = effortVal == '-' ? '-' : '$effortVal/10';
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(SpacingTokens.lg),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -174,23 +226,52 @@ class PersonalLogDetalhePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'ANOTAÇÕES DO ALUNO',
-            style: TextStyle(
-              color: Colors.white54,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.5,
-            ),
+          Row(
+            children: [
+              Icon(
+                Icons.chat_bubble_outline_rounded,
+                color: Colors.white.withValues(alpha: 0.4),
+                size: 14,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'FEEDBACK DO ALUNO',
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
-          Text(
-            item.observacoes!,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              height: 1.6,
-              fontWeight: FontWeight.w400,
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.02),
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(AppTheme.radiusXL),
+                bottomRight: Radius.circular(AppTheme.radiusXL),
+              ),
+              border: Border(
+                left: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  width: 2,
+                ),
+              ),
+            ),
+            child: Text(
+              item.observacoes!,
+              style: TextStyle(
+                color: const Color(0xFFE0E0E0).withValues(alpha: 0.8),
+                fontSize: 15,
+                height: 1.6,
+                fontStyle: FontStyle.italic,
+                fontWeight: FontWeight.w400,
+                letterSpacing: 0.3,
+              ),
             ),
           ),
         ],
