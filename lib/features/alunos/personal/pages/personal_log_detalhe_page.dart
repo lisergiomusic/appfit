@@ -47,12 +47,12 @@ class PersonalLogDetalhePage extends StatelessWidget {
           children: [
             _buildHeader(context),
             const SizedBox(height: 32),
-            _buildStatsRow(),
-            const SizedBox(height: 32),
             if ((item.observacoes != null && item.observacoes!.isNotEmpty) || (item.esforco != null && item.esforco! > 0)) ...[
               _buildNotesSection(),
               const SizedBox(height: 32),
             ],
+            _buildStatsRow(),
+            const SizedBox(height: 32),
             _buildExercisesSection(),
           ],
         ),
@@ -229,132 +229,106 @@ class PersonalLogDetalhePage extends StatelessWidget {
 
   Widget _buildNotesSection() {
     final effortVal = item.esforco != null && item.esforco! > 0 ? '${item.esforco}' : null;
+    final hasObservacoes = item.observacoes != null && item.observacoes!.isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.chat_bubble_outline_rounded,
-                color: Colors.white.withValues(alpha: 0.4),
-                size: 12,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'FEEDBACK DO ALUNO',
-                style: AppTheme.sectionHeader,
-              ),
-            ],
+          Text(
+            'FEEDBACK DO ALUNO',
+            style: AppTheme.sectionHeader,
           ),
           const SizedBox(height: SpacingTokens.labelToField),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.02),
-              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (effortVal != null) ...[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(Icons.bolt_rounded, color: AppColors.primary, size: 16),
-                      ),
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'INTENSIDADE DO TREINO',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.3),
-                              fontSize: 9,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                          const Text(
-                            'Esforço Percebido',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                      Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: effortVal,
-                              style: const TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 28,
-                                fontWeight: FontWeight.w900,
-                                height: 1.0,
-                              ),
-                            ),
-                            TextSpan(
-                              text: ' / 10',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+          if (hasObservacoes) ...[
+            Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                    width: 2,
                   ),
-                  const SizedBox(height: 20),
-                  Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
-                  const SizedBox(height: 20),
+                ),
+              ),
+              padding: const EdgeInsets.only(left: 12, top: 4, bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.format_quote_rounded,
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      item.observacoes!,
+                      style: TextStyle(
+                        color: AppColors.labelPrimary,
+                        fontSize: 15,
+                        fontStyle: FontStyle.italic,
+                        height: 1.5,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
                 ],
-                Row(
+              ),
+            ),
+            const SizedBox(height: SpacingTokens.sectionGap),
+          ],
+          if (effortVal != null) ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.format_quote_rounded,
-                      color: Colors.white.withValues(alpha: 0.1),
-                      size: 18,
+                    Text(
+                      'INTENSIDADE RELATADA',
+                      style: AppTheme.microLabelTextStyle.copyWith(
+                        color: AppColors.primary.withValues(alpha: 0.6),
+                      ),
                     ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        (item.observacoes != null && item.observacoes!.isNotEmpty)
-                            ? item.observacoes!
-                            : 'Nenhum comentário adicional enviado pelo aluno.',
-                        style: TextStyle(
-                          color: const Color(0xFFE0E0E0).withValues(alpha: (item.observacoes != null && item.observacoes!.isNotEmpty) ? 0.8 : 0.2),
-                          fontSize: 14,
-                          fontStyle: FontStyle.italic,
-                          fontWeight: FontWeight.w400,
-                          height: 1.6,
-                          letterSpacing: 0.3,
-                        ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Percepção de Esforço (RPE)',
+                      style: AppTheme.caption.copyWith(
+                        color: AppColors.labelTertiary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      effortVal,
+                      style: AppTheme.bigTitle.copyWith(
+                        fontSize: 32,
+                        color: AppColors.primary,
+                        height: 1,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '/ 10',
+                      style: AppTheme.microLabelTextStyle.copyWith(
+                        color: AppColors.labelQuaternary,
+                        fontSize: 14,
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-          ),
+            const SizedBox(height: 12),
+          ],
         ],
       ),
     );
