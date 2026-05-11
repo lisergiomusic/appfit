@@ -105,7 +105,7 @@ class PersonalLogDetalhePage extends StatelessWidget {
                         style: TextStyle(
                           color: AppColors.primary,
                           fontSize: 10,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w600,
                           letterSpacing: 1.0,
                         ),
                       ),
@@ -147,7 +147,7 @@ class PersonalLogDetalhePage extends StatelessWidget {
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.4),
                             fontSize: 10,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w600,
                             letterSpacing: 1.5,
                           ),
                         ),
@@ -205,23 +205,29 @@ class PersonalLogDetalhePage extends StatelessWidget {
     final volStr = volume >= 1000 ? (volume / 1000).toStringAsFixed(1) : volume.toInt().toString();
     final volUnit = volume >= 1000 ? 't' : 'kg';
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(SpacingTokens.lg),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _StatItem(value: '${item.duracaoMinutos}', label: 'MINUTOS'),
-          _StatDivider(),
-          _StatItem(value: '$sets', label: 'SÉRIES'),
-          _StatDivider(),
-          _StatItem(value: volStr, label: 'VOLUME ($volUnit)'),
+          Expanded(
+            child: _StatItem(
+              value: '${item.duracaoMinutos}',
+              label: 'MINUTOS',
+            ),
+          ),
+          Expanded(
+            child: _StatItem(
+              value: '$sets',
+              label: 'SÉRIES',
+            ),
+          ),
+          Expanded(
+            child: _StatItem(
+              value: volStr,
+              label: 'VOLUME ($volUnit)',
+              showSeparator: false,
+            ),
+          ),
         ],
       ),
     );
@@ -233,96 +239,115 @@ class PersonalLogDetalhePage extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'FEEDBACK DO ALUNO',
-            style: AppTheme.sectionHeader,
-          ),
-          const SizedBox(height: SpacingTokens.labelToField),
-          if (hasObservacoes) ...[
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Rail (Industrial Neutral Stripe)
             Container(
-
-              padding: const EdgeInsets.only( top: 4, bottom: 4),
-              child: Row(
+              width: 4,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(SpacingTokens.xs),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white.withValues(alpha: 0.1),
+                    Colors.white.withValues(alpha: 0.02),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.format_quote_rounded,
-                    color: AppColors.labelSecondary,
-                    size: 18,
+                  // Título da Seção
+                  Text(
+                    'FEEDBACK DO ALUNO',
+                    style: AppTheme.sectionHeader,
                   ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
+                  const SizedBox(height: 16),
+
+                  // Observações
+                  if (hasObservacoes) ...[
+                    Text(
                       item.observacoes!,
                       style: TextStyle(
                         color: AppColors.labelPrimary,
-                        fontSize: 15,
+                        fontSize: 16,
                         fontStyle: FontStyle.italic,
+                        fontWeight: FontWeight.w400,
                         height: 1.5,
                         letterSpacing: 0.2,
                       ),
                     ),
-                  ),
+                  ],
+
+                  if (effortVal != null) ...[
+                    if (hasObservacoes) ...[
+                      const SizedBox(height: 16),
+                      Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // Métrica de Intensidade
+                    Row(
+                      children: [
+                        _buildIntensityTag('PERCEPÇÃO DE ESFORÇO'),
+                        const Spacer(),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              effortVal,
+                              style: AppTheme.bigTitle.copyWith(
+                                fontSize: 32,
+                                color: AppColors.primary,
+                                height: 1,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '/ 10 RPE',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
-            const SizedBox(height: SpacingTokens.sectionGap),
           ],
-          if (effortVal != null) ...[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'INTENSIDADE RELATADA',
-                      style: AppTheme.microLabelTextStyle.copyWith(
-                        color: AppColors.primary.withValues(alpha: 0.6),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Percepção de Esforço (RPE)',
-                      style: AppTheme.caption.copyWith(
-                        color: AppColors.labelTertiary,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 16),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Text(
-                      effortVal,
-                      style: AppTheme.bigTitle.copyWith(
-                        fontSize: 32,
-                        color: AppColors.primary,
-                        height: 1,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '/ 10',
-                      style: AppTheme.microLabelTextStyle.copyWith(
-                        color: AppColors.labelQuaternary,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-          ],
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIntensityTag(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(SpacingTokens.xs),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: AppColors.primary.withValues(alpha: 0.7),
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }
@@ -346,53 +371,66 @@ class PersonalLogDetalhePage extends StatelessWidget {
 }
 
 class _StatItem extends StatelessWidget {
-  final String value;
   final String label;
-  final Color valueColor;
+  final String value;
+  final bool showSeparator;
 
   const _StatItem({
-    required this.value,
     required this.label,
-    this.valueColor = Colors.white,
+    required this.value,
+    this.showSeparator = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+    return Row(
       children: [
-        Text(
-          value,
-          style: TextStyle(
-            color: valueColor,
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -1.0,
-            height: 1.0,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: AppTheme.title1.copyWith(
+                  fontSize: 24,
+                  color: Colors.white,
+                  height: 1.0,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                label.toUpperCase(),
+                style: AppTheme.formLabel.copyWith(
+                  fontSize: 10,
+                  letterSpacing: 0.5,
+                  color: AppColors.labelSecondary,
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white54,
-            fontSize: 9,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.5,
+        if (showSeparator)
+          Container(
+            height: 24,
+            width: 1,
+            color: Colors.white10,
+            margin: const EdgeInsets.symmetric(horizontal: 12),
           ),
-        ),
       ],
     );
   }
 }
 
 class _StatDivider extends StatelessWidget {
+  const _StatDivider();
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 1,
-      height: 32,
-      color: Colors.white.withValues(alpha: 0.1),
+      height: 24,
+      color: Colors.white.withValues(alpha: 0.12),
+      margin: const EdgeInsets.symmetric(horizontal: 12),
     );
   }
 }
@@ -532,7 +570,7 @@ class _ExerciseListItemState extends State<_ExerciseListItem> {
                                     style: TextStyle(
                                       color: Colors.amber.withValues(alpha: 0.5),
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w900,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 )
@@ -541,7 +579,7 @@ class _ExerciseListItemState extends State<_ExerciseListItem> {
                                   style: TextStyle(
                                     color: Colors.white.withValues(alpha: 0.4),
                                     fontSize: 12,
-                                    fontWeight: FontWeight.w900,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                           ),
@@ -601,10 +639,46 @@ class _ExerciseListItemState extends State<_ExerciseListItem> {
         style: TextStyle(
           color: Colors.white.withValues(alpha: 0.2),
           fontSize: 9,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w600,
           letterSpacing: 1.0,
         ),
       ),
     );
   }
+}
+
+class _BubbleTailPainter extends CustomPainter {
+  final Color color;
+  _BubbleTailPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final path = Path()
+      ..moveTo(0, size.height)
+      ..lineTo(size.width / 2, 0)
+      ..lineTo(size.width, size.height)
+      ..close();
+
+    canvas.drawPath(path, paint);
+
+    // Borda sutil no tail para alinhar com o corpo
+    final borderPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.05)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.5;
+
+    final borderPath = Path()
+      ..moveTo(0, size.height)
+      ..lineTo(size.width / 2, 0)
+      ..lineTo(size.width, size.height);
+
+    canvas.drawPath(borderPath, borderPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
