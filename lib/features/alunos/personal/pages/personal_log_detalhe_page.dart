@@ -49,9 +49,10 @@ class PersonalLogDetalhePage extends StatelessWidget {
             const SizedBox(height: 32),
             _buildStatsRow(),
             const SizedBox(height: 32),
-            if (item.observacoes != null && item.observacoes!.isNotEmpty)
+            if ((item.observacoes != null && item.observacoes!.isNotEmpty) || (item.esforco != null && item.esforco! > 0)) ...[
               _buildNotesSection(),
-            const SizedBox(height: 32),
+              const SizedBox(height: 32),
+            ],
             _buildExercisesSection(),
           ],
         ),
@@ -189,14 +190,20 @@ class PersonalLogDetalhePage extends StatelessWidget {
   }
 
   Widget _buildStatsRow() {
+    double volume = 0;
     int sets = 0;
     for (var ex in item.exercicios) {
       final s = (ex['series'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       sets += s.length;
+      for (var sItem in s) {
+        final p = double.tryParse(sItem['pesoRealizado']?.toString() ?? '0') ?? 0;
+        final r = int.tryParse(sItem['repsRealizadas']?.toString() ?? '0') ?? 0;
+        volume += p * r;
+      }
     }
 
-    final effortVal = item.esforco != null && item.esforco! > 0 ? '${item.esforco}' : '-';
-    final effortStr = effortVal == '-' ? '-' : '$effortVal/10';
+    final volStr = volume >= 1000 ? (volume / 1000).toStringAsFixed(1) : volume.toInt().toString();
+    final volUnit = volume >= 1000 ? 't' : 'kg';
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
@@ -214,13 +221,15 @@ class PersonalLogDetalhePage extends StatelessWidget {
           _StatDivider(),
           _StatItem(value: '$sets', label: 'SÉRIES'),
           _StatDivider(),
-          _StatItem(value: effortStr, label: 'ESFORÇO', valueColor: AppColors.primary),
+          _StatItem(value: volStr, label: 'VOLUME ($volUnit)'),
         ],
       ),
     );
   }
 
   Widget _buildNotesSection() {
+    final effortVal = item.esforco != null && item.esforco! > 0 ? '${item.esforco}' : null;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
       child: Column(
@@ -231,47 +240,119 @@ class PersonalLogDetalhePage extends StatelessWidget {
               Icon(
                 Icons.chat_bubble_outline_rounded,
                 color: Colors.white.withValues(alpha: 0.4),
-                size: 14,
+                size: 12,
               ),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'FEEDBACK DO ALUNO',
-                style: TextStyle(
-                  color: Colors.white54,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.5,
-                ),
+                style: AppTheme.sectionHeader,
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: SpacingTokens.labelToField),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.02),
-              borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(AppTheme.radiusXL),
-                bottomRight: Radius.circular(AppTheme.radiusXL),
-              ),
-              border: Border(
-                left: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  width: 2,
-                ),
-              ),
+              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
-            child: Text(
-              item.observacoes!,
-              style: TextStyle(
-                color: const Color(0xFFE0E0E0).withValues(alpha: 0.8),
-                fontSize: 15,
-                height: 1.6,
-                fontStyle: FontStyle.italic,
-                fontWeight: FontWeight.w400,
-                letterSpacing: 0.3,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (effortVal != null) ...[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.bolt_rounded, color: AppColors.primary, size: 16),
+                      ),
+                      const SizedBox(width: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'INTENSIDADE DO TREINO',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                          const Text(
+                            'Esforço Percebido',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: effortVal,
+                              style: const TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 28,
+                                fontWeight: FontWeight.w900,
+                                height: 1.0,
+                              ),
+                            ),
+                            TextSpan(
+                              text: ' / 10',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
+                  const SizedBox(height: 20),
+                ],
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.format_quote_rounded,
+                      color: Colors.white.withValues(alpha: 0.1),
+                      size: 18,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        (item.observacoes != null && item.observacoes!.isNotEmpty)
+                            ? item.observacoes!
+                            : 'Nenhum comentário adicional enviado pelo aluno.',
+                        style: TextStyle(
+                          color: const Color(0xFFE0E0E0).withValues(alpha: (item.observacoes != null && item.observacoes!.isNotEmpty) ? 0.8 : 0.2),
+                          fontSize: 14,
+                          fontStyle: FontStyle.italic,
+                          fontWeight: FontWeight.w400,
+                          height: 1.6,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],
@@ -283,19 +364,14 @@ class PersonalLogDetalhePage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
           child: Text(
             'EXERCÍCIOS REALIZADOS',
-            style: TextStyle(
-              color: Colors.white54,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.5,
-            ),
+            style: AppTheme.sectionHeader,
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: SpacingTokens.labelToField + 4),
         ...item.exercicios.map((ex) => _ExerciseListItem(exercicio: ex)),
       ],
     );
@@ -390,96 +466,177 @@ class _ExerciseListItemState extends State<_ExerciseListItem> {
       padding: const EdgeInsets.only(
         left: SpacingTokens.screenHorizontalPadding,
         right: SpacingTokens.screenHorizontalPadding,
-        bottom: 32,
+        bottom: 24,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.02),
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(SpacingTokens.sm),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: FutureBuilder<String?>(
+                    future: _thumbnailFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData && snapshot.data != null) {
+                        return CachedNetworkImage(
+                          imageUrl: snapshot.data!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => const SizedBox(),
+                          errorWidget: (context, url, error) => const Icon(Icons.fitness_center, color: Colors.white24, size: 18),
+                        );
+                      }
+                      return const Icon(Icons.fitness_center, color: Colors.white24, size: 18);
+                    },
+                  ),
                 ),
-                clipBehavior: Clip.antiAlias,
-                child: FutureBuilder<String?>(
-                  future: _thumbnailFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData && snapshot.data != null) {
-                      return CachedNetworkImage(
-                        imageUrl: snapshot.data!,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => const SizedBox(),
-                        errorWidget: (context, url, error) => const Icon(Icons.fitness_center, color: Colors.white24, size: 20),
-                      );
-                    }
-                    return const Icon(Icons.fitness_center, color: Colors.white24, size: 20);
-                  },
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    nome,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (series.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Row(
+                  children: [
+                    _buildTableHeader('SÉRIE', flex: 2),
+                    _buildTableHeader('PESO', flex: 3),
+                    _buildTableHeader('REPS', flex: 3),
+                    _buildTableHeader('ALVO', flex: 3, alignment: TextAlign.right),
+                  ],
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  nome,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.3,
-                  ),
+              const SizedBox(height: 12),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+                ),
+                child: Column(
+                  children: series.asMap().entries.map((e) {
+                    final i = e.key;
+                    final s = e.value;
+                    final peso = s['pesoRealizado']?.toString() ?? '0';
+                    final reps = s['repsRealizadas']?.toString() ?? '0';
+                    final alvo = s['alvo']?.toString() ?? '-';
+                    final tipo = s['tipo']?.toString().toLowerCase() ?? 'trabalho';
+                    final isWarmup = tipo == 'aquecimento';
+                    final isLast = i == series.length - 1;
+
+                    return Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                      decoration: BoxDecoration(
+                        border: isLast ? null : Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.03))),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: isWarmup
+                              ? Tooltip(
+                                  message: 'Série de Aquecimento',
+                                  triggerMode: TooltipTriggerMode.tap,
+                                  preferBelow: false,
+                                  child: Text(
+                                    'A${i + 1}',
+                                    style: TextStyle(
+                                      color: Colors.amber.withValues(alpha: 0.5),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                )
+                              : Text(
+                                  '${i + 1}º',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.4),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                          ),
+                          Expanded(
+                            flex: 3,
+                            child: Text(
+                              '${peso}kg',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 3,
+                            child: Text(
+                              reps,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 3,
+                            child: Text(
+                              alvo,
+                              textAlign: TextAlign.right,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.3),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
                 ),
               ),
             ],
-          ),
-          if (series.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            ...series.asMap().entries.map((e) {
-              final i = e.key;
-              final s = e.value;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12, left: 64),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 24,
-                      child: Text(
-                        '${i + 1}',
-                        style: const TextStyle(
-                          color: Colors.white54,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        '${s['pesoRealizado'] ?? '0'}kg × ${s['repsRealizadas'] ?? '0'}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    if (s['alvo'] != null)
-                      Text(
-                        s['alvo'].toString(),
-                        style: const TextStyle(
-                          color: Colors.white30,
-                          fontSize: 13,
-                          fontStyle: FontStyle.italic,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            }),
           ],
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTableHeader(String label, {required int flex, TextAlign alignment = TextAlign.left}) {
+    return Expanded(
+      flex: flex,
+      child: Text(
+        label,
+        textAlign: alignment,
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.2),
+          fontSize: 9,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 1.0,
+        ),
       ),
     );
   }
