@@ -111,16 +111,30 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // Background Gradient
+          // Preto Absoluto de fundo para contraste infinito
+          Container(color: Colors.black),
+          
+          // Gradiente Atmosférico de Profundidade
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            height: 200, // Altura fixa para o gradiente no topo
+            height: 400,
             child: Container(
-              decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.primary.withValues(alpha: 0.15),
+                    AppColors.primary.withValues(alpha: 0.05),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
             ),
           ),
+
           StreamBuilder<AlunoPerfilData>(
             stream: _perfilStream,
             builder: (context, snapshot) {
@@ -156,68 +170,111 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                 bottom: false,
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      left: SpacingTokens.screenHorizontalPadding,
-                      right: SpacingTokens.screenHorizontalPadding,
-                      top: SpacingTokens.screenTopPadding,
-                      bottom: 64,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AlunoHeaderSection(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
+                        child: AlunoHeaderSection(
                           alunoId: widget.alunoId,
                           alunoNome: nomeExibicao,
                           photoUrl: widget.photoUrl ?? photoUrl,
                           idade: idade,
                           peso: peso.toString(),
                         ),
-                        const SizedBox(height: SpacingTokens.xxl),
-                        _buildActions(context, telefone),
-                        const SizedBox(height: SpacingTokens.sectionGap),
-                        StreamBuilder<dynamic>(
-                          stream: _logsSemanaStream,
-                          builder: (context, logsSnapshot) {
-                            List<DateTime>? treinados;
-                            if (logsSnapshot.hasData) {
-                              final list = logsSnapshot.data as List;
-                              treinados = list
-                                  .map((d) => DateTime.tryParse(d['dataHora'].toString()))
-                                  .whereType<DateTime>()
-                                  .toList();
-                            }
-                            return RitmoDaSemanaCard(
-                              alunoNome: nomeExibicao,
-                              diasTreinados: treinados,
-                            );
-                          },
+                      ),
+                      
+                      const SizedBox(height: SpacingTokens.xxl),
+                      
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
+                        child: _buildActions(context, telefone),
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      // The Glass Console - A placa única de vidro
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.03),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(32),
+                            topRight: Radius.circular(32),
+                          ),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.05),
+                            width: 1,
+                          ),
                         ),
-                        const SizedBox(height: SpacingTokens.sectionGap),
-                        FichaAtivaHeroCard(
-                          alunoId: widget.alunoId,
-                          alunoNome: nomeExibicao,
-                          photoUrl: widget.photoUrl ?? photoUrl,
-                          peso: peso.toString(),
-                          idade: idade,
-                          rotinaAtiva: data.rotinaAtiva,
-                          rotinaId: data.rotinaId,
-                          onPrescreverTreino: () async {
-                            HapticFeedback.lightImpact();
-                            await _exibirOpcoesVincularTreino(context);
-                            _carregarDados();
-                          },
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(32),
+                            topRight: Radius.circular(32),
+                          ),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 32),
+                              
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                child: StreamBuilder<dynamic>(
+                                  stream: _logsSemanaStream,
+                                  builder: (context, logsSnapshot) {
+                                    List<DateTime>? treinados;
+                                    if (logsSnapshot.hasData) {
+                                      final list = logsSnapshot.data as List;
+                                      treinados = list
+                                          .map((d) => DateTime.tryParse(d['dataHora'].toString()))
+                                          .whereType<DateTime>()
+                                          .toList();
+                                    }
+                                    return RitmoDaSemanaCard(
+                                      alunoNome: nomeExibicao,
+                                      diasTreinados: treinados,
+                                    );
+                                  },
+                                ),
+                              ),
+
+                              const SizedBox(height: 40),
+                              
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                child: FichaAtivaHeroCard(
+                                  alunoId: widget.alunoId,
+                                  alunoNome: nomeExibicao,
+                                  photoUrl: widget.photoUrl ?? photoUrl,
+                                  peso: peso.toString(),
+                                  idade: idade,
+                                  rotinaAtiva: data.rotinaAtiva,
+                                  rotinaId: data.rotinaId,
+                                  onPrescreverTreino: () async {
+                                    HapticFeedback.lightImpact();
+                                    await _exibirOpcoesVincularTreino(context);
+                                    _carregarDados();
+                                  },
+                                ),
+                              ),
+
+                              const SizedBox(height: 40),
+
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                child: GestaoSection(
+                                  alunoId: widget.alunoId,
+                                  alunoNome: nomeExibicao,
+                                  photoUrl: photoUrl,
+                                  peso: peso.toString(),
+                                  idade: idade,
+                                ),
+                              ),
+                              
+                              const SizedBox(height: 60),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: SpacingTokens.sectionGap),
-                        GestaoSection(
-                          alunoId: widget.alunoId,
-                          alunoNome: nomeExibicao,
-                          photoUrl: photoUrl,
-                          peso: peso.toString(),
-                          idade: idade,
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -257,40 +314,54 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
   }
 
   Widget _buildActions(BuildContext context, String? telefone) {
-    return AppTappable(
-      onPressed: () => _abrirWhatsApp(context, telefone),
-      child: Container(
-        width: double.infinity,
-        height: 50,
-        decoration: BoxDecoration(
-          color: const Color(0xFF25D366).withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(SpacingTokens.sm),
-          border: Border.all(
-            color: const Color(0xFF25D366).withValues(alpha: 0.2),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const FaIcon(
-              FontAwesomeIcons.whatsapp,
-              color: Color(0xFF25D366),
-              size: 20,
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'WHATSAPP',
-              style: TextStyle(
-                fontSize: 13,
-                color: Color(0xFF25D366),
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.0,
+    return Row(
+      children: [
+        AppTappable(
+          onPressed: () => _abrirWhatsApp(context, telefone),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(SpacingTokens.sm),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.1),
+                width: 1,
               ),
             ),
-          ],
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const FaIcon(
+                  FontAwesomeIcons.whatsapp,
+                  color: Color(0xFF25D366),
+                  size: 16,
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'MENSAGEM',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
+        const SizedBox(width: 12),
+        // Novo Botão de Quick Insight (Placeholder técnico)
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+          ),
+          child: const Icon(Icons.analytics_outlined, color: AppColors.primary, size: 18),
+        ),
+      ],
     );
   }
 

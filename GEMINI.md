@@ -1,82 +1,41 @@
-This is a Flutter project named `appfit`. It's a high-performance mobile application for personal trainers to manage their clients' workouts, powered by a **Supabase (PostgreSQL)** backend.
+# AppFit - Design System & Technical Manifesto
 
-## Project Overview
+This is a high-performance mobile application for personal trainers, powered by **Supabase**. The UI follows the **Neo-Industrial Glass Console** design language, a premium aesthetic that prioritizes depth, technical precision, and a "hardware-like" feel.
 
-The application follows a modular, feature-based structure with a focus on "Staff-level" UI/UX and a robust relational data model.
+## 💎 The Gold Standard: Neo-Industrial Glass Console
+All high-level management pages MUST follow the design patterns established in `lib/features/alunos/personal/pages/personal_aluno_perfil_page.dart`. This is the reference implementation of our Design System.
 
-### Main User Flow
-1.  **Authentication:** Powered by Supabase Auth (Email/Password, Google).
-2.  **Dashboard:** Centralized hub for trainers to manage multiple students.
-3.  **Modelos & Biblioteca (Workouts):** 
-    *   **Modelos:** Relational plans with specific objectives and durations (formerly 'Rotinas').
-    *   **Sessões:** Specific workout days (e.g., "Push Day") with day-of-week assignments.
-    *   **Exercícios:** Relational library with a hierarchical instruction system (Global -> Personalized -> Session).
-    *   **Séries:** Complex structure supporting different types (Warm-up, Work) with atomic persistence.
+### 1. Visual Architecture (Depth Stack)
+*   **Infinite Background:** Pure Deep Black (`#000000`). Never use dark grays for the main scaffold background.
+*   **Atmosferic Depth:** Use a subtle top-down gradient (`AppColors.primary` with `alpha: 0.15` to `0.05` to `transparent`) to create atmospheric volume.
+*   **The Glass Console (Primary Container):** 
+    *   Content MUST NOT be scattered in individual cards. 
+    *   Use a **SINGLE, continuous glass plate** (`Colors.white.withValues(alpha: 0.03)`) that encapsulates all sections.
+    *   **Geometry:** `radius: 32` only on Top-Left and Top-Right. The plate should feel like it's "sculpted" over the black background.
+    *   **Border:** A razor-thin stroke (`white.withValues(alpha: 0.05)`) to define the edge of the glass.
 
-## Tech Stack & Dependencies
+### 2. "Card-fobia" & Content Flow
+*   **STRICT PROHIBITION:** Do not use individual cards for every piece of information. This creates "visual islands" and breaks the flow.
+*   **Integration:** Sections (Metrics, Schedules, Management) live inside the Glass Console, separated only by technical spacing or subtle dividers (`alpha: 0.03`).
+*   **The Performance Feed:** In workout logs, use a vertical timeline "rail" (ruler effect) to connect data points.
 
-*   **Core:** Flutter (Material 3 + Custom Premium Theme)
-*   **Backend:** Supabase (PostgreSQL, Auth, Storage, Edge Functions)
-*   **State Management:** `Provider` + `ChangeNotifier` for local/feature state.
-*   **UI Assets:** Google Fonts, Cupertino Icons, Custom "Glassmorphism" widgets.
+### 3. Typography & Micro-UX (Staff-Level)
+*   **Hierarchy:** ExtraBold titles with negative letter-spacing (`-1.0` to `-1.2`) for a premium editorial look.
+*   **Technical Metrics:** Use `monospace` fonts or high-weight fonts for numbers. Labels should be small (`fontSize: 9-11`) and `UPPERCASE` with high letter-spacing.
+*   **Glass Pills:** Actions (like WhatsApp) must be "Pills" with low-opacity backgrounds (`alpha: 0.08`) and subtle borders. Avoid solid, high-saturation buttons unless they are primary "Call to Action" (CTA).
+*   **Tactile Response:** Mandatory `HapticFeedback.lightImpact()` on all interactive elements.
 
-## Data & Security (Supabase)
+## 🛠 Tech Stack & Dev Conventions
 
-The project utilizes PostgreSQL's relational power:
-- **RLS (Row Level Security):** Policies are strictly enforced. Trainers can only modify their own exercises or their `instrucoes_personalizadas` on global exercises.
-- **Atomic Persistence:** Each exercise session handles its own state updates to ensure data integrity during complex edits.
-- **Relational Integrity:** We do not use "docs" (Firebase). We work with typed Models and PostgreSQL JSONB for complex structures.
+*   **Core:** Flutter (Material 3 + Custom Premium Theme).
+*   **Backend:** Supabase (Auth, DB, Storage).
+*   **Sliver Pattern:** Use `SliverAppBar` with `expandedHeight: 110-150` for pages that require dynamic headers.
+*   **Auto-Save:** Implement "Save on Pop" logic. No manual save buttons in detail views.
+*   **Alpha Values:** Use `color.withValues(alpha: ...)` instead of `withOpacity`.
 
-## Developer Mindset and UI/UX Principles (Premium Hybrid)
-
-### Visual Identity
-*   **Industrial Background:** Pure Deep Black (`#121212`) is the standard background.
-*   **Minimalist Cards & Mode-Specific UI:** Avoid excessive use of cards. We follow a 'Mode-Specific UI' philosophy:
-    *   **Creation/Editing (Personal Trainer):** Use tactile, floating cards (`AppTheme.premiumCardDecoration` with `radiusXL`) to signify draggable, editable objects (e.g., configuring a workout).
-    *   **Consumption (Aluno):** Do NOT use cards. Use flat lists blending into the deep black background, separated only by subtle dividers (`alpha 0.08`), to create a distraction-free, "playlist-like" experience during execution.
-    *   **General Rule:** Prefer metrics and text floating directly on the black background over wrapping everything in a card.
-*   **Geometry:** Mandatory 16px (`radiusXL`) for cards and inputs. Full pill shape (`radiusFull`) for buttons.
-*   **Typography Hierarchy:**
-    *   **Page Titles:** Proper Casing (e.g., 'Gerenciar alunos') for sophistication.
-    *   **Section Headers:** UPPERCASE with letter spacing (e.g., 'LISTA DE EXERCÍCIOS').
-    *   **Tags/Pills:** UPPERCASE, small font, semi-bold (`PillTokens`).
-
-### Frictionless UX (Auto-Save Pattern)
-*   **Auto-save on Pop:** Page detail views MUST NOT have "Salvar" buttons. Implement `PopScope` logic to trigger saving when the user leaves the page.
-*   **Frictionless Actions:** Use `CupertinoIcons.settings` (gear) in the AppBar to toggle configuration modals, never inline edit fields in headers.
-*   **Feedback:** Use a translucent Blur Overlay ("Salvando...") during async persistence.
-*   **Tactile Response:** `HapticFeedback.lightImpact()` is mandatory for all primary interactions (toggles, nav, selections).
-
-### SliverAppBar Header Standards (Staff-level)
-*   **Dimensions:** `expandedHeight: 110` for title only; `expandedHeight: 150` for title + subtitle/pills.
-*   **Header Content:** MUST use `AppTheme.premiumGradient` background.
-*   **Transition:** Manual cross-fade (Opacity) using `LayoutBuilder`. Expanded title at `bottom: 16`, `left: 20`. Collapsed title centered.
-
-## Development Conventions
-
-### Code Structure
-- Feature-based folder organization (e.g., `lib/features/treinos/personal/`).
-- Use `Color.withValues(alpha: ...)` instead of `withOpacity` or `withAlpha`.
-- Dirty Check Pattern: Use internal `hasChanges` to optimize network calls during Auto-save.
-
-### UI/UX Conventions (Standardized)
-
-#### Premium AppBar Pattern
-When a page does not use a dynamic `BigTitle` (Sliver header), use the standard `AppBar` with the premium gradient to maintain atmospheric depth:
-- `backgroundColor: Colors.transparent`
-- `elevation: 0`
-- `flexibleSpace: Container(decoration: BoxDecoration(gradient: AppTheme.premiumGradient))`
-- `title: Text('Title', style: AppBarTokens.pageTitle)`
-
-#### Spacing & Margins
-- **ALWAYS** use `SpacingTokens.screenHorizontalPadding` (16px) for main horizontal page margins. Never hardcode values like 20 or 24 for screen-level padding.
-- Use `SpacingTokens` for all internal gaps (`sectionGap`, `listItemGap`, etc.).
-
-### Git & Commits
-Format: `type(scope): description` (e.g., `feat(treinos): implement auto-save for session details`). Generate the message but do not execute the commit unless asked.
-
-### Quality Standards
-- `flutter_lints` rules must always pass.
-- Use `ChangeNotifier` for complex view states.
-- No business logic inside widgets.
-- Mandatory error handling (never ignore exceptions).
+## 📌 Implementation Checklist
+Before refactoring any page, the agent must ask:
+1. Is the background #000000?
+2. Am I using a Single Glass Console instead of multiple cards?
+3. Is the typography following the ExtraBold/Monospace hierarchy?
+4. Are secondary actions implemented as Glass Pills?
