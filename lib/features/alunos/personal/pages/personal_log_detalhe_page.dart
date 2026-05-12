@@ -46,13 +46,13 @@ class PersonalLogDetalhePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(context),
-            const SizedBox(height: 32),
+            const SizedBox(height: SpacingTokens.sectionGap),
+            _buildStatsRow(),
+            const SizedBox(height: SpacingTokens.sectionGap),
             if ((item.observacoes != null && item.observacoes!.isNotEmpty) || (item.esforco != null && item.esforco! > 0)) ...[
               _buildNotesSection(),
-              const SizedBox(height: 32),
+              const SizedBox(height: SpacingTokens.sectionGap),
             ],
-            _buildStatsRow(),
-            const SizedBox(height: 32),
             _buildExercisesSection(),
           ],
         ),
@@ -357,13 +357,13 @@ class PersonalLogDetalhePage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
+          padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
           child: Text(
-            'EXERCÍCIOS REALIZADOS',
+            'DESEMPENHO POR EXERCÍCIO',
             style: AppTheme.sectionHeader,
           ),
         ),
-        const SizedBox(height: SpacingTokens.labelToField + 4),
+        const SizedBox(height: SpacingTokens.xxl),
         ...item.exercicios.map((ex) => _ExerciseListItem(exercicio: ex)),
       ],
     );
@@ -467,182 +467,180 @@ class _ExerciseListItemState extends State<_ExerciseListItem> {
     final nome = widget.exercicio['nome']?.toString() ?? '';
     final series = (widget.exercicio['series'] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: SpacingTokens.screenHorizontalPadding,
-        right: SpacingTokens.screenHorizontalPadding,
-        bottom: 24,
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.02),
-          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(SpacingTokens.sm),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: FutureBuilder<String?>(
-                    future: _thumbnailFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData && snapshot.data != null) {
-                        return CachedNetworkImage(
-                          imageUrl: snapshot.data!,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => const SizedBox(),
-                          errorWidget: (context, url, error) => const Icon(Icons.fitness_center, color: Colors.white24, size: 18),
-                        );
-                      }
-                      return const Icon(Icons.fitness_center, color: Colors.white24, size: 18);
-                    },
-                  ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Cabeçalho do Exercício (Minimalista)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.03),
+                  borderRadius: BorderRadius.circular(SpacingTokens.sm),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    nome,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            if (series.isNotEmpty) ...[
-              const SizedBox(height: 24),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Row(
-                  children: [
-                    _buildTableHeader('SÉRIE', flex: 2),
-                    _buildTableHeader('PESO', flex: 3),
-                    _buildTableHeader('REPS', flex: 3),
-                    _buildTableHeader('ALVO', flex: 3, alignment: TextAlign.right),
-                  ],
+                clipBehavior: Clip.antiAlias,
+                child: FutureBuilder<String?>(
+                  future: _thumbnailFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData && snapshot.data != null) {
+                      return CachedNetworkImage(
+                        imageUrl: snapshot.data!,
+                        fit: BoxFit.cover,
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.fitness_center, color: Colors.white10, size: 14),
+                      );
+                    }
+                    return const Icon(Icons.fitness_center, color: Colors.white10, size: 14);
+                  },
                 ),
               ),
-              const SizedBox(height: 12),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
-                ),
-                child: Column(
-                  children: series.asMap().entries.map((e) {
-                    final i = e.key;
-                    final s = e.value;
-                    final peso = s['pesoRealizado']?.toString() ?? '0';
-                    final reps = s['repsRealizadas']?.toString() ?? '0';
-                    final alvo = s['alvo']?.toString() ?? '-';
-                    final tipo = s['tipo']?.toString().toLowerCase() ?? 'trabalho';
-                    final isWarmup = tipo == 'aquecimento';
-                    final isLast = i == series.length - 1;
-
-                    return Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-                      decoration: BoxDecoration(
-                        border: isLast ? null : Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.03))),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: isWarmup
-                              ? Tooltip(
-                                  message: 'Série de Aquecimento',
-                                  triggerMode: TooltipTriggerMode.tap,
-                                  preferBelow: false,
-                                  child: Text(
-                                    'A${i + 1}',
-                                    style: TextStyle(
-                                      color: Colors.amber.withValues(alpha: 0.5),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                )
-                              : Text(
-                                  '${i + 1}º',
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.4),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                          ),
-                          Expanded(
-                            flex: 3,
-                            child: Text(
-                              '${peso}kg',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 3,
-                            child: Text(
-                              reps,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 3,
-                            child: Text(
-                              alvo,
-                              textAlign: TextAlign.right,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.3),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  nome.toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
             ],
+          ),
+        ),
+
+        const SizedBox(height: SpacingTokens.lg),
+
+        // Feed de Performance (Sem Cards)
+        Stack(
+          children: [
+            // Linha Vertical (Régua/Timeline)
+            Positioned(
+              left: SpacingTokens.screenHorizontalPadding + 15, // Centralizado sob o ícone (32px / 2 = 16, -1 do stroke)
+              top: 0,
+              bottom: 20, // Termina um pouco antes do final do último item
+              child: Container(
+                width: 2,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withValues(alpha: 0.08),
+                      Colors.white.withValues(alpha: 0.02),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(1),
+                ),
+              ),
+            ),
+
+            Column(
+              children: series.asMap().entries.map((e) {
+                final i = e.key;
+                final s = e.value;
+                final peso = s['pesoRealizado']?.toString() ?? '0';
+                final reps = s['repsRealizadas']?.toString() ?? '0';
+                final alvo = s['alvo']?.toString() ?? '-';
+                final tipo = s['tipo']?.toString().toLowerCase() ?? 'trabalho';
+                final isWarmup = tipo == 'aquecimento';
+
+                return Padding(
+                  padding: const EdgeInsets.only(
+                    left: SpacingTokens.screenHorizontalPadding + 44, // Alinhado com o texto do nome
+                    right: SpacingTokens.screenHorizontalPadding,
+                    bottom: 12,
+                  ),
+                  child: Row(
+                    children: [
+                      // Index da Série
+                      SizedBox(
+                        width: 28,
+                        child: Text(
+                          isWarmup ? 'A${i + 1}' : '${(i + 1).toString().padLeft(2, '0')}',
+                          style: TextStyle(
+                            color: isWarmup
+                                ? Colors.amber.withValues(alpha: 0.4)
+                                : Colors.white.withValues(alpha: 0.15),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'monospace',
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 8),
+
+                      // Separador Industrial
+                      Text(
+                        '—',
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.05)),
+                      ),
+
+                      const SizedBox(width: 16),
+
+                      // Peso
+                      Text(
+                        '${peso}kg',
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+
+                      const SizedBox(width: 8),
+
+                      // Operador
+                      Text(
+                        '×',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          fontSize: 14,
+                        ),
+                      ),
+
+                      const SizedBox(width: 8),
+
+                      // Repetições
+                      Text(
+                        reps,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+
+                      const Spacer(),
+
+                      // Meta/Alvo
+                      if (alvo != '-')
+                        Text(
+                          '[ALVO: $alvo]',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
           ],
         ),
-      ),
-    );
-  }
 
-  Widget _buildTableHeader(String label, {required int flex, TextAlign alignment = TextAlign.left}) {
-    return Expanded(
-      flex: flex,
-      child: Text(
-        label,
-        textAlign: alignment,
-        style: TextStyle(
-          color: Colors.white.withValues(alpha: 0.2),
-          fontSize: 9,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 1.0,
-        ),
-      ),
+        const SizedBox(height: SpacingTokens.sectionGap),
+      ],
     );
   }
 }
