@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/widgets/app_section_link_button.dart';
+import '../../../../core/widgets/app_tappable.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/rotina_service.dart';
@@ -83,10 +85,18 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
       children: [
         Row(
           children: [
-            Text('PLANILHA ATUAL', style: AppTheme.sectionHeader),
+            Text(
+              'PLANILHA ATUAL',
+              style: AppTheme.sectionHeader.copyWith(
+                fontSize: 10,
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.w900,
+                color: Colors.white.withValues(alpha: 0.4),
+              ),
+            ),
             const Spacer(),
             AppSectionLinkButton(
-              label: 'Ver todas',
+              label: 'HISTÓRICO',
               onPressed: () {
                 HapticFeedback.lightImpact();
                 Navigator.push(
@@ -105,129 +115,105 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: AppTheme.premiumCardDecoration,
-          child: InkWell(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PersonalRotinaDetalhePage(
-                    rotinaData: rotina,
-                    rotinaId: rotinaId,
-                    alunoId: widget.alunoId,
-                    alunoNome: widget.alunoNome,
-                  ),
+        const SizedBox(height: 12),
+        // Módulo Integrado (Sem fundo de card pesado)
+        AppTappable(
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PersonalRotinaDetalhePage(
+                  rotinaData: rotina,
+                  rotinaId: rotinaId,
+                  alunoId: widget.alunoId,
+                  alunoNome: widget.alunoNome,
                 ),
-              );
-            },
-            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withAlpha(20),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.auto_awesome_motion_rounded,
-                      color: AppColors.primary,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          (rotina['nome'] ?? 'Ficha de Treino').toString(),
-                          style: AppTheme.cardTitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          legendaVencimento,
-                          style: AppTheme.caption.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  PopupMenuButton<String>(
-                    icon: Icon(
-                      Icons.more_vert_rounded,
-                      color: AppColors.labelSecondary.withAlpha(80),
-                      size: 24,
-                    ),
-                    color: AppColors.surfaceDark,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppTheme.radiusXL,
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.02),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.05),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                // Telemetria de Progresso (Visual Técnico)
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      width: 44,
+                      height: 44,
+                      child: CircularProgressIndicator(
+                        value: progressoAtual,
+                        strokeWidth: 2,
+                        backgroundColor: Colors.white.withValues(alpha: 0.05),
+                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
                       ),
-                      side: BorderSide(color: Colors.white.withAlpha(10), width: 0.5),
                     ),
-                    onOpened: () => HapticFeedback.lightImpact(),
-                    onSelected: (value) {
-                      HapticFeedback.lightImpact();
-                      if (value == 'editar') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PersonalRotinaDetalhePage(
-                              rotinaData: rotina,
-                              rotinaId: rotinaId,
-                              alunoId: widget.alunoId,
-                              alunoNome: widget.alunoNome,
+                    Text(
+                      '${(progressoAtual * 100).toInt()}%',
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        (rotina['nome'] ?? 'Ficha de Treino').toString().toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.5,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.timer_outlined,
+                            size: 10,
+                            color: Colors.white.withValues(alpha: 0.3),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            legendaVencimento.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontFamily: 'monospace',
+                              color: Colors.white.withValues(alpha: 0.4),
+                              letterSpacing: 0.5,
                             ),
                           ),
-                        );
-                      } else if (value == 'remover') {
-                        _confirmarRemoverRotina(context, rotinaId);
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem<String>(
-                        value: 'editar',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.edit_rounded, size: 18),
-                            const SizedBox(width: 10),
-                            Text('EDITAR', style: AppTheme.sectionHeader.copyWith(fontSize: 10)),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem<String>(
-                        value: 'remover',
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.delete_outline_rounded,
-                              size: 18,
-                              color: Colors.redAccent,
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              'REMOVER',
-                              style: AppTheme.sectionHeader.copyWith(color: Colors.redAccent, fontSize: 10),
-                            ),
-                          ],
-                        ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                Icon(
+                  CupertinoIcons.chevron_right,
+                  color: Colors.white.withValues(alpha: 0.2),
+                  size: 16,
+                ),
+              ],
             ),
           ),
         ),
