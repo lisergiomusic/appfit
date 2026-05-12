@@ -173,7 +173,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                           idade: idade,
                           peso: peso.toString(),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: SpacingTokens.xxl),
                         _buildActions(context, telefone),
                         const SizedBox(height: SpacingTokens.sectionGap),
                         StreamBuilder<dynamic>(
@@ -193,7 +193,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                             );
                           },
                         ),
-                        const SizedBox(height: SpacingTokens.xxl),
+                        const SizedBox(height: SpacingTokens.sectionGap),
                         FichaAtivaHeroCard(
                           alunoId: widget.alunoId,
                           alunoNome: nomeExibicao,
@@ -208,7 +208,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                             _carregarDados();
                           },
                         ),
-                        const SizedBox(height: SpacingTokens.xxl),
+                        const SizedBox(height: SpacingTokens.sectionGap),
                         GestaoSection(
                           alunoId: widget.alunoId,
                           alunoNome: nomeExibicao,
@@ -257,27 +257,40 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
   }
 
   Widget _buildActions(BuildContext context, String? telefone) {
-    return Row(
-      children: [
-        Expanded(
-          child: AppTappable(
-            onPressed: () => _abrirWhatsApp(context, telefone),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: AppTheme.premiumCardDecoration,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const FaIcon(FontAwesomeIcons.whatsapp,
-                      color: Color(0xFF25D366), size: 18),
-                  const SizedBox(width: 8),
-                  Text('WHATSAPP', style: AppTheme.sectionAction.copyWith(fontSize: 12)),
-                ],
-              ),
-            ),
+    return AppTappable(
+      onPressed: () => _abrirWhatsApp(context, telefone),
+      child: Container(
+        width: double.infinity,
+        height: 50,
+        decoration: BoxDecoration(
+          color: const Color(0xFF25D366).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(SpacingTokens.sm),
+          border: Border.all(
+            color: const Color(0xFF25D366).withValues(alpha: 0.2),
+            width: 1,
           ),
         ),
-      ],
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const FaIcon(
+              FontAwesomeIcons.whatsapp,
+              color: Color(0xFF25D366),
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'WHATSAPP',
+              style: TextStyle(
+                fontSize: 13,
+                color: Color(0xFF25D366),
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.0,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

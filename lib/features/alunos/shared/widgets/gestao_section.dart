@@ -26,54 +26,45 @@ class GestaoSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text('GESTÃO', style: AppTheme.sectionHeader),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: AppTheme.premiumCardDecoration,
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            children: [
-              _buildManagementItem(
-                context,
-                icon: CupertinoIcons.graph_square,
-                title: 'PROGRESSÃO DE CARGAS',
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  AppUIUtils.showFutureFeatureWarning(context);
-                },
-                showBorder: true,
-              ),
-              _buildManagementItem(
-                context,
-                icon: CupertinoIcons.chart_bar_alt_fill,
-                title: 'AVALIAÇÃO FÍSICA',
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  AppUIUtils.showFutureFeatureWarning(context);
-                },
-                showBorder: true,
-              ),
-              _buildManagementItem(
-                context,
-                icon: CupertinoIcons.doc_text,
-                title: 'HISTÓRICO DE FEEDBACKS',
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          PersonalFeedbackHistoricoPage(alunoId: alunoId, alunoNome: alunoNome),
-                    ),
-                  );
-                },
-                showBorder: false,
-              ),
-            ],
-          ),
+        Text('GESTÃO', style: AppTheme.sectionHeader),
+        const SizedBox(height: SpacingTokens.xxl),
+        Column(
+          children: [
+            _buildManagementItem(
+              context,
+              icon: CupertinoIcons.graph_square,
+              title: 'PROGRESSÃO DE CARGAS',
+              onTap: () {
+                HapticFeedback.lightImpact();
+                AppUIUtils.showFutureFeatureWarning(context);
+              },
+            ),
+            _buildManagementItem(
+              context,
+              icon: CupertinoIcons.chart_bar_alt_fill,
+              title: 'AVALIAÇÃO FÍSICA',
+              onTap: () {
+                HapticFeedback.lightImpact();
+                AppUIUtils.showFutureFeatureWarning(context);
+              },
+            ),
+            _buildManagementItem(
+              context,
+              icon: CupertinoIcons.doc_text,
+              title: 'HISTÓRICO DE FEEDBACKS',
+              onTap: () {
+                HapticFeedback.lightImpact();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        PersonalFeedbackHistoricoPage(alunoId: alunoId, alunoNome: alunoNome),
+                  ),
+                );
+              },
+              isLast: true,
+            ),
+          ],
         ),
       ],
     );
@@ -84,7 +75,7 @@ class GestaoSection extends StatelessWidget {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
-    required bool showBorder,
+    bool isLast = false,
   }) {
     return CupertinoButton(
       padding: EdgeInsets.zero,
@@ -93,27 +84,40 @@ class GestaoSection extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: SpacingTokens.lg,
               vertical: 16,
             ),
             child: Row(
               children: [
-                Icon(icon, color: AppColors.labelTertiary, size: 20),
-                const SizedBox(width: SpacingTokens.md),
-                Expanded(child: Text(title, style: AppTheme.sectionAction.copyWith(fontSize: 11, color: AppColors.labelPrimary))),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.03),
+                    borderRadius: BorderRadius.circular(SpacingTokens.sm),
+                  ),
+                  child: Icon(icon, color: Colors.white.withValues(alpha: 0.4), size: 18),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.3,
+                      color: AppColors.labelPrimary,
+                    ),
+                  ),
+                ),
                 Icon(
                   CupertinoIcons.chevron_forward,
-                  color: AppColors.labelQuaternary.withAlpha(100),
+                  color: Colors.white.withValues(alpha: 0.1),
                   size: 14,
                 ),
               ],
             ),
           ),
-          if (showBorder)
-            Padding(
-              padding: const EdgeInsets.only(left: 52),
-              child: Container(height: 0.5, color: Colors.white.withAlpha(10)),
-            ),
+          if (!isLast)
+            Divider(color: Colors.white.withValues(alpha: 0.03), height: 1),
         ],
       ),
     );

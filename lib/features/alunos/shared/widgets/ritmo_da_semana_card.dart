@@ -16,7 +16,6 @@ class RitmoDaSemanaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String primeiroNome = alunoNome.split(' ').first;
-
     const diasSemana = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
 
     final dias = <Map<String, String>>[];
@@ -40,10 +39,14 @@ class RitmoDaSemanaCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('RITMO DA SEMANA', style: AppTheme.sectionHeader),
-        const SizedBox(height: SpacingTokens.labelToField),
+        const SizedBox(height: SpacingTokens.lg),
         Container(
-          padding: const EdgeInsets.all(16),
-          decoration: AppTheme.premiumCardDecoration,
+          padding: const EdgeInsets.all(SpacingTokens.lg),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceDark,
+            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 0.5),
+          ),
           child: Column(
             children: [
               Row(
@@ -57,41 +60,41 @@ class RitmoDaSemanaCard extends StatelessWidget {
                         d['dia']!,
                         style: TextStyle(
                           fontSize: 10,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           color: isFeito
                               ? AppColors.primary
-                              : AppColors.labelSecondary.withAlpha(120),
+                              : AppColors.labelSecondary.withValues(alpha: 0.5),
                         ),
                       ),
                       const SizedBox(height: 10),
                       Container(
-                        width: 38,
-                        height: 38,
+                        width: 42,
+                        height: 42,
                         decoration: BoxDecoration(
                           color: isFeito
-                              ? AppColors.primary
-                              : AppColors.surfaceDark,
-                          borderRadius: BorderRadius.circular(8),
+                              ? AppColors.primary.withValues(alpha: 0.15)
+                              : Colors.white.withValues(alpha: 0.03),
+                          shape: BoxShape.circle,
                           border: Border.all(
                             color: isFeito 
-                                ? AppColors.primary 
-                                : Colors.white.withAlpha(10),
-                            width: 0.5,
+                                ? AppColors.primary.withValues(alpha: 0.3)
+                                : Colors.white.withValues(alpha: 0.05),
+                            width: 1,
                           ),
                         ),
                         child: Center(
                           child: isFeito
                               ? const Icon(
-                                  Icons.check,
-                                  color: Colors.black,
+                                  Icons.check_rounded,
+                                  color: AppColors.primary,
                                   size: 20,
                                 )
                               : Container(
                                   width: 4,
                                   height: 4,
                                   decoration: BoxDecoration(
-                                    color: AppColors.labelSecondary.withAlpha(40),
-                                    borderRadius: BorderRadius.circular(2),
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
                                   ),
                                 ),
                         ),
@@ -128,11 +131,15 @@ class RitmoDaSemanaCard extends StatelessWidget {
                             ? 'VOCÊ TREINOU $count $diaSingularPlural ESTA SEMANA'
                             : '${primeiroNome.toUpperCase()} TREINOU $count $diaSingularPlural ESTA SEMANA');
 
-                  return Text(
-                    textoResumo,
-                    style: AppTheme.premiumLabel.copyWith(
-                      color: AppColors.labelSecondary,
-                      fontSize: 9,
+                  return Center(
+                    child: Text(
+                      textoResumo,
+                      textAlign: TextAlign.center,
+                      style: AppTheme.premiumLabel.copyWith(
+                        color: AppColors.labelSecondary.withValues(alpha: 0.6),
+                        fontSize: 9,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   );
                 },
@@ -143,9 +150,4 @@ class RitmoDaSemanaCard extends StatelessWidget {
       ],
     );
   }
-}
-
-// Auxiliar para detectar se houve algum treino (mantido para outros usos se necessário, ou pode ser removido se não houver)
-extension _ListTreinos on List<Map<String, String>> {
-  bool get hasAnyFeito => any((d) => d['status'] == 'feito');
 }
