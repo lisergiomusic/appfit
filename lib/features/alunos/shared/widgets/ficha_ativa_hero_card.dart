@@ -161,7 +161,6 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
                     Text(
                       '${(progressoAtual * 100).toInt()}%',
                       style: const TextStyle(
-                        fontFamily: 'monospace',
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
@@ -198,9 +197,9 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
                             legendaVencimento.toUpperCase(),
                             style: TextStyle(
                               fontSize: 9,
-                              fontFamily: 'monospace',
                               color: Colors.white.withValues(alpha: 0.4),
                               letterSpacing: 0.5,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],

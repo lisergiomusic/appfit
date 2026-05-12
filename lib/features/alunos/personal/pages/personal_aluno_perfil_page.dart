@@ -192,6 +192,29 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
 
                       const SizedBox(height: 32),
 
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
+                        child: StreamBuilder<dynamic>(
+                          stream: _logsSemanaStream,
+                          builder: (context, logsSnapshot) {
+                            List<DateTime>? treinados;
+                            if (logsSnapshot.hasData) {
+                              final list = logsSnapshot.data as List;
+                              treinados = list
+                                  .map((d) => DateTime.tryParse(d['dataHora'].toString()))
+                                  .whereType<DateTime>()
+                                  .toList();
+                            }
+                            return RitmoDaSemanaCard(
+                              alunoNome: nomeExibicao,
+                              diasTreinados: treinados,
+                            );
+                          },
+                        ),
+                      ),
+
+                      const SizedBox(height: 32),
+
                       // The Glass Console - A placa única de vidro
                       Container(
                         margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -213,29 +236,6 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                           ),
                           child: Column(
                             children: [
-                              const SizedBox(height: 32),
-                              
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                                child: StreamBuilder<dynamic>(
-                                  stream: _logsSemanaStream,
-                                  builder: (context, logsSnapshot) {
-                                    List<DateTime>? treinados;
-                                    if (logsSnapshot.hasData) {
-                                      final list = logsSnapshot.data as List;
-                                      treinados = list
-                                          .map((d) => DateTime.tryParse(d['dataHora'].toString()))
-                                          .whereType<DateTime>()
-                                          .toList();
-                                    }
-                                    return RitmoDaSemanaCard(
-                                      alunoNome: nomeExibicao,
-                                      diasTreinados: treinados,
-                                    );
-                                  },
-                                ),
-                              ),
-
                               const SizedBox(height: 40),
                               
                               Padding(
