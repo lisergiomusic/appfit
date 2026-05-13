@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'dart:math' as math;
 
+/// Widget que exibe o engajamento semanal do aluno através de anéis de atividade (Activity Rings).
+/// Inspirado em interfaces de alto desempenho como Apple Fitness e Strava.
 class RitmoDaSemanaCard extends StatelessWidget {
   final String alunoNome;
   final List<DateTime>? diasTreinados;
@@ -24,8 +26,9 @@ class RitmoDaSemanaCard extends StatelessWidget {
 
     return Column(
       children: [
+        // Linha de anéis compactada com padding lateral.
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12), // Ajustando para um equilíbrio melhor
+          padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.md),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: List.generate(7, (index) {
@@ -36,24 +39,23 @@ class RitmoDaSemanaCard extends StatelessWidget {
               return Expanded(
                 child: Column(
                   children: [
-                    // Label Superior (Visibilidade Aumentada)
+                    // Rótulo abreviado do dia da semana.
                     Text(
                       diasSemana[index],
                       style: TextStyle(
-                        fontSize: 9,
+                        fontSize: 8,
                         letterSpacing: 1.0,
                         fontWeight: isHoje ? FontWeight.w900 : FontWeight.w600,
-                        color: isHoje
-                            ? AppColors.primary
-                            : Colors.white.withValues(alpha: 0.35),
+                        color: isHoje 
+                            ? AppColors.primary 
+                            : Colors.white.withValues(alpha: 0.35), 
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    // Ring de Performance (Contraste Técnico)
+                    const SizedBox(height: SpacingTokens.md),
+                    // Anel técnico com animação de progresso (0 a 1).
                     Stack(
                       alignment: Alignment.center,
                       children: [
-                        // Gauge / Anel
                         SizedBox(
                           width: 40,
                           height: 40,
@@ -66,13 +68,14 @@ class RitmoDaSemanaCard extends StatelessWidget {
                                 painter: RingPainter(
                                   progress: value,
                                   color: AppColors.primary,
-                                  backgroundColor: Colors.white.withValues(alpha: 0.08),
+                                  backgroundColor: Colors.white.withValues(alpha: GlassTokens.opacityHighBorder),
                                   isHoje: isHoje,
                                 ),
                               );
                             },
                           ),
-                          ),                        // Core do Gauge (Mais definido)
+                        ),
+                        // Núcleo do anel que indica status de conclusão.
                         if (isFeito)
                           Container(
                             width: 10,
@@ -94,7 +97,7 @@ class RitmoDaSemanaCard extends StatelessWidget {
                             width: 5,
                             height: 5,
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.4),
+                              color: Colors.white.withValues(alpha: 0.4), 
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -106,16 +109,16 @@ class RitmoDaSemanaCard extends StatelessWidget {
             }),
           ),
         ),
-        const SizedBox(height: 24),
-        // Narrativa Técnica (Sem fundo, integrada à profundidade)
+        const SizedBox(height: SpacingTokens.xxl),
+        // Frase narrativa que resume a performance semanal.
         Text(
           totalTreinados > 0
               ? '${primeiroNome.toUpperCase()} TREINOU $totalTreinados DIAS ESSA SEMANA'
               : '${primeiroNome.toUpperCase()} NÃO TREINOU ESSA SEMANA',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.35), // Leve redução para integrar melhor
-            fontSize: 10,
+            color: Colors.white.withValues(alpha: 0.35), 
+            fontSize: 9,
             fontWeight: FontWeight.w800,
             letterSpacing: 1.2,
           ),
@@ -125,6 +128,7 @@ class RitmoDaSemanaCard extends StatelessWidget {
   }
 }
 
+/// Desenha um anel de atividade com suporte a gradientes e brilho atmosférico.
 class RingPainter extends CustomPainter {
   final double progress;
   final Color color;
@@ -142,9 +146,9 @@ class RingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
-    const strokeWidth = 2.2; // Aumentado de 1.8 para 2.2 para definição
+    const strokeWidth = 2.2; 
 
-    // 1. Slot de Fundo (Visibilidade de Hardware)
+    // Desenha o fundo (soquete) do anel.
     final bgPaint = Paint()
       ..color = backgroundColor
       ..style = PaintingStyle.stroke
@@ -153,32 +157,32 @@ class RingPainter extends CustomPainter {
 
     canvas.drawCircle(center, radius - strokeWidth / 2, bgPaint);
 
-    // 2. Anel de Atividade
+    // Desenha o arco de progresso com efeito de glow se estiver concluído.
     if (progress > 0) {
       final progressPaint = Paint()
-        ..color = color.withValues(alpha: 0.9) // Mais sólido
+        ..color = color.withValues(alpha: 0.9) 
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth
         ..strokeCap = StrokeCap.round;
 
       final shadowPaint = Paint()
-        ..color = color.withValues(alpha: 0.2) // Mais vibrante
+        ..color = color.withValues(alpha: 0.2) 
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth + 2
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
 
       final rect = Rect.fromCircle(center: center, radius: radius - strokeWidth / 2);
-
+      
       canvas.drawArc(rect, -math.pi / 2, 2 * math.pi * progress, false, shadowPaint);
       canvas.drawArc(rect, -math.pi / 2, 2 * math.pi * progress, false, progressPaint);
     }
 
-    // 3. Indicador de "Foco" para o dia atual (Mais nítido)
+    // Desenha um indicador sutil de foco para o dia atual.
     if (isHoje) {
       final focusPaint = Paint()
         ..color = (progress >= 1.0 ? color : Colors.white).withValues(alpha: 0.15)
         ..style = PaintingStyle.fill;
-
+      
       canvas.drawCircle(center, radius - strokeWidth - 5, focusPaint);
     }
   }

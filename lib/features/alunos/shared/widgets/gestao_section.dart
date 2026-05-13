@@ -26,22 +26,17 @@ class GestaoSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'GESTÃO E DADOS',
-          style: AppTheme.sectionHeader.copyWith(
-            fontSize: 10,
-            letterSpacing: 1.2,
-            fontWeight: FontWeight.w900,
-            color: Colors.white.withValues(alpha: 0.4),
-          ),
+          style: AppTheme.sectionHeader,
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: SpacingTokens.xxl),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.01),
-            borderRadius: BorderRadius.circular(20),
+            color: Colors.white.withValues(alpha: GlassTokens.opacityConsoleItems),
+            borderRadius: BorderRadius.circular(GlassTokens.itemRadius),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.03),
+              color: Colors.white.withValues(alpha: GlassTokens.opacityConsole),
               width: 1,
             ),
           ),
@@ -103,12 +98,12 @@ class GestaoSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(
               vertical: 18,
-              horizontal: 16,
+              horizontal: SpacingTokens.lg,
             ),
             child: Row(
               children: [
                 Icon(icon, color: Colors.white.withValues(alpha: 0.3), size: 20),
-                const SizedBox(width: 16),
+                const SizedBox(width: SpacingTokens.lg),
                 Expanded(
                   child: Text(
                     title,
@@ -130,10 +125,10 @@ class GestaoSection extends StatelessWidget {
           ),
           if (!isLast)
             Divider(
-              color: Colors.white.withValues(alpha: 0.03),
+              color: Colors.white.withValues(alpha: GlassTokens.opacityConsole),
               height: 1,
-              indent: 16,
-              endIndent: 16,
+              indent: SpacingTokens.lg,
+              endIndent: SpacingTokens.lg,
             ),
         ],
       ),

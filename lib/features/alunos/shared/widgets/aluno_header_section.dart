@@ -64,12 +64,15 @@ class AlunoHeaderSection extends StatelessWidget {
 
   Widget _buildBadge(IconData icon, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: SpacingTokens.md, 
+        vertical: SpacingTokens.space6
+      ),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(100),
+        color: Colors.white.withValues(alpha: GlassTokens.opacityBadge),
+        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: Colors.white.withValues(alpha: GlassTokens.opacityBadgeBorder),
           width: 0.8,
         ),
       ),
@@ -81,13 +84,11 @@ class AlunoHeaderSection extends StatelessWidget {
             size: 11,
             color: AppColors.primary.withValues(alpha: 0.7),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: SpacingTokens.sm),
           Text(
             label,
-            style: const TextStyle(
+            style: AppTheme.technicalLabel.copyWith(
               fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.8,
               color: Colors.white,
             ),
           ),

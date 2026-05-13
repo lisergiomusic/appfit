@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'tokens/app_colors.dart';
+import 'tokens/glass_tokens.dart';
 export 'tokens/spacing_tokens.dart';
 export 'tokens/app_colors.dart';
+export 'tokens/glass_tokens.dart';
 
 class AppTheme {
   static const double paddingScreen = 16;
@@ -50,11 +52,31 @@ class AppTheme {
     color: AppColors.labelPrimary,
   );
 
-  static TextStyle sectionHeader = const TextStyle(
+  static const TextStyle sectionHeader = TextStyle(
+    fontSize: 10,
+    fontWeight: FontWeight.w900,
+    letterSpacing: 1.2,
+    color: Color.fromRGBO(255, 255, 255, 0.4),
+  );
+
+  static const TextStyle technicalLabel = TextStyle(
     fontSize: 10,
     fontWeight: FontWeight.w800,
-    letterSpacing: 1.5,
-    color: AppColors.labelSecondary,
+    letterSpacing: 1.2,
+    color: Colors.white,
+  );
+
+  static const TextStyle telemetryFailure = TextStyle(
+    color: Color(0xFFFF5252), // Colors.redAccent
+    fontSize: 12,
+    fontWeight: FontWeight.w900,
+    letterSpacing: 2.0,
+  );
+
+  static const TextStyle telemetryValue = TextStyle(
+    fontSize: 10,
+    fontWeight: FontWeight.bold,
+    color: AppColors.primary,
   );
 
   static const sectionAction = TextStyle(

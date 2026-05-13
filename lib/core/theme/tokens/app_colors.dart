@@ -21,4 +21,8 @@ class AppColors {
   static const Color systemRed = Color(0xFFFF3B30);
   static const Color fillSecondary = Color(0x24787880);
   static const Color separator = Color(0x99545458);
+
+  // Surface & Component Colors
+  static const Color surfaceElevated = Color(0xFF121212);
+  static const Color surfaceBlack = Colors.black;
 }

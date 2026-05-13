@@ -11,6 +11,8 @@ import '../../../../core/utils/app_ui_utils.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../../../core/widgets/app_primary_button.dart';
 import '../../../../core/widgets/app_tappable.dart';
+import '../../../../core/widgets/glass_icon_button.dart';
+import '../../../../core/widgets/glass_primary_button.dart';
 import '../../../treinos/personal/pages/personal_rotina_detalhe_page.dart';
 import '../../shared/models/aluno_perfil_data.dart';
 import '../../shared/widgets/aluno_header_section.dart';
@@ -20,6 +22,8 @@ import '../../shared/widgets/ritmo_da_semana_card.dart';
 import 'personal_gerenciar_aluno_page.dart';
 import 'personal_gerenciar_planilhas_page.dart';
 
+/// Página de perfil detalhado do aluno para a visão do Personal Trainer.
+/// Implementa uma interface Neo-Industrial com arquitetura Sliver e Glassmorphism.
 class PersonalAlunoPerfilPage extends StatefulWidget {
   final String alunoId;
   final String alunoNome;
@@ -52,6 +56,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
     _carregarDados();
   }
 
+  /// Inicializa os streams de dados do perfil e logs semanais.
   void _carregarDados() {
     setState(() {
       _perfilStream = _alunoService.getAlunoPerfilCompletoStream(widget.alunoId);
@@ -59,6 +64,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
     });
   }
 
+  /// Navega para a página de edição/gerenciamento dos dados cadastrais do aluno.
   void _irParaGerenciarAluno(BuildContext context) {
     HapticFeedback.lightImpact();
     Navigator.push(
@@ -78,20 +84,20 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Profundidade Atmosférica
+          // Efeito de profundidade com gradiente atmosférico no topo.
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            height: 450,
+            height: SpacingTokens.atmosphereHeight,
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    AppColors.primary.withValues(alpha: 0.18),
-                    AppColors.primary.withValues(alpha: 0.05),
+                    AppColors.primary.withValues(alpha: GlassTokens.opacityAtmosphere),
+                    AppColors.primary.withValues(alpha: GlassTokens.opacityAtmosphereSubtle),
                     Colors.transparent,
                   ],
                 ),
@@ -113,6 +119,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
               final data = snapshot.data;
               if (data == null) return const SizedBox.shrink();
 
+              // Processamento de dados do aluno com formatação Title Case.
               final alunoData = data.aluno;
               final String nomeFirestore =
                   '${alunoData['nome'] ?? ''} ${alunoData['sobrenome'] ?? ''}'
@@ -132,37 +139,46 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
               return CustomScrollView(
                 physics: const BouncingScrollPhysics(),
                 slivers: [
-                  // SliverAppBar Premium com Transição Espacial
+                  // AppBar dinâmica que transiciona o nome do aluno para o título ao rolar.
                   SliverAppBar(
                     pinned: true,
-                    expandedHeight: 180,
+                    expandedHeight: SpacingTokens.headerExpanded,
                     backgroundColor: Colors.transparent,
                     surfaceTintColor: Colors.transparent,
                     leading: const AppNavBackButton(),
                     actions: [
-                      IconButton(
-                        icon: const Icon(CupertinoIcons.settings,
-                            color: AppColors.labelSecondary, size: 22),
-                        onPressed: () => _irParaGerenciarAluno(context),
-                        padding: const EdgeInsets.only(right: 16),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: GlassIconButton(
+                          onPressed: () => _irParaGerenciarAluno(context),
+                          icon: CupertinoIcons.settings,
+                          iconColor: AppColors.labelSecondary,
+                          size: 48,
+                          iconSize: 22,
+                          color: Colors.transparent,
+                          hasBorder: false,
+                        ),
                       ),
                     ],
                     flexibleSpace: LayoutBuilder(
                       builder: (context, constraints) {
                         final double collapsedHeight = MediaQuery.of(context).padding.top + kToolbarHeight;
-                        final double expandedHeight = 180;
+                        final double expandedHeight = SpacingTokens.headerExpanded;
                         final double collapseProgress = ((expandedHeight - constraints.biggest.height) / (expandedHeight - collapsedHeight)).clamp(0.0, 1.0);
 
                         return Stack(
                           children: [
-                            // Efeito Glassmorphism quando pinado
+                            // Efeito de vidro borrado quando a AppBar está recolhida.
                             if (collapseProgress > 0.9)
                               Positioned.fill(
                                 child: ClipRect(
                                   child: BackdropFilter(
-                                    filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                                    filter: ImageFilter.blur(
+                                      sigmaX: GlassTokens.blurHeader,
+                                      sigmaY: GlassTokens.blurHeader
+                                    ),
                                     child: Container(
-                                      color: Colors.black.withValues(alpha: 0.5),
+                                      color: Colors.black.withValues(alpha: GlassTokens.opacityBackdrop),
                                     ),
                                   ),
                                 ),
@@ -209,11 +225,11 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                     ),
                   ),
 
-                  // Conteúdo em Slivers
+                  // Seção de métricas rápidas (consistência semanal).
                   SliverToBoxAdapter(
                     child: Column(
                       children: [
-                        const SizedBox(height: 32),
+                        const SizedBox(height: SpacingTokens.xxxl),
 
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
@@ -236,33 +252,34 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                           ),
                         ),
 
-                        const SizedBox(height: 48),
-                        ],
-                        ),
-                        ),
+                        const SizedBox(height: SpacingTokens.huge),
+                      ],
+                    ),
+                  ),
 
-                        // The Glass Console - Stretch infinito
-                        SliverFillRemaining(
-                        hasScrollBody: false,
-                        fillOverscroll: true,
-                        child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                        decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.03),
+                  // Console de Gestão: Ficha Ativa e Histórico.
+                  // Utiliza SliverFillRemaining para estender o fundo de vidro infinitamente.
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    fillOverscroll: true,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: GlassTokens.consoleMarginH),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: GlassTokens.opacityConsole),
                         borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(32),
-                          topRight: Radius.circular(32),
+                          topLeft: Radius.circular(GlassTokens.consoleRadius),
+                          topRight: Radius.circular(GlassTokens.consoleRadius),
                         ),
                         border: Border(
-                          top: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1),
-                          left: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1),
-                          right: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1),
+                          top: BorderSide(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder), width: 1),
+                          left: BorderSide(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder), width: 1),
+                          right: BorderSide(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder), width: 1),
                           bottom: BorderSide.none,
                         ),
-                        ),
-                        child: Column(
+                      ),
+                      child: Column(
                         children: [
-                          const SizedBox(height: 40),
+                          const SizedBox(height: SpacingTokens.screenBottomPadding),
 
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -282,7 +299,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                             ),
                           ),
 
-                          const SizedBox(height: 40),
+                          const SizedBox(height: SpacingTokens.screenBottomPadding),
 
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -295,65 +312,45 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                             ),
                           ),
 
-                          const SizedBox(height: 120), // Espaço generoso no final
+                          const SizedBox(height: 120),
                         ],
-                        ),
-                        ),
-                        ),
-                        ],
-                        );
-                        },
-                        ),
-          // Floating Glass CTA Group (Apple-style)
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+
+          // Botões de ação flutuantes com estética de vidro e efeito tátil.
           Positioned(
             bottom: 32,
             left: 20,
             right: 20,
             child: Row(
               children: [
-                // Botão Primário (Expandido)
                 Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(100),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: AppPrimaryButton(
-                        label: "PRESCREVER TREINO",
-                        onPressed: () async {
-                          HapticFeedback.mediumImpact();
-                          await _exibirOpcoesVincularTreino(context);
-                          _carregarDados();
-                        },
-                      ),
-                    ),
+                  child: GlassPrimaryButton(
+                    label: "Prescrever Treino",
+                    onPressed: () async {
+                      HapticFeedback.mediumImpact();
+                      await _exibirOpcoesVincularTreino(context);
+                      _carregarDados();
+                    },
                   ),
                 ),
-                const SizedBox(width: 12),
-                // Botão WhatsApp Circular (Glassmorphism)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(100),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      width: 53,
-                      height: 53,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          width: 1,
-                        ),
-                      ),
-                      child: const Center(
-                        child: FaIcon(
-                          FontAwesomeIcons.whatsapp,
-                          color: Color(0xFF25D366),
-                          size: 22,
-                        ),
-                      ),
-                    ),
+                const SizedBox(width: SpacingTokens.md),
+                GlassIconButton(
+                  onPressed: () {
+                    HapticFeedback.mediumImpact();
+                  },
+                  customIcon: const FaIcon(
+                    FontAwesomeIcons.whatsapp,
+                    color: Color(0xFF25D366),
+                    size: 22,
                   ),
+                  size: 56,
+                  color: Colors.white.withValues(alpha: 0.08),
                 ),
               ],
             ),
@@ -363,18 +360,19 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
     );
   }
 
+  /// Renderiza o estado de erro imersivo quando falha o carregamento dos dados.
   Widget _buildErrorState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(24),
-            margin: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.all(SpacingTokens.xxl),
+            margin: const EdgeInsets.symmetric(horizontal: SpacingTokens.xxl),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.02),
-              borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+              color: Colors.white.withValues(alpha: GlassTokens.opacitySurface),
+              borderRadius: BorderRadius.circular(GlassTokens.consoleRadius),
+              border: Border.all(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -384,17 +382,12 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                   color: Colors.redAccent.withValues(alpha: 0.4),
                   size: 40,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: SpacingTokens.xxl),
                 const Text(
-                  '[ FALHA DE TELEMETRIA ]',
-                  style: TextStyle(
-                    color: Colors.redAccent,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2.0,
-                  ),
+                  '[ ERRO DE REDE ]',
+                  style: AppTheme.telemetryFailure,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: SpacingTokens.md),
                 Text(
                   'A conexão com o servidor foi interrompida.',
                   textAlign: TextAlign.center,
@@ -404,15 +397,18 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: SpacingTokens.xxxl),
                 AppTappable(
                   onPressed: _carregarDados,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: SpacingTokens.xxl,
+                      vertical: SpacingTokens.md
+                    ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: Colors.white.withValues(alpha: GlassTokens.opacityAtmosphereSubtle),
                       borderRadius: BorderRadius.circular(100),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      border: Border.all(color: Colors.white.withValues(alpha: GlassTokens.opacityHighBorder)),
                     ),
                     child: const Text(
                       'TENTAR RECONEXÃO',
@@ -433,6 +429,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
     );
   }
 
+  /// Exibe o modal customizado para seleção do método de prescrição de treino.
   Future<void> _exibirOpcoesVincularTreino(BuildContext context) async {
     HapticFeedback.mediumImpact();
     await showModalBottomSheet(
@@ -441,37 +438,42 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
       isScrollControlled: true,
       builder: (context) => Stack(
         children: [
-          // Blur de fundo para manter a imersão
           Positioned.fill(
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(color: Colors.black.withValues(alpha: 0.5)),
+              filter: ImageFilter.blur(
+                sigmaX: GlassTokens.blurStandard,
+                sigmaY: GlassTokens.blurStandard
+              ),
+              child: Container(color: Colors.black.withValues(alpha: GlassTokens.opacityBackdrop)),
             ),
           ),
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(height: 100), // Espaço para o "pull down"
+              const SizedBox(height: 100),
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      const Color(0xFF121212), // Um preto levemente iluminado no topo
-                      Colors.black,
+                      GlassTokens.modalGradientTop,
+                      GlassTokens.modalGradientBottom,
                     ],
                   ),
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(32),
-                    topRight: Radius.circular(32),
+                    topLeft: Radius.circular(GlassTokens.consoleRadius),
+                    topRight: Radius.circular(GlassTokens.consoleRadius),
                   ),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.08),
+                    color: Colors.white.withValues(alpha: GlassTokens.opacityHighBorder),
                     width: 1,
                   ),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: SpacingTokens.xl,
+                  vertical: SpacingTokens.xxxl
+                ),
                 child: SafeArea(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -481,22 +483,17 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                           width: 40,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.1),
+                            color: Colors.white.withValues(alpha: GlassTokens.opacityHighBorder),
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: SpacingTokens.xxxl),
                       const Text(
                         'PRESCREVER TREINO',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.5,
-                        ),
+                        style: AppTheme.technicalLabel,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: SpacingTokens.sm),
                       Text(
                         'Selecione o método de construção da nova planilha.',
                         style: TextStyle(
@@ -505,9 +502,8 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 40),
-                      
-                      // Opção: Template
+                      const SizedBox(height: SpacingTokens.screenBottomPadding),
+
                       _buildModalItem(
                         context,
                         icon: CupertinoIcons.square_stack_3d_up,
@@ -529,10 +525,9 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                           ).then((_) => _carregarDados());
                         },
                       ),
-                      
-                      const SizedBox(height: 12),
-                      
-                      // Opção: Do Zero
+
+                      const SizedBox(height: SpacingTokens.md),
+
                       _buildModalItem(
                         context,
                         icon: CupertinoIcons.add_circled,
@@ -543,20 +538,19 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                           _criarPlanilhaDoZero(context);
                         },
                       ),
-                      
-                      const SizedBox(height: 32),
-                      
-                      // Botão Cancelar (Glass Pill)
+
+                      const SizedBox(height: SpacingTokens.xxxl),
+
                       SizedBox(
                         width: double.infinity,
                         child: AppTappable(
                           onPressed: () => Navigator.pop(context),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(vertical: SpacingTokens.lg),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.03),
+                              color: Colors.white.withValues(alpha: GlassTokens.opacityConsole),
                               borderRadius: BorderRadius.circular(100),
-                              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                              border: Border.all(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder)),
                             ),
                             child: const Center(
                               child: Text(
@@ -583,6 +577,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
     );
   }
 
+  /// Constrói um item de seleção modular para o modal.
   Widget _buildModalItem(
     BuildContext context, {
     required IconData icon,
@@ -596,23 +591,23 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
         onTap();
       },
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(SpacingTokens.xl),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.03),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          color: Colors.white.withValues(alpha: GlassTokens.opacityConsole),
+          borderRadius: BorderRadius.circular(GlassTokens.itemRadius),
+          border: Border.all(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder)),
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(SpacingTokens.md),
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: AppColors.primary, size: 20),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: SpacingTokens.lg),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -648,6 +643,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
     );
   }
 
+  /// Executa a lógica de criação de uma planilha vazia.
   Future<void> _criarPlanilhaDoZero(BuildContext context) async {
     try {
       final String? newId = await _personalService.criarRotinaVazia(
@@ -678,6 +674,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
     }
   }
 
+  /// Helper para calcular a idade do aluno a partir da data de nascimento.
   int _calcularIdade(DateTime dataNascimento) {
     final hoje = DateTime.now();
     int idade = hoje.year - dataNascimento.year;
@@ -688,16 +685,17 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
     return idade;
   }
 
+  /// Constrói o esqueleto (Skeleton) de carregamento da página mantendo a estrutura de vidro.
   Widget _buildShimmerLoading() {
     return Shimmer.fromColors(
-      baseColor: Colors.white.withValues(alpha: 0.05),
-      highlightColor: Colors.white.withValues(alpha: 0.1),
+      baseColor: Colors.white.withValues(alpha: GlassTokens.opacityAtmosphereSubtle),
+      highlightColor: Colors.white.withValues(alpha: GlassTokens.opacityHighBorder),
       child: CustomScrollView(
         physics: const NeverScrollableScrollPhysics(),
         slivers: [
           SliverAppBar(
             pinned: true,
-            expandedHeight: 180,
+            expandedHeight: SpacingTokens.headerExpanded,
             backgroundColor: Colors.transparent,
             leading: const SizedBox.shrink(),
             flexibleSpace: FlexibleSpaceBar(
@@ -741,7 +739,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
           SliverToBoxAdapter(
             child: Column(
               children: [
-                const SizedBox(height: 32),
+                const SizedBox(height: SpacingTokens.xxxl),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 40),
                   child: Row(
@@ -749,15 +747,15 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                     children: List.generate(7, (_) => Container(width: 32, height: 32, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle))),
                   ),
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: SpacingTokens.huge),
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  margin: const EdgeInsets.symmetric(horizontal: GlassTokens.consoleMarginH),
                   height: 400,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.03),
+                    color: Colors.white.withValues(alpha: GlassTokens.opacityConsole),
                     borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(32),
-                      topRight: Radius.circular(32),
+                      topLeft: Radius.circular(GlassTokens.consoleRadius),
+                      topRight: Radius.circular(GlassTokens.consoleRadius),
                     ),
                   ),
                 ),
