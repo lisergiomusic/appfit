@@ -82,72 +82,73 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
             ),
           ),
 
-          FutureBuilder<Map<String, dynamic>>(
-            future: _profileFuture,
-            builder: (context, profileSnapshot) {
-              final personalData = profileSnapshot.data;
-              final nome = personalData?['nome']?.toString().split(' ')[0] ?? "PERSONAL";
-              final photoUrl = (personalData?['photo_url'] ?? personalData?['photoUrl'])?.toString();
+          Positioned.fill(
+            child: SafeArea(
+              top: true,
+              bottom: false,
+              child: FutureBuilder<Map<String, dynamic>>(
+                future: _profileFuture,
+                builder: (context, profileSnapshot) {
+                  final personalData = profileSnapshot.data;
+                  final nome = personalData?['nome']?.toString().split(' ')[0] ?? "PERSONAL";
+                  final photoUrl = (personalData?['photo_url'] ?? personalData?['photoUrl'])?.toString();
 
-              return CustomScrollView(
-                physics: const ClampingScrollPhysics(),
-                slivers: [
-                  // Header Sliver Compacto (Apple Inspired)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top + 16,
-                        left: 20,
-                        right: 16,
-                        bottom: 24,
-                      ),
-                      child: Row(
-                        children: [
-                          AppAvatar(
-                            name: nome,
-                            photoUrl: photoUrl,
-                            radius: 20,
-                            showBorder: true,
+                  return CustomScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    slivers: [
+                      // Header Sliver Compacto (Apple Inspired)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            top: 16,
+                            left: 20,
+                            right: 16,
+                            bottom: 24,
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _getSaudacao(),
-                                  style: AppTheme.technicalLabel.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.3),
-                                    fontSize: 9,
-                                    letterSpacing: 1.5,
-                                  ),
+                          child: Row(
+                            children: [
+                              AppAvatar(
+                                name: nome,
+                                photoUrl: photoUrl,
+                                radius: 20,
+                                showBorder: true,
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _getSaudacao(),
+                                      style: AppTheme.technicalLabel.copyWith(
+                                        color: Colors.white.withValues(alpha: 0.3),
+                                        fontSize: 9,
+                                        letterSpacing: 1.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      nome,
+                                      style: AppTheme.headerTitle,
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  nome,
-                                  style: AppTheme.heroTitle.copyWith(
-                                    fontSize: 22,
-                                    letterSpacing: -0.5,
-                                  ),
+                              ),
+                              const SizedBox(width: 12),
+                              GlassIconButton(
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const PersonalNotificationsPage())
                                 ),
-                              ],
-                            ),
+                                icon: Icons.notifications_outlined,
+                                size: 40,
+                                iconSize: 20,
+                                color: Colors.white.withValues(alpha: 0.05),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 12),
-                          GlassIconButton(
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const PersonalNotificationsPage())
-                            ),
-                            icon: Icons.notifications_outlined,
-                            size: 40,
-                            iconSize: 20,
-                            color: Colors.white.withValues(alpha: 0.05),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
                   // Seção de KPIs Flutuantes (Fora do Console de Vidro)
                   SliverToBoxAdapter(
                     child: Padding(
@@ -324,10 +325,12 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
               );
             },
           ),
-        ],
+        ),
       ),
-    );
-  }
+    ],
+  ),
+);
+}
 
   /// Constrói o cabeçalho de seção dentro do console.
   Widget _buildSectionHeader({required String title, VoidCallback? onAction}) {
