@@ -99,6 +99,20 @@ class AppTheme {
     color: AppColors.labelSecondary,
   );
 
+  static const TextStyle heroTitle = TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w900,
+    letterSpacing: -0.5,
+    color: AppColors.labelPrimary,
+  );
+
+  static const TextStyle heroSubtitle = TextStyle(
+    fontSize: 9,
+    fontWeight: FontWeight.w800,
+    letterSpacing: 1.5,
+    color: AppColors.primary,
+  );
+
   static final LinearGradient premiumGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,

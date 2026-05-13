@@ -190,11 +190,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                                 opacity: collapseProgress > 0.8 ? 1.0 : 0.0,
                                 child: Text(
                                   nomeExibicao,
-                                  style: AppTheme.pageTitle.copyWith(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.0,
-                                  ),
+                                  style: AppTheme.pageTitle,
                                 ),
                               ),
                               background: Container(

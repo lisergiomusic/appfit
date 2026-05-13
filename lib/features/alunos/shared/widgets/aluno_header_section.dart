@@ -38,11 +38,7 @@ class AlunoHeaderSection extends StatelessWidget {
             children: [
               Text(
                 alunoNome,
-                style: AppTheme.pageTitle.copyWith(
-                  fontSize: 24, // Aumentado para mais destaque no title case
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.8,
-                ),
+                style: AppTheme.heroTitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
