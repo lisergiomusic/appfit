@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/aluno_service.dart';
@@ -10,9 +9,7 @@ import '../../../core/widgets/app_tappable.dart';
 import '../../../core/widgets/glass_icon_button.dart';
 import '../../alunos/shared/widgets/app_avatar.dart';
 import '../../alunos/personal/pages/personal_log_detalhe_page.dart';
-import '../../financeiro/personal/pages/personal_financeiro_page.dart';
 import 'personal_atividade_recente_page.dart';
-import 'personal_atencao_page.dart';
 import 'personal_notificacoes_page.dart';
 
 class PersonalHomePage extends StatefulWidget {
@@ -319,19 +316,9 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                             color: Colors.white.withValues(alpha: 0.05),
                           ),
 
-                          // Seção: Atenção Crítica (Feed)
-                          const SizedBox(height: 24),
-                          _buildSectionHeader(
-                            title: 'ATENÇÃO CRÍTICA',
-                            onAction: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => PersonalAtencaoPage(personalService: _personalService)),
-                            ).then((_) => _refreshContagens()),
-                          ),
-                          _AtencaoCriticaFeedSection(contagensFuture: _contagensFuture, personalService: _personalService),
+                          const SizedBox(height: 32),
 
-                          const SizedBox(height: 24),
-                          // Seção: Atividade Recente
+                          // Seção: Atividade Recente (Log)
                           _buildSectionHeader(
                             title: 'ATIVIDADE RECENTE',
                             onAction: () => Navigator.push(
@@ -384,104 +371,6 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
   }
 }
 
-class _AtencaoCriticaFeedSection extends StatelessWidget {
-  final Future<ContagemAlunos>? contagensFuture;
-  final PersonalService personalService;
-
-  const _AtencaoCriticaFeedSection({required this.contagensFuture, required this.personalService});
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<ContagemAlunos>(
-      future: contagensFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator(strokeWidth: 1, color: AppColors.systemRed)));
-        }
-
-        final risco = snapshot.data?.risco ?? 0;
-
-        if (risco == 0) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: Row(
-              children: [
-                Icon(Icons.check_circle_outline_rounded, color: AppColors.primary.withValues(alpha: 0.5), size: 16),
-                const SizedBox(width: 8),
-                Text(
-                  'NENHUM ALUNO EM RISCO. EXCELENTE TRABALHO.',
-                  style: AppTheme.technicalLabel.copyWith(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    fontSize: 9,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return AppTappable(
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => PersonalAtencaoPage(personalService: personalService)),
-          ),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.03),
-                  width: 1,
-                ),
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.systemRed.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.warning_rounded, color: AppColors.systemRed, size: 20),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$risco ALUNO${risco > 1 ? 'S' : ''} EM RISCO DE CHURN',
-                        style: const TextStyle(
-                          color: AppColors.systemRed,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Alunos sem treino há mais de 7 dias.',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.4),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.chevron_right_rounded, color: Colors.white.withValues(alpha: 0.2), size: 16),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
 class _AtividadeRecenteSection extends StatelessWidget {
   final PersonalService personalService;
   const _AtividadeRecenteSection({required this.personalService});
@@ -502,7 +391,7 @@ class _AtividadeRecenteSection extends StatelessWidget {
             padding: const EdgeInsets.all(40.0),
             child: Center(
               child: Text(
-                'SEM ATIVIDADE RECENTE',
+                'LOG VAZIO',
                 style: AppTheme.technicalLabel.copyWith(
                   color: Colors.white.withValues(alpha: 0.05),
                   fontSize: 10,
@@ -548,56 +437,87 @@ class _AtividadeItem extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: Colors.white.withValues(alpha: 0.03),
+              color: Colors.white.withValues(alpha: 0.02),
               width: 1,
             ),
           ),
         ),
         child: Row(
           children: [
+            Column(
+              children: [
+                Text(
+                  _tempoRelativo(item.dataHora),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    fontSize: 8,
+                    fontWeight: FontWeight.w900,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  width: 2,
+                  height: 20,
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                ),
+              ],
+            ),
+            const SizedBox(width: 16),
             AppAvatar(
               name: item.alunoNome,
               photoUrl: item.alunoPhotoUrl,
-              radius: 20,
+              radius: 16,
               showBorder: false,
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    item.alunoNome,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.2,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        item.alunoNome.toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          'CONCLUÍDO',
+                          style: TextStyle(
+                            color: AppColors.primary.withValues(alpha: 0.7),
+                            fontSize: 6,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   Text(
-                    item.sessaoNome.isEmpty
-                      ? 'Concluiu um treino'
-                      : 'Concluiu o treino ${item.sessaoNome}',
+                    item.sessaoNome.isEmpty ? 'TREINO AVULSO' : item.sessaoNome.toUpperCase(),
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.3),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.1,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.2,
                     ),
                   ),
                 ],
               ),
             ),
-            Text(
-              _tempoRelativo(item.dataHora),
-              style: AppTheme.technicalLabel.copyWith(
-                color: Colors.white.withValues(alpha: 0.2),
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
+            Icon(Icons.chevron_right_rounded, color: Colors.white.withValues(alpha: 0.1), size: 14),
           ],
         ),
       ),
