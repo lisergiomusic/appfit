@@ -9,7 +9,6 @@ import '../../../../core/services/aluno_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/app_ui_utils.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
-import '../../../../core/widgets/app_primary_button.dart';
 import '../../../../core/widgets/app_tappable.dart';
 import '../../../../core/widgets/glass_icon_button.dart';
 import '../../../../core/widgets/glass_primary_button.dart';
@@ -429,7 +428,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
     );
   }
 
-  /// Exibe o modal customizado para seleção do método de prescrição de treino.
+  // Exibe o modal customizado para seleção do métdo de prescrição de treino.
   Future<void> _exibirOpcoesVincularTreino(BuildContext context) async {
     HapticFeedback.mediumImpact();
     await showModalBottomSheet(
