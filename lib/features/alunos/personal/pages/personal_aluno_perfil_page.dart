@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../../core/services/personal_service.dart';
 import '../../../../core/services/aluno_service.dart';
@@ -172,7 +173,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                     child: Column(
                       children: [
                         const SizedBox(height: 32),
-                        
+
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
                           child: StreamBuilder<dynamic>(
@@ -195,86 +196,125 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                         ),
 
                         const SizedBox(height: 48),
-
-                        // The Glass Console
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.03),
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(32),
-                              topRight: Radius.circular(32),
-                            ),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.05),
-                              width: 1,
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 40),
-                              
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                                child: FichaAtivaHeroCard(
-                                  alunoId: widget.alunoId,
-                                  alunoNome: nomeExibicao,
-                                  photoUrl: widget.photoUrl ?? photoUrl,
-                                  peso: peso.toString(),
-                                  idade: idade,
-                                  rotinaAtiva: data.rotinaAtiva,
-                                  rotinaId: data.rotinaId,
-                                  onPrescreverTreino: () async {
-                                    HapticFeedback.lightImpact();
-                                    await _exibirOpcoesVincularTreino(context);
-                                    _carregarDados();
-                                  },
-                                ),
-                              ),
-
-                              const SizedBox(height: 40),
-
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                                child: GestaoSection(
-                                  alunoId: widget.alunoId,
-                                  alunoNome: nomeExibicao,
-                                  photoUrl: photoUrl,
-                                  peso: peso.toString(),
-                                  idade: idade,
-                                ),
-                              ),
-                              
-                              const SizedBox(height: 100),
-                            ],
-                          ),
+                        ],
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-          
-          // Floating Glass CTA (Apple-style pill button)
+                        ),
+
+                        // The Glass Console - Stretch infinito
+                        SliverFillRemaining(
+                        hasScrollBody: false,
+                        fillOverscroll: true,
+                        child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.03),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(32),
+                          topRight: Radius.circular(32),
+                        ),
+                        border: Border(
+                          top: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1),
+                          left: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1),
+                          right: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1),
+                          bottom: BorderSide.none,
+                        ),
+                        ),
+                        child: Column(
+                        children: [
+                          const SizedBox(height: 40),
+
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: FichaAtivaHeroCard(
+                              alunoId: widget.alunoId,
+                              alunoNome: nomeExibicao,
+                              photoUrl: widget.photoUrl ?? photoUrl,
+                              peso: peso.toString(),
+                              idade: idade,
+                              rotinaAtiva: data.rotinaAtiva,
+                              rotinaId: data.rotinaId,
+                              onPrescreverTreino: () async {
+                                HapticFeedback.lightImpact();
+                                await _exibirOpcoesVincularTreino(context);
+                                _carregarDados();
+                              },
+                            ),
+                          ),
+
+                          const SizedBox(height: 40),
+
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: GestaoSection(
+                              alunoId: widget.alunoId,
+                              alunoNome: nomeExibicao,
+                              photoUrl: photoUrl,
+                              peso: peso.toString(),
+                              idade: idade,
+                            ),
+                          ),
+
+                          const SizedBox(height: 120), // Espaço generoso no final
+                        ],
+                        ),
+                        ),
+                        ),
+                        ],
+                        );
+                        },
+                        ),
+          // Floating Glass CTA Group (Apple-style)
           Positioned(
             bottom: 32,
-            left: 60,
-            right: 60,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(100),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: AppPrimaryButton(
-                  label: "PRESCREVER TREINO",
-                  onPressed: () async {
-                    HapticFeedback.mediumImpact();
-                    await _exibirOpcoesVincularTreino(context);
-                    _carregarDados();
-                  },
+            left: 20,
+            right: 20,
+            child: Row(
+              children: [
+                // Botão Primário (Expandido)
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(100),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: AppPrimaryButton(
+                        label: "PRESCREVER TREINO",
+                        onPressed: () async {
+                          HapticFeedback.mediumImpact();
+                          await _exibirOpcoesVincularTreino(context);
+                          _carregarDados();
+                        },
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                // Botão WhatsApp Circular (Glassmorphism)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      width: 53,
+                      height: 53,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Center(
+                        child: FaIcon(
+                          FontAwesomeIcons.whatsapp,
+                          color: Color(0xFF25D366),
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
