@@ -1,3 +1,4 @@
+import 'package:appfit/features/dashboard/personal/personal_atencao_page.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/aluno_service.dart';
@@ -147,6 +148,139 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                       ),
                     ),
                   ),
+                  // Seção de KPIs Flutuantes (Fora do Console de Vidro)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      child: FutureBuilder<ContagemAlunos>(
+                        future: _contagensFuture,
+                        builder: (context, snapshot) {
+                          final contagens = snapshot.data;
+                          final ativos = contagens?.ativos.toString() ?? '--';
+
+                          return Row(
+                            children: [
+                              // Card: Alunos Ativos (Ratio)
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.03),
+                                    borderRadius: BorderRadius.circular(24),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.05),
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.group_rounded, size: 12, color: AppColors.primary.withValues(alpha: 0.5)),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            'ALUNOS ATIVOS',
+                                            style: AppTheme.technicalLabel.copyWith(
+                                              fontSize: 8,
+                                              color: Colors.white.withValues(alpha: 0.3),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      RichText(
+                                        text: TextSpan(
+                                          style: AppTheme.title1.copyWith(
+                                            fontSize: 28,
+                                            fontWeight: FontWeight.w900,
+                                            fontFamily: 'monospace',
+                                            color: Colors.white,
+                                          ),
+                                          children: [
+                                            TextSpan(text: snapshot.data?.ativos.toString() ?? '--'),
+                                            TextSpan(
+                                              text: '/${snapshot.data?.total.toString() ?? '--'}',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.white.withValues(alpha: 0.2),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // Card: Alunos em Risco
+                              Expanded(
+                                child: AppTappable(
+                                  onPressed: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => PersonalAtencaoPage(personalService: _personalService)),
+                                  ).then((_) => _refreshContagens()),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: (contagens?.risco ?? 0) > 0
+                                          ? AppColors.systemRed.withValues(alpha: 0.05)
+                                          : Colors.white.withValues(alpha: 0.03),
+                                      borderRadius: BorderRadius.circular(24),
+                                      border: Border.all(
+                                        color: (contagens?.risco ?? 0) > 0
+                                            ? AppColors.systemRed.withValues(alpha: 0.1)
+                                            : Colors.white.withValues(alpha: 0.05),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.warning_rounded,
+                                              size: 12,
+                                              color: (contagens?.risco ?? 0) > 0
+                                                  ? AppColors.systemRed
+                                                  : Colors.white.withValues(alpha: 0.3)
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              'ALUNOS EM RISCO',
+                                              style: AppTheme.technicalLabel.copyWith(
+                                                fontSize: 8,
+                                                color: (contagens?.risco ?? 0) > 0 
+                                                    ? AppColors.systemRed.withValues(alpha: 0.8)
+                                                    : Colors.white.withValues(alpha: 0.3),
+                                              ),
+                                            ),                                          ],
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          contagens?.risco.toString() ?? '--',
+                                          style: AppTheme.title1.copyWith(
+                                            fontSize: 28,
+                                            fontWeight: FontWeight.w900,
+                                            fontFamily: 'monospace',
+                                            color: (contagens?.risco ?? 0) > 0
+                                                ? AppColors.systemRed
+                                                : Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 16)),
                   // Console de Vidro Principal
                   SliverFillRemaining(
                     hasScrollBody: false,
@@ -169,153 +303,6 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Linha 1: Comunidade & Engajamento (Simétrica)
-                          IntrinsicHeight(
-                            child: FutureBuilder<ContagemAlunos>(
-                              future: _contagensFuture,
-                              builder: (context, snapshot) {
-                                final contagens = snapshot.data;
-                                final ativos = contagens?.ativos.toString() ?? '--';
-                                return Row(
-                                  children: [
-                                    // Alunos Ativos
-                                    Expanded(
-                                      child: AppTappable(
-                                        onPressed: () {},
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Icon(Icons.group_rounded, size: 12, color: AppColors.primary.withValues(alpha: 0.5)),
-                                                  const SizedBox(width: 6),
-                                                  Text(
-                                                    'BASE DE ALUNOS',
-                                                    style: AppTheme.technicalLabel.copyWith(
-                                                      fontSize: 8,
-                                                      color: Colors.white.withValues(alpha: 0.3),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 12),
-                                              Text(
-                                                ativos,
-                                                style: AppTheme.title1.copyWith(
-                                                  fontSize: 32,
-                                                  fontWeight: FontWeight.w900,
-                                                  fontFamily: 'monospace',
-                                                ),
-                                              ),
-                                              const SizedBox(height: 6),
-                                              Text(
-                                                'EM TREINAMENTO',
-                                                style: AppTheme.technicalLabel.copyWith(
-                                                  fontSize: 7,
-                                                  color: Colors.white.withValues(alpha: 0.2),
-                                                  letterSpacing: 0.5,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    // Divisor Vertical
-                                    Container(
-                                      width: 1,
-                                      color: Colors.white.withValues(alpha: 0.05),
-                                    ),
-                                    // Bloco Engajamento Animado
-                                    Expanded(
-                                      child: AppTappable(
-                                        onPressed: () {},
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Icon(Icons.local_fire_department_rounded, size: 12, color: AppColors.primary.withValues(alpha: 0.5)),
-                                                  const SizedBox(width: 6),
-                                                  Text(
-                                                    'ENGAJAMENTO',
-                                                    style: AppTheme.technicalLabel.copyWith(
-                                                      fontSize: 8,
-                                                      color: Colors.white.withValues(alpha: 0.3),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 12),
-                                              TweenAnimationBuilder<double>(
-                                                tween: Tween<double>(begin: 0.0, end: 0.75),
-                                                duration: const Duration(milliseconds: 1500),
-                                                curve: Curves.easeOutBack,
-                                                builder: (context, value, child) {
-                                                  return SizedBox(
-                                                    width: 48,
-                                                    height: 48,
-                                                    child: Stack(
-                                                      alignment: Alignment.center,
-                                                      children: [
-                                                        CircularProgressIndicator(
-                                                          value: 1.0,
-                                                          strokeWidth: 5,
-                                                          color: Colors.white.withValues(alpha: 0.05),
-                                                        ),
-                                                        CircularProgressIndicator(
-                                                          value: value,
-                                                          strokeWidth: 5,
-                                                          backgroundColor: Colors.transparent,
-                                                          color: AppColors.primary,
-                                                          strokeCap: StrokeCap.round,
-                                                        ),
-                                                        Text(
-                                                          '${(value * 100).toInt()}%',
-                                                          style: TextStyle(
-                                                            fontSize: 11,
-                                                            fontWeight: FontWeight.w900,
-                                                            color: Colors.white,
-                                                            fontFamily: 'monospace',
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                              const SizedBox(height: 10),
-                                              Text(
-                                                'META DE FREQUÊNCIA',
-                                                style: AppTheme.technicalLabel.copyWith(
-                                                  fontSize: 7,
-                                                  color: Colors.white.withValues(alpha: 0.2),
-                                                  letterSpacing: 0.5,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ),
-
-                          // Divisor Horizontal
-                          Container(
-                            height: 1,
-                            color: Colors.white.withValues(alpha: 0.05),
-                          ),
-
                           const SizedBox(height: 32),
 
                           // Seção: Atividade Recente (Log)
@@ -475,43 +462,26 @@ class _AtividadeItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        item.alunoNome.toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          'CONCLUÍDO',
-                          style: TextStyle(
-                            color: AppColors.primary.withValues(alpha: 0.7),
-                            fontSize: 6,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
                   Text(
-                    item.sessaoNome.isEmpty ? 'TREINO AVULSO' : item.sessaoNome.toUpperCase(),
+                    item.alunoNome,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    item.sessaoNome.isEmpty 
+                        ? 'Concluiu um treino avulso' 
+                        : "Concluiu o treino '${item.sessaoNome}'",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.3),
-                      fontSize: 9,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.2,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
