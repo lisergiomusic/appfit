@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shimmer/shimmer.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../core/services/aluno_service.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/services/personal_service.dart';
 import '../../../core/services/supabase_auth_service.dart';
 import '../../../core/services/user_service.dart';
-import '../../../core/widgets/app_section_link_button.dart';
+import '../../../core/widgets/app_tappable.dart';
+import '../../../core/widgets/glass_icon_button.dart';
 import '../../alunos/shared/widgets/app_avatar.dart';
 import '../../alunos/personal/pages/personal_log_detalhe_page.dart';
 import 'personal_atividade_recente_page.dart';
@@ -31,6 +31,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
   final SupabaseAuthService _authService = SupabaseAuthService();
   final UserService _userService = UserService();
   final PersonalService _personalService = PersonalService();
+
   Future<ContagemAlunos>? _contagensFuture;
   Future<Map<String, dynamic>>? _profileFuture;
 
@@ -47,279 +48,267 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
     });
   }
 
+  String _getSaudacao() {
+    final hora = DateTime.now().hour;
+    if (hora >= 5 && hora < 12) return 'BOM DIA';
+    if (hora >= 12 && hora < 18) return 'BOA TARDE';
+    return 'BOA NOITE';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _profileFuture,
-        builder: (context, profileSnapshot) {
-          final bool isProfileLoading = profileSnapshot.connectionState == ConnectionState.waiting;
-          String nome = "Personal";
-          String? photoUrl;
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // Atmosfera Superior (Efeito de profundidade)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: SpacingTokens.atmosphereHeight,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.primary.withValues(alpha: GlassTokens.opacityAtmosphere),
+                    AppColors.primary.withValues(alpha: GlassTokens.opacityAtmosphereSubtle),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
 
-          if (profileSnapshot.hasData && profileSnapshot.data != null) {
-            final data = profileSnapshot.data!;
-            nome = data['nome']?.toString().split(' ')[0] ?? "Personal";
-            photoUrl = (data['photo_url'] ?? data['photoUrl'])?.toString();
-          }
+          FutureBuilder<Map<String, dynamic>>(
+            future: _profileFuture,
+            builder: (context, profileSnapshot) {
+              final personalData = profileSnapshot.data;
+              final nome = personalData?['nome']?.toString().split(' ')[0] ?? "PERSONAL";
+              final photoUrl = (personalData?['photo_url'] ?? personalData?['photoUrl'])?.toString();
 
-          return CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              _buildSliverAppBar(nome, photoUrl, isProfileLoading),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: SpacingTokens.xxl),
-                      Row(
+              return CustomScrollView(
+                physics: const ClampingScrollPhysics(),
+                slivers: [
+                  // Header Sliver com Avatar e Notificação
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).padding.top + 32,
+                        left: 24,
+                        right: 24,
+                        bottom: 40,
+                      ),
+                      child: Row(
                         children: [
+                          AppAvatar(
+                            name: nome,
+                            photoUrl: photoUrl,
+                            radius: 32, // Aumentado para mais impacto visual (Apple Style)
+                            showBorder: true,
+                          ),
+                          const SizedBox(width: 20),
                           Expanded(
-                            child: FutureBuilder<ContagemAlunos>(
-                              future: _contagensFuture,
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState == ConnectionState.waiting) {
-                                  return _buildStatShimmer('Alunos ativos');
-                                }
-
-                                String trendText = 'Calculando...';
-                                IconData trendIcon = Icons.pie_chart_rounded;
-                                Color trendColor = AppColors.primary;
-
-                                if (snapshot.hasData) {
-                                  final contagens = snapshot.data!;
-                                  final percentualAtivos = contagens.total > 0
-                                      ? ((contagens.ativos / contagens.total) * 100).round()
-                                      : 0;
-                                  trendText = '$percentualAtivos% da base ativa';
-                                } else if (snapshot.hasError) {
-                                  trendText = 'Indisponível';
-                                  trendIcon = Icons.info_outline_rounded;
-                                  trendColor = AppColors.labelSecondary;
-                                }
-
-                                final ativosCount = snapshot.hasData
-                                    ? snapshot.data!.ativos.toString()
-                                    : snapshot.hasError ? '--' : '0';
-
-                                return _buildStatCard(
-                                  label: 'Alunos ativos',
-                                  value: ativosCount,
-                                  trendText: trendText,
-                                  trendIcon: trendIcon,
-                                  trendColor: trendColor,
-                                  onTap: () {},
-                                );
-                              },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _getSaudacao(),
+                                  style: AppTheme.heroSubtitle.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.3),
+                                    fontSize: 10,
+                                    letterSpacing: 2.0,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  nome,
+                                  style: AppTheme.heroTitle.copyWith(
+                                    fontSize: 26, // Título mais imersivo
+                                    letterSpacing: -1.0,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: FutureBuilder<ContagemAlunos>(
-                              future: _contagensFuture,
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState == ConnectionState.waiting) {
-                                  return _buildStatShimmer('Atenção necessária');
-                                }
-
-                                final count = snapshot.hasData
-                                    ? snapshot.data!.risco.toString()
-                                    : snapshot.hasError ? '--' : '0';
-
-                                return _buildStatCard(
-                                  label: 'Atenção necessária',
-                                  value: count,
-                                  trendText: 'Novos alertas',
-                                  trendIcon: Icons.error_rounded,
-                                  trendColor: (snapshot.data?.risco ?? 0) > 0
-                                      ? AppColors.systemRed
-                                      : AppColors.accentMetrics,
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (_) => PersonalAtencaoPage(personalService: _personalService)),
-                                  ).then((_) => _refreshContagens()),
-                                );
-                              },
+                          GlassIconButton(
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const PersonalNotificationsPage())
                             ),
+                            icon: Icons.notifications_outlined,
+                            size: 48,
+                            iconSize: 24,
+                            color: Colors.white.withValues(alpha: 0.05),
                           ),
                         ],
                       ),
-                      const SizedBox(height: SpacingTokens.xxl),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    ),
+                  ),
+                  // Console de Vidro Principal (Infinite Scroll)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    fillOverscroll: true,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: GlassTokens.consoleMarginH),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: GlassTokens.opacityConsole),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(GlassTokens.consoleRadius),
+                          topRight: Radius.circular(GlassTokens.consoleRadius),
+                        ),
+                        border: Border(
+                          top: BorderSide(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder), width: 1),
+                          left: BorderSide(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder), width: 1),
+                          right: BorderSide(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder), width: 1),
+                          bottom: BorderSide.none,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('ATIVIDADE RECENTE', style: AppTheme.sectionHeader),
-                          AppSectionLinkButton(
-                            label: 'VER MAIS',
-                            onPressed: () => Navigator.push(
+                          const SizedBox(height: 24),
+
+                          // Grid de Métricas Técnicas
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: FutureBuilder<ContagemAlunos>(
+                              future: _contagensFuture,
+                              builder: (context, snapshot) {
+                                final contagens = snapshot.data;
+                                final ativos = contagens?.ativos.toString() ?? '--';
+                                final risco = contagens?.risco.toString() ?? '--';
+
+                                return Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildMetricTile(
+                                        label: 'ALUNOS ATIVOS',
+                                        value: ativos,
+                                        icon: Icons.group_rounded,
+                                        color: AppColors.primary,
+                                        onTap: () {},
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 1,
+                                      height: 40,
+                                      color: Colors.white.withValues(alpha: 0.05),
+                                    ),
+                                    Expanded(
+                                      child: _buildMetricTile(
+                                        label: 'ATENÇÃO CRÍTICA',
+                                        value: risco,
+                                        icon: Icons.warning_rounded,
+                                        color: (contagens?.risco ?? 0) > 0
+                                          ? AppColors.systemRed
+                                          : AppColors.labelSecondary.withValues(alpha: 0.3),
+                                        onTap: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(builder: (_) => PersonalAtencaoPage(personalService: _personalService)),
+                                        ).then((_) => _refreshContagens()),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+
+                          const SizedBox(height: 40),
+                          _buildSectionHeader(
+                            title: 'ATIVIDADE RECENTE',
+                            onAction: () => Navigator.push(
                               context,
                               MaterialPageRoute(builder: (_) => PersonalAtividadeRecentePage(personalService: _personalService)),
                             ),
                           ),
+
+                          _AtividadeRecenteSection(personalService: _personalService),
+
+                          const Spacer(),
+                          const SizedBox(height: 120), // Buffer infinito
                         ],
                       ),
-                      const SizedBox(height: SpacingTokens.labelToField),
-                      _AtividadeRecenteSection(personalService: _personalService),
-                      const SizedBox(height: SpacingTokens.screenBottomPadding + 80),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildSliverAppBar(String nome, String? photoUrl, bool isLoading) {
-    return SliverAppBar(
-      expandedHeight: 120,
-      collapsedHeight: 70,
-      pinned: true,
-      stretch: true,
-      backgroundColor: AppColors.background,
-      elevation: 0,
-      surfaceTintColor: Colors.transparent,
-      flexibleSpace: FlexibleSpaceBar(
-        stretchModes: const [StretchMode.zoomBackground, StretchMode.fadeTitle],
-        background: Container(
-          decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
-        ),
-        titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-        centerTitle: false,
-        title: isLoading 
-          ? Shimmer.fromColors(
-              baseColor: Colors.white.withAlpha(20),
-              highlightColor: Colors.white.withAlpha(40),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(width: 40, height: 8, color: Colors.white),
-                      const SizedBox(height: 4),
-                      Container(width: 80, height: 14, color: Colors.white),
-                    ],
-                  ),
-                ],
-              ),
-            )
-          : Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AppAvatar(name: nome, photoUrl: photoUrl, radius: 18, showBorder: false),
-                const SizedBox(width: 12),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('${_getSaudacao()},', style: AppTheme.premiumLabel.copyWith(fontSize: 8)),
-                    Text(nome, style: AppTheme.pageTitle.copyWith(fontSize: 18)),
-                  ],
-                ),
-              ],
-            ),
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.notifications_outlined, color: AppColors.labelSecondary, size: 24),
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PersonalNotificationsPage())),
-        ),
-        const SizedBox(width: 8),
-      ],
-    );
-  }
-
-  Widget _buildStatShimmer(String label) {
-    return Shimmer.fromColors(
-      baseColor: Colors.white.withAlpha(20),
-      highlightColor: Colors.white.withAlpha(40),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: AppTheme.premiumCardDecoration.copyWith(
-          color: Colors.white.withAlpha(10),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: AppTheme.formLabel.copyWith(fontSize: 12)),
-            const SizedBox(height: 8),
-            Container(width: 40, height: 24, color: Colors.white),
-            const SizedBox(height: 8),
-            Container(width: 80, height: 12, color: Colors.white),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _getSaudacao() {
-    final hora = DateTime.now().hour;
-    if (hora >= 5 && hora < 12) return 'Bom dia';
-    if (hora >= 12 && hora < 18) return 'Boa tarde';
-    return 'Boa noite';
-  }
-
-  Widget _buildStatCard({
-    required String label,
-    required String value,
-    required String trendText,
-    required IconData trendIcon,
-    required Color trendColor,
-    VoidCallback? onTap,
-  }) {
-    return Container(
-      decoration: AppTheme.premiumCardDecoration,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: AppTheme.formLabel.copyWith(fontSize: 12),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: SpacingTokens.labelToField),
-              Text(value, style: AppTheme.title1.copyWith(fontSize: 24)),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(trendIcon, size: 14, color: trendColor),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      trendText,
-                      style: AppTheme.caption.copyWith(color: trendColor, fontWeight: FontWeight.w600),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
-              ),
-            ],
+              );
+            },
           ),
-        ),
+        ],
       ),
     );
   }
 
+  /// Constrói um tile de métrica técnica integrada ao console.
+  Widget _buildMetricTile({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return AppTappable(
+      onPressed: onTap,
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 12, color: color.withValues(alpha: 0.5)),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: AppTheme.technicalLabel.copyWith(
+
+                  color: Colors.white.withValues(alpha: 0.2),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: AppTheme.title1.copyWith(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              fontFamily: 'monospace', // Estética técnica
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Constrói o cabeçalho de seção dentro do console.
+  Widget _buildSectionHeader({required String title, VoidCallback? onAction}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 12, 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: AppTheme.sectionHeader,
+          ),
+          if (onAction != null)
+            AppTappable(
+              onPressed: onAction,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'VER TUDO',
+                  style: AppTheme.sectionAction,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 class _AtividadeRecenteSection extends StatelessWidget {
@@ -332,147 +321,114 @@ class _AtividadeRecenteSection extends StatelessWidget {
       stream: personalService.getAtividadeRecenteStream(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return _buildShimmer();
+          return const Center(child: CircularProgressIndicator(strokeWidth: 1, color: AppColors.primary));
         }
 
-        if (snapshot.hasError) {
-          return _buildEmpty();
-        }
-
-        final items = (snapshot.data ?? []).take(4).toList();
+        final items = (snapshot.data ?? []).take(5).toList();
 
         if (items.isEmpty) {
-          return _buildEmpty();
+          return Padding(
+            padding: const EdgeInsets.all(40.0),
+            child: Center(
+              child: Text(
+                'SEM ATIVIDADE RECENTE',
+                style: AppTheme.technicalLabel.copyWith(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  fontSize: 10,
+                ),
+              ),
+            ),
+          );
         }
 
-        return Container(
-          decoration: AppTheme.premiumCardDecoration,
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            children: [
-              for (var i = 0; i < items.length; i++)
-                _AtividadeItem(
-                  item: items[i],
-                  showDivider: i < items.length - 1,
-                ),
-            ],
-          ),
+        return Column(
+          children: [
+            for (var item in items)
+              _AtividadeItem(item: item),
+          ],
         );
       },
-    );
-  }
-
-  Widget _buildEmpty() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: AppTheme.premiumCardDecoration,
-      width: double.infinity,
-      child: Column(
-        children: [
-          Icon(Icons.history_rounded, size: 40, color: AppColors.labelSecondary.withAlpha(50)),
-          const SizedBox(height: 12),
-          Text(
-            'Nenhuma atividade',
-            style: AppTheme.cardTitle,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Os treinos concluídos aparecerão aqui.',
-            style: AppTheme.caption,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildShimmer() {
-    return Container(
-      height: 160,
-      decoration: AppTheme.premiumCardDecoration,
     );
   }
 }
 
 class _AtividadeItem extends StatelessWidget {
   final AtividadeRecenteItem item;
-  final bool showDivider;
-  const _AtividadeItem({required this.item, required this.showDivider});
+  const _AtividadeItem({required this.item});
 
   String _tempoRelativo(DateTime data) {
     final diff = DateTime.now().difference(data);
-    if (diff.inMinutes < 60) return 'Há ${diff.inMinutes}min';
-    if (diff.inHours < 24) return 'Há ${diff.inHours}h';
-    if (diff.inDays == 1) return 'Ontem';
-    if (diff.inDays < 7) return 'Há ${diff.inDays}d';
-    return DateFormat('d MMM', 'pt_BR').format(data);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}M';
+    if (diff.inHours < 24) return '${diff.inHours}H';
+    return DateFormat('dd/MM').format(data);
   }
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => Navigator.push(
+    return AppTappable(
+      onPressed: () => Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => PersonalLogDetalhePage(item: item),
         ),
       ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                AppAvatar(
-                  name: item.alunoNome,
-                  photoUrl: item.alunoPhotoUrl,
-                  radius: 20,
-                  showBorder: false,
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(item.alunoNome, style: AppTheme.cardTitle),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.sessaoNome.isEmpty
-                            ? 'Concluiu um treino'
-                            : 'Concluiu o treino "${item.sessaoNome}"',
-                        style: AppTheme.caption,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(_tempoRelativo(item.dataHora), style: AppTheme.premiumLabel.copyWith(fontSize: 10)),
-                    const SizedBox(width: 4),
-                    const Icon(
-                      Icons.chevron_right_rounded,
-                      size: 16,
-                      color: AppColors.labelSecondary,
-                    ),
-                  ],
-                ),
-              ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: Colors.white.withValues(alpha: 0.03),
+              width: 1,
             ),
           ),
-          if (showDivider)
-            Padding(
-              padding: const EdgeInsets.only(left: 70),
-              child: Divider(
-                height: 1,
-                thickness: 0.5,
-                color: Colors.white.withAlpha(10),
+        ),
+        child: Row(
+          children: [
+            AppAvatar(
+              name: item.alunoNome,
+              photoUrl: item.alunoPhotoUrl,
+              radius: 20,
+              showBorder: false,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.alunoNome,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    item.sessaoNome.isEmpty
+                      ? 'Concluiu um treino'
+                      : 'Concluiu o treino ${item.sessaoNome}',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                ],
               ),
             ),
-        ],
+            Text(
+              _tempoRelativo(item.dataHora),
+              style: AppTheme.technicalLabel.copyWith(
+                color: Colors.white.withValues(alpha: 0.2),
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
