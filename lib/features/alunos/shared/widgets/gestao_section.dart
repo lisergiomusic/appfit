@@ -26,45 +26,63 @@ class GestaoSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('GESTÃO', style: AppTheme.sectionHeader),
-        const SizedBox(height: SpacingTokens.xxl),
-        Column(
-          children: [
-            _buildManagementItem(
-              context,
-              icon: CupertinoIcons.graph_square,
-              title: 'PROGRESSÃO DE CARGAS',
-              onTap: () {
-                HapticFeedback.lightImpact();
-                AppUIUtils.showFutureFeatureWarning(context);
-              },
+        Text(
+          'GESTÃO E DADOS',
+          style: AppTheme.sectionHeader.copyWith(
+            fontSize: 10,
+            letterSpacing: 1.2,
+            fontWeight: FontWeight.w900,
+            color: Colors.white.withValues(alpha: 0.4),
+          ),
+        ),
+        const SizedBox(height: 24),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.01),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.03),
+              width: 1,
             ),
-            _buildManagementItem(
-              context,
-              icon: CupertinoIcons.chart_bar_alt_fill,
-              title: 'AVALIAÇÃO FÍSICA',
-              onTap: () {
-                HapticFeedback.lightImpact();
-                AppUIUtils.showFutureFeatureWarning(context);
-              },
-            ),
-            _buildManagementItem(
-              context,
-              icon: CupertinoIcons.doc_text,
-              title: 'HISTÓRICO DE FEEDBACKS',
-              onTap: () {
-                HapticFeedback.lightImpact();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        PersonalFeedbackHistoricoPage(alunoId: alunoId, alunoNome: alunoNome),
-                  ),
-                );
-              },
-              isLast: true,
-            ),
-          ],
+          ),
+          child: Column(
+            children: [
+              _buildManagementItem(
+                context,
+                icon: CupertinoIcons.graph_square,
+                title: 'PROGRESSÃO DE CARGAS',
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  AppUIUtils.showFutureFeatureWarning(context);
+                },
+              ),
+              _buildManagementItem(
+                context,
+                icon: CupertinoIcons.chart_bar_alt_fill,
+                title: 'AVALIAÇÃO FÍSICA',
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  AppUIUtils.showFutureFeatureWarning(context);
+                },
+              ),
+              _buildManagementItem(
+                context,
+                icon: CupertinoIcons.doc_text,
+                title: 'HISTÓRICO DE FEEDBACKS',
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          PersonalFeedbackHistoricoPage(alunoId: alunoId, alunoNome: alunoNome),
+                    ),
+                  );
+                },
+                isLast: true,
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -84,40 +102,39 @@ class GestaoSection extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(
-              vertical: 16,
+              vertical: 18,
+              horizontal: 16,
             ),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.03),
-                    borderRadius: BorderRadius.circular(SpacingTokens.sm),
-                  ),
-                  child: Icon(icon, color: Colors.white.withValues(alpha: 0.4), size: 18),
-                ),
+                Icon(icon, color: Colors.white.withValues(alpha: 0.3), size: 20),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.3,
-                      color: AppColors.labelPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                      color: Colors.white,
                     ),
                   ),
                 ),
                 Icon(
                   CupertinoIcons.chevron_forward,
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: Colors.white.withValues(alpha: 0.15),
                   size: 14,
                 ),
               ],
             ),
           ),
           if (!isLast)
-            Divider(color: Colors.white.withValues(alpha: 0.03), height: 1),
+            Divider(
+              color: Colors.white.withValues(alpha: 0.03),
+              height: 1,
+              indent: 16,
+              endIndent: 16,
+            ),
         ],
       ),
     );

@@ -1,9 +1,8 @@
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/services/personal_service.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -58,23 +57,6 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
     });
   }
 
-  Future<void> _abrirWhatsApp(BuildContext context, String? telefone) async {
-    HapticFeedback.lightImpact();
-    if (telefone == null || telefone.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Telefone não cadastrado.')));
-      return;
-    }
-
-    final numeroLimpo = telefone.replaceAll(RegExp(r'[^0-9]'), '');
-    final url = "https://wa.me/55$numeroLimpo";
-
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-    }
-  }
-
   void _irParaGerenciarAluno(BuildContext context) {
     HapticFeedback.lightImpact();
     Navigator.push(
@@ -91,42 +73,22 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        centerTitle: true,
-        leading: const AppNavBackButton(),
-        title: const Text('Perfil do Aluno', style: AppTheme.pageTitle),
-        actions: [
-          IconButton(
-            icon: const Icon(CupertinoIcons.settings,
-                color: AppColors.labelSecondary, size: 22),
-            onPressed: () => _irParaGerenciarAluno(context),
-            padding: const EdgeInsets.only(right: 16),
-          ),
-        ],
-      ),
-      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Preto Absoluto de fundo para contraste infinito
-          Container(color: Colors.black),
-          
-          // Gradiente Atmosférico de Profundidade
+          // Profundidade Atmosférica
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            height: 400,
+            height: 450,
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    AppColors.primary.withValues(alpha: 0.15),
+                    AppColors.primary.withValues(alpha: 0.18),
                     AppColors.primary.withValues(alpha: 0.05),
                     Colors.transparent,
                   ],
@@ -158,7 +120,6 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                   : widget.alunoNome;
 
               final photoUrl = alunoData['photoUrl'] as String?;
-              final telefone = alunoData['telefone'] as String?;
               final dataNascimentoRaw = alunoData['data_nascimento'] ?? alunoData['dataNascimento'];
               final DateTime? dataNascimento = dataNascimentoRaw != null ? DateTime.tryParse(dataNascimentoRaw.toString()) : null;
               final peso = alunoData['peso_atual'] ?? alunoData['pesoAtual'] ?? '--';
@@ -166,14 +127,35 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                   ? _calcularIdade(dataNascimento).toString()
                   : '--';
 
-              return SafeArea(
-                bottom: false,
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
+              return CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  // SliverAppBar Premium com Glassmorphism
+                  SliverAppBar(
+                    pinned: true,
+                    expandedHeight: 180,
+                    backgroundColor: Colors.transparent,
+                    surfaceTintColor: Colors.transparent,
+                    leading: const AppNavBackButton(),
+                    actions: [
+                      IconButton(
+                        icon: const Icon(CupertinoIcons.settings,
+                            color: AppColors.labelSecondary, size: 22),
+                        onPressed: () => _irParaGerenciarAluno(context),
+                        padding: const EdgeInsets.only(right: 16),
+                      ),
+                    ],
+                    flexibleSpace: FlexibleSpaceBar(
+                      stretchModes: const [
+                        StretchMode.zoomBackground,
+                        StretchMode.blurBackground,
+                      ],
+                      background: Container(
+                        padding: const EdgeInsets.only(
+                          top: 100,
+                          left: SpacingTokens.screenHorizontalPadding,
+                          right: SpacingTokens.screenHorizontalPadding,
+                        ),
                         child: AlunoHeaderSection(
                           alunoId: widget.alunoId,
                           alunoNome: nomeExibicao,
@@ -182,57 +164,51 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                           peso: peso.toString(),
                         ),
                       ),
-                      
-                      const SizedBox(height: SpacingTokens.xxl),
-                      
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
-                        child: _buildActions(context, telefone),
-                      ),
+                    ),
+                  ),
 
-                      const SizedBox(height: 32),
-
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
-                        child: StreamBuilder<dynamic>(
-                          stream: _logsSemanaStream,
-                          builder: (context, logsSnapshot) {
-                            List<DateTime>? treinados;
-                            if (logsSnapshot.hasData) {
-                              final list = logsSnapshot.data as List;
-                              treinados = list
-                                  .map((d) => DateTime.tryParse(d['dataHora'].toString()))
-                                  .whereType<DateTime>()
-                                  .toList();
-                            }
-                            return RitmoDaSemanaCard(
-                              alunoNome: nomeExibicao,
-                              diasTreinados: treinados,
-                            );
-                          },
-                        ),
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // The Glass Console - A placa única de vidro
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.03),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(32),
-                            topRight: Radius.circular(32),
-                          ),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.05),
-                            width: 1,
+                  // Conteúdo em Slivers
+                  SliverToBoxAdapter(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 32),
+                        
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.screenHorizontalPadding),
+                          child: StreamBuilder<dynamic>(
+                            stream: _logsSemanaStream,
+                            builder: (context, logsSnapshot) {
+                              List<DateTime>? treinados;
+                              if (logsSnapshot.hasData) {
+                                final list = logsSnapshot.data as List;
+                                treinados = list
+                                    .map((d) => DateTime.tryParse(d['dataHora'].toString()))
+                                    .whereType<DateTime>()
+                                    .toList();
+                              }
+                              return RitmoDaSemanaCard(
+                                alunoNome: nomeExibicao,
+                                diasTreinados: treinados,
+                              );
+                            },
                           ),
                         ),
-                        child: ClipRRect(
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(32),
-                            topRight: Radius.circular(32),
+
+                        const SizedBox(height: 48),
+
+                        // The Glass Console
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.03),
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(32),
+                              topRight: Radius.circular(32),
+                            ),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.05),
+                              width: 1,
+                            ),
                           ),
                           child: Column(
                             children: [
@@ -269,16 +245,37 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                                 ),
                               ),
                               
-                              const SizedBox(height: 60),
+                              const SizedBox(height: 100),
                             ],
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
+                ],
               );
             },
+          ),
+          
+          // Floating Glass CTA (Apple-style pill button)
+          Positioned(
+            bottom: 32,
+            left: 60,
+            right: 60,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(100),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: AppPrimaryButton(
+                  label: "PRESCREVER TREINO",
+                  onPressed: () async {
+                    HapticFeedback.mediumImpact();
+                    await _exibirOpcoesVincularTreino(context);
+                    _carregarDados();
+                  },
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -310,58 +307,6 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildActions(BuildContext context, String? telefone) {
-    return Row(
-      children: [
-        AppTappable(
-          onPressed: () => _abrirWhatsApp(context, telefone),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(SpacingTokens.sm),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const FaIcon(
-                  FontAwesomeIcons.whatsapp,
-                  color: Color(0xFF25D366),
-                  size: 16,
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  'MENSAGEM',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        // Novo Botão de Quick Insight (Placeholder técnico)
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-            border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-          ),
-          child: const Icon(Icons.analytics_outlined, color: AppColors.primary, size: 18),
-        ),
-      ],
     );
   }
 
