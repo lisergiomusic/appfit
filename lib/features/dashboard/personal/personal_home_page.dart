@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/aluno_service.dart';
@@ -9,6 +10,7 @@ import '../../../core/widgets/app_tappable.dart';
 import '../../../core/widgets/glass_icon_button.dart';
 import '../../alunos/shared/widgets/app_avatar.dart';
 import '../../alunos/personal/pages/personal_log_detalhe_page.dart';
+import '../../financeiro/personal/pages/personal_financeiro_page.dart';
 import 'personal_atividade_recente_page.dart';
 import 'personal_atencao_page.dart';
 import 'personal_notificacoes_page.dart';
@@ -92,62 +94,63 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
               return CustomScrollView(
                 physics: const ClampingScrollPhysics(),
                 slivers: [
-                  // Header Sliver com Avatar e Notificação
+                  // Header Sliver Compacto (Apple Inspired)
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top + 32,
-                        left: 24,
-                        right: 24,
-                        bottom: 40,
+                        top: MediaQuery.of(context).padding.top + 16,
+                        left: 20,
+                        right: 16,
+                        bottom: 24,
                       ),
                       child: Row(
                         children: [
                           AppAvatar(
                             name: nome,
                             photoUrl: photoUrl,
-                            radius: 32, // Aumentado para mais impacto visual (Apple Style)
+                            radius: 20,
                             showBorder: true,
                           ),
-                          const SizedBox(width: 20),
+                          const SizedBox(width: 16),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   _getSaudacao(),
-                                  style: AppTheme.heroSubtitle.copyWith(
+                                  style: AppTheme.technicalLabel.copyWith(
                                     color: Colors.white.withValues(alpha: 0.3),
-                                    fontSize: 10,
-                                    letterSpacing: 2.0,
+                                    fontSize: 9,
+                                    letterSpacing: 1.5,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 2),
                                 Text(
                                   nome,
                                   style: AppTheme.heroTitle.copyWith(
-                                    fontSize: 26, // Título mais imersivo
-                                    letterSpacing: -1.0,
+                                    fontSize: 22,
+                                    letterSpacing: -0.5,
                                   ),
                                 ),
                               ],
                             ),
                           ),
+                          const SizedBox(width: 12),
                           GlassIconButton(
                             onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(builder: (_) => const PersonalNotificationsPage())
                             ),
                             icon: Icons.notifications_outlined,
-                            size: 48,
-                            iconSize: 24,
+                            size: 40,
+                            iconSize: 20,
                             color: Colors.white.withValues(alpha: 0.05),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  // Console de Vidro Principal (Infinite Scroll)
+                  // Console de Vidro Principal
                   SliverFillRemaining(
                     hasScrollBody: false,
                     fillOverscroll: true,
@@ -169,46 +172,139 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 24),
-
-                          // Grid de Métricas Técnicas
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                          // Linha 1: Comunidade & Engajamento (Simétrica)
+                          IntrinsicHeight(
                             child: FutureBuilder<ContagemAlunos>(
                               future: _contagensFuture,
                               builder: (context, snapshot) {
                                 final contagens = snapshot.data;
                                 final ativos = contagens?.ativos.toString() ?? '--';
-                                final risco = contagens?.risco.toString() ?? '--';
-
                                 return Row(
                                   children: [
+                                    // Alunos Ativos
                                     Expanded(
-                                      child: _buildMetricTile(
-                                        label: 'ALUNOS ATIVOS',
-                                        value: ativos,
-                                        icon: Icons.group_rounded,
-                                        color: AppColors.primary,
-                                        onTap: () {},
+                                      child: AppTappable(
+                                        onPressed: () {},
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Icon(Icons.group_rounded, size: 12, color: AppColors.primary.withValues(alpha: 0.5)),
+                                                  const SizedBox(width: 6),
+                                                  Text(
+                                                    'BASE DE ALUNOS',
+                                                    style: AppTheme.technicalLabel.copyWith(
+                                                      fontSize: 8,
+                                                      color: Colors.white.withValues(alpha: 0.3),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 12),
+                                              Text(
+                                                ativos,
+                                                style: AppTheme.title1.copyWith(
+                                                  fontSize: 32,
+                                                  fontWeight: FontWeight.w900,
+                                                  fontFamily: 'monospace',
+                                                ),
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                'EM TREINAMENTO',
+                                                style: AppTheme.technicalLabel.copyWith(
+                                                  fontSize: 7,
+                                                  color: Colors.white.withValues(alpha: 0.2),
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ),
                                     ),
+                                    // Divisor Vertical
                                     Container(
                                       width: 1,
-                                      height: 40,
                                       color: Colors.white.withValues(alpha: 0.05),
                                     ),
+                                    // Bloco Engajamento Animado
                                     Expanded(
-                                      child: _buildMetricTile(
-                                        label: 'ATENÇÃO CRÍTICA',
-                                        value: risco,
-                                        icon: Icons.warning_rounded,
-                                        color: (contagens?.risco ?? 0) > 0
-                                          ? AppColors.systemRed
-                                          : AppColors.labelSecondary.withValues(alpha: 0.3),
-                                        onTap: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(builder: (_) => PersonalAtencaoPage(personalService: _personalService)),
-                                        ).then((_) => _refreshContagens()),
+                                      child: AppTappable(
+                                        onPressed: () {},
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Icon(Icons.local_fire_department_rounded, size: 12, color: AppColors.primary.withValues(alpha: 0.5)),
+                                                  const SizedBox(width: 6),
+                                                  Text(
+                                                    'ENGAJAMENTO',
+                                                    style: AppTheme.technicalLabel.copyWith(
+                                                      fontSize: 8,
+                                                      color: Colors.white.withValues(alpha: 0.3),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 12),
+                                              TweenAnimationBuilder<double>(
+                                                tween: Tween<double>(begin: 0.0, end: 0.75),
+                                                duration: const Duration(milliseconds: 1500),
+                                                curve: Curves.easeOutBack,
+                                                builder: (context, value, child) {
+                                                  return SizedBox(
+                                                    width: 48,
+                                                    height: 48,
+                                                    child: Stack(
+                                                      alignment: Alignment.center,
+                                                      children: [
+                                                        CircularProgressIndicator(
+                                                          value: 1.0,
+                                                          strokeWidth: 5,
+                                                          color: Colors.white.withValues(alpha: 0.05),
+                                                        ),
+                                                        CircularProgressIndicator(
+                                                          value: value,
+                                                          strokeWidth: 5,
+                                                          backgroundColor: Colors.transparent,
+                                                          color: AppColors.primary,
+                                                          strokeCap: StrokeCap.round,
+                                                        ),
+                                                        Text(
+                                                          '${(value * 100).toInt()}%',
+                                                          style: TextStyle(
+                                                            fontSize: 11,
+                                                            fontWeight: FontWeight.w900,
+                                                            color: Colors.white,
+                                                            fontFamily: 'monospace',
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                              const SizedBox(height: 10),
+                                              Text(
+                                                'META DE FREQUÊNCIA',
+                                                style: AppTheme.technicalLabel.copyWith(
+                                                  fontSize: 7,
+                                                  color: Colors.white.withValues(alpha: 0.2),
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -217,7 +313,25 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                             ),
                           ),
 
-                          const SizedBox(height: 40),
+                          // Divisor Horizontal
+                          Container(
+                            height: 1,
+                            color: Colors.white.withValues(alpha: 0.05),
+                          ),
+
+                          // Seção: Atenção Crítica (Feed)
+                          const SizedBox(height: 24),
+                          _buildSectionHeader(
+                            title: 'ATENÇÃO CRÍTICA',
+                            onAction: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => PersonalAtencaoPage(personalService: _personalService)),
+                            ).then((_) => _refreshContagens()),
+                          ),
+                          _AtencaoCriticaFeedSection(contagensFuture: _contagensFuture, personalService: _personalService),
+
+                          const SizedBox(height: 24),
+                          // Seção: Atividade Recente
                           _buildSectionHeader(
                             title: 'ATIVIDADE RECENTE',
                             onAction: () => Navigator.push(
@@ -225,7 +339,6 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                               MaterialPageRoute(builder: (_) => PersonalAtividadeRecentePage(personalService: _personalService)),
                             ),
                           ),
-
                           _AtividadeRecenteSection(personalService: _personalService),
 
                           const Spacer(),
@@ -237,46 +350,6 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                 ],
               );
             },
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Constrói um tile de métrica técnica integrada ao console.
-  Widget _buildMetricTile({
-    required String label,
-    required String value,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return AppTappable(
-      onPressed: onTap,
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 12, color: color.withValues(alpha: 0.5)),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: AppTheme.technicalLabel.copyWith(
-
-                  color: Colors.white.withValues(alpha: 0.2),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: AppTheme.title1.copyWith(
-              fontSize: 28,
-              fontWeight: FontWeight.w900,
-              fontFamily: 'monospace', // Estética técnica
-            ),
           ),
         ],
       ),
@@ -307,6 +380,104 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
             ),
         ],
       ),
+    );
+  }
+}
+
+class _AtencaoCriticaFeedSection extends StatelessWidget {
+  final Future<ContagemAlunos>? contagensFuture;
+  final PersonalService personalService;
+
+  const _AtencaoCriticaFeedSection({required this.contagensFuture, required this.personalService});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<ContagemAlunos>(
+      future: contagensFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator(strokeWidth: 1, color: AppColors.systemRed)));
+        }
+
+        final risco = snapshot.data?.risco ?? 0;
+
+        if (risco == 0) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Row(
+              children: [
+                Icon(Icons.check_circle_outline_rounded, color: AppColors.primary.withValues(alpha: 0.5), size: 16),
+                const SizedBox(width: 8),
+                Text(
+                  'NENHUM ALUNO EM RISCO. EXCELENTE TRABALHO.',
+                  style: AppTheme.technicalLabel.copyWith(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    fontSize: 9,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return AppTappable(
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => PersonalAtencaoPage(personalService: personalService)),
+          ),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.03),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.systemRed.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.warning_rounded, color: AppColors.systemRed, size: 20),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$risco ALUNO${risco > 1 ? 'S' : ''} EM RISCO DE CHURN',
+                        style: const TextStyle(
+                          color: AppColors.systemRed,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Alunos sem treino há mais de 7 dias.',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.4),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, color: Colors.white.withValues(alpha: 0.2), size: 16),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
