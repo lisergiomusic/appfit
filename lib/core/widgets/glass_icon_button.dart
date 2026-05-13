@@ -14,6 +14,7 @@ class GlassIconButton extends StatefulWidget {
   final Color? color;
   final Color? iconColor;
   final bool hasBorder;
+  final double? borderRadius;
 
   const GlassIconButton({
     super.key,
@@ -25,6 +26,7 @@ class GlassIconButton extends StatefulWidget {
     this.color,
     this.iconColor,
     this.hasBorder = true,
+    this.borderRadius,
   });
 
   @override
@@ -36,6 +38,8 @@ class _GlassIconButtonState extends State<GlassIconButton> {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveRadius = widget.borderRadius ?? (widget.size / 2);
+
     return AnimatedScale(
       duration: const Duration(milliseconds: 150),
       curve: Curves.easeOutCubic,
@@ -50,7 +54,7 @@ class _GlassIconButtonState extends State<GlassIconButton> {
         },
         onTapCancel: () => setState(() => _isPressed = false),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(widget.size / 2),
+          borderRadius: BorderRadius.circular(effectiveRadius),
           child: BackdropFilter(
             filter: ImageFilter.blur(
               sigmaX: GlassTokens.blurStandard,
@@ -61,7 +65,7 @@ class _GlassIconButtonState extends State<GlassIconButton> {
               height: widget.size,
               decoration: BoxDecoration(
                 color: widget.color ?? Colors.white.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(effectiveRadius),
                 border: widget.hasBorder
                     ? Border.all(
                         color: Colors.white.withValues(alpha: GlassTokens.opacityBorder),

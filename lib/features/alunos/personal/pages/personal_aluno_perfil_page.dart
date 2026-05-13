@@ -144,20 +144,27 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                     expandedHeight: SpacingTokens.headerExpanded,
                     backgroundColor: Colors.transparent,
                     surfaceTintColor: Colors.transparent,
-                    leading: const AppNavBackButton(),
+                    leadingWidth: 80,
+                    leading: Center(
+                      child: GlassIconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: CupertinoIcons.chevron_back,
+                        size: 42,
+                        iconSize: 20,
+                        color: Colors.white.withValues(alpha: GlassTokens.opacityConsole),
+                      ),
+                    ),
                     actions: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: SpacingTokens.sm),
+                      Center(
                         child: GlassIconButton(
                           onPressed: () => _irParaGerenciarAluno(context),
-                          icon: CupertinoIcons.settings,
-                          iconColor: AppColors.labelSecondary,
-                          size: 48,
-                          iconSize: 22,
-                          color: Colors.transparent,
-                          hasBorder: false,
+                          icon: CupertinoIcons.ellipsis,
+                          size: 42,
+                          iconSize: 20,
+                          color: Colors.white.withValues(alpha: GlassTokens.opacityConsole),
                         ),
                       ),
+                      const SizedBox(width: SpacingTokens.md),
                     ],
                     flexibleSpace: LayoutBuilder(
                       builder: (context, constraints) {
@@ -182,6 +189,27 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                                   ),
                                 ),
                               ),
+
+                            // Rótulo técnico centralizado (ALUNO) - Visível no estado expandido.
+                            Positioned(
+                              top: MediaQuery.of(context).padding.top,
+                              left: 0,
+                              right: 0,
+                              height: kToolbarHeight,
+                              child: Center(
+                                child: Opacity(
+                                  opacity: (1.0 - (collapseProgress * 2)).clamp(0.0, 1.0),
+                                  child: Text(
+                                    'ALUNO',
+                                    style: AppTheme.technicalLabel.copyWith(
+                                      fontSize: 12,
+                                      letterSpacing: 2.0,
+                                      color: Colors.white.withValues(alpha: GlassTokens.opacitySecondaryText),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
 
                             FlexibleSpaceBar(
                               centerTitle: true,
