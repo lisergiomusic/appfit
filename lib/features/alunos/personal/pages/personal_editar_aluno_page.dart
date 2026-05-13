@@ -1,12 +1,16 @@
+import 'dart:ui';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/personal_service.dart';
 import '../../../../core/services/user_service.dart';
-import '../../../../core/widgets/app_bar_divider.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../../../core/widgets/app_bar_text_button.dart';
+import '../../../../core/widgets/app_tappable.dart';
 
+/// Página de edição cadastral do aluno com estética Neo-Industrial Form.
+/// Centraliza os campos em um console de vidro único para uma experiência focada e premium.
 class PersonalEditarAlunoPage extends StatefulWidget {
   final String alunoId;
   final PersonalService? personalService;
@@ -43,7 +47,7 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
 
   String? _generoSelecionado;
   final List<String> _generos = ['Masculino', 'Feminino', 'Outro'];
-  final String _generoPlaceholder = 'Selecione o gênero';
+  final String _generoPlaceholder = 'SELECIONE O GÊNERO';
 
   @override
   void initState() {
@@ -58,6 +62,7 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
     _carregarDados();
   }
 
+  /// Monitora mudanças nos campos para habilitar/desabilitar o botão salvar.
   void _onFieldChanged() {
     final hasChanges = _temAlteracoes();
     if (hasChanges != _canSave) {
@@ -65,12 +70,13 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
     }
   }
 
+  /// Recupera os dados atuais do aluno para popular o formulário.
   Future<void> _carregarDados() async {
     try {
       final data = await _userService
           .getProfile(widget.alunoId)
           .timeout(const Duration(seconds: 12));
-      
+
       if (data.isEmpty) throw Exception("Aluno não encontrado");
 
       _nomeController.text = data['nome'] ?? '';
@@ -91,7 +97,7 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
       _dadosIniciais = Map.from(data);
       setState(() {
         _isLoading = false;
-        _canSave = false; // Começa desabilitado
+        _canSave = false;
       });
     } catch (e) {
       if (mounted) {
@@ -113,11 +119,10 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
     super.dispose();
   }
 
+  /// Verifica se houve qualquer alteração em relação aos dados originais.
   bool _temAlteracoes() {
-    print('>>> [CHECK] _isLoading: $_isLoading, _dadosIniciais: ${_dadosIniciais != null}');
     if (_isLoading || _dadosIniciais == null) return false;
 
-    // Função auxiliar para normalizar strings
     String norm(dynamic v) => (v?.toString() ?? '').trim();
 
     final nomeMudou = norm(_nomeController.text) != norm(_dadosIniciais!['nome']);
@@ -125,35 +130,22 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
     final emailMudou = norm(_emailController.text) != norm(_dadosIniciais!['email']);
     final telefoneMudou = norm(_telefoneController.text) != norm(_dadosIniciais!['telefone']);
 
-    // Peso (Comparação numérica com tolerância)
     final pesoIni = double.tryParse(norm(_dadosIniciais!['peso_atual'] ?? _dadosIniciais!['pesoAtual'])) ?? 0.0;
     final pesoAtu = double.tryParse(_pesoController.text.replaceAll(',', '.')) ?? 0.0;
     final pesoMudou = (pesoIni - pesoAtu).abs() > 0.01;
 
-    // Data
     final dIniRaw = _dadosIniciais!['data_nascimento'] ?? _dadosIniciais!['dataNascimento'];
     final dIni = dIniRaw != null ? DateTime.tryParse(dIniRaw.toString()) : null;
     final dataMudou = dIni?.millisecondsSinceEpoch != _dataNascimento?.millisecondsSinceEpoch;
 
-    // Gênero
     final gIni = norm(_dadosIniciais!['genero']);
     final gAtu = norm(_generoSelecionado);
     final generoMudou = gAtu != gIni && (gAtu.isNotEmpty || gIni.isNotEmpty);
 
-    final temMudanca = nomeMudou || sobrenomeMudou || emailMudou || telefoneMudou || pesoMudou || dataMudou || generoMudou;
-
-    if (temMudanca) {
-      print('>>> [!] ALTERAÇÃO DETECTADA:');
-      if (nomeMudou) print('>>> Nome: "${norm(_dadosIniciais!['nome'])}" -> "${norm(_nomeController.text)}"');
-      if (sobrenomeMudou) print('>>> Sobrenome: "${norm(_dadosIniciais!['sobrenome'])}" -> "${norm(_sobrenomeController.text)}"');
-      if (pesoMudou) print('>>> Peso: $pesoIni -> $pesoAtu');
-      if (dataMudou) print('>>> Data: $dIni -> $_dataNascimento');
-      if (generoMudou) print('>>> Gênero: "$gIni" -> "$gAtu"');
-    }
-
-    return temMudanca;
+    return nomeMudou || sobrenomeMudou || emailMudou || telefoneMudou || pesoMudou || dataMudou || generoMudou;
   }
 
+  /// Persiste as alterações no backend.
   Future<void> _salvar() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -181,7 +173,7 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Perfil atualizado com sucesso!'),
-            backgroundColor: AppColors.success,
+            backgroundColor: AppColors.primary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -199,10 +191,6 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Mapa de seções da interface desta página:
-    // 1) Estrutura superior: AppBar, título e ações de navegação.
-    // 2) Conteúdo principal: blocos, listas, cards e estados da tela.
-    // 3) Ações finais: botões primários, confirmadores e feedbacks.
     return PopScope(
       canPop: !_isSaving,
       onPopInvokedWithResult: (didPop, result) async {
@@ -211,123 +199,209 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
         await _salvar();
       },
       child: Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: _buildAppBar(),
-        body: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              )
-            : _buildBody(),
-      ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: AppColors.background,
-      elevation: 0,
-      scrolledUnderElevation: 0,
-      surfaceTintColor: Colors.transparent,
-      centerTitle: true,
-      leading: AppNavBackButton(
-        onPressed: () async {
-          if (_isSaving) return;
-          await _salvar();
-        },
-      ),
-      title: const Text('Editar Aluno'),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: AppBarTextButton(
-            label: 'Salvar',
-            isLoading: _isSaving,
-            onPressed: _canSave ? _salvar : null,
-          ),
-        ),
-      ],
-      bottom: const AppBarDivider(),
-    );
-  }
-
-  Widget _buildBody() {
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(
-          SpacingTokens.screenHorizontalPadding,
-          SpacingTokens.screenTopPadding,
-          SpacingTokens.screenHorizontalPadding,
-          SpacingTokens.screenBottomPadding,
-        ),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildTextField(
-                controller: _nomeController,
-                label: 'Nome',
-                icon: Icons.person_rounded,
-                textCapitalization: TextCapitalization.words,
-                hint: 'Ex: João',
-                validator: (v) => v!.isEmpty ? 'O nome é obrigatório' : null,
-              ),
-              const SizedBox(height: 20),
-              _buildTextField(
-                controller: _sobrenomeController,
-                label: 'Sobrenome',
-                icon: Icons.badge_rounded,
-                textCapitalization: TextCapitalization.words,
-                hint: 'Ex: Silva',
-                validator: (v) =>
-                    v!.isEmpty ? 'O sobrenome é obrigatório' : null,
-              ),
-              const SizedBox(height: 20),
-              _buildDatePicker(),
-              const SizedBox(height: 20),
-              _buildGeneroDropdown(),
-              const SizedBox(height: 20),
-              _buildTextField(
-                controller: _pesoController,
-                label: 'Peso',
-                icon: Icons.monitor_weight_outlined,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                hint: 'Ex: 75.5',
-                suffix: const Text(
-                  'kg',
-                  style: TextStyle(
-                    color: AppColors.labelSecondary,
-                    fontSize: 14,
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            // Atmosfera Superior
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: SpacingTokens.atmosphereHeight,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.primary.withValues(alpha: GlassTokens.opacityAtmosphere),
+                      AppColors.primary.withValues(alpha: GlassTokens.opacityAtmosphereSubtle),
+                      Colors.transparent,
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              _buildTextField(
-                controller: _emailController,
-                label: 'E-mail de acesso',
-                icon: Icons.alternate_email_rounded,
-                keyboardType: TextInputType.emailAddress,
-                hint: 'exemplo@email.com',
+            ),
+
+            _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  )
+                : _buildBody(),
+
+            // Header Customizado (Substituindo AppBar para garantir transparência real sobre a Stack)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: ClipRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    child: SafeArea(
+                      bottom: false,
+                      child: Container(
+                        height: 56,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Título Centralizado Absoluto
+                            Text(
+                              'Editar Aluno',
+                              textAlign: TextAlign.center,
+                              style: AppTheme.pageTitle,
+                            ),
+                            // Ações Laterais
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                AppNavBackButton(
+                                  onPressed: () async {
+                                    if (_isSaving) return;
+                                    await _salvar();
+                                  },
+                                ),
+                                AppBarTextButton(
+                                  label: 'Salvar',
+                                  isLoading: _isSaving,
+                                  onPressed: _canSave ? _salvar : null,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-              const SizedBox(height: 20),
-              _buildTextField(
-                controller: _telefoneController,
-                label: 'Whatsapp / contato',
-                icon: Icons.phone_iphone_rounded,
-                keyboardType: TextInputType.phone,
-                hint: '(00) 00000-0000',
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
+  /// Constrói o corpo da página com o Glass Form Console.
+  Widget _buildBody() {
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            fillOverscroll: true,
+            child: Container(
+              margin: EdgeInsets.fromLTRB(
+                GlassTokens.consoleMarginH,
+                SpacingTokens.xxxl + MediaQuery.of(context).padding.top + 56, // Compensação do Header customizado
+                GlassTokens.consoleMarginH,
+                0,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: GlassTokens.opacityConsole),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(GlassTokens.consoleRadius),
+                  topRight: Radius.circular(GlassTokens.consoleRadius),
+                ),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: GlassTokens.opacityBorder),
+                ),
+              ),
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionHeader('DADOS IDENTIFICADORES'),
+                    _buildTextField(
+                      controller: _nomeController,
+                      label: 'NOME',
+                      icon: CupertinoIcons.person,
+                      textCapitalization: TextCapitalization.words,
+                      hint: 'EX: JOÃO',
+                      validator: (v) => v!.isEmpty ? 'O nome é obrigatório' : null,
+                    ),
+                    const SizedBox(height: 24),
+                    _buildTextField(
+                      controller: _sobrenomeController,
+                      label: 'SOBRENOME',
+                      icon: CupertinoIcons.person_2,
+                      textCapitalization: TextCapitalization.words,
+                      hint: 'EX: SILVA',
+                      validator: (v) => v!.isEmpty ? 'O sobrenome é obrigatório' : null,
+                    ),
+                    const SizedBox(height: 32),
+
+                    _buildSectionHeader('BIOMETRIA E PERFIL'),
+                    _buildDatePicker(),
+                    const SizedBox(height: 24),
+                    _buildGeneroDropdown(),
+                    const SizedBox(height: 24),
+                    _buildTextField(
+                      controller: _pesoController,
+                      label: 'PESO ATUAL',
+                      icon: CupertinoIcons.gauge,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      hint: 'EX: 75.5',
+                      suffix: Text(
+                        'KG',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    _buildSectionHeader('CONTATO E ACESSO'),
+                    _buildTextField(
+                      controller: _emailController,
+                      label: 'E-MAIL DE ACESSO',
+                      icon: CupertinoIcons.mail,
+                      keyboardType: TextInputType.emailAddress,
+                      hint: 'EXEMPLO@EMAIL.COM',
+                    ),
+                    const SizedBox(height: 24),
+                    _buildTextField(
+                      controller: _telefoneController,
+                      label: 'WHATSAPP / CONTATO',
+                      icon: CupertinoIcons.phone,
+                      keyboardType: TextInputType.phone,
+                      hint: '(00) 00000-0000',
+                    ),
+                    const SizedBox(height: 100),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Constrói um cabeçalho de seção técnica.
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20, top: 8),
+      child: Text(
+        title,
+        style: AppTheme.sectionHeader.copyWith(
+          color: AppColors.primary.withValues(alpha: 0.5),
+        ),
+      ),
+    );
+  }
+
+  /// Constrói um campo de texto "In-Glass" com tipografia técnica.
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -341,21 +415,21 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTheme.formLabel),
-        const SizedBox(height: SpacingTokens.labelToField),
+        Text(label, style: AppTheme.technicalLabel.copyWith(fontSize: 9, color: Colors.white.withValues(alpha: 0.4))),
+        const SizedBox(height: 10),
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
           textCapitalization: textCapitalization,
           validator: validator,
-          style: AppTheme.inputText,
+          style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: AppTheme.inputPlaceHolder,
+            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.15), fontSize: 13),
             prefixIcon: Icon(
               icon,
-              color: AppColors.labelSecondary.withAlpha(120),
-              size: 20,
+              color: Colors.white.withValues(alpha: 0.2),
+              size: 18,
             ),
             suffixIcon: suffix != null
                 ? Column(
@@ -364,38 +438,22 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
                   )
                 : null,
             filled: true,
-            fillColor: AppColors.surfaceDark,
+            fillColor: Colors.white.withValues(alpha: 0.02),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
-              vertical: 12,
+              vertical: 16,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(GlassTokens.itemRadius),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(GlassTokens.itemRadius),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              borderRadius: BorderRadius.circular(GlassTokens.itemRadius),
               borderSide: const BorderSide(color: AppColors.primary, width: 1),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: BorderSide(
-                color: Colors.redAccent.withAlpha(100),
-                width: 1,
-              ),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: const BorderSide(color: Colors.redAccent, width: 1),
-            ),
-            errorStyle: const TextStyle(
-              color: Colors.redAccent,
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
             ),
           ),
         ),
@@ -403,12 +461,13 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
     );
   }
 
+  /// Constrói o seletor de gênero com estilo "In-Glass".
   Widget _buildGeneroDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Gênero', style: AppTheme.formLabel),
-        const SizedBox(height: SpacingTokens.labelToField),
+        Text('GÊNERO', style: AppTheme.technicalLabel.copyWith(fontSize: 9, color: Colors.white.withValues(alpha: 0.4))),
+        const SizedBox(height: 10),
         DropdownButtonFormField<String>(
           isExpanded: true,
           initialValue:
@@ -416,14 +475,12 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
                   _generos.contains(_generoSelecionado)
               ? _generoSelecionado
               : null,
-          hint: Text(_generoPlaceholder, style: AppTheme.inputPlaceHolder),
+          hint: Text(_generoPlaceholder, style: TextStyle(color: Colors.white.withValues(alpha: 0.15), fontSize: 13)),
           items: [
-            DropdownMenuItem<String>(
-              value: null,
-              enabled: false,
-              child: Text(_generoPlaceholder, style: AppTheme.inputPlaceHolder),
-            ),
-            ..._generos.map((g) => DropdownMenuItem(value: g, child: Text(g))),
+            ..._generos.map((g) => DropdownMenuItem(
+              value: g,
+              child: Text(g.toUpperCase(), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))
+            )),
           ],
           onChanged: (value) {
             setState(() {
@@ -432,37 +489,42 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
           },
           decoration: InputDecoration(
             filled: true,
-            fillColor: AppColors.surfaceDark,
+            fillColor: Colors.white.withValues(alpha: 0.02),
             prefixIcon: Icon(
-              Icons.wc_rounded,
-              color: AppColors.labelSecondary.withAlpha(120),
-              size: 20,
+              CupertinoIcons.person_2,
+              color: Colors.white.withValues(alpha: 0.2),
+              size: 18,
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
-              vertical: 10,
+              vertical: 12,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
-              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(GlassTokens.itemRadius),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(GlassTokens.itemRadius),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
             ),
           ),
-          style: AppTheme.inputText,
-          dropdownColor: AppColors.surfaceDark,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+          style: const TextStyle(color: Colors.white, fontSize: 15),
+          dropdownColor: const Color(0xFF1A1A1A),
+          borderRadius: BorderRadius.circular(GlassTokens.itemRadius),
         ),
       ],
     );
   }
 
+  /// Constrói o seletor de data de nascimento com estilo "In-Glass".
   Widget _buildDatePicker() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Nascimento', style: AppTheme.formLabel),
-        const SizedBox(height: SpacingTokens.labelToField),
-        InkWell(
-          onTap: () async {
+        Text('NASCIMENTO', style: AppTheme.technicalLabel.copyWith(fontSize: 9, color: Colors.white.withValues(alpha: 0.4))),
+        const SizedBox(height: 10),
+        AppTappable(
+          onPressed: () async {
             final picked = await showDatePicker(
               context: context,
               initialDate: _dataNascimento ?? DateTime(2000),
@@ -474,13 +536,8 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
                     colorScheme: const ColorScheme.dark(
                       primary: AppColors.primary,
                       onPrimary: Colors.black,
-                      surface: AppColors.surfaceDark,
+                      surface: Color(0xFF1A1A1A),
                       onSurface: Colors.white,
-                    ),
-                    textButtonTheme: TextButtonThemeData(
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                      ),
                     ),
                   ),
                   child: child!,
@@ -491,19 +548,18 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
               setState(() => _dataNascimento = picked);
             }
           },
-          splashColor: AppColors.splash,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMD),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
-              borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+              color: Colors.white.withValues(alpha: 0.02),
+              borderRadius: BorderRadius.circular(GlassTokens.itemRadius),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
             child: Row(
               children: [
                 Icon(
-                  Icons.calendar_today_rounded,
-                  color: AppColors.labelSecondary.withAlpha(120),
+                  CupertinoIcons.calendar,
+                  color: Colors.white.withValues(alpha: 0.2),
                   size: 18,
                 ),
                 const SizedBox(width: 12),
@@ -511,10 +567,12 @@ class _PersonalEditarAlunoPageState extends State<PersonalEditarAlunoPage> {
                   child: Text(
                     _dataNascimento != null
                         ? DateFormat('dd/MM/yyyy').format(_dataNascimento!)
-                        : 'Selecionar',
-                    style: _dataNascimento != null
-                        ? AppTheme.inputText
-                        : AppTheme.inputPlaceHolder,
+                        : 'SELECIONAR DATA',
+                    style: TextStyle(
+                      color: _dataNascimento != null ? Colors.white : Colors.white.withValues(alpha: 0.15),
+                      fontSize: 14,
+                      fontWeight: _dataNascimento != null ? FontWeight.w500 : FontWeight.normal,
+                    ),
                   ),
                 ),
               ],

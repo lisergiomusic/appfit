@@ -118,8 +118,8 @@ class AppTheme {
 
   static const TextStyle pageTitle = TextStyle(
     fontSize: 15,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.5,
+    fontWeight: FontWeight.w800,
+    letterSpacing: 1.0,
     color: AppColors.labelPrimary,
   );
 
