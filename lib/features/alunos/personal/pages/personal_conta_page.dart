@@ -85,110 +85,112 @@ class _PersonalContaPageState extends State<PersonalContaPage> {
               final photoUrl = personalData['photoUrl'] as String?;
 
               return CustomScrollView(
-                physics: const BouncingScrollPhysics(),
+                physics: const ClampingScrollPhysics(),
                 slivers: [
+                  // Espaçamento superior fora do console para permitir o scroll limpo
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: MediaQuery.of(context).padding.top + 76),
+                  ),
+
+                  // Console de Vidro Único
                   SliverFillRemaining(
                     hasScrollBody: false,
                     fillOverscroll: true,
-                    child: Column(
-                      children: [
-                        SizedBox(height: MediaQuery.of(context).padding.top + 76),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: GlassTokens.consoleMarginH),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: GlassTokens.opacityConsole),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(GlassTokens.consoleRadius),
+                          topRight: Radius.circular(GlassTokens.consoleRadius),
+                        ),
+                        border: Border(
+                          top: BorderSide(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder), width: 1),
+                          left: BorderSide(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder), width: 1),
+                          right: BorderSide(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder), width: 1),
+                          bottom: BorderSide.none,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          // Hero Section Integrada no topo do console
+                          _buildHero(
+                            nomeCompleto: nomeCompleto,
+                            photoUrl: photoUrl,
+                          ),
 
-                        // Console de Vidro Único
-                        Expanded(
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: GlassTokens.consoleMarginH),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: GlassTokens.opacityConsole),
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(GlassTokens.consoleRadius),
-                                topRight: Radius.circular(GlassTokens.consoleRadius),
+                          const SizedBox(height: 32),
+                          _buildSectionHeader('GESTÃO E PERFIL'),
+
+                          _buildMenuItem(
+                            icon: CupertinoIcons.person_crop_circle,
+                            label: 'EDITAR PERFIL',
+                            subtitle: 'NOME, ESPECIALIDADE E CONTATO',
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => PersonalEditarPerfilPage(uid: widget.uid),
                               ),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: GlassTokens.opacityBorder),
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                // Hero Section Integrada no topo do console
-                                _buildHero(
-                                  nomeCompleto: nomeCompleto,
-                                  photoUrl: photoUrl,
-                                ),
-
-                                const SizedBox(height: 32),
-                                _buildSectionHeader('GESTÃO E PERFIL'),
-
-                                _buildMenuItem(
-                                  icon: CupertinoIcons.person_crop_circle,
-                                  label: 'EDITAR PERFIL',
-                                  subtitle: 'NOME, ESPECIALIDADE E CONTATO',
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => PersonalEditarPerfilPage(uid: widget.uid),
-                                    ),
-                                  ),
-                                ),
-                                _buildMenuItem(
-                                  icon: CupertinoIcons.book,
-                                  label: 'BIBLIOTECA DE EXERCÍCIOS',
-                                  subtitle: 'GERENCIAR EXERCÍCIOS BASE',
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const PersonalExerciciosLibraryPage(),
-                                    ),
-                                  ),
-                                ),
-                                _buildMenuItem(
-                                  icon: CupertinoIcons.money_dollar_circle,
-                                  label: 'FINANCEIRO',
-                                  subtitle: 'BALANÇO GERAL E FATURAMENTO',
-                                  onTap: () => AppUIUtils.showFutureFeatureWarning(context),
-                                ),
-
-                                const SizedBox(height: 24),
-                                _buildSectionHeader('SEGURANÇA E APP'),
-
-                                _buildMenuItem(
-                                  icon: CupertinoIcons.shield,
-                                  label: 'SEGURANÇA',
-                                  subtitle: 'SENHA E E-MAIL DE ACESSO',
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const AlunoSegurancaPage(),
-                                    ),
-                                  ),
-                                ),
-                                _buildMenuItem(
-                                  icon: CupertinoIcons.settings,
-                                  label: 'CONFIGURAÇÕES DO APP',
-                                  subtitle: 'IDIOMA E APARÊNCIA',
-                                  onTap: () => AppUIUtils.showFutureFeatureWarning(context),
-                                ),
-
-                                const Spacer(),
-
-                                // Danger Zone
-                                Padding(
-                                  padding: const EdgeInsets.all(24.0),
-                                  child: _buildMenuItem(
-                                    icon: CupertinoIcons.power,
-                                    label: 'SAIR DA CONTA',
-                                    labelColor: AppColors.systemRed,
-                                    iconColor: AppColors.systemRed,
-                                    showChevron: false,
-                                    onTap: () => AuthUtils.confirmarESair(context),
-                                  ),
-                                ),
-                                SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
-                              ],
                             ),
                           ),
-                        ),
-                      ],
+                          _buildMenuItem(
+                            icon: CupertinoIcons.book,
+                            label: 'BIBLIOTECA DE EXERCÍCIOS',
+                            subtitle: 'GERENCIAR EXERCÍCIOS BASE',
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const PersonalExerciciosLibraryPage(),
+                              ),
+                            ),
+                          ),
+                          _buildMenuItem(
+                            icon: CupertinoIcons.money_dollar_circle,
+                            label: 'FINANCEIRO',
+                            subtitle: 'BALANÇO GERAL E FATURAMENTO',
+                            onTap: () => AppUIUtils.showFutureFeatureWarning(context),
+                          ),
+
+                          const SizedBox(height: 24),
+                          _buildSectionHeader('SEGURANÇA E APP'),
+
+                          _buildMenuItem(
+                            icon: CupertinoIcons.shield,
+                            label: 'SEGURANÇA',
+                            subtitle: 'SENHA E E-MAIL DE ACESSO',
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const AlunoSegurancaPage(),
+                              ),
+                            ),
+                          ),
+                          _buildMenuItem(
+                            icon: CupertinoIcons.settings,
+                            label: 'CONFIGURAÇÕES DO APP',
+                            subtitle: 'IDIOMA E APARÊNCIA',
+                            onTap: () => AppUIUtils.showFutureFeatureWarning(context),
+                          ),
+
+                          const SizedBox(height: 48),
+
+                          // Danger Zone
+                          Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: _buildMenuItem(
+                              icon: CupertinoIcons.power,
+                              label: 'SAIR DA CONTA',
+                              labelColor: AppColors.systemRed,
+                              iconColor: AppColors.systemRed,
+                              showChevron: false,
+                              onTap: () => AuthUtils.confirmarESair(context),
+                            ),
+                          ),
+                          
+                          // Buffer de vidro para o efeito infinito
+                          const SizedBox(height: 120),
+                        ],
+                      ),
                     ),
                   ),
                 ],

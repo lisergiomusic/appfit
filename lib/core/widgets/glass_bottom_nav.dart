@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
+import 'app_tappable.dart';
 
 class GlassBottomNavItem {
   final IconData icon;
@@ -31,58 +32,64 @@ class GlassBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: Container(
-          height: 64 + bottomPadding,
-          padding: EdgeInsets.only(bottom: bottomPadding),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceDark.withAlpha(220),
-            border: Border(
-              top: BorderSide(
-                color: Colors.white.withAlpha(20),
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        24, 
+        0, 
+        24, 
+        bottomPadding > 0 ? bottomPadding : 12,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(999),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDark.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.08),
                 width: 0.5,
               ),
             ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: items.asMap().entries.map((entry) {
-              final int idx = entry.key;
-              final GlassBottomNavItem item = entry.value;
-              final bool isSelected = currentIndex == idx;
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: items.asMap().entries.map((entry) {
+                final int idx = entry.key;
+                final GlassBottomNavItem item = entry.value;
+                final bool isSelected = currentIndex == idx;
 
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    onTap(idx);
-                  },
-                  behavior: HitTestBehavior.opaque,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        isSelected ? item.activeIcon : item.icon,
-                        color: isSelected ? AppColors.primary : AppColors.labelSecondary,
-                        size: 24,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.label,
-                        style: TextStyle(
+                return Expanded(
+                  child: AppTappable(
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      onTap(idx);
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          isSelected ? item.activeIcon : item.icon,
                           color: isSelected ? AppColors.primary : AppColors.labelSecondary,
-                          fontSize: 10,
-                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                          letterSpacing: 0.2,
+                          size: 22,
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        Text(
+                          item.label,
+                          style: TextStyle(
+                            color: isSelected ? AppColors.primary : AppColors.labelSecondary,
+                            fontSize: 9,
+                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
         ),
       ),
