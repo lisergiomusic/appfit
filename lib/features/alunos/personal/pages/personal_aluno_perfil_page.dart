@@ -9,7 +9,6 @@ import '../../../../core/services/aluno_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../../../core/widgets/app_primary_button.dart';
-import '../../../../core/widgets/app_tappable.dart';
 import '../../../treinos/personal/pages/personal_rotina_detalhe_page.dart';
 import '../../shared/models/aluno_perfil_data.dart';
 import '../../shared/widgets/aluno_header_section.dart';
