@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
@@ -47,50 +48,56 @@ class _AppPremiumFABState extends State<AppPremiumFAB> {
             widget.onPressed();
           },
           onTapCancel: () => setState(() => _isPressed = false),
-          child: Container(
-            height: widget.height,
-            width: widget.isFullWidth 
-                ? double.infinity 
-                : (widget.label == null ? widget.height : null),
-            padding: EdgeInsets.symmetric(
-              horizontal: widget.label == null ? 0 : 24,
-            ),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(999),
-              boxShadow: [
-                BoxShadow(
-                  color: bgColor.withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                height: widget.height,
+                width: widget.isFullWidth 
+                    ? double.infinity 
+                    : (widget.label == null ? widget.height : null),
+                padding: EdgeInsets.symmetric(
+                  horizontal: widget.label == null ? 0 : 24,
                 ),
-              ],
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 0.5,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: widget.isFullWidth ? MainAxisSize.max : MainAxisSize.min,
-              children: [
-                Icon(
-                  widget.icon, 
-                  color: bgColor == AppColors.primary ? Colors.black : Colors.white, 
-                  size: widget.height * 0.4,
-                ),
-                if (widget.label != null) ...[
-                  const SizedBox(width: 10),
-                  Text(
-                    widget.label!.toUpperCase(),
-                    style: AppTheme.sectionHeader.copyWith(
-                      color: bgColor == AppColors.primary ? Colors.black : Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  borderRadius: BorderRadius.circular(999),
+                  boxShadow: bgColor.alpha == 255 ? [
+                    BoxShadow(
+                      color: bgColor.withValues(alpha: 0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
                     ),
+                  ] : null,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    width: 0.5,
                   ),
-                ],
-              ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: widget.isFullWidth ? MainAxisSize.max : MainAxisSize.min,
+                  children: [
+                    Icon(
+                      widget.icon, 
+                      color: bgColor == AppColors.primary ? Colors.black : Colors.white, 
+                      size: widget.height * 0.4,
+                    ),
+                    if (widget.label != null) ...[
+                      const SizedBox(width: 10),
+                      Text(
+                        widget.label!.toUpperCase(),
+                        style: AppTheme.sectionHeader.copyWith(
+                          color: bgColor == AppColors.primary ? Colors.black : Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           ),
         ),

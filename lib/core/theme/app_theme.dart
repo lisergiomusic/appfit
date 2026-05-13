@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'tokens/app_colors.dart';
 export 'tokens/spacing_tokens.dart';
 export 'tokens/app_colors.dart';
@@ -35,7 +36,7 @@ class AppTheme {
   static const double radiusFull = 9999.0;
   static const Radius pill = Radius.circular(9999);
 
-  static const TextStyle bigTitle = TextStyle(
+  static final TextStyle bigTitle = const TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w900,
     letterSpacing: -0.5,
@@ -43,7 +44,7 @@ class AppTheme {
     color: AppColors.labelPrimary,
   );
 
-  static const title1 = TextStyle(
+  static final TextStyle title1 = const TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.8,
@@ -51,69 +52,69 @@ class AppTheme {
     color: AppColors.labelPrimary,
   );
 
-  static const TextStyle sectionHeader = TextStyle(
+  static final TextStyle sectionHeader = const TextStyle(
     fontSize: 10,
     fontWeight: FontWeight.w900,
     letterSpacing: 1.2,
     color: Color.fromRGBO(255, 255, 255, 0.4),
   );
 
-  static const TextStyle technicalLabel = TextStyle(
+  static final TextStyle technicalLabel = const TextStyle(
     fontSize: 10,
     fontWeight: FontWeight.w800,
     letterSpacing: 1.2,
     color: Colors.white,
   );
 
-  static const TextStyle telemetryFailure = TextStyle(
+  static final TextStyle telemetryFailure = const TextStyle(
     color: Color(0xFFFF5252), // Colors.redAccent
     fontSize: 12,
     fontWeight: FontWeight.w900,
     letterSpacing: 2.0,
   );
 
-  static const TextStyle telemetryValue = TextStyle(
+  static final TextStyle telemetryValue = const TextStyle(
     fontSize: 10,
     fontWeight: FontWeight.bold,
     color: AppColors.primary,
   );
 
-  static const sectionAction = TextStyle(
+  static final TextStyle sectionAction = const TextStyle(
     fontSize: 10,
     fontWeight: FontWeight.w800,
     letterSpacing: 1.5,
     color: AppColors.primary,
   );
 
-  static const TextStyle premiumLabel = TextStyle(
+  static final TextStyle premiumLabel = const TextStyle(
     fontSize: 10,
     fontWeight: FontWeight.w800,
     letterSpacing: 1.2,
     color: AppColors.labelSecondary,
   );
 
-  static const TextStyle overTitle = TextStyle(
+  static final TextStyle overTitle = const TextStyle(
     fontSize: 10,
     fontWeight: FontWeight.w800,
     letterSpacing: 1.2,
     color: AppColors.labelSecondary,
   );
 
-  static const TextStyle heroTitle = TextStyle(
+  static final TextStyle heroTitle = const TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.w900,
     letterSpacing: -0.5,
     color: AppColors.labelPrimary,
   );
 
-  static const TextStyle headerTitle = TextStyle(
+  static final TextStyle headerTitle = const TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.w900,
     letterSpacing: 1.0,
     color: AppColors.labelPrimary,
   );
 
-  static const TextStyle heroSubtitle = TextStyle(
+  static final TextStyle heroSubtitle = const TextStyle(
     fontSize: 9,
     fontWeight: FontWeight.w800,
     letterSpacing: 1.5,
@@ -136,42 +137,42 @@ class AppTheme {
     border: Border.all(color: Colors.white.withAlpha(10), width: 0.5),
   );
 
-  static const TextStyle pageTitle = TextStyle(
+  static final TextStyle pageTitle = const TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w800,
     letterSpacing: 1.0,
     color: AppColors.labelPrimary,
   );
 
-  static const TextStyle navBarAction = TextStyle(
+  static final TextStyle navBarAction = const TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
     color: AppColors.primary,
   );
 
-  static const TextStyle inputPlaceHolder = TextStyle(
+  static final TextStyle inputPlaceHolder = const TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
     color: AppColors.labelTertiary,
   );
 
-  static const inputText = TextStyle(
+  static final TextStyle inputText = const TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
     color: AppColors.labelPrimary,
   );
 
-  static const TextStyle bodyText = TextStyle(
+  static final TextStyle bodyText = const TextStyle(
     color: AppColors.labelPrimary,
     fontSize: 14,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
   );
 
-  static const TextStyle cardTitle = TextStyle(
+  static final TextStyle cardTitle = const TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
     color: AppColors.labelPrimary,
@@ -179,7 +180,7 @@ class AppTheme {
     height: 1,
   );
 
-  static const TextStyle cardSubtitle = TextStyle(
+  static final TextStyle cardSubtitle = const TextStyle(
     fontSize: 15,
     height: 1,
     color: AppColors.labelSecondary,
@@ -187,28 +188,28 @@ class AppTheme {
     letterSpacing: -0.24,
   );
 
-  static const TextStyle caption = TextStyle(
+  static final TextStyle caption = const TextStyle(
     color: AppColors.labelSecondary,
     fontSize: 12,
     fontWeight: FontWeight.w400,
     letterSpacing: 0.0,
   );
 
-  static const caption2 = TextStyle(
+  static final TextStyle caption2 = const TextStyle(
     fontSize: 11,
     color: AppColors.labelSecondary,
     letterSpacing: 0.07,
     fontWeight: FontWeight.w400,
   );
 
-  static const TextStyle formLabel = TextStyle(
+  static final TextStyle formLabel = const TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w500,
     letterSpacing: -0.24,
     color: AppColors.labelSecondary,
   );
 
-  static const TextStyle microLabelTextStyle = TextStyle(
+  static final TextStyle microLabelTextStyle = const TextStyle(
     color: AppColors.silverGrey,
     fontSize: 10,
     fontWeight: FontWeight.w600,
@@ -258,9 +259,12 @@ class AppTheme {
   );
 
   static ThemeData get themeData {
+    final baseTheme = ThemeData.dark();
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
+      fontFamily: GoogleFonts.inter().fontFamily,
+      textTheme: GoogleFonts.interTextTheme(baseTheme.textTheme),
       primaryColor: AppColors.primary,
       scaffoldBackgroundColor: AppColors.background,
       canvasColor: AppColors.surfaceDark,
@@ -269,7 +273,7 @@ class AppTheme {
         surface: AppColors.surfaceDark,
         onSurface: AppColors.labelPrimary,
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: true,
@@ -368,14 +372,14 @@ class AppTheme {
 class CardTokens {
   static const padding = EdgeInsets.symmetric(horizontal: 16, vertical: 16);
   static BorderRadius cardRadius = BorderRadius.circular(AppTheme.radiusLG);
-  static const TextStyle cardTitle = TextStyle(
+  static final TextStyle cardTitle = const TextStyle(
     fontSize: 17,
     height: 1,
     fontWeight: FontWeight.w600,
     color: AppColors.labelPrimary,
     letterSpacing: -0.41,
   );
-  static const TextStyle cardSubtitle = TextStyle(
+  static final TextStyle cardSubtitle = const TextStyle(
     fontSize: 15,
     height: 1,
     color: AppColors.labelSecondary,
@@ -385,13 +389,13 @@ class CardTokens {
 }
 
 class AppBarTokens {
-  static const actionButton = TextStyle(
+  static final actionButton = const TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
     color: AppColors.primary,
   );
-  static const TextStyle pageTitle = TextStyle(
+  static final TextStyle pageTitle = const TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.5,
@@ -407,21 +411,21 @@ class ButtonTokens {
   static const double secondaryHeight = 50.0;
   static const double secondaryRadius = 14.0;
 
-  static const TextStyle primaryTextStyle = TextStyle(
+  static final TextStyle primaryTextStyle = const TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.41,
     color: AppColors.primary,
   );
 
-  static const TextStyle secondaryTextStyle = TextStyle(
+  static final TextStyle secondaryTextStyle = const TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.41,
     color: AppColors.labelPrimary,
   );
 
-  static const TextStyle destructiveTextStyle = TextStyle(
+  static final TextStyle destructiveTextStyle = const TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w400,
     letterSpacing: -0.41,
@@ -446,7 +450,7 @@ class AvatarTokens {
 }
 
 class PillTokens {
-  static const TextStyle text = AppTheme.caption2;
+  static final TextStyle text = AppTheme.caption2;
   static BorderRadius radius = BorderRadius.circular(999);
   static BoxDecoration decoration = BoxDecoration(
     color: AppColors.surfaceDark,

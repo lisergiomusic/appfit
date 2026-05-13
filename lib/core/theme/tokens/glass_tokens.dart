@@ -16,6 +16,15 @@ class GlassTokens {
   static const double opacityBadge = 0.04;
   static const double opacityBadgeBorder = 0.08;
 
+  // Semantic Opacities
+  static const double opacityLabel = 0.3;
+  static const double opacitySecondaryText = 0.4;
+  static const double opacityTertiaryText = 0.2;
+  static const double opacityIconSubtle = 0.2;
+  static const double opacityIconPrimary = 0.5;
+  static const double opacityHint = 0.2;
+  static const double opacitySeparator = 0.05;
+
   // Blur (Sigma Values)
   static const double blurStandard = 10.0;
   static const double blurHeader = 15.0;

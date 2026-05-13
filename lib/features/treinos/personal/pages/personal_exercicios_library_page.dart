@@ -471,7 +471,7 @@ class _PersonalExerciciosLibraryPageState
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
-        title: const Text(
+        title: Text(
           'Biblioteca de exercícios',
           style: AppTheme.pageTitle,
         ),

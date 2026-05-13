@@ -173,7 +173,7 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
         ),
         title: Text(
           'REMOVER ALUNO',
-          style: AppTheme.sectionHeader.copyWith(color: Colors.white, fontSize: 16),
+          style: AppTheme.sectionHeader.copyWith(color: AppColors.labelPrimary, fontSize: 16),
         ),
         content: const Text(
           'Deseja realmente remover este aluno? Todos os dados vinculados serão perdidos.',
@@ -250,7 +250,7 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.surfaceBlack,
       body: Stack(
         children: [
           // Atmosfera Superior (Efeito de profundidade)
@@ -357,7 +357,7 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
                             children: [
                               if (_hasMore)
                                 const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 32),
+                                  padding: EdgeInsets.symmetric(vertical: SpacingTokens.xxxl),
                                   child: Center(
                                     child: CircularProgressIndicator(
                                       color: AppColors.primary,
@@ -402,18 +402,18 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.only(
-          top: 16,
-          left: 20,
-          right: 20,
-          bottom: 24,
+          top: SpacingTokens.lg,
+          left: SpacingTokens.xl,
+          right: SpacingTokens.xl,
+          bottom: SpacingTokens.xxl,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'GERENCIAMENTO DE',
+              'GERENCIAMENTO',
               style: AppTheme.technicalLabel.copyWith(
-                color: Colors.white.withValues(alpha: 0.3),
+                color: Colors.white.withValues(alpha: GlassTokens.opacityLabel),
                 fontSize: 9,
                 letterSpacing: 1.5,
               ),
@@ -431,13 +431,18 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+      padding: const EdgeInsets.fromLTRB(
+        SpacingTokens.xl,
+        SpacingTokens.xxl,
+        SpacingTokens.xl,
+        SpacingTokens.lg,
+      ),
       child: Container(
-        height: 48,
+        height: SpacingTokens.huge,
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          color: AppColors.surfaceBlack.withValues(alpha: GlassTokens.opacityTertiaryText),
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+          border: Border.all(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder)),
         ),
         child: TextField(
           controller: _searchController,
@@ -445,20 +450,20 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
             setState(() => _searchQuery = val);
             _fetchInitialData();
           },
-          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+          style: const TextStyle(color: AppColors.labelPrimary, fontSize: 13, fontWeight: FontWeight.w600),
           cursorColor: AppColors.primary,
           textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
             isDense: true,
             hintText: 'BUSCAR ALUNO',
             hintStyle: AppTheme.technicalLabel.copyWith(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: Colors.white.withValues(alpha: GlassTokens.opacityHint),
               fontSize: 10,
               letterSpacing: 0.5,
             ),
             prefixIcon: Icon(
               Icons.search_rounded,
-              color: AppColors.primary.withValues(alpha: 0.5),
+              color: AppColors.primary.withValues(alpha: GlassTokens.opacityIconPrimary),
               size: 18,
             ),
             suffixIcon: _searchQuery.isNotEmpty
@@ -466,7 +471,7 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
                     icon: Icon(
                       Icons.close_rounded,
                       size: 16,
-                      color: Colors.white.withValues(alpha: 0.4),
+                      color: Colors.white.withValues(alpha: GlassTokens.opacitySecondaryText),
                     ),
                     onPressed: () {
                       _searchController.clear();
@@ -496,10 +501,10 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
 
     return Container(
       height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.sm),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1),
+          bottom: BorderSide(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder), width: 1),
         ),
       ),
       child: Row(
@@ -526,29 +531,28 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
                         filter['label'] as String,
                         style: AppTheme.technicalLabel.copyWith(
                           fontSize: 8,
-                          color: isSelected ? AppColors.primary : Colors.white.withValues(alpha: 0.3),
+                          color: isSelected ? AppColors.primary : Colors.white.withValues(alpha: GlassTokens.opacityLabel),
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: SpacingTokens.xs),
                       Text(
                         '${filter['count']}',
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w900,
-                          fontFamily: 'monospace',
-                          color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.2),
+                          color: isSelected ? AppColors.labelPrimary : Colors.white.withValues(alpha: GlassTokens.opacityIconSubtle),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: SpacingTokens.sm),
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     height: 2,
                     width: isSelected ? 24 : 0,
                     decoration: BoxDecoration(
                       color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusXS / 2),
                     ),
                   ),
                 ],
@@ -563,10 +567,10 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
   Widget _buildDismissibleCard(String id, Map<String, dynamic> aluno, {required bool isFirst}) {
     return Padding(
       padding: EdgeInsets.only(
-        left: 12,
-        right: 12,
-        top: isFirst ? 16 : 4,
-        bottom: 4,
+        left: SpacingTokens.md,
+        right: SpacingTokens.md,
+        top: isFirst ? SpacingTokens.lg : SpacingTokens.xs,
+        bottom: SpacingTokens.xs,
       ),
       child: AppSwipeToDelete(
         dismissibleKey: Key(id),
@@ -621,7 +625,7 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
     // Define a tag de status técnica
     Widget statusTag;
     if (!isAtivo) {
-      statusTag = _buildTechnicalTag('INATIVO', Colors.white.withValues(alpha: 0.3));
+      statusTag = _buildTechnicalTag('INATIVO', Colors.white.withValues(alpha: GlassTokens.opacityLabel));
     } else if (emRisco) {
       statusTag = _buildTechnicalTag('EM RISCO', AppColors.systemRed);
     } else {
@@ -631,26 +635,29 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
     return AppTappable(
       onPressed: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(
+          horizontal: SpacingTokens.lg,
+          vertical: SpacingTokens.md,
+        ),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.02),
+          color: Colors.white.withValues(alpha: GlassTokens.opacitySurface),
           borderRadius: BorderRadius.zero,
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: Colors.white.withValues(alpha: GlassTokens.opacityBorder),
             width: 0.5,
           ),
         ),
         child: Row(
           children: [
-            // Avatar Quadrado Real (Estilo Spotify Playlist)
+
             AppAvatar(
               name: nome,
               photoUrl: photoUrl,
               radius: 24,
               showBorder: false,
-              isSquare: true,
+              isSquare: false,
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: SpacingTokens.lg),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -661,7 +668,7 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
                         child: Text(
                           nome,
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: AppColors.labelPrimary,
                             fontSize: 13,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 0.5,
@@ -670,18 +677,17 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: SpacingTokens.sm),
                       statusTag,
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: SpacingTokens.xs),
                   Text(
                     email.toLowerCase(),
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.4),
-                      fontSize: 11,
+                      color: Colors.white.withValues(alpha: GlassTokens.opacitySecondaryText),
+                      fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      fontFamily: 'monospace',
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -689,10 +695,10 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: SpacingTokens.sm),
             Icon(
               Icons.more_vert_rounded,
-              color: Colors.white.withValues(alpha: 0.2),
+              color: Colors.white.withValues(alpha: GlassTokens.opacityIconSubtle),
               size: 18,
             ),
           ],
@@ -706,9 +712,9 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.1), width: 0.5),
+        color: color.withValues(alpha: GlassTokens.opacityBadge),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXS),
+        border: Border.all(color: color.withValues(alpha: GlassTokens.opacityBadgeBorder), width: 0.5),
       ),
       child: Text(
         label,
@@ -735,13 +741,13 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
           const SizedBox(height: 24),
           Text(
             'NENHUM ALUNO AINDA',
-            style: AppTheme.technicalLabel.copyWith(color: Colors.white, fontSize: 10),
+            style: AppTheme.technicalLabel.copyWith(color: AppColors.labelPrimary, fontSize: 10),
           ),
           const SizedBox(height: 8),
           Text(
             'Toque em NOVO ALUNO para começar.',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.3),
+              color: Colors.white.withValues(alpha: GlassTokens.opacityLabel),
               fontSize: 12,
               fontWeight: FontWeight.w500
             ),
@@ -759,7 +765,7 @@ class PersonalAlunosPageState extends State<PersonalAlunosPage> {
           Icon(
             Icons.search_off_rounded,
             size: 48,
-            color: Colors.white.withValues(alpha: 0.1),
+            color: Colors.white.withValues(alpha: GlassTokens.opacityHighBorder),
           ),
           const SizedBox(height: 16),
           Text(

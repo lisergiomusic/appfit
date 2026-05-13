@@ -58,7 +58,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.surfaceBlack,
       body: Stack(
         children: [
           // Atmosfera Superior (Efeito de profundidade)
@@ -100,10 +100,10 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                       SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.only(
-                            top: 16,
-                            left: 20,
-                            right: 16,
-                            bottom: 24,
+                            top: SpacingTokens.lg,
+                            left: SpacingTokens.xl,
+                            right: SpacingTokens.lg,
+                            bottom: SpacingTokens.xxl,
                           ),
                           child: Row(
                             children: [
@@ -113,7 +113,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                                 radius: 20,
                                 showBorder: true,
                               ),
-                              const SizedBox(width: 16),
+                              const SizedBox(width: SpacingTokens.lg),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,7 +121,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                                     Text(
                                       _getSaudacao(),
                                       style: AppTheme.technicalLabel.copyWith(
-                                        color: Colors.white.withValues(alpha: 0.3),
+                                        color: Colors.white.withValues(alpha: GlassTokens.opacityLabel),
                                         fontSize: 9,
                                         letterSpacing: 1.5,
                                       ),
@@ -134,7 +134,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: SpacingTokens.md),
                               GlassIconButton(
                                 onPressed: () => Navigator.push(
                                   context,
@@ -143,7 +143,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                                 icon: Icons.notifications_outlined,
                                 size: 40,
                                 iconSize: 20,
-                                color: Colors.white.withValues(alpha: 0.05),
+                                color: Colors.white.withValues(alpha: GlassTokens.opacityBorder),
                               ),
                             ],
                           ),
@@ -152,7 +152,10 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                   // Seção de KPIs Flutuantes (Fora do Console de Vidro)
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: SpacingTokens.xl,
+                        vertical: SpacingTokens.sm,
+                      ),
                       child: FutureBuilder<ContagemAlunos>(
                         future: _contagensFuture,
                         builder: (context, snapshot) {
@@ -163,12 +166,12 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                               // Card: Alunos Ativos (Ratio)
                               Expanded(
                                 child: Container(
-                                  padding: const EdgeInsets.all(20),
+                                  padding: const EdgeInsets.all(SpacingTokens.xl),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.03),
-                                    borderRadius: BorderRadius.circular(24),
+                                    color: Colors.white.withValues(alpha: GlassTokens.opacityConsole),
+                                    borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
                                     border: Border.all(
-                                      color: Colors.white.withValues(alpha: 0.05),
+                                      color: Colors.white.withValues(alpha: GlassTokens.opacityBorder),
                                     ),
                                   ),
                                   child: Column(
@@ -176,24 +179,27 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                                     children: [
                                       Row(
                                         children: [
-                                          Icon(Icons.group_rounded, size: 12, color: AppColors.primary.withValues(alpha: 0.5)),
-                                          const SizedBox(width: 6),
+                                          Icon(
+                                            Icons.group_rounded,
+                                            size: 12,
+                                            color: AppColors.primary.withValues(alpha: GlassTokens.opacityIconPrimary),
+                                          ),
+                                          const SizedBox(width: SpacingTokens.space6),
                                           Text(
                                             'ALUNOS ATIVOS',
                                             style: AppTheme.technicalLabel.copyWith(
                                               fontSize: 8,
-                                              color: Colors.white.withValues(alpha: 0.3),
+                                              color: Colors.white.withValues(alpha: GlassTokens.opacityLabel),
                                             ),
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 12),
+                                      const SizedBox(height: SpacingTokens.md),
                                       RichText(
                                         text: TextSpan(
                                           style: AppTheme.title1.copyWith(
                                             fontSize: 28,
                                             fontWeight: FontWeight.w900,
-                                            fontFamily: 'monospace',
                                             color: Colors.white,
                                           ),
                                           children: [
@@ -202,7 +208,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                                               text: '/${snapshot.data?.total.toString() ?? '--'}',
                                               style: TextStyle(
                                                 fontSize: 14,
-                                                color: Colors.white.withValues(alpha: 0.2),
+                                                color: Colors.white.withValues(alpha: GlassTokens.opacityTertiaryText),
                                                 fontWeight: FontWeight.w600,
                                               ),
                                             ),
@@ -213,7 +219,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: SpacingTokens.md),
                               // Card: Alunos em Risco
                               Expanded(
                                 child: AppTappable(
@@ -222,16 +228,16 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                                     MaterialPageRoute(builder: (_) => PersonalAtencaoPage(personalService: _personalService)),
                                   ).then((_) => _refreshContagens()),
                                   child: Container(
-                                    padding: const EdgeInsets.all(20),
+                                    padding: const EdgeInsets.all(SpacingTokens.xl),
                                     decoration: BoxDecoration(
                                       color: (contagens?.risco ?? 0) > 0
-                                          ? AppColors.systemRed.withValues(alpha: 0.05)
-                                          : Colors.white.withValues(alpha: 0.03),
-                                      borderRadius: BorderRadius.circular(24),
+                                          ? AppColors.systemRed.withValues(alpha: GlassTokens.opacityBorder)
+                                          : Colors.white.withValues(alpha: GlassTokens.opacityConsole),
+                                      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
                                       border: Border.all(
                                         color: (contagens?.risco ?? 0) > 0
-                                            ? AppColors.systemRed.withValues(alpha: 0.1)
-                                            : Colors.white.withValues(alpha: 0.05),
+                                            ? AppColors.systemRed.withValues(alpha: GlassTokens.opacityHighBorder)
+                                            : Colors.white.withValues(alpha: GlassTokens.opacityBorder),
                                       ),
                                     ),
                                     child: Column(
@@ -244,26 +250,25 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                                               size: 12,
                                               color: (contagens?.risco ?? 0) > 0
                                                   ? AppColors.systemRed
-                                                  : Colors.white.withValues(alpha: 0.3)
+                                                  : Colors.white.withValues(alpha: GlassTokens.opacityLabel)
                                             ),
-                                            const SizedBox(width: 6),
+                                            const SizedBox(width: SpacingTokens.space6),
                                             Text(
                                               'ALUNOS EM RISCO',
                                               style: AppTheme.technicalLabel.copyWith(
                                                 fontSize: 8,
                                                 color: (contagens?.risco ?? 0) > 0
-                                                    ? AppColors.systemRed.withValues(alpha: 0.8)
-                                                    : Colors.white.withValues(alpha: 0.3),
+                                                    ? AppColors.systemRed.withValues(alpha: GlassTokens.opacitySecondaryText)
+                                                    : Colors.white.withValues(alpha: GlassTokens.opacityLabel),
                                               ),
                                             ),                                          ],
                                         ),
-                                        const SizedBox(height: 12),
+                                        const SizedBox(height: SpacingTokens.md),
                                         Text(
                                           contagens?.risco.toString() ?? '--',
                                           style: AppTheme.title1.copyWith(
                                             fontSize: 28,
                                             fontWeight: FontWeight.w900,
-                                            fontFamily: 'monospace',
                                             color: (contagens?.risco ?? 0) > 0
                                                 ? AppColors.systemRed
                                                 : Colors.white,
@@ -280,7 +285,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                       ),
                     ),
                   ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                  const SliverToBoxAdapter(child: SizedBox(height: SpacingTokens.lg)),
                   // Console de Vidro Principal
                   SliverFillRemaining(
                     hasScrollBody: false,
@@ -303,7 +308,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 32),
+                          const SizedBox(height: SpacingTokens.xxxl),
 
                           // Seção: Atividade Recente (Log)
                           _buildSectionHeader(
@@ -422,11 +427,14 @@ class _AtividadeItem extends StatelessWidget {
         ),
       ),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: const EdgeInsets.symmetric(
+          horizontal: SpacingTokens.xxl,
+          vertical: SpacingTokens.lg,
+        ),
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: Colors.white.withValues(alpha: 0.02),
+              color: Colors.white.withValues(alpha: GlassTokens.opacitySurface),
               width: 1,
             ),
           ),
@@ -438,28 +446,27 @@ class _AtividadeItem extends StatelessWidget {
                 Text(
                   _tempoRelativo(item.dataHora),
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withValues(alpha: GlassTokens.opacityTertiaryText),
                     fontSize: 8,
                     fontWeight: FontWeight.w900,
-                    fontFamily: 'monospace',
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: SpacingTokens.xs),
                 Container(
                   width: 2,
                   height: 20,
-                  color: AppColors.primary.withValues(alpha: 0.2),
+                  color: AppColors.primary.withValues(alpha: GlassTokens.opacityTertiaryText),
                 ),
               ],
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: SpacingTokens.lg),
             AppAvatar(
               name: item.alunoNome,
               photoUrl: item.alunoPhotoUrl,
               radius: 16,
               showBorder: false,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: SpacingTokens.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -481,7 +488,7 @@ class _AtividadeItem extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.3),
+                      color: Colors.white.withValues(alpha: GlassTokens.opacityLabel),
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),
@@ -489,7 +496,11 @@ class _AtividadeItem extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: Colors.white.withValues(alpha: 0.1), size: 14),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.white.withValues(alpha: GlassTokens.opacityBadgeBorder),
+              size: 14,
+            ),
           ],
         ),
       ),

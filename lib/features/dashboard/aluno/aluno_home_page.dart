@@ -346,7 +346,7 @@ class _AlunoHomePageState extends State<AlunoHomePage> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('FECHAR', style: AppTheme.premiumLabel)),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text('FECHAR', style: AppTheme.premiumLabel)),
         ],
       ),
     );

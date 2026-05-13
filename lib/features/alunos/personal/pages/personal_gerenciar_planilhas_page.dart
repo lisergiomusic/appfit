@@ -233,7 +233,7 @@ class _PersonalGerenciarPlanilhasPageState
             elevation: 0,
             leading: AppNavBackButton(),
             centerTitle: true,
-            title: const Text('Gerenciar Planilhas', style: AppTheme.pageTitle),
+            title: Text('Gerenciar Planilhas', style: AppTheme.pageTitle),
             bottom: const AppBarDivider(),
           ),
           body: SingleChildScrollView(

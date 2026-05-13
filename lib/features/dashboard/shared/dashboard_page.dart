@@ -160,7 +160,7 @@ class _DashboardPageState extends State<DashboardPage> {
         onPressed: () => _cadastroTrigger.value++,
         bottomPadding: 0,
         height: 64, // Altura idêntica à GlassBottomNav
-        backgroundColor: AppColors.surfaceDark.withValues(alpha: 0.8), // Estética dock
+        backgroundColor: AppColors.surfaceDark.withValues(alpha: 0.6), // Visual idêntico à GlassBottomNav
       );
     }
 

@@ -88,7 +88,7 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
       children: [
         Row(
           children: [
-            const Text(
+            Text(
               'PLANILHA ATUAL',
               style: AppTheme.sectionHeader,
             ),
@@ -235,7 +235,7 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
       children: [
         Row(
           children: [
-            const Text(
+            Text(
               'PLANILHA ATUAL',
               style: AppTheme.sectionHeader,
             ),

@@ -130,7 +130,7 @@ class _PlanilhaSettingsModalState extends State<PlanilhaSettingsModal> {
             }
           },
         ),
-        title: const Text('Configurações', style: AppTheme.pageTitle),
+        title: Text('Configurações', style: AppTheme.pageTitle),
         actions: [
           AppBarTextButton(
             label: 'Salvar',

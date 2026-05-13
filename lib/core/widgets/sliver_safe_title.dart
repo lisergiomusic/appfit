@@ -4,7 +4,7 @@ import 'package:appfit/core/theme/app_theme.dart';
 class SliverSafeTitle extends StatelessWidget {
   final String title;
   final bool isVisible;
-  final TextStyle style;
+  final TextStyle? style;
   final double reservedHorizontalSpace;
   final Duration duration;
 
@@ -12,7 +12,7 @@ class SliverSafeTitle extends StatelessWidget {
     super.key,
     required this.title,
     required this.isVisible,
-    this.style = AppTheme.pageTitle,
+    this.style,
     this.reservedHorizontalSpace = 220,
     this.duration = const Duration(milliseconds: 200),
   });
@@ -40,7 +40,7 @@ class SliverSafeTitle extends StatelessWidget {
           softWrap: false,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: style,
+          style: style ?? AppTheme.pageTitle,
         ),
       ),
     );

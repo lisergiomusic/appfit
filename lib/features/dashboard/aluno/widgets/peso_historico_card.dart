@@ -209,7 +209,7 @@ class PesoHistoricoCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              const Text('Nenhum registro ainda', style: AppTheme.cardTitle),
+              Text('Nenhum registro ainda', style: AppTheme.cardTitle),
               const SizedBox(height: 4),
               Text(
                 'Comece agora e acompanhe\nsua evolução ao longo do tempo',

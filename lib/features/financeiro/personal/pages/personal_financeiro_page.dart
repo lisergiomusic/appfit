@@ -124,11 +124,10 @@ class _PersonalFinanceiroPageState extends State<PersonalFinanceiroPage> {
                             const SizedBox(height: 8),
                             Text(
                               'R\$ ${mrr.toStringAsFixed(0)}',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: AppColors.accentMetrics,
                                 fontSize: 48,
                                 fontWeight: FontWeight.w900,
-                                fontFamily: 'monospace',
                                 letterSpacing: -1.5,
                               ),
                             ),
@@ -275,7 +274,6 @@ class _PersonalFinanceiroPageState extends State<PersonalFinanceiroPage> {
             color: color,
             fontSize: 14,
             fontWeight: FontWeight.w900,
-            fontFamily: 'monospace',
           ),
         ),
       ],
@@ -330,11 +328,10 @@ class _PersonalFinanceiroPageState extends State<PersonalFinanceiroPage> {
             ),
             Text(
               'R\$ ${aluno['valor'].toStringAsFixed(0)}',
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.systemRed,
                 fontSize: 14,
                 fontWeight: FontWeight.w900,
-                fontFamily: 'monospace',
               ),
             ),
           ],
@@ -422,7 +419,6 @@ class _PersonalFinanceiroPageState extends State<PersonalFinanceiroPage> {
                           color: isRecebido ? Colors.white : Colors.white.withValues(alpha: 0.4),
                           fontSize: 14,
                           fontWeight: FontWeight.w900,
-                          fontFamily: 'monospace',
                         ),
                       ),
                       const SizedBox(height: 4),

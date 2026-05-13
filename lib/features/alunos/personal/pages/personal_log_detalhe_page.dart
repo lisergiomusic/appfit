@@ -25,7 +25,7 @@ class PersonalLogDetalhePage extends StatelessWidget {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Resumo do Treino',
           style: AppTheme.pageTitle,
         ),
@@ -569,7 +569,6 @@ class _ExerciseListItemState extends State<_ExerciseListItem> {
                                 : Colors.white.withValues(alpha: 0.15),
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            fontFamily: 'monospace',
                           ),
                         ),
                       ),

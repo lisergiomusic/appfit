@@ -26,7 +26,7 @@ class GestaoSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'GESTÃO E DADOS',
           style: AppTheme.sectionHeader,
         ),

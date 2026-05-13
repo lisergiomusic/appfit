@@ -50,7 +50,7 @@ class _PersonalHistoricoFinanceiroPageState
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Histórico de Pagamentos', style: AppTheme.pageTitle),
+        title: Text('Histórico de Pagamentos', style: AppTheme.pageTitle),
       ),
       body: StreamBuilder<List<FaturaModel>>(
         stream: _stream,

@@ -80,7 +80,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.surfaceBlack,
       body: Stack(
         children: [
           // Efeito de profundidade com gradiente atmosférico no topo.
@@ -147,7 +147,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                     leading: const AppNavBackButton(),
                     actions: [
                       Padding(
-                        padding: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.only(right: SpacingTokens.sm),
                         child: GlassIconButton(
                           onPressed: () => _irParaGerenciarAluno(context),
                           icon: CupertinoIcons.settings,
@@ -277,7 +277,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                           const SizedBox(height: SpacingTokens.screenBottomPadding),
 
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.xl),
                             child: FichaAtivaHeroCard(
                               alunoId: widget.alunoId,
                               alunoNome: nomeExibicao,
@@ -297,7 +297,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                           const SizedBox(height: SpacingTokens.screenBottomPadding),
 
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: SpacingTokens.xl),
                             child: GestaoSection(
                               alunoId: widget.alunoId,
                               alunoNome: nomeExibicao,
@@ -319,9 +319,9 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
 
           // Botões de ação flutuantes com estética de vidro e efeito tátil.
           Positioned(
-            bottom: 32,
-            left: 20,
-            right: 20,
+            bottom: SpacingTokens.xxxl,
+            left: SpacingTokens.xl,
+            right: SpacingTokens.xl,
             child: Row(
               children: [
                 Expanded(
@@ -345,7 +345,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                     size: 22,
                   ),
                   size: 56,
-                  color: Colors.white.withValues(alpha: 0.08),
+                  color: Colors.white.withValues(alpha: GlassTokens.opacityHighBorder),
                 ),
               ],
             ),
@@ -374,11 +374,11 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
               children: [
                 Icon(
                   CupertinoIcons.antenna_radiowaves_left_right,
-                  color: Colors.redAccent.withValues(alpha: 0.4),
+                  color: AppColors.systemRed.withValues(alpha: GlassTokens.opacitySecondaryText),
                   size: 40,
                 ),
                 const SizedBox(height: SpacingTokens.xxl),
-                const Text(
+                Text(
                   '[ ERRO DE REDE ]',
                   style: AppTheme.telemetryFailure,
                 ),
@@ -387,7 +387,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                   'A conexão com o servidor foi interrompida.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.4),
+                    color: Colors.white.withValues(alpha: GlassTokens.opacitySecondaryText),
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                   ),
@@ -402,7 +402,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                     ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: GlassTokens.opacityAtmosphereSubtle),
-                      borderRadius: BorderRadius.circular(100),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                       border: Border.all(color: Colors.white.withValues(alpha: GlassTokens.opacityHighBorder)),
                     ),
                     child: const Text(
@@ -479,12 +479,12 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                           height: 4,
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: GlassTokens.opacityHighBorder),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(SpacingTokens.space10),
                           ),
                         ),
                       ),
                       const SizedBox(height: SpacingTokens.xxxl),
-                      const Text(
+                      Text(
                         'PRESCREVER TREINO',
                         style: AppTheme.technicalLabel,
                       ),
@@ -492,7 +492,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                       Text(
                         'Selecione o método de construção da nova planilha.',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.4),
+                          color: Colors.white.withValues(alpha: GlassTokens.opacitySecondaryText),
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -544,7 +544,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                             padding: const EdgeInsets.symmetric(vertical: SpacingTokens.lg),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: GlassTokens.opacityConsole),
-                              borderRadius: BorderRadius.circular(100),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                               border: Border.all(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder)),
                             ),
                             child: const Center(
@@ -597,7 +597,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
             Container(
               padding: const EdgeInsets.all(SpacingTokens.md),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
+                color: AppColors.primary.withValues(alpha: GlassTokens.opacityAtmosphere),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: AppColors.primary, size: 20),
@@ -620,7 +620,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                   Text(
                     subtitle,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.3),
+                      color: Colors.white.withValues(alpha: GlassTokens.opacityLabel),
                       fontSize: 11,
                     ),
                   ),
@@ -629,7 +629,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
             ),
             Icon(
               CupertinoIcons.chevron_right,
-              color: Colors.white.withValues(alpha: 0.2),
+              color: Colors.white.withValues(alpha: GlassTokens.opacityTertiaryText),
               size: 16,
             ),
           ],
