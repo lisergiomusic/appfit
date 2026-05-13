@@ -1,7 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/services/supabase_auth_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/glass_bottom_nav.dart';
+import '../../../core/widgets/app_premium_fab.dart';
 import '../aluno/aluno_home_page.dart';
 import '../personal/personal_home_page.dart';
 import '../../alunos/aluno/pages/aluno_conta_page.dart';
@@ -22,12 +24,22 @@ class _DashboardPageState extends State<DashboardPage> {
   int _indiceAtual = 0;
   int _indiceAnterior = 0;
   final SupabaseAuthService _authService = SupabaseAuthService();
+  
+  // Gatilho para abrir modais de cadastro via Navbar
+  final ValueNotifier<int> _cadastroTrigger = ValueNotifier(0);
+
   late List<Widget> _paginas;
 
   @override
   void initState() {
     super.initState();
     _paginas = _getPaginas();
+  }
+
+  @override
+  void dispose() {
+    _cadastroTrigger.dispose();
+    super.dispose();
   }
 
   List<Widget> _getPaginas() {
@@ -49,6 +61,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
       PersonalAlunosPage(
         openCadastroOnLoad: _abrirCadastroPendente,
+        cadastroTrigger: _cadastroTrigger,
       ),
       PersonalTreinosPage(
         openCriarRotinaOnLoad: _abrirCriacaoPendente,
@@ -65,10 +78,8 @@ class _DashboardPageState extends State<DashboardPage> {
       _indiceAnterior = _indiceAtual;
       _indiceAtual = 1;
       _abrirCadastroPendente = true;
-      // Atualiza a página com o novo estado de abertura pendente
       _paginas = _getPaginas();
     });
-    // Resetar flag após o frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _abrirCadastroPendente = false;
       if (mounted) {
@@ -84,10 +95,8 @@ class _DashboardPageState extends State<DashboardPage> {
       _indiceAnterior = _indiceAtual;
       _indiceAtual = 2;
       _abrirCriacaoPendente = true;
-      // Atualiza a página com o novo estado de abertura pendente
       _paginas = _getPaginas();
     });
-    // Resetar flag após o frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _abrirCriacaoPendente = false;
       if (mounted) {
@@ -143,6 +152,18 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ];
 
+    // Constrói o botão contextual de ação
+    Widget? contextualFAB;
+    if (!isAluno && _indiceAtual == 1) {
+      contextualFAB = AppPremiumFAB(
+        icon: CupertinoIcons.add,
+        onPressed: () => _cadastroTrigger.value++,
+        bottomPadding: 0,
+        height: 64, // Altura idêntica à GlassBottomNav
+        backgroundColor: AppColors.surfaceDark.withValues(alpha: 0.8), // Estética dock
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       extendBody: true,
@@ -185,6 +206,7 @@ class _DashboardPageState extends State<DashboardPage> {
             });
           }
         },
+        trailing: contextualFAB,
       ),
     );
   }

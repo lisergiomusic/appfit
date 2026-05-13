@@ -14,9 +14,11 @@ All high-level management pages MUST follow the design patterns established in `
     *   **Geometry:** Use `GlassTokens.consoleRadius`. The plate should feel like it's "sculpted" over the black background.
     *   **Infinite Bottom:** For main scrolls, use `SliverFillRemaining` and remove the bottom border of the console to create a feeling of infinite depth.
 
-### 2. "Card-fobia" & Content Flow
-*   **STRICT PROHIBITION:** Do not use individual cards for every piece of information. This breaks the Neo-Industrial immersion.
-*   **Integration:** Sections (Metrics, Schedules, Management) live inside the Glass Console, separated only by technical spacing or subtle dividers (`GlassTokens.opacityConsole`).
+### 2. Intelligent Card Usage (Anti-Generic Flutter)
+*   **The Philosophy:** Avoid the "Generic Flutter App" look where everything is wrapped in a card. We don't want "visual islands" that fragment the UI flow.
+*   **Strategic Cards (Bento Style):** Independent glass cards ARE encouraged for high-level KPIs, summary widgets, or distinct floating blocks (like the Home Page KPI pills). These should feel intentional and functionally distinct.
+*   **Integration (The Console):** For main content streams (student lists, workout logs, management settings), use a **SINGLE, continuous glass plate**. Content inside should be separated by technical spacing or subtle dividers (`alpha: 0.03`) to maintain vertical momentum.
+*   **Visual Precision:** If a card is used, it must serve a clear purpose and follow the same technical precision (razor-thin borders, monospace metrics) as the rest of the system.
 
 ### 3. Typography: Human vs. Machine (Staff-Level)
 *   **The Human Touch (Content):** Nomes próprios, títulos de treinos e ações narrativas devem usar **Title Case** (ex: `Sergio Silva`, `Hipertrofia A`). Isso reduz a fadiga visual e traz elegância.

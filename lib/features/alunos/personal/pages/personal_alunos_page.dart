@@ -4,21 +4,26 @@ import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/personal_service.dart';
 import '../../../../core/widgets/app_swipe_to_delete.dart';
-import '../../../../core/widgets/app_premium_fab.dart';
+import '../../../../core/widgets/app_tappable.dart';
 import '../../shared/widgets/app_avatar.dart';
 import '../../shared/widgets/cadastro_aluno_modal.dart';
 import 'personal_aluno_perfil_page.dart';
 
 class PersonalAlunosPage extends StatefulWidget {
   final bool openCadastroOnLoad;
+  final ValueNotifier<int>? cadastroTrigger;
 
-  const PersonalAlunosPage({super.key, this.openCadastroOnLoad = false});
+  const PersonalAlunosPage({
+    super.key,
+    this.openCadastroOnLoad = false,
+    this.cadastroTrigger,
+  });
 
   @override
-  State<PersonalAlunosPage> createState() => _PersonalAlunosPageState();
+  State<PersonalAlunosPage> createState() => PersonalAlunosPageState();
 }
 
-class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
+class PersonalAlunosPageState extends State<PersonalAlunosPage> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final PersonalService _personalService = PersonalService();
@@ -43,11 +48,12 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
     super.initState();
     _fetchInitialData();
     _scrollController.addListener(_onScroll);
+    widget.cadastroTrigger?.addListener(_onCadastroTriggered);
 
     if (widget.openCadastroOnLoad) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          _exibirModalCadastro();
+          exibirModalCadastro();
         }
       });
     }
@@ -57,7 +63,14 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
   void dispose() {
     _scrollController.dispose();
     _searchController.dispose();
+    widget.cadastroTrigger?.removeListener(_onCadastroTriggered);
     super.dispose();
+  }
+
+  void _onCadastroTriggered() {
+    if (mounted) {
+      exibirModalCadastro();
+    }
   }
 
   void _onScroll() {
@@ -225,7 +238,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
     }
   }
 
-  void _exibirModalCadastro() {
+  void exibirModalCadastro() {
     HapticFeedback.lightImpact();
     showModalBottomSheet(
       context: context,
@@ -238,84 +251,148 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: AppPremiumFAB(
-          label: 'NOVO ALUNO',
-          icon: CupertinoIcons.add,
-          onPressed: _exibirModalCadastro,
-          isFullWidth: true,
-          bottomPadding: 72,
-        ),
-      ),
-      body: RefreshIndicator(
-        onRefresh: _fetchInitialData,
-        color: AppColors.primary,
-        backgroundColor: AppColors.surfaceDark,
-        edgeOffset: 120,
-        child: CustomScrollView(
-          controller: _scrollController,
-          physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
-          ),
-          slivers: [
-            _buildSliverAppBar(),
-            SliverToBoxAdapter(child: _buildSearchBar()),
-            SliverToBoxAdapter(child: _buildMinimalistTabs()),
-            if (_isLoading)
-              const SliverFillRemaining(
-                child: Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                ),
-              )
-            else if (_alunosDocs.isEmpty)
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 64),
-                  child: _searchQuery.isNotEmpty || _statusFilter != "todos"
-                      ? _buildNoResultsState()
-                      : _buildEmptyState(),
-                ),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 140),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    if (index == _alunosDocs.length) {
-                      return _hasMore
-                          ? const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 32),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            )
-                          : const SizedBox.shrink();
-                    }
-                    final doc = _alunosDocs[index];
-                    final aluno = doc as Map<String, dynamic>;
-                    return _buildDismissibleCard(aluno['id'], aluno);
-                  }, childCount: _alunosDocs.length + 1),
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // Atmosfera Superior (Efeito de profundidade)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: SpacingTokens.atmosphereHeight,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.primary.withValues(alpha: GlassTokens.opacityAtmosphere),
+                    AppColors.primary.withValues(alpha: GlassTokens.opacityAtmosphereSubtle),
+                    Colors.transparent,
+                  ],
                 ),
               ),
-          ],
-        ),
+            ),
+          ),
+          RefreshIndicator(
+            onRefresh: _fetchInitialData,
+            color: AppColors.primary,
+            backgroundColor: AppColors.surfaceDark,
+            edgeOffset: 120,
+            child: CustomScrollView(
+              controller: _scrollController,
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
+              slivers: [
+                _buildSliverAppBar(),
+
+                // Início do Console de Vidro (Cabeçalho do Console)
+                SliverToBoxAdapter(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: GlassTokens.consoleMarginH),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: GlassTokens.opacityConsole),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(GlassTokens.consoleRadius),
+                        topRight: Radius.circular(GlassTokens.consoleRadius),
+                      ),
+                      border: Border(
+                        top: BorderSide(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder), width: 1),
+                        left: BorderSide(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder), width: 1),
+                        right: BorderSide(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder), width: 1),
+                        bottom: BorderSide.none,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildSearchBar(),
+                        _buildMinimalistTabs(),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Corpo do Console de Vidro (Lista de alunos)
+                if (_isLoading)
+                  SliverToBoxAdapter(
+                    child: _buildConsoleBody(
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 64),
+                        child: Center(
+                          child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
+                        ),
+                      ),
+                    ),
+                  )
+                else if (_alunosDocs.isEmpty)
+                  SliverToBoxAdapter(
+                    child: _buildConsoleBody(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 80),
+                        child: _searchQuery.isNotEmpty || _statusFilter != "todos"
+                            ? _buildNoResultsState()
+                            : _buildEmptyState(),
+                      ),
+                    ),
+                  )
+                else
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      if (index == _alunosDocs.length) {
+                        return _buildConsoleBody(
+                          child: _hasMore
+                              ? const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 32),
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      color: AppColors.primary,
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                )
+                              : const SizedBox(height: 140), // Buffer inferior para o FAB
+                        );
+                      }
+                      final doc = _alunosDocs[index];
+                      final aluno = doc as Map<String, dynamic>;
+                      return _buildConsoleBody(
+                        child: _buildDismissibleCard(aluno['id'], aluno, isFirst: index == 0),
+                      );
+                    }, childCount: _alunosDocs.length + 1),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
+  /// Wrapper para manter o aspecto de console nas laterais dos itens de lista.
+  Widget _buildConsoleBody({required Widget child}) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: GlassTokens.consoleMarginH),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: GlassTokens.opacityConsole),
+        border: Border(
+          left: BorderSide(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder), width: 1),
+          right: BorderSide(color: Colors.white.withValues(alpha: GlassTokens.opacityBorder), width: 1),
+          bottom: BorderSide.none,
+          top: BorderSide.none,
+        ),
+      ),
+      child: child,
+    );
+  }
+
   Widget _buildSliverAppBar() {
-    const String titleStr = 'Meus alunos';
+    const String titleStr = 'MEUS ALUNOS';
 
     return SliverAppBar(
       pinned: true,
       expandedHeight: 110,
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
@@ -330,31 +407,28 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
 
           return FlexibleSpaceBar(
             stretchModes: const [StretchMode.zoomBackground],
-            background: Container(
-              decoration: BoxDecoration(gradient: AppTheme.premiumGradient),
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: 20,
-                    bottom: 16,
-                    child: Opacity(
-                      opacity: percentage.clamp(0.0, 1.0),
-                      child: const Text(
-                        titleStr, 
-                        style: AppTheme.bigTitle,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
             centerTitle: true,
             title: Opacity(
               opacity: (1.0 - percentage - 0.7).clamp(0.0, 1.0) * 3.3,
-              child: const Text(
+              child: Text(
                 titleStr,
-                style: AppTheme.pageTitle,
+                style: AppTheme.pageTitle.copyWith(letterSpacing: 1.0),
               ),
+            ),
+            background: Stack(
+              children: [
+                Positioned(
+                  left: 20,
+                  bottom: 16,
+                  child: Opacity(
+                    opacity: percentage.clamp(0.0, 1.0),
+                    child: Text(
+                      titleStr,
+                      style: AppTheme.heroTitle.copyWith(fontSize: 28, letterSpacing: -0.5),
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -364,34 +438,42 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
       child: Container(
         height: 48,
-        decoration: AppTheme.premiumCardDecoration,
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
         child: TextField(
           controller: _searchController,
           onChanged: (val) {
             setState(() => _searchQuery = val);
             _fetchInitialData();
           },
-          style: AppTheme.inputText,
+          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
           cursorColor: AppColors.primary,
           textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
             isDense: true,
-            hintText: 'Buscar por nome...',
-            hintStyle: AppTheme.inputPlaceHolder,
+            hintText: 'BUSCAR ALUNO',
+            hintStyle: AppTheme.technicalLabel.copyWith(
+              color: Colors.white.withValues(alpha: 0.2),
+              fontSize: 10,
+              letterSpacing: 0.5,
+            ),
             prefixIcon: Icon(
               Icons.search_rounded,
-              color: AppColors.labelSecondary.withAlpha(120),
-              size: 20,
+              color: AppColors.primary.withValues(alpha: 0.5),
+              size: 18,
             ),
             suffixIcon: _searchQuery.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.close_rounded,
-                      size: 18,
-                      color: AppColors.labelSecondary,
+                      size: 16,
+                      color: Colors.white.withValues(alpha: 0.4),
                     ),
                     onPressed: () {
                       _searchController.clear();
@@ -404,7 +486,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
             filled: false,
-            contentPadding: const EdgeInsets.symmetric(vertical: 11),
+            contentPadding: const EdgeInsets.symmetric(vertical: 14),
           ),
         ),
       ),
@@ -421,7 +503,12 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
 
     return Container(
       height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1),
+        ),
+      ),
       child: Row(
         children: filters.map((filter) {
           final bool isSelected = _statusFilter == filter['value'];
@@ -444,11 +531,9 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
                     children: [
                       Text(
                         filter['label'] as String,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                          letterSpacing: 0.5,
-                          color: isSelected ? Colors.white : AppColors.labelSecondary,
+                        style: AppTheme.technicalLabel.copyWith(
+                          fontSize: 8,
+                          color: isSelected ? AppColors.primary : Colors.white.withValues(alpha: 0.3),
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -456,17 +541,18 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
                         '${filter['count']}',
                         style: TextStyle(
                           fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                          color: isSelected ? AppColors.primary : AppColors.labelTertiary,
+                          fontWeight: FontWeight.w900,
+                          fontFamily: 'monospace',
+                          color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.2),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     height: 2,
-                    width: isSelected ? 16 : 0,
+                    width: isSelected ? 24 : 0,
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(2),
@@ -481,19 +567,18 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
     );
   }
 
-  Widget _buildDismissibleCard(String id, Map<String, dynamic> aluno) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: SpacingTokens.sm),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-        child: AppSwipeToDelete(
+  Widget _buildDismissibleCard(String id, Map<String, dynamic> aluno, {required bool isFirst}) {
+    return Column(
+      children: [
+        if (!isFirst)
+          Container(height: 1, color: Colors.white.withValues(alpha: 0.02)),
+        AppSwipeToDelete(
           dismissibleKey: Key(id),
           confirmDismiss: (direction) async {
             await _deletarAluno(id);
             return false;
           },
-          onDismissed: (direction) {
-          },
+          onDismissed: (direction) {},
           child: _buildAlunoCard(
             nome: '${aluno['nome'] ?? ''} ${aluno['sobrenome'] ?? ''}'.trim(),
             email: aluno['email'] ?? 'Sem e-mail',
@@ -508,8 +593,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
                   builder: (context) => PersonalAlunoPerfilPage(
                     alunoId: id,
                     alunoNome:
-                        '${aluno['nome'] ?? ''} ${aluno['sobrenome'] ?? ''}'
-                            .trim(),
+                        '${aluno['nome'] ?? ''} ${aluno['sobrenome'] ?? ''}'.trim(),
                     photoUrl: aluno['photo_url'],
                   ),
                 ),
@@ -517,7 +601,7 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
             },
           ),
         ),
-      ),
+      ],
     );
   }
 
@@ -539,84 +623,94 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
       }
     }
 
-    // Define a cor da borda baseada no status real
-    Color statusColor;
+    // Define a tag de status técnica
+    Widget statusTag;
     if (!isAtivo) {
-      statusColor = AppColors.labelSecondary.withAlpha(100); // Inativo
+      statusTag = _buildTechnicalTag('INATIVO', Colors.white.withValues(alpha: 0.3));
     } else if (emRisco) {
-      statusColor = Colors.orangeAccent; // Risco
+      statusTag = _buildTechnicalTag('EM RISCO', AppColors.systemRed);
     } else {
-      statusColor = AppColors.success; // Ativo
+      statusTag = _buildTechnicalTag('ATIVO', AppColors.primary);
     }
 
-    return Container(
-      decoration: AppTheme.premiumCardDecoration,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-        child: Padding(
-          padding: CardTokens.padding,
-          child: Row(
-            children: [
-              Stack(
-                alignment: Alignment.bottomRight,
+    return AppTappable(
+      onPressed: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
+          children: [
+            AppAvatar(
+              name: nome,
+              photoUrl: photoUrl,
+              radius: 20,
+              showBorder: false,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AppAvatar(
-                    name: nome,
-                    photoUrl: photoUrl,
-                    radius: 20,
-                    borderColor: statusColor,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          nome,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.3,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      statusTag,
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    email.toLowerCase(),
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(nome, style: AppTheme.cardTitle),
-                        if (emRisco) ...[
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.orangeAccent.withAlpha(40),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: const Text(
-                              'RISCO',
-                              style: TextStyle(
-                                color: Colors.orangeAccent,
-                                fontSize: 8,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      email.toLowerCase(),
-                      style: AppTheme.cardSubtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: AppColors.labelSecondary.withAlpha(100),
-                size: 14,
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 12),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.white.withValues(alpha: 0.1),
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Constrói uma tag técnica minimalista (Pill).
+  Widget _buildTechnicalTag(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.1), width: 0.5),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color.withValues(alpha: 0.8),
+          fontSize: 7,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.5,
         ),
       ),
     );
@@ -629,18 +723,22 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
         children: [
           Icon(
             Icons.group_add_rounded,
-            size: 64,
-            color: AppColors.labelSecondary.withAlpha(30),
+            size: 48,
+            color: AppColors.primary.withValues(alpha: 0.2),
           ),
           const SizedBox(height: 24),
           Text(
             'NENHUM ALUNO AINDA',
-            style: AppTheme.sectionHeader.copyWith(color: Colors.white, fontSize: 16),
+            style: AppTheme.technicalLabel.copyWith(color: Colors.white, fontSize: 10),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Toque em ADICIONAR para começar.',
-            style: TextStyle(color: AppColors.labelSecondary, fontSize: 14),
+          Text(
+            'Toque em NOVO ALUNO para começar.',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.3),
+              fontSize: 12,
+              fontWeight: FontWeight.w500
+            ),
           ),
         ],
       ),
@@ -649,24 +747,21 @@ class _PersonalAlunosPageState extends State<PersonalAlunosPage> {
 
   Widget _buildNoResultsState() {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.search_off_rounded,
-              size: 48,
-              color: AppColors.labelSecondary.withAlpha(40),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'NENHUM RESULTADO PARA OS FILTROS APLICADOS',
-              textAlign: TextAlign.center,
-              style: AppTheme.sectionHeader.copyWith(fontSize: 10),
-            ),
-          ],
-        ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.search_off_rounded,
+            size: 48,
+            color: Colors.white.withValues(alpha: 0.1),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'NENHUM RESULTADO',
+            textAlign: TextAlign.center,
+            style: AppTheme.technicalLabel.copyWith(fontSize: 10),
+          ),
+        ],
       ),
     );
   }

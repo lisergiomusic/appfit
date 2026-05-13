@@ -20,12 +20,14 @@ class GlassBottomNav extends StatelessWidget {
   final int currentIndex;
   final List<GlassBottomNavItem> items;
   final Function(int) onTap;
+  final Widget? trailing;
 
   const GlassBottomNav({
     super.key,
     required this.currentIndex,
     required this.items,
     required this.onTap,
+    this.trailing,
   });
 
   @override
@@ -34,64 +36,75 @@ class GlassBottomNav extends StatelessWidget {
     
     return Container(
       padding: EdgeInsets.fromLTRB(
-        24, 
+        20, 
         0, 
-        24, 
-        bottomPadding > 0 ? bottomPadding : 12,
+        20, 
+        bottomPadding > 0 ? bottomPadding : 20,
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(999),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            height: 64,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceDark.withValues(alpha: 0.6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: ClipRRect(
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.08),
-                width: 0.5,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: items.asMap().entries.map((entry) {
-                final int idx = entry.key;
-                final GlassBottomNavItem item = entry.value;
-                final bool isSelected = currentIndex == idx;
-
-                return Expanded(
-                  child: AppTappable(
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      onTap(idx);
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          isSelected ? item.activeIcon : item.icon,
-                          color: isSelected ? AppColors.primary : AppColors.labelSecondary,
-                          size: 22,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item.label,
-                          style: TextStyle(
-                            color: isSelected ? AppColors.primary : AppColors.labelSecondary,
-                            fontSize: 9,
-                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                      ],
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                child: Container(
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceDark.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.08),
+                      width: 0.5,
                     ),
                   ),
-                );
-              }).toList(),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: items.asMap().entries.map((entry) {
+                      final int idx = entry.key;
+                      final GlassBottomNavItem item = entry.value;
+                      final bool isSelected = currentIndex == idx;
+
+                      return Expanded(
+                        child: AppTappable(
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            onTap(idx);
+                          },
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                isSelected ? item.activeIcon : item.icon,
+                                color: isSelected ? AppColors.primary : AppColors.labelSecondary,
+                                size: 22,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                item.label,
+                                style: TextStyle(
+                                  color: isSelected ? AppColors.primary : AppColors.labelSecondary,
+                                  fontSize: 9,
+                                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
+          if (trailing != null) ...[
+            const SizedBox(width: 12),
+            trailing!,
+          ],
+        ],
       ),
     );
   }

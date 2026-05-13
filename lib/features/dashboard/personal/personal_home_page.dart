@@ -156,7 +156,6 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                         future: _contagensFuture,
                         builder: (context, snapshot) {
                           final contagens = snapshot.data;
-                          final ativos = contagens?.ativos.toString() ?? '--';
 
                           return Row(
                             children: [
@@ -251,7 +250,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                                               'ALUNOS EM RISCO',
                                               style: AppTheme.technicalLabel.copyWith(
                                                 fontSize: 8,
-                                                color: (contagens?.risco ?? 0) > 0 
+                                                color: (contagens?.risco ?? 0) > 0
                                                     ? AppColors.systemRed.withValues(alpha: 0.8)
                                                     : Colors.white.withValues(alpha: 0.3),
                                               ),
@@ -473,8 +472,8 @@ class _AtividadeItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    item.sessaoNome.isEmpty 
-                        ? 'Concluiu um treino avulso' 
+                    item.sessaoNome.isEmpty
+                        ? 'Concluiu um treino avulso'
                         : "Concluiu o treino '${item.sessaoNome}'",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

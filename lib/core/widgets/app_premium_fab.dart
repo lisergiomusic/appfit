@@ -3,19 +3,23 @@ import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
 
 class AppPremiumFAB extends StatefulWidget {
-  final String label;
+  final String? label;
   final IconData icon;
   final VoidCallback onPressed;
   final double bottomPadding;
   final bool isFullWidth;
+  final double height;
+  final Color? backgroundColor;
 
   const AppPremiumFAB({
     super.key,
-    required this.label,
+    this.label,
     required this.icon,
     required this.onPressed,
     this.bottomPadding = 0,
     this.isFullWidth = false,
+    this.height = 56,
+    this.backgroundColor,
   });
 
   @override
@@ -27,6 +31,8 @@ class _AppPremiumFABState extends State<AppPremiumFAB> {
 
   @override
   Widget build(BuildContext context) {
+    final Color bgColor = widget.backgroundColor ?? AppColors.primary;
+
     return Padding(
       padding: EdgeInsets.only(bottom: widget.bottomPadding),
       child: AnimatedScale(
@@ -42,34 +48,48 @@ class _AppPremiumFABState extends State<AppPremiumFAB> {
           },
           onTapCancel: () => setState(() => _isPressed = false),
           child: Container(
-            height: 56,
-            width: widget.isFullWidth ? double.infinity : null,
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            height: widget.height,
+            width: widget.isFullWidth 
+                ? double.infinity 
+                : (widget.label == null ? widget.height : null),
+            padding: EdgeInsets.symmetric(
+              horizontal: widget.label == null ? 0 : 24,
+            ),
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              color: bgColor,
               borderRadius: BorderRadius.circular(999),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withAlpha(80),
+                  color: bgColor.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
               ],
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.1),
+                width: 0.5,
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: widget.isFullWidth ? MainAxisSize.max : MainAxisSize.min,
               children: [
-                Icon(widget.icon, color: Colors.black, size: 20),
-                const SizedBox(width: 10),
-                Text(
-                  widget.label.toUpperCase(),
-                  style: AppTheme.sectionHeader.copyWith(
-                    color: Colors.black,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                  ),
+                Icon(
+                  widget.icon, 
+                  color: bgColor == AppColors.primary ? Colors.black : Colors.white, 
+                  size: widget.height * 0.4,
                 ),
+                if (widget.label != null) ...[
+                  const SizedBox(width: 10),
+                  Text(
+                    widget.label!.toUpperCase(),
+                    style: AppTheme.sectionHeader.copyWith(
+                      color: bgColor == AppColors.primary ? Colors.black : Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
