@@ -37,11 +37,11 @@ class AlunoHeaderSection extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                alunoNome.toUpperCase(),
+                alunoNome,
                 style: AppTheme.pageTitle.copyWith(
-                  fontSize: 22,
+                  fontSize: 24, // Aumentado para mais destaque no title case
                   fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
+                  letterSpacing: -0.8,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -49,9 +49,9 @@ class AlunoHeaderSection extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  _buildBadge(Icons.calendar_today_rounded, '$idade ANOS'),
+                  _buildBadge(Icons.calendar_today_rounded, '$idade anos'),
                   const SizedBox(width: 8),
-                  _buildBadge(Icons.fitness_center_rounded, '$peso KG'),
+                  _buildBadge(Icons.fitness_center_rounded, '$peso kg'),
                 ],
               ),
               if (actions != null) ...[const SizedBox(height: 12), actions!],

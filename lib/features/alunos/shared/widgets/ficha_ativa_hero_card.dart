@@ -144,27 +144,41 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
             ),
             child: Row(
               children: [
-                // Telemetria de Progresso (Visual Técnico)
+                // Telemetria de Progresso (Animação Fluida)
                 Stack(
                   alignment: Alignment.center,
                   children: [
                     SizedBox(
                       width: 44,
                       height: 44,
-                      child: CircularProgressIndicator(
-                        value: progressoAtual,
-                        strokeWidth: 2,
-                        backgroundColor: Colors.white.withValues(alpha: 0.05),
-                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                      child: TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 1500),
+                        curve: Curves.easeOutCubic,
+                        tween: Tween<double>(begin: 0, end: progressoAtual),
+                        builder: (context, value, child) {
+                          return CircularProgressIndicator(
+                            value: value,
+                            strokeWidth: 2,
+                            backgroundColor: Colors.white.withValues(alpha: 0.05),
+                            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                          );
+                        },
                       ),
                     ),
-                    Text(
-                      '${(progressoAtual * 100).toInt()}%',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
+                    TweenAnimationBuilder<double>(
+                      duration: const Duration(milliseconds: 1500),
+                      curve: Curves.easeOutCubic,
+                      tween: Tween<double>(begin: 0, end: progressoAtual),
+                      builder: (context, value, child) {
+                        return Text(
+                          '${(value * 100).toInt()}%',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -174,7 +188,7 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        (rotina['nome'] ?? 'Ficha de Treino').toString().toUpperCase(),
+                        (rotina['nome'] ?? 'Ficha de Treino').toString(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 15,
@@ -280,54 +294,85 @@ class _FichaAtivaHeroCardState extends State<FichaAtivaHeroCard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('PLANILHA ATUAL', style: AppTheme.sectionHeader),
-        const SizedBox(height: SpacingTokens.labelToField),
-        Container(
-          width: double.infinity,
-          decoration: AppTheme.premiumCardDecoration,
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                widget.onPrescreverTreino();
-              },
-              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 32,
-                  horizontal: 24,
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withAlpha(10),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.add_rounded,
-                        color: AppColors.primary,
-                        size: 32,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'PRESCREVER NOVO TREINO',
-                      style: AppTheme.sectionHeader.copyWith(fontSize: 14, color: Colors.white),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'O aluno ainda não possui uma ficha ativa',
-                      style: TextStyle(
-                        color: AppColors.labelSecondary.withAlpha(150),
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
+        Row(
+          children: [
+            Text(
+              'PLANILHA ATUAL',
+              style: AppTheme.sectionHeader.copyWith(
+                fontSize: 10,
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.w900,
+                color: Colors.white.withValues(alpha: 0.4),
               ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        AppTappable(
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            widget.onPrescreverTreino();
+          },
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.02),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.05),
+                width: 1,
+                style: BorderStyle.solid,
+              ),
+            ),
+            child: Row(
+              children: [
+                // Soquete de Hardware Vazio (Slot)
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      width: 1.5,
+                      style: BorderStyle.solid,
+                    ),
+                  ),
+                  child: Icon(
+                    CupertinoIcons.add,
+                    size: 18,
+                    color: Colors.white.withValues(alpha: 0.2),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'NENHUMA PLANILHA ATIVA',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'CLIQUE PARA PRESCREVER',
+                        style: TextStyle(
+                          color: AppColors.primary.withValues(alpha: 0.5),
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),

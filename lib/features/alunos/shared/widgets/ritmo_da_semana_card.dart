@@ -57,16 +57,22 @@ class RitmoDaSemanaCard extends StatelessWidget {
                         SizedBox(
                           width: 40,
                           height: 40,
-                          child: CustomPaint(
-                            painter: RingPainter(
-                              progress: isFeito ? 1.0 : 0.0,
-                              color: AppColors.primary,
-                              backgroundColor: Colors.white.withValues(alpha: 0.08),
-                              isHoje: isHoje,
-                            ),
+                          child: TweenAnimationBuilder<double>(
+                            duration: const Duration(milliseconds: 1200),
+                            curve: Curves.easeOutCubic,
+                            tween: Tween<double>(begin: 0, end: isFeito ? 1.0 : 0.0),
+                            builder: (context, value, child) {
+                              return CustomPaint(
+                                painter: RingPainter(
+                                  progress: value,
+                                  color: AppColors.primary,
+                                  backgroundColor: Colors.white.withValues(alpha: 0.08),
+                                  isHoje: isHoje,
+                                ),
+                              );
+                            },
                           ),
-                        ),
-                        // Core do Gauge (Mais definido)
+                          ),                        // Core do Gauge (Mais definido)
                         if (isFeito)
                           Container(
                             width: 10,

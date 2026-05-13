@@ -25,6 +25,12 @@ All high-level management pages MUST follow the design patterns established in `
 *   **Glass Pills:** Actions (like WhatsApp) must be "Pills" with low-opacity backgrounds (`alpha: 0.08`) and subtle borders. Avoid solid, high-saturation buttons unless they are primary "Call to Action" (CTA).
 *   **Tactile Response:** Mandatory `HapticFeedback.lightImpact()` on all interactive elements.
 
+### 4. The Neo-Industrial Glass Modal (Bottom Sheets)
+*   **Immersive Backdrop:** Always use `BackdropFilter` (`sigma: 10-15`) with a semi-transparent black overlay to isolate the decision.
+*   **Volumetric Surface:** Never use flat solid colors. Use a `LinearGradient` from a slightly illuminated dark top (`0xFF121212`) to an absolute black bottom.
+*   **Modular Items:** Options must be "Modular Glass Items" (`alpha: 0.03`) with subtle borders, leading icons, and technical hierarchy (Title/Subtitle).
+*   **Handle:** Include a technical "pull-handle" at the top (`white.withValues(alpha: 0.1)`) to reinforce the hardware metaphor.
+
 ## 🛠 Tech Stack & Dev Conventions
 
 *   **Core:** Flutter (Material 3 + Custom Premium Theme).
@@ -39,3 +45,4 @@ Before refactoring any page, the agent must ask:
 2. Am I using a Single Glass Console instead of multiple cards?
 3. Is the typography following the ExtraBold/Monospace hierarchy?
 4. Are secondary actions implemented as Glass Pills?
+5. (If Modal) Is it using a Volumetric Gradient and Backdrop Blur?

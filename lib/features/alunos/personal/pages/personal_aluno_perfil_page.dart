@@ -7,8 +7,10 @@ import 'package:shimmer/shimmer.dart';
 import '../../../../core/services/personal_service.dart';
 import '../../../../core/services/aluno_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/app_ui_utils.dart';
 import '../../../../core/widgets/app_nav_back_button.dart';
 import '../../../../core/widgets/app_primary_button.dart';
+import '../../../../core/widgets/app_tappable.dart';
 import '../../../treinos/personal/pages/personal_rotina_detalhe_page.dart';
 import '../../shared/models/aluno_perfil_data.dart';
 import '../../shared/widgets/aluno_header_section.dart';
@@ -115,9 +117,9 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
               final String nomeFirestore =
                   '${alunoData['nome'] ?? ''} ${alunoData['sobrenome'] ?? ''}'
                       .trim();
-              final String nomeExibicao = nomeFirestore.isNotEmpty
+              final String nomeExibicao = (nomeFirestore.isNotEmpty
                   ? nomeFirestore
-                  : widget.alunoNome;
+                  : widget.alunoNome).toTitleCase();
 
               final photoUrl = alunoData['photoUrl'] as String?;
               final dataNascimentoRaw = alunoData['data_nascimento'] ?? alunoData['dataNascimento'];
@@ -130,7 +132,7 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
               return CustomScrollView(
                 physics: const BouncingScrollPhysics(),
                 slivers: [
-                  // SliverAppBar Premium com Glassmorphism
+                  // SliverAppBar Premium com Transição Espacial
                   SliverAppBar(
                     pinned: true,
                     expandedHeight: 180,
@@ -145,25 +147,65 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
                         padding: const EdgeInsets.only(right: 16),
                       ),
                     ],
-                    flexibleSpace: FlexibleSpaceBar(
-                      stretchModes: const [
-                        StretchMode.zoomBackground,
-                        StretchMode.blurBackground,
-                      ],
-                      background: Container(
-                        padding: const EdgeInsets.only(
-                          top: 100,
-                          left: SpacingTokens.screenHorizontalPadding,
-                          right: SpacingTokens.screenHorizontalPadding,
-                        ),
-                        child: AlunoHeaderSection(
-                          alunoId: widget.alunoId,
-                          alunoNome: nomeExibicao,
-                          photoUrl: widget.photoUrl ?? photoUrl,
-                          idade: idade,
-                          peso: peso.toString(),
-                        ),
-                      ),
+                    flexibleSpace: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final double collapsedHeight = MediaQuery.of(context).padding.top + kToolbarHeight;
+                        final double expandedHeight = 180;
+                        final double collapseProgress = ((expandedHeight - constraints.biggest.height) / (expandedHeight - collapsedHeight)).clamp(0.0, 1.0);
+
+                        return Stack(
+                          children: [
+                            // Efeito Glassmorphism quando pinado
+                            if (collapseProgress > 0.9)
+                              Positioned.fill(
+                                child: ClipRect(
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                                    child: Container(
+                                      color: Colors.black.withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                            FlexibleSpaceBar(
+                              centerTitle: true,
+                              title: AnimatedOpacity(
+                                duration: const Duration(milliseconds: 200),
+                                opacity: collapseProgress > 0.8 ? 1.0 : 0.0,
+                                child: Text(
+                                  nomeExibicao,
+                                  style: AppTheme.pageTitle.copyWith(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.0,
+                                  ),
+                                ),
+                              ),
+                              background: Container(
+                                padding: EdgeInsets.only(
+                                  top: 100 - (20 * collapseProgress),
+                                  left: SpacingTokens.screenHorizontalPadding,
+                                  right: SpacingTokens.screenHorizontalPadding,
+                                ),
+                                child: Opacity(
+                                  opacity: (1.0 - (collapseProgress * 1.5)).clamp(0.0, 1.0),
+                                  child: Transform.scale(
+                                    scale: (1.0 - (collapseProgress * 0.2)).clamp(0.8, 1.0),
+                                    child: AlunoHeaderSection(
+                                      alunoId: widget.alunoId,
+                                      alunoNome: nomeExibicao,
+                                      photoUrl: widget.photoUrl ?? photoUrl,
+                                      idade: idade,
+                                      peso: peso.toString(),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
 
@@ -323,73 +365,284 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
 
   Widget _buildErrorState() {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline,
-                color: AppColors.systemRed, size: 48),
-            const SizedBox(height: 16),
-            const Text(
-              "Erro ao carregar perfil.",
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            margin: const EdgeInsets.symmetric(horizontal: 24),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.02),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
-            const SizedBox(height: 24),
-            AppPrimaryButton(
-              label: "Tentar Novamente",
-              onPressed: _carregarDados,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  CupertinoIcons.antenna_radiowaves_left_right,
+                  color: Colors.redAccent.withValues(alpha: 0.4),
+                  size: 40,
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  '[ FALHA DE TELEMETRIA ]',
+                  style: TextStyle(
+                    color: Colors.redAccent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2.0,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'A conexão com o servidor foi interrompida.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                AppTappable(
+                  onPressed: _carregarDados,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(100),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    ),
+                    child: const Text(
+                      'TENTAR RECONEXÃO',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Future<void> _exibirOpcoesVincularTreino(BuildContext context) async {
     HapticFeedback.mediumImpact();
-    await showCupertinoModalPopup(
+    await showModalBottomSheet(
       context: context,
-      builder: (context) => CupertinoActionSheet(
-        title: const Text('Prescrever Treino'),
-        message: const Text('Como deseja montar a planilha do aluno?'),
-        actions: [
-          CupertinoActionSheetAction(
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.pop(context);
-              // Redirecionar para a gestão de planilhas onde ele pode escolher.
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PersonalGerenciarPlanilhasPage(
-                    alunoId: widget.alunoId,
-                    alunoNome: widget.alunoNome,
-                    photoUrl: widget.photoUrl,
-                    peso: '--',
-                    idade: '--',
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Stack(
+        children: [
+          // Blur de fundo para manter a imersão
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(color: Colors.black.withValues(alpha: 0.5)),
+            ),
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 100), // Espaço para o "pull down"
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      const Color(0xFF121212), // Um preto levemente iluminado no topo
+                      Colors.black,
+                    ],
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    topRight: Radius.circular(32),
+                  ),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    width: 1,
                   ),
                 ),
-              ).then((_) => _carregarDados());
-            },
-            child: const Text('Usar um Template'),
-          ),
-          CupertinoActionSheetAction(
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.pop(context);
-              _criarPlanilhaDoZero(context);
-            },
-            child: const Text('Criar do Zero'),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+                child: SafeArea(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      const Text(
+                        'PRESCREVER TREINO',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Selecione o método de construção da nova planilha.',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.4),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                      
+                      // Opção: Template
+                      _buildModalItem(
+                        context,
+                        icon: CupertinoIcons.square_stack_3d_up,
+                        title: 'Usar um Template',
+                        subtitle: 'Puxar de um treino pré-configurado',
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PersonalGerenciarPlanilhasPage(
+                                alunoId: widget.alunoId,
+                                alunoNome: widget.alunoNome,
+                                photoUrl: widget.photoUrl,
+                                peso: '--',
+                                idade: '--',
+                              ),
+                            ),
+                          ).then((_) => _carregarDados());
+                        },
+                      ),
+                      
+                      const SizedBox(height: 12),
+                      
+                      // Opção: Do Zero
+                      _buildModalItem(
+                        context,
+                        icon: CupertinoIcons.add_circled,
+                        title: 'Criar do Zero',
+                        subtitle: 'Montar uma rotina personalizada agora',
+                        onTap: () {
+                          Navigator.pop(context);
+                          _criarPlanilhaDoZero(context);
+                        },
+                      ),
+                      
+                      const SizedBox(height: 32),
+                      
+                      // Botão Cancelar (Glass Pill)
+                      SizedBox(
+                        width: double.infinity,
+                        child: AppTappable(
+                          onPressed: () => Navigator.pop(context),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.03),
+                              borderRadius: BorderRadius.circular(100),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                            ),
+                            child: const Center(
+                              child: Text(
+                                'CANCELAR',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.0,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
-        cancelButton: CupertinoActionSheetAction(
-          isDefaultAction: true,
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+      ),
+    );
+  }
+
+  Widget _buildModalItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return AppTappable(
+      onPressed: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.03),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: AppColors.primary, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              CupertinoIcons.chevron_right,
+              color: Colors.white.withValues(alpha: 0.2),
+              size: 16,
+            ),
+          ],
         ),
       ),
     );
@@ -437,37 +690,81 @@ class _PersonalAlunoPerfilPageState extends State<PersonalAlunoPerfilPage> {
 
   Widget _buildShimmerLoading() {
     return Shimmer.fromColors(
-      baseColor: Colors.white.withAlpha(5),
-      highlightColor: Colors.white.withAlpha(10),
-      child: Padding(
-        padding: const EdgeInsets.all(SpacingTokens.screenHorizontalPadding),
-        child: Column(
-          children: [
-            const SizedBox(height: 60),
-            Row(
-              children: [
-                Container(
-                    width: 80,
-                    height: 80,
-                    decoration: const BoxDecoration(
-                        color: Colors.white, shape: BoxShape.circle)),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      baseColor: Colors.white.withValues(alpha: 0.05),
+      highlightColor: Colors.white.withValues(alpha: 0.1),
+      child: CustomScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        slivers: [
+          SliverAppBar(
+            pinned: true,
+            expandedHeight: 180,
+            backgroundColor: Colors.transparent,
+            leading: const SizedBox.shrink(),
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                padding: const EdgeInsets.only(
+                  top: 100,
+                  left: SpacingTokens.screenHorizontalPadding,
+                  right: SpacingTokens.screenHorizontalPadding,
+                ),
+                child: Row(
                   children: [
-                    Container(width: 150, height: 20, color: Colors.white),
-                    const SizedBox(height: 8),
-                    Container(width: 100, height: 14, color: Colors.white),
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(width: 140, height: 16, color: Colors.white),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Container(width: 60, height: 20, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(100))),
+                            const SizedBox(width: 8),
+                            Container(width: 60, height: 20, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(100))),
+                          ],
+                        ),
+                      ],
+                    ),
                   ],
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                const SizedBox(height: 32),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: List.generate(7, (_) => Container(width: 32, height: 32, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle))),
+                  ),
+                ),
+                const SizedBox(height: 48),
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  height: 400,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.03),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(32),
+                      topRight: Radius.circular(32),
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 40),
-            Container(width: double.infinity, height: 150, color: Colors.white),
-            const SizedBox(height: 20),
-            Container(width: double.infinity, height: 200, color: Colors.white),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
